@@ -16,10 +16,10 @@ const (
 // ProblemDetail represents RFC 7807 error response format.
 type ProblemDetail struct {
 	Detail   string `json:"detail"`
-	Instance string `json:"instance"`
+	Instance string `json:"instance,omitempty"`
 	Status   int    `json:"status"`
 	Title    string `json:"title"`
-	Type     string `json:"type"`
+	Type     string `json:"type,omitempty"`
 }
 
 func SendProblemDetail(w http.ResponseWriter, r *http.Request, status int, title, detail string) {

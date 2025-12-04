@@ -1,3 +1,5 @@
+import { StatsCardSkeleton, TestListSkeleton } from "@/components/skeletons";
+
 export const Loading = () => {
   return (
     <main className="container mx-auto px-4 py-8">
@@ -7,11 +9,12 @@ export const Loading = () => {
           <div className="h-5 w-48 animate-pulse rounded bg-muted" />
         </header>
 
-        <div className="rounded-lg border bg-card p-6">
+        <div className="space-y-6">
+          <StatsCardSkeleton />
+
           <div className="space-y-4">
-            <div className="h-4 w-full animate-pulse rounded bg-muted" />
-            <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+            <div className="h-7 w-48 animate-pulse rounded bg-muted" />
+            <TestListSkeleton />
           </div>
         </div>
       </div>

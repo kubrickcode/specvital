@@ -1,5 +1,14 @@
 // Synced with backend: src/backend/analyzer/types.go
 
+// RFC 7807 Problem Details for HTTP APIs
+export type ProblemDetail = {
+  detail: string;
+  instance?: string;
+  status: number;
+  title: string;
+  type?: string;
+};
+
 export type TestStatus = "active" | "skipped" | "todo";
 
 export type Framework = "jest" | "vitest" | "playwright" | "go";

@@ -110,4 +110,105 @@ func TestHandleAnalyze(t *testing.T) {
 			t.Errorf("expected status %d, got %d", http.StatusNotFound, rec.Code)
 		}
 	})
+
+}
+
+func TestHandleAnalyzeMockErrors(t *testing.T) {
+	// Enable mock errors for this test
+	t.Setenv("ENABLE_MOCK_ERRORS", "true")
+
+	r := chi.NewRouter()
+	RegisterRoutes(r)
+
+	t.Run("returns 403 for private repository mock", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/private-repo", nil)
+		rec := httptest.NewRecorder()
+
+		r.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusForbidden {
+			t.Errorf("expected status %d, got %d", http.StatusForbidden, rec.Code)
+		}
+
+		contentType := rec.Header().Get("Content-Type")
+		if contentType != dto.ProblemJSONType {
+			t.Errorf("expected Content-Type %s, got %s", dto.ProblemJSONType, contentType)
+		}
+
+		var problem dto.ProblemDetail
+		if err := json.NewDecoder(rec.Body).Decode(&problem); err != nil {
+			t.Fatalf("failed to decode problem response: %v", err)
+		}
+
+		if problem.Status != http.StatusForbidden {
+			t.Errorf("expected problem status %d, got %d", http.StatusForbidden, problem.Status)
+		}
+	})
+
+	t.Run("returns 404 for not found repository mock", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/notfound-repo", nil)
+		rec := httptest.NewRecorder()
+
+		r.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusNotFound {
+			t.Errorf("expected status %d, got %d", http.StatusNotFound, rec.Code)
+		}
+
+		contentType := rec.Header().Get("Content-Type")
+		if contentType != dto.ProblemJSONType {
+			t.Errorf("expected Content-Type %s, got %s", dto.ProblemJSONType, contentType)
+		}
+
+		var problem dto.ProblemDetail
+		if err := json.NewDecoder(rec.Body).Decode(&problem); err != nil {
+			t.Fatalf("failed to decode problem response: %v", err)
+		}
+
+		if problem.Status != http.StatusNotFound {
+			t.Errorf("expected problem status %d, got %d", http.StatusNotFound, problem.Status)
+		}
+	})
+
+	t.Run("returns 429 for rate limited repository mock", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/ratelimit-repo", nil)
+		rec := httptest.NewRecorder()
+
+		r.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusTooManyRequests {
+			t.Errorf("expected status %d, got %d", http.StatusTooManyRequests, rec.Code)
+		}
+
+		contentType := rec.Header().Get("Content-Type")
+		if contentType != dto.ProblemJSONType {
+			t.Errorf("expected Content-Type %s, got %s", dto.ProblemJSONType, contentType)
+		}
+
+		var problem dto.ProblemDetail
+		if err := json.NewDecoder(rec.Body).Decode(&problem); err != nil {
+			t.Fatalf("failed to decode problem response: %v", err)
+		}
+
+		if problem.Status != http.StatusTooManyRequests {
+			t.Errorf("expected problem status %d, got %d", http.StatusTooManyRequests, problem.Status)
+		}
+	})
+
+	t.Run("mock errors disabled returns normal response", func(t *testing.T) {
+		t.Setenv("ENABLE_MOCK_ERRORS", "false")
+
+		testRouter := chi.NewRouter()
+		RegisterRoutes(testRouter)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/private-repo", nil)
+		rec := httptest.NewRecorder()
+
+		testRouter.ServeHTTP(rec, req)
+
+		// Without mock errors enabled, should return 200 with mock data
+		if rec.Code != http.StatusOK {
+			t.Errorf("expected status %d, got %d", http.StatusOK, rec.Code)
+		}
+	})
 }
