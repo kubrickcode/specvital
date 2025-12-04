@@ -1,6 +1,7 @@
 .env
 .pnpm-store
 node_modules
+.next
 docs/work
 .claude/settings.local.json
 src/backend/tmp
