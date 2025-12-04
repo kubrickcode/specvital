@@ -23,7 +23,7 @@ lint target="all":
         npx prettier --write "**/*.{json,yml,yaml,md}"
         ;;
       go)
-        cd {{ root_dir }} && gofmt -w ./src
+        cd {{ root_dir }} && gofmt -w ./pkg
         ;;
       *)
         echo "Unknown target: {{ target }}"
