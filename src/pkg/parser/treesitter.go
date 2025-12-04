@@ -13,8 +13,10 @@ import (
 	"github.com/specvital/core/domain"
 )
 
+// MaxTreeDepth is the maximum recursion depth when walking AST trees.
 const MaxTreeDepth = 1000
 
+// TSParser wraps a tree-sitter parser for a specific language.
 type TSParser struct {
 	parser *sitter.Parser
 	lang   domain.Language
@@ -28,8 +30,11 @@ var (
 	langOnce sync.Once
 )
 
+// QueryResult contains the result of a tree-sitter query match.
 type QueryResult struct {
-	Node     *sitter.Node
+	// Node is the first captured node in this match.
+	Node *sitter.Node
+	// Captures maps capture names to their corresponding nodes.
 	Captures map[string]*sitter.Node
 }
 
@@ -52,6 +57,7 @@ func getSitterLanguage(lang domain.Language) *sitter.Language {
 	}
 }
 
+// NewTSParser creates a new tree-sitter parser for the given language.
 func NewTSParser(lang domain.Language) *TSParser {
 	initLanguages()
 
@@ -64,10 +70,13 @@ func NewTSParser(lang domain.Language) *TSParser {
 	}
 }
 
+// Parse parses the source code and returns the AST tree.
 func (p *TSParser) Parse(ctx context.Context, source []byte) (*sitter.Tree, error) {
 	return p.parser.ParseCtx(ctx, nil, source)
 }
 
+// Query executes a tree-sitter query and returns all matches.
+// The query is compiled fresh each time; for repeated queries, use [QueryWithCache].
 func Query(root *sitter.Node, source []byte, lang domain.Language, queryStr string) ([]QueryResult, error) {
 	initLanguages()
 
@@ -109,10 +118,13 @@ func Query(root *sitter.Node, source []byte, lang domain.Language, queryStr stri
 	return results, nil
 }
 
+// GetNodeText returns the source text for the given AST node.
 func GetNodeText(node *sitter.Node, source []byte) string {
 	return node.Content(source)
 }
 
+// GetLocation converts a tree-sitter node position to a [domain.Location].
+// Line numbers are converted to 1-based indexing.
 func GetLocation(node *sitter.Node, filename string) domain.Location {
 	start := node.StartPoint()
 	end := node.EndPoint()
@@ -126,6 +138,7 @@ func GetLocation(node *sitter.Node, filename string) domain.Location {
 	}
 }
 
+// FindChildByType returns the first direct child with the given node type.
 func FindChildByType(node *sitter.Node, nodeType string) *sitter.Node {
 	for i := 0; i < int(node.ChildCount()); i++ {
 		child := node.Child(i)
@@ -136,6 +149,7 @@ func FindChildByType(node *sitter.Node, nodeType string) *sitter.Node {
 	return nil
 }
 
+// FindChildrenByType returns all direct children with the given node type.
 func FindChildrenByType(node *sitter.Node, nodeType string) []*sitter.Node {
 	var children []*sitter.Node
 	for i := 0; i < int(node.ChildCount()); i++ {
@@ -161,6 +175,8 @@ func walkTreeWithDepth(node *sitter.Node, visitor func(*sitter.Node) bool, depth
 	}
 }
 
+// WalkTree recursively visits all nodes in the AST.
+// The visitor function returns false to stop traversing into children.
 func WalkTree(node *sitter.Node, visitor func(*sitter.Node) bool) {
 	walkTreeWithDepth(node, visitor, 0)
 }

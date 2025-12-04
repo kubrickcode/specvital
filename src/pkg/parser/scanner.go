@@ -1,3 +1,6 @@
+// Package parser provides test file scanning and parsing capabilities.
+// It supports multiple test frameworks (Jest, Vitest, Playwright, Go testing)
+// and enables parallel processing for efficient scanning of large codebases.
 package parser
 
 import (
@@ -16,27 +19,40 @@ import (
 )
 
 const (
+	// DefaultWorkers indicates that the scanner should use GOMAXPROCS as the worker count.
 	DefaultWorkers = 0
+	// DefaultTimeout is the default scan timeout duration.
 	DefaultTimeout = 5 * time.Minute
-	MaxWorkers     = 1024
+	// MaxWorkers is the maximum number of concurrent workers allowed.
+	MaxWorkers = 1024
 )
 
 var (
+	// ErrScanCancelled is returned when scanning is cancelled via context.
 	ErrScanCancelled = errors.New("scanner: scan cancelled")
-	ErrScanTimeout   = errors.New("scanner: scan timeout")
+	// ErrScanTimeout is returned when scanning exceeds the timeout duration.
+	ErrScanTimeout = errors.New("scanner: scan timeout")
 )
 
+// ScanResult contains the outcome of a scan operation.
 type ScanResult struct {
-	Errors    []ScanError
+	// Errors contains non-fatal errors encountered during scanning.
+	Errors []ScanError
+	// Inventory contains all parsed test files.
 	Inventory *domain.Inventory
 }
 
+// ScanError represents an error that occurred during a specific phase of scanning.
 type ScanError struct {
-	Err   error
-	Path  string
+	// Err is the underlying error.
+	Err error
+	// Path is the file path where the error occurred (may be empty for non-file errors).
+	Path string
+	// Phase indicates which phase the error occurred in ("detection" or "parsing").
 	Phase string
 }
 
+// Error implements the error interface.
 func (e ScanError) Error() string {
 	if e.Path == "" {
 		return fmt.Sprintf("[%s] %v", e.Phase, e.Err)
@@ -44,6 +60,10 @@ func (e ScanError) Error() string {
 	return fmt.Sprintf("[%s] %s: %v", e.Phase, e.Path, e.Err)
 }
 
+// Scan scans the given directory for test files and parses them.
+// It uses parallel processing with configurable worker count and timeout.
+// The function continues even when individual files fail to parse,
+// collecting errors in [ScanResult.Errors].
 func Scan(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult, error) {
 	options := &ScanOptions{
 		ExcludePatterns: nil,

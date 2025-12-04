@@ -10,6 +10,7 @@ import (
 	"github.com/specvital/core/domain"
 )
 
+// Parser pools for reusing tree-sitter parsers across goroutines.
 var (
 	goParserPool sync.Pool
 	jsParserPool sync.Pool

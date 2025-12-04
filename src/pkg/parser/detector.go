@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	// DefaultMaxFileSize is the default maximum file size for detection (10MB).
 	DefaultMaxFileSize = 10 * 1024 * 1024 // 10MB
 
 	jsTestInfix      = ".test."
@@ -21,6 +22,7 @@ const (
 	jsTestsDirPrefix = "__tests__/"
 )
 
+// DefaultSkipPatterns contains directory names that are skipped by default during detection.
 var DefaultSkipPatterns = []string{
 	"node_modules",
 	".git",
@@ -32,40 +34,57 @@ var DefaultSkipPatterns = []string{
 	".cache",
 }
 
+// ErrInvalidRootPath is returned when the root path does not exist or is not a directory.
 var ErrInvalidRootPath = errors.New("detector: root path does not exist or is not accessible")
 
 // DetectionResult contains detected test files and any errors encountered during traversal.
 type DetectionResult struct {
+	// Errors contains non-fatal errors encountered during directory traversal.
 	Errors []error
-	Files  []string
+	// Files contains paths to detected test files.
+	Files []string
 }
 
+// DetectorOptions configures the behavior of [DetectTestFiles].
 type DetectorOptions struct {
+	// SkipPatterns specifies directory names to skip during detection.
 	SkipPatterns []string
-	Patterns     []string
-	MaxFileSize  int64
+	// Patterns specifies glob patterns to filter test files.
+	Patterns []string
+	// MaxFileSize is the maximum file size in bytes to include.
+	MaxFileSize int64
 }
 
+// DetectorOption is a functional option for configuring [DetectTestFiles].
 type DetectorOption func(*DetectorOptions)
 
+// WithSkipPatterns returns a [DetectorOption] that replaces the skip patterns.
 func WithSkipPatterns(patterns []string) DetectorOption {
 	return func(o *DetectorOptions) {
 		o.SkipPatterns = patterns
 	}
 }
 
+// WithPatterns returns a [DetectorOption] that filters files by glob patterns.
 func WithPatterns(patterns []string) DetectorOption {
 	return func(o *DetectorOptions) {
 		o.Patterns = patterns
 	}
 }
 
+// WithMaxFileSize returns a [DetectorOption] that sets the maximum file size.
 func WithMaxFileSize(size int64) DetectorOption {
 	return func(o *DetectorOptions) {
 		o.MaxFileSize = size
 	}
 }
 
+// DetectTestFiles walks the directory tree and detects test files.
+// It identifies test files by their naming conventions:
+//   - JavaScript/TypeScript: *.test.ts, *.spec.ts, __tests__/*.ts
+//   - Go: *_test.go
+//
+// The function continues on errors, collecting them in [DetectionResult.Errors].
 func DetectTestFiles(ctx context.Context, rootPath string, opts ...DetectorOption) (*DetectionResult, error) {
 	options := &DetectorOptions{
 		SkipPatterns: DefaultSkipPatterns,

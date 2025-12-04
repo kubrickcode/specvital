@@ -1,19 +1,30 @@
 package domain
 
+// Test represents a single test case (it, test, func TestXxx).
 type Test struct {
-	Location Location   `json:"location"`
-	Name     string     `json:"name"`
-	Status   TestStatus `json:"status"`
+	// Location is the source code location of this test.
+	Location Location `json:"location"`
+	// Name is the test description or function name.
+	Name string `json:"name"`
+	// Status indicates if the test is skipped, only, etc.
+	Status TestStatus `json:"status"`
 }
 
+// TestSuite represents a test suite (describe, test.describe).
 type TestSuite struct {
-	Location Location    `json:"location"`
-	Name     string      `json:"name"`
-	Status   TestStatus  `json:"status"`
-	Suites   []TestSuite `json:"suites,omitempty"`
-	Tests    []Test      `json:"tests,omitempty"`
+	// Location is the source code location of this suite.
+	Location Location `json:"location"`
+	// Name is the suite description.
+	Name string `json:"name"`
+	// Status indicates if the suite is skipped, only, etc.
+	Status TestStatus `json:"status"`
+	// Suites contains nested test suites.
+	Suites []TestSuite `json:"suites,omitempty"`
+	// Tests contains the tests in this suite.
+	Tests []Test `json:"tests,omitempty"`
 }
 
+// CountTests returns the total number of tests in this suite including nested suites.
 func (s *TestSuite) CountTests() int {
 	count := len(s.Tests)
 	for _, sub := range s.Suites {
