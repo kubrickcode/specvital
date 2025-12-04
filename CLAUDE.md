@@ -45,3 +45,52 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Always assess issue size and scope accurately - avoid over-engineering simple tasks
   - Apply to both implementation and documentation
   - Verbose documentation causes review burden for humans
+
+## Development Commands
+
+### justfile
+
+- `just deps` - Install dependencies (pnpm install)
+- `just lint` - Run all linters (justfile, config, go)
+- `just lint go` - Format Go code with gofmt
+- `just test` - Run Go tests
+- `just release` - Trigger release (merge to release branch)
+
+### Single Test Execution
+
+```bash
+go test ./pkg/parser/strategies/jest/... -run TestJest
+go test ./pkg/domain -v
+```
+
+## Architecture
+
+### Core Structure
+
+```
+pkg/
+├── domain/           # Domain models (Inventory, TestFile, TestSuite, Test)
+└── parser/
+    ├── scanner.go    # Entry point: Scan(), DetectTestFiles()
+    ├── detector.go   # Test file detection
+    ├── treesitter.go # Tree-sitter parser pooling/caching
+    └── strategies/   # Framework-specific parsers (Strategy pattern)
+        ├── registry.go       # Global registry
+        ├── jest/             # Jest parser
+        ├── vitest/           # Vitest parser
+        ├── playwright/       # Playwright parser
+        ├── gotesting/        # Go testing parser
+        └── shared/jstest/    # Shared JS test logic
+```
+
+### Strategy Pattern
+
+- Each framework implements `strategies.Strategy` interface
+- Auto-registered via `strategies.Register()` in `init()`
+- Blank import required: `_ "github.com/specvital/core/pkg/parser/strategies/jest"`
+
+### Concurrency Model
+
+- `scanner.go`: Parallel parsing with errgroup + semaphore
+- `parser_pool.go`: Tree-sitter parser reuse via sync.Pool
+- `treesitter.go`: Query compilation caching
