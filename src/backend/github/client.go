@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -87,7 +88,13 @@ func buildURL(baseURL string, pathSegments ...string) (string, error) {
 	}
 	escaped := make([]string, len(pathSegments))
 	for i, seg := range pathSegments {
-		escaped[i] = url.PathEscape(seg)
+		// Split by "/" and escape each part separately to preserve path structure
+		parts := strings.Split(seg, "/")
+		escapedParts := make([]string, len(parts))
+		for j, part := range parts {
+			escapedParts[j] = url.PathEscape(part)
+		}
+		escaped[i] = strings.Join(escapedParts, "/")
 	}
 	base.Path = base.Path + "/" + joinPath(escaped...)
 	return base.String(), nil
