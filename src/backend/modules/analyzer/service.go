@@ -17,7 +17,7 @@ import (
 	"github.com/specvital/core/pkg/parser/strategies/jest"
 	"github.com/specvital/core/pkg/parser/strategies/playwright"
 	"github.com/specvital/core/pkg/parser/strategies/vitest"
-	"github.com/specvital/web/src/backend/github"
+	"github.com/specvital/web/src/backend/common/clients/github"
 	"golang.org/x/sync/errgroup"
 )
 

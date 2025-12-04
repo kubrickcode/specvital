@@ -14,10 +14,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
-	"github.com/specvital/web/src/backend/analyzer"
 	"github.com/specvital/web/src/backend/common/config"
+	"github.com/specvital/web/src/backend/common/health"
 	"github.com/specvital/web/src/backend/common/middleware"
-	"github.com/specvital/web/src/backend/health"
+	"github.com/specvital/web/src/backend/modules/analyzer"
 )
 
 const (

@@ -3,7 +3,7 @@ package analyzer
 import (
 	"testing"
 
-	"github.com/specvital/web/src/backend/github"
+	"github.com/specvital/web/src/backend/common/clients/github"
 )
 
 func TestIsTestFile(t *testing.T) {

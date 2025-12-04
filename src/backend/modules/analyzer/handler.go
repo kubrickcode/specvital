@@ -10,8 +10,8 @@ import (
 	"sync"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/specvital/web/src/backend/common/clients/github"
 	"github.com/specvital/web/src/backend/common/dto"
-	"github.com/specvital/web/src/backend/github"
 )
 
 // Mock repo prefixes for testing error states (development only).
