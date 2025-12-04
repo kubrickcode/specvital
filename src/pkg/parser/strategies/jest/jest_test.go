@@ -409,7 +409,7 @@ func TestStrategy_Parse_Location(t *testing.T) {
 }
 
 func TestRegisterDefault(t *testing.T) {
-	// NOTE: This test modifies global state, so it cannot run in parallel.
+	// Given
 	strategies.DefaultRegistry().Clear()
 	defer strategies.DefaultRegistry().Clear()
 
