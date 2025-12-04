@@ -45,3 +45,80 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Always assess issue size and scope accurately - avoid over-engineering simple tasks
   - Apply to both implementation and documentation
   - Verbose documentation causes review burden for humans
+
+## Commands
+
+```bash
+# Dependencies
+just deps                    # Install all dependencies
+
+# Development
+just run backend             # Go server on :3000 (uses air for hot reload)
+just run frontend            # Next.js on :5173 (uses turbopack)
+
+# Build & Test
+just build                   # Build all
+just build backend           # go build ./...
+just build frontend          # pnpm build
+just test                    # Test all
+just test backend            # go test -v ./...
+just test frontend           # pnpm test (vitest)
+
+# Lint
+just lint                    # All targets
+just lint go                 # gofmt
+```
+
+## Architecture
+
+### Backend (Go + Chi)
+
+```
+src/backend/
+├── cmd/server/main.go      # Entry point, router setup
+├── analyzer/               # Core analysis module
+│   ├── handler.go          # HTTP handlers
+│   ├── service.go          # Business logic (GitHub → Core parser)
+│   └── types.go            # AnalysisResult, TestSuite, TestCase
+├── github/                 # GitHub API client
+│   ├── client.go           # ListFiles, GetFileContent, rate limit tracking
+│   └── errors.go           # ErrNotFound, ErrForbidden, ErrRateLimited
+└── common/
+    ├── dto/problem.go      # RFC 7807 error responses
+    └── middleware/         # CORS, Logger, Compress
+```
+
+### Frontend (Next.js 16 App Router)
+
+```
+src/frontend/
+├── app/
+│   ├── page.tsx                        # Home - URL input form
+│   └── analyze/[owner]/[repo]/page.tsx # Dashboard - test results
+├── components/
+│   ├── url-input-form.tsx   # GitHub URL input with validation
+│   ├── test-list.tsx        # Virtualized test tree (1000+ items)
+│   └── stats-card.tsx       # Summary statistics
+└── lib/api/
+    ├── client.ts            # fetchAnalysis with Zod validation
+    └── types.ts             # Synced with backend types
+```
+
+### Data Flow
+
+1. User enters GitHub URL → validate → navigate to `/analyze/{owner}/{repo}`
+2. Frontend calls `GET /api/analyze/{owner}/{repo}`
+3. Backend fetches repo tree via GitHub API → filters test files → parses with specvital/core
+4. Returns AnalysisResult with TestSuites and Summary
+
+## Environment Variables
+
+**Backend** (`src/backend/.env`):
+
+- `GITHUB_TOKEN` - increases rate limit (60 → 5000/hour)
+- `PORT` - default 3000
+- `ALLOWED_ORIGINS` - CORS origins
+
+**Frontend** (`src/frontend/.env`):
+
+- `NEXT_PUBLIC_API_URL` - backend URL (default: http://localhost:3000)
