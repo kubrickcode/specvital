@@ -33,3 +33,27 @@ lint target="all":
 
 test:
     cd {{ root_dir }} && go test ./...
+
+release:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "⚠️  WARNING: This will trigger a production release!"
+    echo ""
+    echo "GitHub Actions will automatically:"
+    echo "  - Analyze commits to determine version bump"
+    echo "  - Generate release notes"
+    echo "  - Create tag and GitHub release"
+    echo "  - Update CHANGELOG.md"
+    echo ""
+    echo "Progress: https://github.com/specvital/core/actions"
+    echo ""
+    read -p "Type 'yes' to continue: " confirm
+    if [ "$confirm" != "yes" ]; then
+        echo "Aborted."
+        exit 1
+    fi
+    git checkout release
+    git merge main
+    git push origin release
+    git checkout main
+    echo "✅ Release triggered! Check GitHub Actions for progress."

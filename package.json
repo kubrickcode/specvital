@@ -1,18 +1,26 @@
 {
-  "name": "template-repository",
+  "name": "specvital-core",
   "version": "0.0.0",
-  "description": "TODO: Add description",
+  "description": "Test inventory parser for multiple languages and frameworks",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KubrickCode/template-repository.git"
+    "url": "https://github.com/specvital/core.git"
   },
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "prepare": "husky"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "6.0.3",
+    "@semantic-release/commit-analyzer": "13.0.0",
+    "@semantic-release/git": "10.0.1",
+    "@semantic-release/github": "11.0.1",
+    "@semantic-release/release-notes-generator": "14.0.1",
+    "conventional-changelog-conventionalcommits": "8.0.0",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
-    "prettier": "3.6.2"
+    "prettier": "3.6.2",
+    "semantic-release": "24.2.0"
   }
 }
