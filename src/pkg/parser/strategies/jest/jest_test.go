@@ -314,11 +314,11 @@ func TestStrategy_Parse_Each(t *testing.T) {
 	s := &Strategy{}
 
 	tests := []struct {
-		name       string
-		source     string
-		wantCount  int
-		wantFirst  string
-		isSuite    bool
+		name      string
+		source    string
+		wantCount int
+		wantFirst string
+		isSuite   bool
 	}{
 		{
 			name:      "should parse describe.each",

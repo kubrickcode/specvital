@@ -210,9 +210,7 @@ func ParseNode(node *sitter.Node, source []byte, filename string, file *domain.T
 func Parse(ctx context.Context, source []byte, filename string, framework string) (*domain.TestFile, error) {
 	lang := DetectLanguage(filename)
 
-	p := parser.NewTSParser(lang)
-
-	tree, err := p.Parse(ctx, source)
+	tree, err := parser.ParseWithPool(ctx, lang, source)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse %s: %w", filename, err)
 	}

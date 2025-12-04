@@ -62,9 +62,7 @@ func (s *Strategy) CanHandle(filename string, _ []byte) bool {
 }
 
 func (s *Strategy) Parse(ctx context.Context, source []byte, filename string) (*domain.TestFile, error) {
-	p := parser.NewTSParser(domain.LanguageGo)
-
-	tree, err := p.Parse(ctx, source)
+	tree, err := parser.ParseWithPool(ctx, domain.LanguageGo, source)
 	if err != nil {
 		return nil, fmt.Errorf("go-testing parser: failed to parse %s: %w", filename, err)
 	}
