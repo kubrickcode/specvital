@@ -69,9 +69,8 @@ func (s *Strategy) CanHandle(filename string, content []byte) bool {
 
 func (s *Strategy) Parse(ctx context.Context, source []byte, filename string) (*domain.TestFile, error) {
 	lang := jstest.DetectLanguage(filename)
-	p := parser.NewTSParser(lang)
 
-	tree, err := p.Parse(ctx, source)
+	tree, err := parser.ParseWithPool(ctx, lang, source)
 	if err != nil {
 		return nil, fmt.Errorf("playwright parser: failed to parse %s: %w", filename, err)
 	}
