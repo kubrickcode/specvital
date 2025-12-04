@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/specvital/web/src/backend/analyzer"
 	"github.com/specvital/web/src/backend/common/middleware"
 	"github.com/specvital/web/src/backend/health"
 )
@@ -51,6 +52,7 @@ func newRouter(origins []string) *chi.Mux {
 	r.Use(chimiddleware.Recoverer)
 	r.Use(middleware.CORS(origins))
 
+	analyzer.RegisterRoutes(r)
 	health.RegisterRoutes(r)
 
 	return r
