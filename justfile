@@ -2,10 +2,13 @@ set dotenv-load := true
 
 root_dir := justfile_directory()
 
-deps: deps-root
+deps: deps-root deps-frontend
 
 deps-root:
     pnpm install
+
+deps-frontend:
+    cd src/frontend && pnpm install
 
 lint target="all":
     #!/usr/bin/env bash
@@ -38,6 +41,29 @@ run target:
       backend)
         cd src/backend && air
         ;;
+      frontend)
+        cd src/frontend && pnpm dev
+        ;;
+      *)
+        echo "Unknown target: {{ target }}"
+        exit 1
+        ;;
+    esac
+
+build target="all":
+    #!/usr/bin/env bash
+    set -euox pipefail
+    case "{{ target }}" in
+      all)
+        just build backend
+        just build frontend
+        ;;
+      backend)
+        cd src/backend && go build ./...
+        ;;
+      frontend)
+        cd src/frontend && pnpm build
+        ;;
       *)
         echo "Unknown target: {{ target }}"
         exit 1
@@ -50,9 +76,13 @@ test target="all":
     case "{{ target }}" in
       all)
         just test backend
+        just test frontend
         ;;
       backend)
         cd src/backend && go test -v ./...
+        ;;
+      frontend)
+        cd src/frontend && pnpm test
         ;;
       *)
         echo "Unknown target: {{ target }}"

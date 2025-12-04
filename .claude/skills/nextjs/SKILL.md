@@ -115,6 +115,32 @@ fetch(url, { cache: "no-store" }); // Dynamic
 
 ---
 
+## 6. Export Rules (Next.js App Router Exception)
+
+### Default Export Exception
+
+Next.js App Router **REQUIRES** default exports for route files. This overrides the React skill's "no default export" rule.
+
+**Required default exports for**:
+
+- `page.tsx` - Route page components
+- `layout.tsx` - Layout components
+- `error.tsx` - Error boundary
+- `loading.tsx` - Loading UI
+- `not-found.tsx` - 404 page
+
+**Allowed pattern**:
+
+```typescript
+// Named export + default export for Next.js compatibility
+export const MyPage = () => { ... };
+export default MyPage;
+```
+
+**All other components**: Follow React skill (named exports only)
+
+---
+
 ## Critical Violations
 
 1. **Direct DB access from Next.js** → Architecture violation
