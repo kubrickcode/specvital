@@ -128,7 +128,7 @@ func Scan(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult
 		return scanResult, nil
 	}
 
-	files, errs := parseFilesParallel(ctx, detectionResult.Files, workers)
+	files, errs := parseFilesParallel(ctx, detectionResult.Files, workers, options.ProjectContext)
 
 	scanResult.Inventory.Files = files
 	scanResult.Errors = append(scanResult.Errors, errs...)
@@ -157,7 +157,7 @@ func buildDetectorOpts(options *ScanOptions) []DetectorOption {
 	return detectorOpts
 }
 
-func parseFilesParallel(ctx context.Context, files []string, workers int) ([]domain.TestFile, []ScanError) {
+func parseFilesParallel(ctx context.Context, files []string, workers int, projectCtx *detection.ProjectContext) ([]domain.TestFile, []ScanError) {
 	sem := semaphore.NewWeighted(int64(workers))
 	g, gCtx := errgroup.WithContext(ctx)
 
@@ -174,7 +174,7 @@ func parseFilesParallel(ctx context.Context, files []string, workers int) ([]dom
 			}
 			defer sem.Release(1)
 
-			testFile, err := parseFile(gCtx, file)
+			testFile, err := parseFile(gCtx, file, projectCtx)
 
 			mu.Lock()
 			defer mu.Unlock()
@@ -217,7 +217,7 @@ func getFrameworkDetector() *detection.Detector {
 	return frameworkDetector
 }
 
-func parseFile(ctx context.Context, path string) (*domain.TestFile, error) {
+func parseFile(ctx context.Context, path string, projectCtx *detection.ProjectContext) (*domain.TestFile, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -227,7 +227,7 @@ func parseFile(ctx context.Context, path string) (*domain.TestFile, error) {
 		return nil, fmt.Errorf("read file %s: %w", path, err)
 	}
 
-	result := getFrameworkDetector().Detect(ctx, path, content)
+	result := getFrameworkDetector().DetectWithContext(ctx, path, content, projectCtx)
 	strategy := strategies.FindStrategyByName(result.Framework)
 	if strategy == nil {
 		strategy = strategies.FindStrategy(path, content)

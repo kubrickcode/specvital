@@ -8,6 +8,8 @@ import (
 	"github.com/specvital/core/pkg/parser/detection/matchers"
 )
 
+const matcherPriority = matchers.PriorityGeneric
+
 func init() {
 	matchers.Register(&Matcher{})
 }
@@ -21,4 +23,13 @@ func (m *Matcher) ConfigPatterns() []string           { return nil }
 
 func (m *Matcher) ExtractImports(ctx context.Context, content []byte) []string {
 	return extraction.ExtractGoImports(ctx, content)
+}
+
+func (m *Matcher) ParseConfig(_ []byte) *matchers.ConfigInfo {
+	// Go testing always requires explicit import, no config file
+	return nil
+}
+
+func (m *Matcher) Priority() int {
+	return matcherPriority
 }

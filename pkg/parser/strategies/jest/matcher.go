@@ -2,12 +2,17 @@ package jest
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	"github.com/specvital/core/pkg/domain"
 	"github.com/specvital/core/pkg/parser/detection/extraction"
 	"github.com/specvital/core/pkg/parser/detection/matchers"
 )
+
+const matcherPriority = matchers.PriorityGeneric
+
+var injectGlobalsFalsePattern = regexp.MustCompile(`injectGlobals\s*:\s*false`)
 
 func init() {
 	matchers.Register(&Matcher{})
@@ -16,6 +21,7 @@ func init() {
 type Matcher struct{}
 
 func (m *Matcher) Name() string { return frameworkName }
+
 func (m *Matcher) Languages() []domain.Language {
 	return []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript}
 }
@@ -30,4 +36,16 @@ func (m *Matcher) ConfigPatterns() []string {
 
 func (m *Matcher) ExtractImports(ctx context.Context, content []byte) []string {
 	return extraction.ExtractJSImports(ctx, content)
+}
+
+func (m *Matcher) ParseConfig(content []byte) *matchers.ConfigInfo {
+	globalsDisabled := extraction.MatchPatternExcludingComments(content, injectGlobalsFalsePattern)
+	return &matchers.ConfigInfo{
+		Framework:   frameworkName,
+		GlobalsMode: !globalsDisabled,
+	}
+}
+
+func (m *Matcher) Priority() int {
+	return matcherPriority
 }

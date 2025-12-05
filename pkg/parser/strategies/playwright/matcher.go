@@ -9,6 +9,8 @@ import (
 	"github.com/specvital/core/pkg/parser/detection/matchers"
 )
 
+const matcherPriority = matchers.PriorityE2E
+
 func init() {
 	matchers.Register(&Matcher{})
 }
@@ -16,6 +18,7 @@ func init() {
 type Matcher struct{}
 
 func (m *Matcher) Name() string { return frameworkName }
+
 func (m *Matcher) Languages() []domain.Language {
 	return []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript}
 }
@@ -30,4 +33,16 @@ func (m *Matcher) ConfigPatterns() []string {
 
 func (m *Matcher) ExtractImports(ctx context.Context, content []byte) []string {
 	return extraction.ExtractJSImports(ctx, content)
+}
+
+func (m *Matcher) ParseConfig(content []byte) *matchers.ConfigInfo {
+	// Playwright always requires explicit imports, no globals mode
+	return &matchers.ConfigInfo{
+		Framework:   frameworkName,
+		GlobalsMode: false,
+	}
+}
+
+func (m *Matcher) Priority() int {
+	return matcherPriority
 }

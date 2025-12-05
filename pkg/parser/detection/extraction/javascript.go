@@ -21,3 +21,13 @@ func ExtractJSImports(_ context.Context, content []byte) []string {
 	}
 	return imports
 }
+
+var commentStripRegex = regexp.MustCompile(`//.*|/\*[\s\S]*?\*/`)
+
+// MatchPatternExcludingComments checks if pattern matches content after stripping comments.
+// Handles both single-line (//) and multi-line (/* */) comments.
+// Limitation: Does not handle comments inside string literals.
+func MatchPatternExcludingComments(content []byte, pattern *regexp.Regexp) bool {
+	noComments := commentStripRegex.ReplaceAll(content, []byte{})
+	return pattern.Match(noComments)
+}
