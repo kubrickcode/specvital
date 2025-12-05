@@ -7,7 +7,7 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httplog/v2 v2.1.1
 	github.com/joho/godotenv v1.5.1
-	github.com/specvital/core v1.0.3
+	github.com/specvital/core v1.1.0
 	golang.org/x/sync v0.18.0
 )
 

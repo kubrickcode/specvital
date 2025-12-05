@@ -16,6 +16,8 @@ github.com/smacker/go-tree-sitter v0.0.0-20240827094217-dd81d9e9be82 h1:6C8qej6f
 github.com/smacker/go-tree-sitter v0.0.0-20240827094217-dd81d9e9be82/go.mod h1:xe4pgH49k4SsmkQq5OT8abwhWmnzkhpgnXeekbx2efw=
 github.com/specvital/core v1.0.3 h1:yBi+SRLCClhy+VFrZ1sxcwCrIYYGq0mVApYlmUyEVHw=
 github.com/specvital/core v1.0.3/go.mod h1:rFjb4mzFAxfF/um7obnUR7nTz04NW5LROyk6njRV+XI=
+github.com/specvital/core v1.1.0 h1:hfBnnmpouiyhpC/idDbdnHzteL/6h8ePzmFzfPTMcY8=
+github.com/specvital/core v1.1.0/go.mod h1:rFjb4mzFAxfF/um7obnUR7nTz04NW5LROyk6njRV+XI=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 golang.org/x/sync v0.18.0 h1:kr88TuHDroi+UVf+0hZnirlk8o8T+4MrK6mr60WkH/I=

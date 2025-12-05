@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/specvital/core/pkg/domain"
+	"github.com/specvital/core/pkg/parser/detection"
+	"github.com/specvital/core/pkg/parser/detection/matchers"
 	"github.com/specvital/core/pkg/parser/strategies"
 	"github.com/specvital/core/pkg/parser/strategies/gotesting"
 	"github.com/specvital/core/pkg/parser/strategies/jest"
@@ -24,7 +26,11 @@ import (
 // ErrRateLimitTooLow indicates GitHub API rate limit is insufficient for analysis.
 var ErrRateLimitTooLow = errors.New("rate limit too low")
 
-var strategiesOnce sync.Once
+var (
+	strategiesOnce    sync.Once
+	detectorOnce      sync.Once
+	frameworkDetector *detection.Detector
+)
 
 // InitializeParserStrategies registers all test file parsing strategies.
 // Must be called once during application startup.
@@ -189,8 +195,23 @@ func (s *Service) parseTestFiles(ctx context.Context, owner, repo string, files 
 	return suites, nil
 }
 
+func getFrameworkDetector() *detection.Detector {
+	detectorOnce.Do(func() {
+		frameworkDetector = detection.NewDetector(matchers.DefaultRegistry(), nil)
+	})
+	return frameworkDetector
+}
+
 func parseWithStrategies(ctx context.Context, registry *strategies.Registry, source []byte, filename string) (*domain.TestFile, error) {
-	strat := registry.FindStrategy(filename, source)
+	// Level 1 & 2: Use hierarchical detection (imports → config)
+	result := getFrameworkDetector().Detect(ctx, filename, source)
+	strat := registry.FindByName(result.Framework)
+
+	// Level 3: Fallback to legacy CanHandle-based detection
+	if strat == nil {
+		strat = registry.FindStrategy(filename, source)
+	}
+
 	if strat == nil {
 		return nil, nil
 	}
