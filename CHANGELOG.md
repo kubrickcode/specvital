@@ -1,5 +1,11 @@
 ## 🎯 Highlights
 
+### 🐛 Bug Fixes
+
+- **detection:** add ProjectContext for source-agnostic framework detection ([708f70aac041918ea7ff41d698fca45e43d6809d](/commit/708f70aac041918ea7ff41d698fca45e43d6809d))
+
+## 🎯 Highlights
+
 ### ✨ Features
 
 - **parser:** add hierarchical test framework detection system ([76558682788612995f762de422d965f4fa2836ad](/commit/76558682788612995f762de422d965f4fa2836ad))
