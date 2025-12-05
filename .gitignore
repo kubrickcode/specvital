@@ -2,6 +2,7 @@
 .pnpm-store
 node_modules
 .next
+next-env.d.ts
 docs/work
 .claude/settings.local.json
 src/backend/tmp
