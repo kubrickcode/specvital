@@ -16,9 +16,11 @@ import (
 type mockMatcher struct {
 	configPatterns []string
 	extractFunc    func(context.Context, []byte) []string
+	globalsMode    bool
 	languages      []domain.Language
 	matchImports   []string
 	name           string
+	priority       int
 }
 
 func (m *mockMatcher) Name() string                 { return m.name }
@@ -32,6 +34,18 @@ func (m *mockMatcher) ExtractImports(ctx context.Context, content []byte) []stri
 		return m.extractFunc(ctx, content)
 	}
 	return nil
+}
+func (m *mockMatcher) ParseConfig(_ []byte) *matchers.ConfigInfo {
+	return &matchers.ConfigInfo{
+		Framework:   m.name,
+		GlobalsMode: m.globalsMode,
+	}
+}
+func (m *mockMatcher) Priority() int {
+	if m.priority == 0 {
+		return matchers.PriorityGeneric
+	}
+	return m.priority
 }
 
 func TestDetector_Detect_Level1_Import(t *testing.T) {
@@ -281,4 +295,216 @@ func TestResult_IsUnknown(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDetector_DetectWithContext_GlobalsMode(t *testing.T) {
+	t.Parallel()
+
+	registry := matchers.NewRegistry()
+	registry.Register(&mockMatcher{
+		name:           "vitest",
+		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
+		matchImports:   []string{"vitest"},
+		configPatterns: []string{"vitest.config.ts"},
+		globalsMode:    true,
+		priority:       200,
+		extractFunc:    extraction.ExtractJSImports,
+	})
+	registry.Register(&mockMatcher{
+		name:           "jest",
+		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
+		matchImports:   []string{"@jest/globals"},
+		configPatterns: []string{"jest.config.js"},
+		globalsMode:    true,
+		priority:       100,
+		extractFunc:    extraction.ExtractJSImports,
+	})
+
+	detector := NewDetector(registry, nil)
+
+	t.Run("vitest globals mode without import", func(t *testing.T) {
+		t.Parallel()
+
+		// Simulate GitHub API environment: no filesystem access, only ProjectContext
+		projectCtx := NewProjectContext()
+		projectCtx.SetConfigContent("vitest.config.ts", &matchers.ConfigInfo{
+			Framework:   "vitest",
+			GlobalsMode: true,
+		})
+
+		// Test file with NO import (globals mode)
+		content := `describe('test', () => { it('works', () => {}) });`
+		result := detector.DetectWithContext(
+			context.Background(),
+			"src/user.test.ts",
+			[]byte(content),
+			projectCtx,
+		)
+
+		if result.Framework != "vitest" {
+			t.Errorf("Framework = %q, want vitest", result.Framework)
+		}
+		if result.Source != SourceProjectContext {
+			t.Errorf("Source = %q, want %q", result.Source, SourceProjectContext)
+		}
+		if result.Confidence != ConfidenceHigh {
+			t.Errorf("Confidence = %v, want %v", result.Confidence, ConfidenceHigh)
+		}
+	})
+
+	t.Run("jest globals mode without import", func(t *testing.T) {
+		t.Parallel()
+
+		projectCtx := NewProjectContext()
+		projectCtx.SetConfigContent("jest.config.js", &matchers.ConfigInfo{
+			Framework:   "jest",
+			GlobalsMode: true,
+		})
+
+		content := `describe('test', () => { it('works', () => {}) });`
+		result := detector.DetectWithContext(
+			context.Background(),
+			"src/user.test.ts",
+			[]byte(content),
+			projectCtx,
+		)
+
+		if result.Framework != "jest" {
+			t.Errorf("Framework = %q, want jest", result.Framework)
+		}
+		if result.Source != SourceProjectContext {
+			t.Errorf("Source = %q, want %q", result.Source, SourceProjectContext)
+		}
+	})
+
+	t.Run("globals disabled falls back to import detection", func(t *testing.T) {
+		t.Parallel()
+
+		projectCtx := NewProjectContext()
+		projectCtx.SetConfigContent("vitest.config.ts", &matchers.ConfigInfo{
+			Framework:   "vitest",
+			GlobalsMode: false, // globals disabled
+		})
+
+		// No import, globals disabled → should be unknown
+		content := `describe('test', () => { it('works', () => {}) });`
+		result := detector.DetectWithContext(
+			context.Background(),
+			"src/user.test.ts",
+			[]byte(content),
+			projectCtx,
+		)
+
+		if result.Framework != "unknown" {
+			t.Errorf("Framework = %q, want unknown (globals disabled)", result.Framework)
+		}
+	})
+
+	t.Run("project context globals mode takes precedence over imports", func(t *testing.T) {
+		t.Parallel()
+
+		projectCtx := NewProjectContext()
+		projectCtx.SetConfigContent("jest.config.js", &matchers.ConfigInfo{
+			Framework:   "jest",
+			GlobalsMode: true,
+		})
+
+		// File has explicit vitest import, but jest globals config should win
+		// because ProjectContext (Level 0) runs before import detection (Level 1)
+		content := `import { describe, it } from 'vitest';`
+		result := detector.DetectWithContext(
+			context.Background(),
+			"src/user.test.ts",
+			[]byte(content),
+			projectCtx,
+		)
+
+		if result.Framework != "jest" {
+			t.Errorf("Framework = %q, want jest (project context with globals takes precedence)", result.Framework)
+		}
+		if result.Source != SourceProjectContext {
+			t.Errorf("Source = %q, want %q", result.Source, SourceProjectContext)
+		}
+	})
+}
+
+func TestDetector_DetectWithContext_Monorepo(t *testing.T) {
+	t.Parallel()
+
+	registry := matchers.NewRegistry()
+	registry.Register(&mockMatcher{
+		name:           "vitest",
+		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
+		matchImports:   []string{"vitest"},
+		configPatterns: []string{"vitest.config.ts"},
+		globalsMode:    true,
+		priority:       200,
+		extractFunc:    extraction.ExtractJSImports,
+	})
+	registry.Register(&mockMatcher{
+		name:           "jest",
+		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
+		matchImports:   []string{"@jest/globals"},
+		configPatterns: []string{"jest.config.js"},
+		globalsMode:    true,
+		priority:       100,
+		extractFunc:    extraction.ExtractJSImports,
+	})
+
+	detector := NewDetector(registry, nil)
+
+	// Monorepo structure:
+	// /
+	// ├── apps/web/vitest.config.ts (globals: true)
+	// ├── apps/web/src/user.test.ts
+	// ├── apps/api/jest.config.js (globals: true)
+	// └── apps/api/src/handler.test.ts
+
+	projectCtx := NewProjectContext()
+	projectCtx.SetConfigContent("apps/web/vitest.config.ts", &matchers.ConfigInfo{
+		Framework:   "vitest",
+		GlobalsMode: true,
+	})
+	projectCtx.SetConfigContent("apps/api/jest.config.js", &matchers.ConfigInfo{
+		Framework:   "jest",
+		GlobalsMode: true,
+	})
+
+	content := `describe('test', () => { it('works', () => {}) });`
+
+	t.Run("web subproject uses vitest", func(t *testing.T) {
+		t.Parallel()
+
+		result := detector.DetectWithContext(
+			context.Background(),
+			"apps/web/src/user.test.ts",
+			[]byte(content),
+			projectCtx,
+		)
+
+		if result.Framework != "vitest" {
+			t.Errorf("Framework = %q, want vitest", result.Framework)
+		}
+		if result.ConfigPath != "apps/web/vitest.config.ts" {
+			t.Errorf("ConfigPath = %q, want apps/web/vitest.config.ts", result.ConfigPath)
+		}
+	})
+
+	t.Run("api subproject uses jest", func(t *testing.T) {
+		t.Parallel()
+
+		result := detector.DetectWithContext(
+			context.Background(),
+			"apps/api/src/handler.test.ts",
+			[]byte(content),
+			projectCtx,
+		)
+
+		if result.Framework != "jest" {
+			t.Errorf("Framework = %q, want jest", result.Framework)
+		}
+		if result.ConfigPath != "apps/api/jest.config.js" {
+			t.Errorf("ConfigPath = %q, want apps/api/jest.config.js", result.ConfigPath)
+		}
+	})
 }

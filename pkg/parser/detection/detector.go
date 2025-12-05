@@ -3,6 +3,8 @@ package detection
 import (
 	"context"
 	"path/filepath"
+	"slices"
+	"sort"
 	"strings"
 
 	"github.com/specvital/core/pkg/domain"
@@ -11,8 +13,8 @@ import (
 )
 
 var langExtMap = map[string]domain.Language{
-	".cts": domain.LanguageTypeScript,
 	".cjs": domain.LanguageJavaScript,
+	".cts": domain.LanguageTypeScript,
 	".go":  domain.LanguageGo,
 	".js":  domain.LanguageJavaScript,
 	".jsx": domain.LanguageJavaScript,
@@ -34,16 +36,41 @@ func NewDetector(matcherRegistry *matchers.Registry, scopeResolver *config.Resol
 	}
 }
 
-// Detect performs hierarchical framework detection.
-// Level 1: Import statements → Level 2: Scope config files → Level 3: Unknown
+// Detect performs hierarchical framework detection (backward compatible).
 func (d *Detector) Detect(ctx context.Context, filePath string, content []byte) Result {
+	return d.DetectWithContext(ctx, filePath, content, nil)
+}
+
+// DetectWithContext performs hierarchical framework detection.
+// Hierarchy: ProjectContext (globals mode) → Import → ScopeConfig → Unknown
+func (d *Detector) DetectWithContext(ctx context.Context, filePath string, content []byte, projectCtx *ProjectContext) Result {
+	if result, ok := d.detectFromProjectContext(filePath, projectCtx); ok {
+		return result
+	}
+
 	if result, ok := d.detectFromImports(ctx, filePath, content); ok {
 		return result
 	}
+
 	if result, ok := d.detectFromScopeConfig(filePath); ok {
 		return result
 	}
+
 	return Unknown()
+}
+
+func (d *Detector) detectFromProjectContext(filePath string, projectCtx *ProjectContext) (Result, bool) {
+	if projectCtx == nil {
+		return Result{}, false
+	}
+
+	configInfo := projectCtx.FindApplicableConfig(filePath)
+	if configInfo == nil || !configInfo.GlobalsMode {
+		return Result{}, false
+	}
+
+	configPath := projectCtx.FindConfigPath(filePath, configInfo.Framework)
+	return FromProjectContext(configInfo.Framework, configPath), true
 }
 
 func (d *Detector) detectFromImports(ctx context.Context, filePath string, content []byte) (Result, bool) {
@@ -57,13 +84,14 @@ func (d *Detector) detectFromImports(ctx context.Context, filePath string, conte
 		return Result{}, false
 	}
 
-	// Extract imports once using the first compatible matcher
-	imports := compatibleMatchers[0].ExtractImports(ctx, content)
+	sorted := sortedByPriority(compatibleMatchers)
+
+	imports := sorted[0].ExtractImports(ctx, content)
 	if len(imports) == 0 {
 		return Result{}, false
 	}
 
-	if matcher := findMatchingMatcher(compatibleMatchers, imports); matcher != nil {
+	if matcher := findMatchingMatcher(sorted, imports); matcher != nil {
 		return FromImport(matcher.Name()), true
 	}
 	return Result{}, false
@@ -74,7 +102,9 @@ func (d *Detector) detectFromScopeConfig(filePath string) (Result, bool) {
 		return Result{}, false
 	}
 
-	for _, matcher := range d.matcherRegistry.All() {
+	sorted := sortedByPriority(d.matcherRegistry.All())
+
+	for _, matcher := range sorted {
 		patterns := matcher.ConfigPatterns()
 		if len(patterns) == 0 {
 			continue
@@ -86,12 +116,21 @@ func (d *Detector) detectFromScopeConfig(filePath string) (Result, bool) {
 	return Result{}, false
 }
 
+func sortedByPriority(matcherList []matchers.Matcher) []matchers.Matcher {
+	sorted := make([]matchers.Matcher, len(matcherList))
+	copy(sorted, matcherList)
+
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Priority() > sorted[j].Priority()
+	})
+
+	return sorted
+}
+
 func findMatchingMatcher(matcherList []matchers.Matcher, imports []string) matchers.Matcher {
 	for _, matcher := range matcherList {
-		for _, importPath := range imports {
-			if matcher.MatchImport(importPath) {
-				return matcher
-			}
+		if slices.ContainsFunc(imports, matcher.MatchImport) {
+			return matcher
 		}
 	}
 	return nil

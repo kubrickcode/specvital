@@ -1,6 +1,10 @@
 package parser
 
-import "time"
+import (
+	"time"
+
+	"github.com/specvital/core/pkg/parser/detection"
+)
 
 // ScanOptions configures the behavior of [Scan].
 type ScanOptions struct {
@@ -10,6 +14,9 @@ type ScanOptions struct {
 	MaxFileSize int64
 	// Patterns specifies glob patterns to match test files (e.g., "**/*.test.ts").
 	Patterns []string
+	// ProjectContext provides project-level metadata for source-agnostic detection.
+	// When set, enables detection without filesystem access (e.g., GitHub API environment).
+	ProjectContext *detection.ProjectContext
 	// Timeout is the maximum duration for the entire scan operation.
 	Timeout time.Duration
 	// Workers is the number of concurrent file parsers.
@@ -66,5 +73,15 @@ func WithWorkers(n int) ScanOption {
 			return
 		}
 		o.Workers = n
+	}
+}
+
+// WithProjectContext returns a [ScanOption] that sets the project context.
+// This enables source-agnostic detection for environments without filesystem access
+// (e.g., GitHub API). The ProjectContext should contain config file paths and
+// their parsed contents.
+func WithProjectContext(ctx *detection.ProjectContext) ScanOption {
+	return func(o *ScanOptions) {
+		o.ProjectContext = ctx
 	}
 }

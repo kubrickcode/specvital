@@ -5,18 +5,19 @@ type Confidence int
 
 const (
 	ConfidenceUnknown Confidence = iota
-	ConfidenceLow                // scope config
-	ConfidenceMedium             // import
-	ConfidenceHigh               // pragma (future)
+	ConfidenceLow                // scope config (config file exists in directory tree)
+	ConfidenceMedium             // import (explicit import statement)
+	ConfidenceHigh               // project context (config parsed with globals mode)
 )
 
 type Source string
 
 const (
-	SourceUnknown     Source = "unknown"
-	SourceImport      Source = "import"
-	SourceScopeConfig Source = "scope_config"
-	SourcePragma      Source = "pragma"
+	SourceUnknown        Source = "unknown"
+	SourceImport         Source = "import"
+	SourceScopeConfig    Source = "scope_config"
+	SourceProjectContext Source = "project_context"
+	SourcePragma         Source = "pragma"
 )
 
 const FrameworkUnknown = "unknown"
@@ -54,5 +55,14 @@ func FromScopeConfig(framework, configPath string) Result {
 		Confidence: ConfidenceLow,
 		Framework:  framework,
 		Source:     SourceScopeConfig,
+	}
+}
+
+func FromProjectContext(framework, configPath string) Result {
+	return Result{
+		ConfigPath: configPath,
+		Confidence: ConfidenceHigh,
+		Framework:  framework,
+		Source:     SourceProjectContext,
 	}
 }
