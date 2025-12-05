@@ -12,6 +12,54 @@
   "files.autoSave": "onFocusChange",
   "quickCommandButtons.buttons": [
     {
+      "color": "#2196F3",
+      "executeAll": false,
+      "name": "$(browser) Web",
+      "shortcut": "w",
+      "group": [
+        {
+          "color": "",
+          "executeAll": true,
+          "name": "All",
+          "shortcut": "a",
+          "group": [
+            {
+              "color": "",
+              "command": "just run backend",
+              "name": "backend",
+              "shortcut": "b",
+              "terminalName": "backend",
+              "useVsCodeApi": false
+            },
+            {
+              "color": "",
+              "command": "just run frontend",
+              "name": "frontend",
+              "shortcut": "f",
+              "terminalName": "frontend",
+              "useVsCodeApi": false
+            }
+          ]
+        },
+        {
+          "color": "",
+          "command": "just run backend",
+          "name": "backend",
+          "shortcut": "b",
+          "terminalName": "backend",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just run frontend",
+          "name": "frontend",
+          "shortcut": "f",
+          "terminalName": "frontend",
+          "useVsCodeApi": false
+        }
+      ]
+    },
+    {
       "color": "green",
       "name": "$(git-branch) Git",
       "shortcut": "g",
@@ -61,6 +109,39 @@
       "name": "$(hubot) Claude",
       "shortcut": "c",
       "terminalName": "Claude Yolo",
+      "useVsCodeApi": false
+    },
+    {
+      "color": "teal",
+      "executeAll": false,
+      "name": "$(wrench) Utils",
+      "shortcut": "u",
+      "group": [
+        {
+          "color": "",
+          "command": "just deps",
+          "name": "deps",
+          "shortcut": "d",
+          "terminalName": "deps",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just lint",
+          "name": "lint",
+          "shortcut": "l",
+          "terminalName": "lint",
+          "useVsCodeApi": false
+        }
+      ]
+    },
+    {
+      "color": "tomato",
+      "command": "just test",
+      "insertOnly": false,
+      "name": "$(beaker) Test",
+      "shortcut": "t",
+      "terminalName": "test",
       "useVsCodeApi": false
     }
   ],
