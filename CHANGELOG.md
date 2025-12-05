@@ -1,5 +1,19 @@
 ## 🎯 Highlights
 
+### ✨ Features
+
+- **parser:** add hierarchical test framework detection system ([76558682788612995f762de422d965f4fa2836ad](/commit/76558682788612995f762de422d965f4fa2836ad))
+
+## 🔧 Maintenance
+
+### 🔨 Chore
+
+- add useful action buttons ([eb2b93b8e163c2e538a025cff0e35abad891a87b](/commit/eb2b93b8e163c2e538a025cff0e35abad891a87b))
+- delete unused file ([d6f220316bd8e66423366f61a153627aa0daa7bd](/commit/d6f220316bd8e66423366f61a153627aa0daa7bd))
+- syncing documents from ai-config-toolkit ([1faaf4364d1782493008d8abbae66283d35861af](/commit/1faaf4364d1782493008d8abbae66283d35861af))
+
+## 🎯 Highlights
+
 ### 🐛 Bug Fixes
 
 - **gotesting:** fix Go test parser incorrectly returning pending status ([14f133635410d9ced0d747d7245238e84f6014c9](/commit/14f133635410d9ced0d747d7245238e84f6014c9))
