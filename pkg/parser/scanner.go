@@ -1,22 +1,22 @@
-// Package parser provides test file scanning and parsing capabilities.
-// It supports multiple test frameworks (Jest, Vitest, Playwright, Go testing)
-// and enables parallel processing for efficient scanning of large codebases.
 package parser
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
+	"log"
 	"os"
+	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/specvital/core/pkg/domain"
 	"github.com/specvital/core/pkg/parser/detection"
-	"github.com/specvital/core/pkg/parser/detection/config"
-	"github.com/specvital/core/pkg/parser/detection/matchers"
-	"github.com/specvital/core/pkg/parser/strategies"
+	"github.com/specvital/core/pkg/parser/framework"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 )
@@ -28,30 +28,62 @@ const (
 	DefaultTimeout = 5 * time.Minute
 	// MaxWorkers is the maximum number of concurrent workers allowed.
 	MaxWorkers = 1024
+	// DefaultMaxFileSize is the default maximum file size for scanning (10MB).
+	DefaultMaxFileSize = 10 * 1024 * 1024
 )
+
+// DefaultSkipPatterns contains directory names that are skipped by default during scanning.
+var DefaultSkipPatterns = []string{
+	"node_modules",
+	".git",
+	"vendor",
+	"dist",
+	".next",
+	"__pycache__",
+	"coverage",
+	".cache",
+}
 
 var (
 	// ErrScanCancelled is returned when scanning is cancelled via context.
 	ErrScanCancelled = errors.New("scanner: scan cancelled")
 	// ErrScanTimeout is returned when scanning exceeds the timeout duration.
 	ErrScanTimeout = errors.New("scanner: scan timeout")
+	// ErrInvalidRootPath is returned when the root path does not exist or is not a directory.
+	ErrInvalidRootPath = errors.New("scanner: root path does not exist or is not accessible")
 )
+
+// Scanner performs framework detection and test file parsing.
+// It integrates framework.Registry and detection.Detector for improved accuracy.
+type Scanner struct {
+	registry     *framework.Registry
+	detector     *detection.Detector
+	projectScope *framework.AggregatedProjectScope
+	options      *ScanOptions
+}
 
 // ScanResult contains the outcome of a scan operation.
 type ScanResult struct {
-	// Errors contains non-fatal errors encountered during scanning.
-	Errors []ScanError
 	// Inventory contains all parsed test files.
 	Inventory *domain.Inventory
+
+	// Errors contains non-fatal errors encountered during scanning.
+	Errors []ScanError
+
+	// Stats provides scan statistics including confidence distribution.
+	Stats ScanStats
 }
 
 // ScanError represents an error that occurred during a specific phase of scanning.
 type ScanError struct {
 	// Err is the underlying error.
 	Err error
+
 	// Path is the file path where the error occurred (may be empty for non-file errors).
 	Path string
-	// Phase indicates which phase the error occurred in ("detection" or "parsing").
+
+	// Phase indicates which phase the error occurred in.
+	// Values: "discovery", "config-parse", "detection", "parsing"
 	Phase string
 }
 
@@ -63,24 +95,362 @@ func (e ScanError) Error() string {
 	return fmt.Sprintf("[%s] %s: %v", e.Phase, e.Path, e.Err)
 }
 
-// Scan scans the given directory for test files and parses them.
-// It uses parallel processing with configurable worker count and timeout.
-// The function continues even when individual files fail to parse,
-// collecting errors in [ScanResult.Errors].
-func Scan(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult, error) {
-	options := &ScanOptions{
-		ExcludePatterns: nil,
-		MaxFileSize:     DefaultMaxFileSize,
-		Patterns:        nil,
-		Timeout:         DefaultTimeout,
-		Workers:         DefaultWorkers,
-	}
+// ScanStats provides statistics about the scan operation.
+type ScanStats struct {
+	// FilesScanned is the total number of test file candidates discovered.
+	FilesScanned int
 
+	// FilesMatched is the number of files that were successfully parsed.
+	FilesMatched int
+
+	// FilesFailed is the number of files that failed to parse.
+	FilesFailed int
+
+	// FilesSkipped is the number of files skipped due to low confidence or other reasons.
+	FilesSkipped int
+
+	// ConfidenceDist tracks detection confidence distribution.
+	// Keys: "definite", "moderate", "weak", "unknown"
+	ConfidenceDist map[string]int
+
+	// ConfigsFound is the number of config files discovered and parsed.
+	ConfigsFound int
+
+	// Duration is the total scan duration.
+	Duration time.Duration
+}
+
+// NewScanner creates a new scanner with the given options.
+func NewScanner(opts ...ScanOption) *Scanner {
+	options := &ScanOptions{}
 	for _, opt := range opts {
 		opt(options)
 	}
+	applyDefaults(options)
 
-	workers := options.Workers
+	detector := detection.NewDetector(options.Registry)
+
+	return &Scanner{
+		registry:     options.Registry,
+		detector:     detector,
+		projectScope: nil,
+		options:      options,
+	}
+}
+
+// SetProjectScope sets pre-parsed config information for remote sources.
+// This is useful when scanning from sources without filesystem access (e.g., GitHub API).
+func (s *Scanner) SetProjectScope(scope *framework.AggregatedProjectScope) {
+	s.projectScope = scope
+	s.detector.SetProjectScope(scope)
+}
+
+// Scan performs the complete scanning process:
+//  1. Discover and parse config files
+//  2. Build project scope
+//  3. Discover test files
+//  4. Detect framework for each file
+//  5. Parse test files in parallel
+func (s *Scanner) Scan(ctx context.Context, rootPath string) (*ScanResult, error) {
+	startTime := time.Now()
+
+	rootInfo, err := os.Stat(rootPath)
+	if err != nil {
+		return nil, ErrInvalidRootPath
+	}
+	if !rootInfo.IsDir() {
+		return nil, ErrInvalidRootPath
+	}
+
+	// Set up timeout
+	ctx, cancel := context.WithTimeout(ctx, s.options.Timeout)
+	defer cancel()
+
+	result := &ScanResult{
+		Inventory: &domain.Inventory{
+			RootPath: rootPath,
+			Files:    []domain.TestFile{},
+		},
+		Errors: []ScanError{},
+		Stats: ScanStats{
+			ConfidenceDist: make(map[string]int),
+		},
+	}
+
+	if s.projectScope == nil {
+		configFiles := s.discoverConfigFiles(ctx, rootPath)
+		s.projectScope = s.parseConfigFiles(ctx, configFiles, &result.Errors)
+		s.detector.SetProjectScope(s.projectScope)
+		result.Stats.ConfigsFound = len(s.projectScope.Configs)
+	}
+
+	testFiles, errs := s.discoverTestFiles(ctx, rootPath)
+	for _, err := range errs {
+		result.Errors = append(result.Errors, ScanError{
+			Err:   err,
+			Phase: "discovery",
+		})
+	}
+	result.Stats.FilesScanned = len(testFiles)
+
+	if len(testFiles) == 0 {
+		result.Stats.Duration = time.Since(startTime)
+		return result, nil
+	}
+
+	files, scanErrors := s.parseFilesParallel(ctx, testFiles, result)
+	result.Inventory.Files = files
+	result.Errors = append(result.Errors, scanErrors...)
+
+	result.Stats.FilesMatched = len(files)
+	result.Stats.FilesFailed = len(scanErrors)
+	result.Stats.FilesSkipped = result.Stats.FilesScanned - result.Stats.FilesMatched - result.Stats.FilesFailed
+	result.Stats.Duration = time.Since(startTime)
+
+	// Check for timeout or cancellation
+	if err := ctx.Err(); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return result, ErrScanTimeout
+		}
+		if errors.Is(err, context.Canceled) {
+			return result, ErrScanCancelled
+		}
+	}
+
+	return result, nil
+}
+
+// ScanFiles scans specific files (for incremental/watch mode).
+// This bypasses file discovery and directly scans the provided file paths.
+func (s *Scanner) ScanFiles(ctx context.Context, files []string) (*ScanResult, error) {
+	startTime := time.Now()
+
+	ctx, cancel := context.WithTimeout(ctx, s.options.Timeout)
+	defer cancel()
+
+	result := &ScanResult{
+		Inventory: &domain.Inventory{
+			RootPath: "",
+			Files:    []domain.TestFile{},
+		},
+		Errors: []ScanError{},
+		Stats: ScanStats{
+			FilesScanned:   len(files),
+			ConfidenceDist: make(map[string]int),
+		},
+	}
+
+	if len(files) == 0 {
+		result.Stats.Duration = time.Since(startTime)
+		return result, nil
+	}
+
+	parsedFiles, scanErrors := s.parseFilesParallel(ctx, files, result)
+	result.Inventory.Files = parsedFiles
+	result.Errors = append(result.Errors, scanErrors...)
+
+	result.Stats.FilesMatched = len(parsedFiles)
+	result.Stats.FilesFailed = len(scanErrors)
+	result.Stats.FilesSkipped = result.Stats.FilesScanned - result.Stats.FilesMatched - result.Stats.FilesFailed
+	result.Stats.Duration = time.Since(startTime)
+
+	if err := ctx.Err(); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return result, ErrScanTimeout
+		}
+		if errors.Is(err, context.Canceled) {
+			return result, ErrScanCancelled
+		}
+	}
+
+	return result, nil
+}
+
+func (s *Scanner) discoverConfigFiles(ctx context.Context, rootPath string) []string {
+	patterns := []string{
+		"jest.config.js",
+		"jest.config.ts",
+		"jest.config.mjs",
+		"jest.config.cjs",
+		"jest.config.json",
+		"vitest.config.js",
+		"vitest.config.ts",
+		"vitest.config.mjs",
+		"vitest.config.cjs",
+		"playwright.config.js",
+		"playwright.config.ts",
+	}
+
+	skipSet := buildSkipSet(s.options.ExcludePatterns)
+	var configFiles []string
+
+	_ = filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, walkErr error) error {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
+		if walkErr != nil {
+			return nil
+		}
+
+		if d.IsDir() {
+			if shouldSkipDir(path, rootPath, skipSet) {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		filename := filepath.Base(path)
+		for _, pattern := range patterns {
+			if filename == pattern {
+				configFiles = append(configFiles, path)
+				break
+			}
+		}
+
+		return nil
+	})
+
+	return configFiles
+}
+
+func (s *Scanner) parseConfigFiles(ctx context.Context, files []string, errors *[]ScanError) *framework.AggregatedProjectScope {
+	scope := framework.NewProjectScope()
+
+	for _, file := range files {
+		if ctx.Err() != nil {
+			break
+		}
+
+		content, err := os.ReadFile(file)
+		if err != nil {
+			*errors = append(*errors, ScanError{
+				Err:   err,
+				Path:  file,
+				Phase: "config-parse",
+			})
+			continue
+		}
+
+		filename := filepath.Base(file)
+		parsed := false
+
+		for _, def := range s.registry.All() {
+			if def.ConfigParser == nil {
+				continue
+			}
+
+			signal := framework.Signal{
+				Type:  framework.SignalConfigFile,
+				Value: filename,
+			}
+
+			matched := false
+			for _, matcher := range def.Matchers {
+				result := matcher.Match(ctx, signal)
+				if result.Confidence > 0 {
+					matched = true
+					break
+				}
+			}
+
+			if matched {
+				configScope, err := def.ConfigParser.Parse(ctx, file, content)
+				if err != nil {
+					*errors = append(*errors, ScanError{
+						Err:   err,
+						Path:  file,
+						Phase: "config-parse",
+					})
+				} else {
+					scope.AddConfig(file, configScope)
+					parsed = true
+				}
+				break
+			}
+		}
+
+		if !parsed {
+			*errors = append(*errors, ScanError{
+				Err:   fmt.Errorf("no matching framework config parser"),
+				Path:  file,
+				Phase: "config-parse",
+			})
+		}
+	}
+
+	return scope
+}
+
+func (s *Scanner) discoverTestFiles(ctx context.Context, rootPath string) ([]string, []error) {
+	skipSet := buildSkipSet(append(DefaultSkipPatterns, s.options.ExcludePatterns...))
+
+	var (
+		files []string
+		errs  []error
+		mu    sync.Mutex
+	)
+
+	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, walkErr error) error {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
+		if walkErr != nil {
+			mu.Lock()
+			errs = append(errs, fmt.Errorf("access error at %s: %w", path, walkErr))
+			mu.Unlock()
+			return nil
+		}
+
+		if d.IsDir() {
+			if shouldSkipDir(path, rootPath, skipSet) {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		if !isTestFileCandidate(path) {
+			return nil
+		}
+
+		if len(s.options.Patterns) > 0 {
+			if !matchesAnyPattern(path, rootPath, s.options.Patterns) {
+				return nil
+			}
+		}
+
+		if s.options.MaxFileSize > 0 {
+			info, err := d.Info()
+			if err != nil {
+				mu.Lock()
+				errs = append(errs, fmt.Errorf("failed to get file info for %s: %w", path, err))
+				mu.Unlock()
+				return nil
+			}
+			if info.Size() > s.options.MaxFileSize {
+				return nil
+			}
+		}
+
+		mu.Lock()
+		files = append(files, path)
+		mu.Unlock()
+
+		return nil
+	})
+
+	if err != nil {
+		if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+			errs = append(errs, err)
+		}
+	}
+
+	return files, errs
+}
+
+func (s *Scanner) parseFilesParallel(ctx context.Context, files []string, result *ScanResult) ([]domain.TestFile, []ScanError) {
+	workers := s.options.Workers
 	if workers <= 0 {
 		workers = runtime.GOMAXPROCS(0)
 	}
@@ -88,157 +458,187 @@ func Scan(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult
 		workers = MaxWorkers
 	}
 
-	timeout := options.Timeout
-	if timeout <= 0 {
-		timeout = DefaultTimeout
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	detectorOpts := buildDetectorOpts(options)
-	detectionResult, err := DetectTestFiles(ctx, rootPath, detectorOpts...)
-	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			return nil, ErrScanTimeout
-		}
-		if errors.Is(err, context.Canceled) {
-			return nil, ErrScanCancelled
-		}
-		return nil, fmt.Errorf("scanner: detection failed: %w", err)
-	}
-
-	scanResult := &ScanResult{
-		Errors: make([]ScanError, 0),
-		Inventory: &domain.Inventory{
-			Files:    make([]domain.TestFile, 0),
-			RootPath: rootPath,
-		},
-	}
-
-	for _, detErr := range detectionResult.Errors {
-		scanResult.Errors = append(scanResult.Errors, ScanError{
-			Err:   detErr,
-			Path:  "",
-			Phase: "detection",
-		})
-	}
-
-	if len(detectionResult.Files) == 0 {
-		return scanResult, nil
-	}
-
-	files, errs := parseFilesParallel(ctx, detectionResult.Files, workers, options.ProjectContext)
-
-	scanResult.Inventory.Files = files
-	scanResult.Errors = append(scanResult.Errors, errs...)
-
-	return scanResult, nil
-}
-
-func buildDetectorOpts(options *ScanOptions) []DetectorOption {
-	var detectorOpts []DetectorOption
-
-	if len(options.ExcludePatterns) > 0 {
-		merged := make([]string, 0, len(DefaultSkipPatterns)+len(options.ExcludePatterns))
-		merged = append(merged, DefaultSkipPatterns...)
-		merged = append(merged, options.ExcludePatterns...)
-		detectorOpts = append(detectorOpts, WithSkipPatterns(merged))
-	}
-
-	if len(options.Patterns) > 0 {
-		detectorOpts = append(detectorOpts, WithPatterns(options.Patterns))
-	}
-
-	if options.MaxFileSize > 0 {
-		detectorOpts = append(detectorOpts, WithMaxFileSize(options.MaxFileSize))
-	}
-
-	return detectorOpts
-}
-
-func parseFilesParallel(ctx context.Context, files []string, workers int, projectCtx *detection.ProjectContext) ([]domain.TestFile, []ScanError) {
 	sem := semaphore.NewWeighted(int64(workers))
 	g, gCtx := errgroup.WithContext(ctx)
 
 	var (
 		mu         sync.Mutex
-		results    = make([]domain.TestFile, 0, len(files))
+		testFiles  = make([]domain.TestFile, 0, len(files))
 		scanErrors = make([]ScanError, 0)
 	)
 
 	for _, file := range files {
+		file := file // Capture loop variable
+
 		g.Go(func() error {
 			if err := sem.Acquire(gCtx, 1); err != nil {
-				return nil // Context cancelled
+				return nil
 			}
 			defer sem.Release(1)
 
-			testFile, err := parseFile(gCtx, file, projectCtx)
+			testFile, scanErr, confidence := s.parseFile(gCtx, file)
 
 			mu.Lock()
 			defer mu.Unlock()
 
-			if err != nil {
-				scanErrors = append(scanErrors, ScanError{
-					Err:   err,
-					Path:  file,
-					Phase: "parsing",
-				})
-				return nil // Continue with other files
+			if confidence != "" {
+				result.Stats.ConfidenceDist[confidence]++
+			}
+
+			if scanErr != nil {
+				scanErrors = append(scanErrors, *scanErr)
+				return nil
 			}
 
 			if testFile != nil {
-				results = append(results, *testFile)
+				testFiles = append(testFiles, *testFile)
 			}
 
 			return nil
 		})
 	}
 
-	_ = g.Wait() // Errors are collected in scanErrors
+	_ = g.Wait()
 
-	return results, scanErrors
+	return testFiles, scanErrors
 }
 
-var (
-	frameworkDetector *detection.Detector
-	detectorOnce      sync.Once
-)
-
-const resolverMaxDepth = 10
-
-func getFrameworkDetector() *detection.Detector {
-	detectorOnce.Do(func() {
-		cache := config.NewCache()
-		resolver := config.NewResolver(cache, resolverMaxDepth)
-		frameworkDetector = detection.NewDetector(matchers.DefaultRegistry(), resolver)
-	})
-	return frameworkDetector
-}
-
-func parseFile(ctx context.Context, path string, projectCtx *detection.ProjectContext) (*domain.TestFile, error) {
+func (s *Scanner) parseFile(ctx context.Context, path string) (*domain.TestFile, *ScanError, string) {
 	if err := ctx.Err(); err != nil {
-		return nil, err
+		return nil, &ScanError{
+			Err:   err,
+			Path:  path,
+			Phase: "parsing",
+		}, ""
 	}
 
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("read file %s: %w", path, err)
+		return nil, &ScanError{
+			Err:   fmt.Errorf("read file: %w", err),
+			Path:  path,
+			Phase: "parsing",
+		}, ""
 	}
 
-	result := getFrameworkDetector().DetectWithContext(ctx, path, content, projectCtx)
-	strategy := strategies.FindStrategyByName(result.Framework)
-	if strategy == nil {
-		strategy = strategies.FindStrategy(path, content)
-	}
-	if strategy == nil {
-		return nil, nil
+	detectionResult := s.detector.Detect(ctx, path, content)
+	confidenceLevel := detectionResult.ConfidenceLevel()
+
+	if detectionResult.Confidence < s.options.MinConfidence {
+		if s.options.LogLowConfidence && detectionResult.Framework != "" {
+			log.Printf("[scanner] Low confidence detection for %s: %s (%d%%, threshold: %d%%)",
+				path, detectionResult.Framework, detectionResult.Confidence, s.options.MinConfidence)
+		}
+		return nil, nil, confidenceLevel
 	}
 
-	testFile, err := strategy.Parse(ctx, content, path)
+	if detectionResult.Framework == "" {
+		return nil, nil, "unknown"
+	}
+
+	def := s.registry.Find(detectionResult.Framework)
+	if def == nil || def.Parser == nil {
+		return nil, &ScanError{
+			Err:   fmt.Errorf("no parser for framework %s", detectionResult.Framework),
+			Path:  path,
+			Phase: "detection",
+		}, confidenceLevel
+	}
+
+	if s.options.LogLowConfidence && !detectionResult.IsDefinite() && !detectionResult.IsModerate() {
+		log.Printf("[scanner] Weak confidence detection for %s: %s (%d%%)",
+			path, detectionResult.Framework, detectionResult.Confidence)
+	}
+
+	testFile, err := def.Parser.Parse(ctx, content, path)
 	if err != nil {
-		return nil, fmt.Errorf("parse %s: %w", path, err)
+		return nil, &ScanError{
+			Err:   fmt.Errorf("parse: %w", err),
+			Path:  path,
+			Phase: "parsing",
+		}, confidenceLevel
 	}
-	return testFile, nil
+
+	return testFile, nil, confidenceLevel
+}
+
+func buildSkipSet(patterns []string) map[string]bool {
+	skipSet := make(map[string]bool, len(patterns))
+	for _, p := range patterns {
+		skipSet[p] = true
+	}
+	return skipSet
+}
+
+func shouldSkipDir(path, rootPath string, skipSet map[string]bool) bool {
+	if path == rootPath {
+		return false
+	}
+
+	base := filepath.Base(path)
+	return skipSet[base]
+}
+
+func isTestFileCandidate(path string) bool {
+	ext := strings.ToLower(filepath.Ext(path))
+
+	switch ext {
+	case ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs":
+		return isJSTestFile(path)
+	case ".go":
+		return isGoTestFile(path)
+	default:
+		return false
+	}
+}
+
+func isGoTestFile(path string) bool {
+	base := filepath.Base(path)
+	return strings.HasSuffix(base, "_test.go")
+}
+
+func isJSTestFile(path string) bool {
+	base := filepath.Base(path)
+	lowerBase := strings.ToLower(base)
+
+	if strings.Contains(lowerBase, ".test.") || strings.Contains(lowerBase, ".spec.") {
+		return true
+	}
+
+	normalizedPath := filepath.ToSlash(path)
+	if strings.Contains(normalizedPath, "/__tests__/") || strings.HasPrefix(normalizedPath, "__tests__/") {
+		return true
+	}
+
+	return false
+}
+
+func matchesAnyPattern(path, rootPath string, patterns []string) bool {
+	relPath, err := filepath.Rel(rootPath, path)
+	if err != nil {
+		return false
+	}
+	relPath = filepath.ToSlash(relPath)
+
+	for _, pattern := range patterns {
+		matched, err := doublestar.Match(pattern, relPath)
+		if err != nil {
+			continue
+		}
+		if matched {
+			return true
+		}
+	}
+	return false
+}
+
+func Scan(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult, error) {
+	scanner := NewScanner(opts...)
+	return scanner.Scan(ctx, rootPath)
+}
+
+func DetectTestFiles(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult, error) {
+	allOpts := append(opts, WithMinConfidence(0))
+	scanner := NewScanner(allOpts...)
+	return scanner.Scan(ctx, rootPath)
 }

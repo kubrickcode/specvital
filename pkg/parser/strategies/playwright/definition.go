@@ -3,71 +3,58 @@ package playwright
 import (
 	"context"
 	"fmt"
-	"path/filepath"
-	"regexp"
 
 	sitter "github.com/smacker/go-tree-sitter"
 
 	"github.com/specvital/core/pkg/domain"
 	"github.com/specvital/core/pkg/parser"
-	"github.com/specvital/core/pkg/parser/strategies"
+	"github.com/specvital/core/pkg/parser/framework"
+	"github.com/specvital/core/pkg/parser/framework/matchers"
 	"github.com/specvital/core/pkg/parser/strategies/shared/jstest"
 )
 
 const (
-	frameworkName = "playwright"
-
-	// Function names for Playwright test API
+	frameworkName    = "playwright"
 	funcTest         = "test"
 	funcTestDescribe = "test.describe"
-
-	// Playwright-specific modifier
-	modifierFixme = "fixme"
+	modifierFixme    = "fixme"
 )
 
-// playwrightImportPattern matches import/require statements for '@playwright/test'.
-// Limitations:
-// - Does not match dynamic imports: import('@playwright/test')
-// - Does not match re-exports: export { test } from '@playwright/test'
-var playwrightImportPattern = regexp.MustCompile(`(?:import\s+.*\s+from|require\()\s*['"]@playwright/test['"]`)
-
-type Strategy struct{}
-
-func NewStrategy() *Strategy {
-	return &Strategy{}
+func init() {
+	framework.Register(NewDefinition())
 }
 
-func RegisterDefault() {
-	strategies.Register(NewStrategy())
-}
-
-func (s *Strategy) Name() string {
-	return frameworkName
-}
-
-func (s *Strategy) Priority() int {
-	return strategies.DefaultPriority
-}
-
-func (s *Strategy) Languages() []domain.Language {
-	return []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript}
-}
-
-func (s *Strategy) CanHandle(filename string, content []byte) bool {
-	// Playwright E2E tests: only .ts and .js files
-	ext := filepath.Ext(filename)
-	if ext != ".ts" && ext != ".js" {
-		return false
+func NewDefinition() *framework.Definition {
+	return &framework.Definition{
+		Name:      frameworkName,
+		Languages: []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
+		Matchers: []framework.Matcher{
+			matchers.NewImportMatcher("@playwright/test", "@playwright/test/"),
+			matchers.NewConfigMatcher(
+				"playwright.config.js",
+				"playwright.config.ts",
+				"playwright.config.mjs",
+				"playwright.config.mts",
+			),
+		},
+		ConfigParser: &PlaywrightConfigParser{},
+		Parser:       &PlaywrightParser{},
+		Priority:     framework.PriorityE2E,
 	}
-
-	if !jstest.IsTestFile(filename) {
-		return false
-	}
-
-	return hasPlaywrightImport(content)
 }
 
-func (s *Strategy) Parse(ctx context.Context, source []byte, filename string) (*domain.TestFile, error) {
+type PlaywrightConfigParser struct{}
+
+func (p *PlaywrightConfigParser) Parse(ctx context.Context, configPath string, content []byte) (*framework.ConfigScope, error) {
+	scope := framework.NewConfigScope(configPath, "")
+	scope.Framework = frameworkName
+	scope.GlobalsMode = false // Playwright always requires explicit imports
+	return scope, nil
+}
+
+type PlaywrightParser struct{}
+
+func (p *PlaywrightParser) Parse(ctx context.Context, source []byte, filename string) (*domain.TestFile, error) {
 	lang := jstest.DetectLanguage(filename)
 
 	tree, err := parser.ParseWithPool(ctx, lang, source)
@@ -86,12 +73,6 @@ func (s *Strategy) Parse(ctx context.Context, source []byte, filename string) (*
 	parseNode(root, source, filename, testFile, nil)
 
 	return testFile, nil
-}
-
-// Helper functions (alphabetically ordered)
-
-func hasPlaywrightImport(content []byte) bool {
-	return playwrightImportPattern.Match(content)
 }
 
 func parseFunctionName(node *sitter.Node, source []byte) (string, domain.TestStatus) {

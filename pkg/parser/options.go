@@ -4,84 +4,148 @@ import (
 	"time"
 
 	"github.com/specvital/core/pkg/parser/detection"
+	"github.com/specvital/core/pkg/parser/framework"
 )
 
-// ScanOptions configures the behavior of [Scan].
+// ScanOptions configures scanner behavior.
 type ScanOptions struct {
-	// ExcludePatterns specifies directory names to skip during scanning.
-	ExcludePatterns []string
-	// MaxFileSize is the maximum file size in bytes to process.
-	MaxFileSize int64
-	// Patterns specifies glob patterns to match test files (e.g., "**/*.test.ts").
-	Patterns []string
-	// ProjectContext provides project-level metadata for source-agnostic detection.
-	// When set, enables detection without filesystem access (e.g., GitHub API environment).
-	ProjectContext *detection.ProjectContext
-	// Timeout is the maximum duration for the entire scan operation.
-	Timeout time.Duration
-	// Workers is the number of concurrent file parsers.
+	// Workers specifies the number of concurrent file parsers.
+	// Zero or negative values use runtime.GOMAXPROCS(0).
 	Workers int
+
+	// Timeout is the maximum duration for the entire scan operation.
+	// Zero or negative values use DefaultTimeout.
+	Timeout time.Duration
+
+	// ExcludePatterns specifies directory names to skip during file discovery.
+	// These are combined with DefaultSkipPatterns.
+	ExcludePatterns []string
+
+	// MaxFileSize is the maximum file size in bytes to process.
+	// Files larger than this are skipped.
+	MaxFileSize int64
+
+	// Patterns specifies glob patterns to filter test files.
+	// Empty means all test file candidates are processed.
+	Patterns []string
+
+	// Registry is the framework registry to use for detection.
+	// If nil, uses framework.DefaultRegistry().
+	Registry *framework.Registry
+
+	// MinConfidence is the minimum detection confidence required to parse a file.
+	// Files with lower confidence are skipped.
+	// Valid values: 0-100. Default: ConfidenceModerate (31).
+	MinConfidence int
+
+	// LogLowConfidence enables logging of low-confidence detections.
+	// Useful for debugging detection issues.
+	LogLowConfidence bool
 }
 
-// ScanOption is a functional option for configuring [Scan].
+// ScanOption is a functional option for configuring Scanner.
 type ScanOption func(*ScanOptions)
 
-// WithExclude returns a [ScanOption] that adds directory patterns to skip.
-// These patterns are matched against directory base names.
-func WithExclude(patterns []string) ScanOption {
+// WithWorkers sets the number of concurrent file parsers.
+// Negative values are ignored.
+func WithWorkers(n int) ScanOption {
+	return func(o *ScanOptions) {
+		if n >= 0 {
+			o.Workers = n
+		}
+	}
+}
+
+// WithTimeout sets the scan timeout duration.
+// Negative values are ignored.
+func WithTimeout(d time.Duration) ScanOption {
+	return func(o *ScanOptions) {
+		if d >= 0 {
+			o.Timeout = d
+		}
+	}
+}
+
+// WithExcludePatterns adds directory patterns to skip during file discovery.
+func WithExcludePatterns(patterns []string) ScanOption {
 	return func(o *ScanOptions) {
 		o.ExcludePatterns = patterns
 	}
 }
 
-// WithScanMaxFileSize returns a [ScanOption] that sets the maximum file size.
-// Files larger than this size are skipped. Negative values are ignored.
-func WithScanMaxFileSize(size int64) ScanOption {
+// WithMaxFileSize sets the maximum file size to process.
+func WithMaxFileSize(size int64) ScanOption {
 	return func(o *ScanOptions) {
-		if size < 0 {
-			return
-		}
 		o.MaxFileSize = size
 	}
 }
 
-// WithScanPatterns returns a [ScanOption] that filters files by glob patterns.
-// Only files matching at least one pattern are processed.
-// Uses doublestar syntax (e.g., "**/*.test.ts", "src/**/*.spec.js").
-func WithScanPatterns(patterns []string) ScanOption {
+// WithPatterns sets glob patterns to filter test files.
+func WithPatterns(patterns []string) ScanOption {
 	return func(o *ScanOptions) {
 		o.Patterns = patterns
 	}
 }
 
-// WithTimeout returns a [ScanOption] that sets the scan timeout.
-// Negative values are ignored.
-func WithTimeout(d time.Duration) ScanOption {
+// WithRegistry sets the framework registry to use.
+func WithRegistry(registry *framework.Registry) ScanOption {
 	return func(o *ScanOptions) {
-		if d < 0 {
-			return
-		}
-		o.Timeout = d
+		o.Registry = registry
 	}
 }
 
-// WithWorkers returns a [ScanOption] that sets the number of parallel workers.
-// Zero uses GOMAXPROCS, negative values are ignored.
-func WithWorkers(n int) ScanOption {
+// WithMinConfidence sets the minimum detection confidence threshold.
+func WithMinConfidence(confidence int) ScanOption {
 	return func(o *ScanOptions) {
-		if n < 0 {
-			return
+		if confidence < 0 {
+			confidence = 0
 		}
-		o.Workers = n
+		if confidence > 100 {
+			confidence = 100
+		}
+		o.MinConfidence = confidence
 	}
 }
 
-// WithProjectContext returns a [ScanOption] that sets the project context.
-// This enables source-agnostic detection for environments without filesystem access
-// (e.g., GitHub API). The ProjectContext should contain config file paths and
-// their parsed contents.
-func WithProjectContext(ctx *detection.ProjectContext) ScanOption {
+// WithLogLowConfidence enables logging of low-confidence detections.
+func WithLogLowConfidence(enabled bool) ScanOption {
 	return func(o *ScanOptions) {
-		o.ProjectContext = ctx
+		o.LogLowConfidence = enabled
+	}
+}
+
+func applyDefaults(opts *ScanOptions) {
+	if opts.Timeout <= 0 {
+		opts.Timeout = DefaultTimeout
+	}
+	if opts.MaxFileSize <= 0 {
+		opts.MaxFileSize = DefaultMaxFileSize
+	}
+	if opts.Registry == nil {
+		opts.Registry = framework.DefaultRegistry()
+	}
+	if opts.MinConfidence == 0 {
+		opts.MinConfidence = detection.ConfidenceModerate
+	}
+}
+
+// Backward compatibility aliases
+
+// WithExclude is an alias for WithExcludePatterns.
+func WithExclude(patterns []string) ScanOption {
+	return WithExcludePatterns(patterns)
+}
+
+// WithScanPatterns is an alias for WithPatterns.
+func WithScanPatterns(patterns []string) ScanOption {
+	return WithPatterns(patterns)
+}
+
+// WithScanMaxFileSize is an alias for WithMaxFileSize.
+func WithScanMaxFileSize(size int64) ScanOption {
+	return func(o *ScanOptions) {
+		if size >= 0 {
+			o.MaxFileSize = size
+		}
 	}
 }

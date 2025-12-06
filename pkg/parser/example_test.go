@@ -64,9 +64,9 @@ func ExampleDetectTestFiles() {
 		return
 	}
 
-	fmt.Printf("Found %d test files:\n", len(result.Files))
-	for _, path := range result.Files {
-		fmt.Printf("  - %s\n", path)
+	fmt.Printf("Found %d test files:\n", len(result.Inventory.Files))
+	for _, file := range result.Inventory.Files {
+		fmt.Printf("  - %s\n", file.Path)
 	}
 }
 
@@ -83,7 +83,7 @@ func ExampleDetectTestFiles_withPatterns() {
 		return
 	}
 
-	fmt.Printf("Found %d matching test files\n", len(result.Files))
+	fmt.Printf("Found %d matching test files\n", len(result.Inventory.Files))
 }
 
 func ExampleScan_testInventory() {

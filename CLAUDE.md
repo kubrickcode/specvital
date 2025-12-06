@@ -72,25 +72,39 @@ pkg/
 ├── domain/           # Domain models (Inventory, TestFile, TestSuite, Test)
 └── parser/
     ├── scanner.go    # Entry point: Scan(), DetectTestFiles()
-    ├── detector.go   # Test file detection
-    ├── treesitter.go # Tree-sitter parser pooling/caching
-    └── strategies/   # Framework-specific parsers (Strategy pattern)
-        ├── registry.go       # Global registry
-        ├── jest/             # Jest parser
-        ├── vitest/           # Vitest parser
-        ├── playwright/       # Playwright parser
-        ├── gotesting/        # Go testing parser
-        └── shared/jstest/    # Shared JS test logic
+    ├── framework/    # Unified framework definition system
+    │   ├── definition.go  # Definition type (Matcher + ConfigParser + Parser)
+    │   ├── registry.go    # Single registry for all frameworks
+    │   ├── scope.go       # ConfigScope with root resolution
+    │   └── matchers/      # Reusable matchers (import, config, content)
+    ├── detection/    # Confidence-based framework detection
+    │   ├── detector.go    # Multi-stage detection (Scope→Import→Content→Filename)
+    │   └── result.go      # Detection result with evidence
+    ├── strategies/   # Framework-specific implementations
+    │   ├── jest/definition.go
+    │   ├── vitest/definition.go
+    │   ├── playwright/definition.go
+    │   ├── gotesting/definition.go
+    │   └── shared/jstest/  # Shared JS test parsing
+    └── tspool/       # Tree-sitter parser pooling
 ```
 
-### Strategy Pattern
+### Unified Framework Definition
 
-- Each framework implements `strategies.Strategy` interface
-- Auto-registered via `strategies.Register()` in `init()`
+- Each framework provides single `framework.Definition` (Matchers + ConfigParser + Parser)
+- Auto-registered via `framework.Register()` in `init()`
 - Blank import required: `_ "github.com/specvital/core/pkg/parser/strategies/jest"`
+
+### Confidence-Based Detection
+
+Detection uses 4-stage scoring:
+
+- **Scope (80pts)**: File within config scope (with root resolution)
+- **Import (60pts)**: Explicit framework imports
+- **Content (40pts)**: Framework-specific patterns (jest.fn, etc.)
+- **Filename (20pts)**: File naming patterns
 
 ### Concurrency Model
 
 - `scanner.go`: Parallel parsing with errgroup + semaphore
-- `parser_pool.go`: Tree-sitter parser reuse via sync.Pool
-- `treesitter.go`: Query compilation caching
+- `tspool/`: Tree-sitter parser reuse via sync.Pool

@@ -3,7 +3,6 @@ package gotesting
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode"
@@ -12,56 +11,60 @@ import (
 
 	"github.com/specvital/core/pkg/domain"
 	"github.com/specvital/core/pkg/parser"
-	"github.com/specvital/core/pkg/parser/strategies"
+	"github.com/specvital/core/pkg/parser/framework"
+	"github.com/specvital/core/pkg/parser/framework/matchers"
 )
 
 const (
-	frameworkName = "go-testing"
-
-	// AST node types
-	nodeCallExpression       = "call_expression"
-	nodeFunctionDeclaration  = "function_declaration"
-	nodeParameterDeclaration = "parameter_declaration"
-	nodePointerType          = "pointer_type"
-	nodeQualifiedType        = "qualified_type"
-	nodeSelectorExpression   = "selector_expression"
-
-	// String literal types
+	frameworkName                = "go-testing"
+	nodeCallExpression           = "call_expression"
+	nodeFunctionDeclaration      = "function_declaration"
+	nodeParameterDeclaration     = "parameter_declaration"
+	nodePointerType              = "pointer_type"
+	nodeQualifiedType            = "qualified_type"
+	nodeSelectorExpression       = "selector_expression"
 	nodeInterpretedStringLiteral = "interpreted_string_literal"
 	nodeRawStringLiteral         = "raw_string_literal"
-
-	// Go test identifiers
-	methodRun        = "Run"
-	typeTestingParam = "testing.T"
+	methodRun                    = "Run"
+	typeTestingParam             = "testing.T"
 )
 
-type Strategy struct{}
-
-func NewStrategy() *Strategy {
-	return &Strategy{}
+func init() {
+	framework.Register(NewDefinition())
 }
 
-func RegisterDefault() {
-	strategies.Register(NewStrategy())
+func NewDefinition() *framework.Definition {
+	return &framework.Definition{
+		Name:      frameworkName,
+		Languages: []domain.Language{domain.LanguageGo},
+		Matchers: []framework.Matcher{
+			matchers.NewImportMatcher("testing"),
+			&GoTestFileMatcher{},
+		},
+		ConfigParser: nil, // Go doesn't have config files
+		Parser:       &GoTestingParser{},
+		Priority:     framework.PriorityGeneric,
+	}
 }
 
-func (s *Strategy) Name() string {
-	return frameworkName
+// GoTestFileMatcher matches *_test.go files.
+type GoTestFileMatcher struct{}
+
+func (m *GoTestFileMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
+	if signal.Type != framework.SignalFileName {
+		return framework.NoMatch()
+	}
+
+	if strings.HasSuffix(signal.Value, "_test.go") {
+		return framework.DefiniteMatch("Go test file naming convention: *_test.go")
+	}
+
+	return framework.NoMatch()
 }
 
-func (s *Strategy) Priority() int {
-	return strategies.DefaultPriority
-}
+type GoTestingParser struct{}
 
-func (s *Strategy) Languages() []domain.Language {
-	return []domain.Language{domain.LanguageGo}
-}
-
-func (s *Strategy) CanHandle(filename string, _ []byte) bool {
-	return isGoTestFile(filename)
-}
-
-func (s *Strategy) Parse(ctx context.Context, source []byte, filename string) (*domain.TestFile, error) {
+func (p *GoTestingParser) Parse(ctx context.Context, source []byte, filename string) (*domain.TestFile, error) {
 	tree, err := parser.ParseWithPool(ctx, domain.LanguageGo, source)
 	if err != nil {
 		return nil, fmt.Errorf("go-testing parser: failed to parse %s: %w", filename, err)
@@ -81,8 +84,6 @@ func (s *Strategy) Parse(ctx context.Context, source []byte, filename string) (*
 
 	return testFile, nil
 }
-
-// Helper functions (alphabetically ordered)
 
 func extractSubtests(body *sitter.Node, source []byte, filename string) []domain.Test {
 	var subtests []domain.Test
@@ -143,11 +144,6 @@ func extractTestName(funcDecl *sitter.Node, source []byte) string {
 	return parser.GetNodeText(nameNode, source)
 }
 
-func isGoTestFile(filename string) bool {
-	base := filepath.Base(filename)
-	return strings.HasSuffix(base, "_test.go")
-}
-
 func isTestFunction(name string) bool {
 	if !strings.HasPrefix(name, "Test") || len(name) <= 4 {
 		return false
@@ -205,7 +201,7 @@ func trimQuotes(s string) string {
 	if unquoted, err := strconv.Unquote(s); err == nil {
 		return unquoted
 	}
-	// Fallback for invalid literals, e.g. from incomplete code.
+	// Fallback for invalid literals from incomplete code
 	if len(s) >= 2 && s[0] == s[len(s)-1] && (s[0] == '"' || s[0] == '`') {
 		return s[1 : len(s)-1]
 	}

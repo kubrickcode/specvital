@@ -3,140 +3,243 @@ package detection
 import (
 	"context"
 	"path/filepath"
-	"slices"
-	"sort"
 	"strings"
 
 	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser/detection/config"
-	"github.com/specvital/core/pkg/parser/detection/matchers"
+	"github.com/specvital/core/pkg/parser/detection/extraction"
+	"github.com/specvital/core/pkg/parser/framework"
 )
 
-var langExtMap = map[string]domain.Language{
-	".cjs": domain.LanguageJavaScript,
-	".cts": domain.LanguageTypeScript,
-	".go":  domain.LanguageGo,
-	".js":  domain.LanguageJavaScript,
-	".jsx": domain.LanguageJavaScript,
-	".mjs": domain.LanguageJavaScript,
-	".mts": domain.LanguageTypeScript,
-	".ts":  domain.LanguageTypeScript,
-	".tsx": domain.LanguageTypeScript,
-}
-
+// Detector performs confidence-based framework detection.
+// It uses a multi-stage detection algorithm that evaluates:
+// 1. Config scope matches (highest confidence: 80 points)
+// 2. Import statements (high confidence: 60 points)
+// 3. Content patterns (moderate confidence: 40 points)
+// 4. Filename patterns (low confidence: 20 points)
+//
+// Evidence is accumulated across all stages, and the framework
+// with the highest total confidence (without negative evidence) is selected.
 type Detector struct {
-	matcherRegistry *matchers.Registry
-	scopeResolver   *config.Resolver
+	registry     *framework.Registry
+	projectScope *framework.AggregatedProjectScope
 }
 
-func NewDetector(matcherRegistry *matchers.Registry, scopeResolver *config.Resolver) *Detector {
+// NewDetector creates a new confidence-based detector.
+func NewDetector(registry *framework.Registry) *Detector {
 	return &Detector{
-		matcherRegistry: matcherRegistry,
-		scopeResolver:   scopeResolver,
+		registry:     registry,
+		projectScope: nil,
 	}
 }
 
-// Detect performs hierarchical framework detection (backward compatible).
+// SetProjectScope configures the detector with project-wide configuration context.
+// This enables scope-based detection (highest confidence).
+func (d *Detector) SetProjectScope(scope *framework.AggregatedProjectScope) {
+	d.projectScope = scope
+}
+
+// Detect performs multi-stage framework detection on a test file.
 func (d *Detector) Detect(ctx context.Context, filePath string, content []byte) Result {
-	return d.DetectWithContext(ctx, filePath, content, nil)
-}
-
-// DetectWithContext performs hierarchical framework detection.
-// Hierarchy: ProjectContext (globals mode) → Import → ScopeConfig → Unknown
-func (d *Detector) DetectWithContext(ctx context.Context, filePath string, content []byte, projectCtx *ProjectContext) Result {
-	if result, ok := d.detectFromProjectContext(filePath, projectCtx); ok {
-		return result
-	}
-
-	if result, ok := d.detectFromImports(ctx, filePath, content); ok {
-		return result
-	}
-
-	if result, ok := d.detectFromScopeConfig(filePath); ok {
-		return result
-	}
-
-	return Unknown()
-}
-
-func (d *Detector) detectFromProjectContext(filePath string, projectCtx *ProjectContext) (Result, bool) {
-	if projectCtx == nil {
-		return Result{}, false
-	}
-
-	configInfo := projectCtx.FindApplicableConfig(filePath)
-	if configInfo == nil || !configInfo.GlobalsMode {
-		return Result{}, false
-	}
-
-	configPath := projectCtx.FindConfigPath(filePath, configInfo.Framework)
-	return FromProjectContext(configInfo.Framework, configPath), true
-}
-
-func (d *Detector) detectFromImports(ctx context.Context, filePath string, content []byte) (Result, bool) {
 	lang := detectLanguage(filePath)
 	if lang == "" {
-		return Result{}, false
+		return Unknown()
 	}
 
-	compatibleMatchers := d.matcherRegistry.FindByLanguage(lang)
-	if len(compatibleMatchers) == 0 {
-		return Result{}, false
+	frameworks := d.registry.FindByLanguage(lang)
+	if len(frameworks) == 0 {
+		return Unknown()
 	}
 
-	sorted := sortedByPriority(compatibleMatchers)
+	results := make(map[string]*Result)
 
-	imports := sorted[0].ExtractImports(ctx, content)
-	if len(imports) == 0 {
-		return Result{}, false
-	}
+	d.detectFromScope(filePath, results)
+	d.detectFromImports(ctx, filePath, content, frameworks, results)
+	d.detectFromContent(ctx, content, frameworks, results)
+	d.detectFromFilename(ctx, filePath, frameworks, results)
 
-	if matcher := findMatchingMatcher(sorted, imports); matcher != nil {
-		return FromImport(matcher.Name()), true
-	}
-	return Result{}, false
+	return d.selectBestMatch(results)
 }
 
-func (d *Detector) detectFromScopeConfig(filePath string) (Result, bool) {
-	if d.scopeResolver == nil {
-		return Result{}, false
+func (d *Detector) detectFromScope(filePath string, results map[string]*Result) {
+	if d.projectScope == nil {
+		return
 	}
 
-	sorted := sortedByPriority(d.matcherRegistry.All())
+	for path, scope := range d.projectScope.Configs {
+		if scope.Contains(filePath) {
+			result := getOrCreate(results, scope.Framework)
+			result.Scope = scope
+			result.AddEvidence(Evidence{
+				Source:      "config-scope",
+				Description: "File matches config scope: " + path,
+				Confidence:  80,
+			})
 
-	for _, matcher := range sorted {
-		patterns := matcher.ConfigPatterns()
-		if len(patterns) == 0 {
+			if scope.GlobalsMode {
+				result.AddEvidence(Evidence{
+					Source:      "globals-mode",
+					Description: "Config has globals: true",
+					Confidence:  10,
+				})
+			}
+		}
+	}
+}
+
+func (d *Detector) detectFromImports(ctx context.Context, filePath string, content []byte, frameworks []*framework.Definition, results map[string]*Result) {
+	lang := detectLanguage(filePath)
+	var imports []string
+
+	switch lang {
+	case domain.LanguageTypeScript, domain.LanguageJavaScript:
+		imports = extraction.ExtractJSImports(ctx, content)
+	case domain.LanguageGo:
+		return
+	}
+
+	if len(imports) == 0 {
+		return
+	}
+
+	for _, fw := range frameworks {
+		for _, matcher := range fw.Matchers {
+			for _, imp := range imports {
+				signal := framework.Signal{
+					Type:  framework.SignalImport,
+					Value: imp,
+				}
+
+				mr := matcher.Match(ctx, signal)
+				if mr.Confidence > 0 || mr.Negative {
+					result := getOrCreate(results, fw.Name)
+					for _, ev := range mr.Evidence {
+						result.AddEvidence(Evidence{
+							Source:      "import",
+							Description: ev,
+							Confidence:  60,
+							Negative:    mr.Negative,
+						})
+					}
+				}
+			}
+		}
+	}
+}
+
+func (d *Detector) detectFromContent(ctx context.Context, content []byte, frameworks []*framework.Definition, results map[string]*Result) {
+	for _, fw := range frameworks {
+		for _, matcher := range fw.Matchers {
+			signal := framework.Signal{
+				Type:    framework.SignalFileContent,
+				Value:   "",
+				Context: content,
+			}
+
+			mr := matcher.Match(ctx, signal)
+			if mr.Confidence > 0 || mr.Negative {
+				result := getOrCreate(results, fw.Name)
+				for _, ev := range mr.Evidence {
+					result.AddEvidence(Evidence{
+						Source:      "content",
+						Description: ev,
+						Confidence:  40,
+						Negative:    mr.Negative,
+					})
+				}
+			}
+		}
+	}
+}
+
+func (d *Detector) detectFromFilename(ctx context.Context, filePath string, frameworks []*framework.Definition, results map[string]*Result) {
+	filename := filepath.Base(filePath)
+
+	for _, fw := range frameworks {
+		for _, matcher := range fw.Matchers {
+			signal := framework.Signal{
+				Type:  framework.SignalFileName,
+				Value: filename,
+			}
+
+			mr := matcher.Match(ctx, signal)
+			if mr.Confidence > 0 || mr.Negative {
+				result := getOrCreate(results, fw.Name)
+				for _, ev := range mr.Evidence {
+					result.AddEvidence(Evidence{
+						Source:      "filename",
+						Description: ev,
+						Confidence:  20,
+						Negative:    mr.Negative,
+					})
+				}
+			}
+		}
+	}
+}
+
+func (d *Detector) selectBestMatch(results map[string]*Result) Result {
+	hasNegative := make(map[string]bool)
+	for fw, result := range results {
+		for _, ev := range result.Evidence {
+			if ev.Negative {
+				hasNegative[fw] = true
+				break
+			}
+		}
+	}
+
+	var best Result
+	for fw, result := range results {
+		if hasNegative[fw] {
 			continue
 		}
-		if configPath, found := d.scopeResolver.ResolveConfig(filePath, patterns); found {
-			return FromScopeConfig(matcher.Name(), configPath), true
+
+		total := 0
+		for _, ev := range result.Evidence {
+			if !ev.Negative {
+				total += ev.Confidence
+			}
+		}
+
+		if total > 100 {
+			total = 100
+		}
+
+		result.Framework = fw
+		result.Confidence = total
+
+		if total > best.Confidence {
+			best = *result
 		}
 	}
-	return Result{}, false
+
+	return best
 }
 
-func sortedByPriority(matcherList []matchers.Matcher) []matchers.Matcher {
-	sorted := make([]matchers.Matcher, len(matcherList))
-	copy(sorted, matcherList)
-
-	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i].Priority() > sorted[j].Priority()
-	})
-
-	return sorted
-}
-
-func findMatchingMatcher(matcherList []matchers.Matcher, imports []string) matchers.Matcher {
-	for _, matcher := range matcherList {
-		if slices.ContainsFunc(imports, matcher.MatchImport) {
-			return matcher
-		}
+func getOrCreate(results map[string]*Result, framework string) *Result {
+	if r, ok := results[framework]; ok {
+		return r
 	}
-	return nil
+
+	r := &Result{
+		Framework: framework,
+		Evidence:  make([]Evidence, 0, 4),
+	}
+	results[framework] = r
+	return r
 }
 
 func detectLanguage(filePath string) domain.Language {
 	ext := strings.ToLower(filepath.Ext(filePath))
-	return langExtMap[ext]
+
+	switch ext {
+	case ".ts", ".tsx":
+		return domain.LanguageTypeScript
+	case ".js", ".jsx", ".mjs", ".cjs":
+		return domain.LanguageJavaScript
+	case ".go":
+		return domain.LanguageGo
+	default:
+		return ""
+	}
 }

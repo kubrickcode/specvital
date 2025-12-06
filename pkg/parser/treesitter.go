@@ -10,8 +10,6 @@ import (
 	"github.com/specvital/core/pkg/parser/tspool"
 )
 
-// MaxTreeDepth is the maximum recursion depth when walking AST trees.
-// Deprecated: Use tspool.MaxTreeDepth instead.
 const MaxTreeDepth = tspool.MaxTreeDepth
 
 // TSParser wraps a tree-sitter parser for a specific language.

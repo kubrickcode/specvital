@@ -2,509 +2,434 @@ package detection
 
 import (
 	"context"
-	"os"
-	"path/filepath"
-	"slices"
+	"regexp"
 	"testing"
 
 	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser/detection/config"
-	"github.com/specvital/core/pkg/parser/detection/extraction"
-	"github.com/specvital/core/pkg/parser/detection/matchers"
+	"github.com/specvital/core/pkg/parser/framework"
+	"github.com/specvital/core/pkg/parser/framework/matchers"
 )
 
-type mockMatcher struct {
-	configPatterns []string
-	extractFunc    func(context.Context, []byte) []string
-	globalsMode    bool
-	languages      []domain.Language
-	matchImports   []string
-	name           string
-	priority       int
-}
-
-func (m *mockMatcher) Name() string                 { return m.name }
-func (m *mockMatcher) Languages() []domain.Language { return m.languages }
-func (m *mockMatcher) ConfigPatterns() []string     { return m.configPatterns }
-func (m *mockMatcher) MatchImport(importPath string) bool {
-	return slices.Contains(m.matchImports, importPath)
-}
-func (m *mockMatcher) ExtractImports(ctx context.Context, content []byte) []string {
-	if m.extractFunc != nil {
-		return m.extractFunc(ctx, content)
-	}
-	return nil
-}
-func (m *mockMatcher) ParseConfig(_ context.Context, _ []byte) *matchers.ConfigInfo {
-	return &matchers.ConfigInfo{
-		Framework:   m.name,
-		GlobalsMode: m.globalsMode,
-	}
-}
-func (m *mockMatcher) Priority() int {
-	if m.priority == 0 {
-		return matchers.PriorityGeneric
-	}
-	return m.priority
-}
-
-func TestDetector_Detect_Level1_Import(t *testing.T) {
-	t.Parallel()
-
-	registry := matchers.NewRegistry()
-	registry.Register(&mockMatcher{
-		name:         "vitest",
-		languages:    []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
-		matchImports: []string{"vitest"},
-		extractFunc:  extraction.ExtractJSImports,
-	})
-	registry.Register(&mockMatcher{
-		name:         "playwright",
-		languages:    []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
-		matchImports: []string{"@playwright/test"},
-		extractFunc:  extraction.ExtractJSImports,
-	})
-	registry.Register(&mockMatcher{
-		name:         "jest",
-		languages:    []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
-		matchImports: []string{"@jest/globals"},
-		extractFunc:  extraction.ExtractJSImports,
-	})
-
-	detector := NewDetector(registry, nil)
-
-	tests := []struct {
-		name          string
-		content       string
-		wantFramework string
-		wantSource    Source
-	}{
-		{
-			name:          "vitest import",
-			content:       `import { describe, it } from 'vitest';`,
-			wantFramework: "vitest",
-			wantSource:    SourceImport,
+// TestDetector_Detect_ScopeBasedDetection tests highest confidence detection via config scope.
+func TestDetector_Detect_ScopeBasedDetection(t *testing.T) {
+	registry := framework.NewRegistry()
+	registry.Register(&framework.Definition{
+		Name:      "jest",
+		Languages: []domain.Language{domain.LanguageTypeScript},
+		Matchers: []framework.Matcher{
+			matchers.NewImportMatcher("@jest/globals", "@jest/globals/"),
 		},
-		{
-			name:          "playwright import",
-			content:       `import { test, expect } from '@playwright/test';`,
-			wantFramework: "playwright",
-			wantSource:    SourceImport,
-		},
-		{
-			name:          "jest globals import",
-			content:       `import { jest } from '@jest/globals';`,
-			wantFramework: "jest",
-			wantSource:    SourceImport,
-		},
-		{
-			name:          "require syntax",
-			content:       `const { test } = require('@playwright/test');`,
-			wantFramework: "playwright",
-			wantSource:    SourceImport,
-		},
-		{
-			name:          "no framework import",
-			content:       `describe('test', () => { it('works', () => {}) });`,
-			wantFramework: "unknown",
-			wantSource:    SourceUnknown,
-		},
-		{
-			name:          "unrelated import",
-			content:       `import lodash from 'lodash';`,
-			wantFramework: "unknown",
-			wantSource:    SourceUnknown,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			result := detector.Detect(context.Background(), "test.ts", []byte(tt.content))
-
-			if result.Framework != tt.wantFramework {
-				t.Errorf("Framework = %q, want %q", result.Framework, tt.wantFramework)
-			}
-			if result.Source != tt.wantSource {
-				t.Errorf("Source = %q, want %q", result.Source, tt.wantSource)
-			}
-		})
-	}
-}
-
-func TestDetector_Detect_Level2_ScopeConfig(t *testing.T) {
-	// Create temp directory structure
-	tempDir := t.TempDir()
-
-	// Create monorepo structure:
-	// tempDir/
-	// ├── apps/
-	// │   ├── web/
-	// │   │   ├── jest.config.js
-	// │   │   └── __tests__/user.test.ts
-	// │   └── api/
-	// │       ├── vitest.config.ts
-	// │       └── __tests__/handler.test.ts
-	// └── e2e/
-	//     ├── playwright.config.ts
-	//     └── login.spec.ts
-
-	dirs := []string{
-		filepath.Join(tempDir, "apps", "web", "__tests__"),
-		filepath.Join(tempDir, "apps", "api", "__tests__"),
-		filepath.Join(tempDir, "e2e"),
-	}
-	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	configs := map[string]string{
-		filepath.Join(tempDir, "apps", "web", "jest.config.js"):   "",
-		filepath.Join(tempDir, "apps", "api", "vitest.config.ts"): "",
-		filepath.Join(tempDir, "e2e", "playwright.config.ts"):     "",
-	}
-	for path, content := range configs {
-		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	// Setup registry and detector
-	registry := matchers.NewRegistry()
-	registry.Register(&mockMatcher{
-		name:           "jest",
-		configPatterns: []string{"jest.config.js", "jest.config.ts"},
-	})
-	registry.Register(&mockMatcher{
-		name:           "vitest",
-		configPatterns: []string{"vitest.config.js", "vitest.config.ts"},
-	})
-	registry.Register(&mockMatcher{
-		name:           "playwright",
-		configPatterns: []string{"playwright.config.js", "playwright.config.ts"},
 	})
 
-	cache := config.NewCache()
-	resolver := config.NewResolver(cache, 10)
-	detector := NewDetector(registry, resolver)
+	detector := NewDetector(registry)
 
-	tests := []struct {
-		name          string
-		filePath      string
-		wantFramework string
-		wantSource    Source
-	}{
-		{
-			name:          "web test uses jest",
-			filePath:      filepath.Join(tempDir, "apps", "web", "__tests__", "user.test.ts"),
-			wantFramework: "jest",
-			wantSource:    SourceScopeConfig,
-		},
-		{
-			name:          "api test uses vitest",
-			filePath:      filepath.Join(tempDir, "apps", "api", "__tests__", "handler.test.ts"),
-			wantFramework: "vitest",
-			wantSource:    SourceScopeConfig,
-		},
-		{
-			name:          "e2e test uses playwright",
-			filePath:      filepath.Join(tempDir, "e2e", "login.spec.ts"),
-			wantFramework: "playwright",
-			wantSource:    SourceScopeConfig,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// No import in content, should fallback to scope config
-			result := detector.Detect(context.Background(), tt.filePath, []byte(`describe('test', () => {})`))
-
-			if result.Framework != tt.wantFramework {
-				t.Errorf("Framework = %q, want %q", result.Framework, tt.wantFramework)
-			}
-			if result.Source != tt.wantSource {
-				t.Errorf("Source = %q, want %q", result.Source, tt.wantSource)
-			}
-		})
-	}
-}
-
-func TestDetector_Detect_ImportTakesPrecedence(t *testing.T) {
-	// Even if config file exists, import should take precedence
-
-	tempDir := t.TempDir()
-	configPath := filepath.Join(tempDir, "jest.config.js")
-	if err := os.WriteFile(configPath, []byte{}, 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	registry := matchers.NewRegistry()
-	registry.Register(&mockMatcher{
-		name:           "jest",
-		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
-		matchImports:   []string{"@jest/globals"},
-		configPatterns: []string{"jest.config.js"},
-		extractFunc:    extraction.ExtractJSImports,
-	})
-	registry.Register(&mockMatcher{
-		name:           "vitest",
-		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
-		matchImports:   []string{"vitest"},
-		configPatterns: []string{"vitest.config.ts"},
-		extractFunc:    extraction.ExtractJSImports,
-	})
-
-	cache := config.NewCache()
-	resolver := config.NewResolver(cache, 10)
-	detector := NewDetector(registry, resolver)
-
-	// File is in jest config directory but has vitest import
-	content := `import { describe } from 'vitest';`
-	result := detector.Detect(context.Background(), filepath.Join(tempDir, "test.ts"), []byte(content))
-
-	if result.Framework != "vitest" {
-		t.Errorf("Framework = %q, want vitest (import should take precedence)", result.Framework)
-	}
-	if result.Source != SourceImport {
-		t.Errorf("Source = %q, want %q", result.Source, SourceImport)
-	}
-}
-
-func TestResult_IsUnknown(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name   string
-		result Result
-		want   bool
-	}{
-		{"unknown framework", Result{Framework: "unknown"}, true},
-		{"empty framework", Result{Framework: ""}, true},
-		{"zero confidence", Result{Framework: "jest", Confidence: ConfidenceUnknown}, true},
-		{"known framework", Result{Framework: "jest", Confidence: ConfidenceMedium}, false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			if got := tt.result.IsUnknown(); got != tt.want {
-				t.Errorf("IsUnknown() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestDetector_DetectWithContext_GlobalsMode(t *testing.T) {
-	t.Parallel()
-
-	registry := matchers.NewRegistry()
-	registry.Register(&mockMatcher{
-		name:           "vitest",
-		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
-		matchImports:   []string{"vitest"},
-		configPatterns: []string{"vitest.config.ts"},
-		globalsMode:    true,
-		priority:       200,
-		extractFunc:    extraction.ExtractJSImports,
-	})
-	registry.Register(&mockMatcher{
-		name:           "jest",
-		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
-		matchImports:   []string{"@jest/globals"},
-		configPatterns: []string{"jest.config.js"},
-		globalsMode:    true,
-		priority:       100,
-		extractFunc:    extraction.ExtractJSImports,
-	})
-
-	detector := NewDetector(registry, nil)
-
-	t.Run("vitest globals mode without import", func(t *testing.T) {
-		t.Parallel()
-
-		// Simulate GitHub API environment: no filesystem access, only ProjectContext
-		projectCtx := NewProjectContext()
-		projectCtx.SetConfigContent("vitest.config.ts", &matchers.ConfigInfo{
-			Framework:   "vitest",
-			GlobalsMode: true,
-		})
-
-		// Test file with NO import (globals mode)
-		content := `describe('test', () => { it('works', () => {}) });`
-		result := detector.DetectWithContext(
-			context.Background(),
-			"src/user.test.ts",
-			[]byte(content),
-			projectCtx,
-		)
-
-		if result.Framework != "vitest" {
-			t.Errorf("Framework = %q, want vitest", result.Framework)
-		}
-		if result.Source != SourceProjectContext {
-			t.Errorf("Source = %q, want %q", result.Source, SourceProjectContext)
-		}
-		if result.Confidence != ConfidenceHigh {
-			t.Errorf("Confidence = %v, want %v", result.Confidence, ConfidenceHigh)
-		}
-	})
-
-	t.Run("jest globals mode without import", func(t *testing.T) {
-		t.Parallel()
-
-		projectCtx := NewProjectContext()
-		projectCtx.SetConfigContent("jest.config.js", &matchers.ConfigInfo{
-			Framework:   "jest",
-			GlobalsMode: true,
-		})
-
-		content := `describe('test', () => { it('works', () => {}) });`
-		result := detector.DetectWithContext(
-			context.Background(),
-			"src/user.test.ts",
-			[]byte(content),
-			projectCtx,
-		)
-
-		if result.Framework != "jest" {
-			t.Errorf("Framework = %q, want jest", result.Framework)
-		}
-		if result.Source != SourceProjectContext {
-			t.Errorf("Source = %q, want %q", result.Source, SourceProjectContext)
-		}
-	})
-
-	t.Run("globals disabled falls back to import detection", func(t *testing.T) {
-		t.Parallel()
-
-		projectCtx := NewProjectContext()
-		projectCtx.SetConfigContent("vitest.config.ts", &matchers.ConfigInfo{
-			Framework:   "vitest",
-			GlobalsMode: false, // globals disabled
-		})
-
-		// No import, globals disabled → should be unknown
-		content := `describe('test', () => { it('works', () => {}) });`
-		result := detector.DetectWithContext(
-			context.Background(),
-			"src/user.test.ts",
-			[]byte(content),
-			projectCtx,
-		)
-
-		if result.Framework != "unknown" {
-			t.Errorf("Framework = %q, want unknown (globals disabled)", result.Framework)
-		}
-	})
-
-	t.Run("project context globals mode takes precedence over imports", func(t *testing.T) {
-		t.Parallel()
-
-		projectCtx := NewProjectContext()
-		projectCtx.SetConfigContent("jest.config.js", &matchers.ConfigInfo{
-			Framework:   "jest",
-			GlobalsMode: true,
-		})
-
-		// File has explicit vitest import, but jest globals config should win
-		// because ProjectContext (Level 0) runs before import detection (Level 1)
-		content := `import { describe, it } from 'vitest';`
-		result := detector.DetectWithContext(
-			context.Background(),
-			"src/user.test.ts",
-			[]byte(content),
-			projectCtx,
-		)
-
-		if result.Framework != "jest" {
-			t.Errorf("Framework = %q, want jest (project context with globals takes precedence)", result.Framework)
-		}
-		if result.Source != SourceProjectContext {
-			t.Errorf("Source = %q, want %q", result.Source, SourceProjectContext)
-		}
-	})
-}
-
-func TestDetector_DetectWithContext_Monorepo(t *testing.T) {
-	t.Parallel()
-
-	registry := matchers.NewRegistry()
-	registry.Register(&mockMatcher{
-		name:           "vitest",
-		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
-		matchImports:   []string{"vitest"},
-		configPatterns: []string{"vitest.config.ts"},
-		globalsMode:    true,
-		priority:       200,
-		extractFunc:    extraction.ExtractJSImports,
-	})
-	registry.Register(&mockMatcher{
-		name:           "jest",
-		languages:      []domain.Language{domain.LanguageTypeScript, domain.LanguageJavaScript},
-		matchImports:   []string{"@jest/globals"},
-		configPatterns: []string{"jest.config.js"},
-		globalsMode:    true,
-		priority:       100,
-		extractFunc:    extraction.ExtractJSImports,
-	})
-
-	detector := NewDetector(registry, nil)
-
-	// Monorepo structure:
-	// /
-	// ├── apps/web/vitest.config.ts (globals: true)
-	// ├── apps/web/src/user.test.ts
-	// ├── apps/api/jest.config.js (globals: true)
-	// └── apps/api/src/handler.test.ts
-
-	projectCtx := NewProjectContext()
-	projectCtx.SetConfigContent("apps/web/vitest.config.ts", &matchers.ConfigInfo{
-		Framework:   "vitest",
-		GlobalsMode: true,
-	})
-	projectCtx.SetConfigContent("apps/api/jest.config.js", &matchers.ConfigInfo{
+	// Setup project scope with Jest config
+	projectScope := framework.NewProjectScope()
+	configScope := &framework.ConfigScope{
+		ConfigPath:  "/project/jest.config.js",
+		BaseDir:     "/project",
 		Framework:   "jest",
 		GlobalsMode: true,
+	}
+	projectScope.AddConfig("/project/jest.config.js", configScope)
+	detector.SetProjectScope(projectScope)
+
+	// Test file within scope
+	content := []byte(`
+describe('test suite', () => {
+  it('should work', () => {
+    expect(true).toBe(true);
+  });
+});
+`)
+
+	result := detector.Detect(context.Background(), "/project/src/test.spec.ts", content)
+
+	if result.Framework != "jest" {
+		t.Errorf("expected framework 'jest', got '%s'", result.Framework)
+	}
+
+	// Should have high confidence from scope + globals mode
+	if result.Confidence < 80 {
+		t.Errorf("expected confidence >= 80, got %d", result.Confidence)
+	}
+
+	if !result.IsDefinite() {
+		t.Errorf("expected definite confidence level, got %s", result.ConfidenceLevel())
+	}
+
+	// Verify evidence
+	hasScope := false
+	hasGlobals := false
+	for _, ev := range result.Evidence {
+		if ev.Source == "config-scope" {
+			hasScope = true
+		}
+		if ev.Source == "globals-mode" {
+			hasGlobals = true
+		}
+	}
+
+	if !hasScope {
+		t.Error("expected config-scope evidence")
+	}
+	if !hasGlobals {
+		t.Error("expected globals-mode evidence")
+	}
+}
+
+// TestDetector_Detect_ImportBasedDetection tests high confidence detection via imports.
+func TestDetector_Detect_ImportBasedDetection(t *testing.T) {
+	registry := framework.NewRegistry()
+	registry.Register(&framework.Definition{
+		Name:      "vitest",
+		Languages: []domain.Language{domain.LanguageTypeScript},
+		Matchers: []framework.Matcher{
+			matchers.NewImportMatcher("vitest", "vitest/"),
+		},
 	})
 
-	content := `describe('test', () => { it('works', () => {}) });`
+	detector := NewDetector(registry)
 
-	t.Run("web subproject uses vitest", func(t *testing.T) {
-		t.Parallel()
+	content := []byte(`
+import { describe, it, expect } from 'vitest';
 
-		result := detector.DetectWithContext(
-			context.Background(),
-			"apps/web/src/user.test.ts",
-			[]byte(content),
-			projectCtx,
-		)
+describe('test suite', () => {
+  it('should work', () => {
+    expect(true).toBe(true);
+  });
+});
+`)
 
-		if result.Framework != "vitest" {
-			t.Errorf("Framework = %q, want vitest", result.Framework)
+	result := detector.Detect(context.Background(), "/project/test.spec.ts", content)
+
+	if result.Framework != "vitest" {
+		t.Errorf("expected framework 'vitest', got '%s'", result.Framework)
+	}
+
+	// Should have high confidence from import (60 points = moderate level)
+	if result.Confidence < 60 {
+		t.Errorf("expected confidence >= 60, got %d", result.Confidence)
+	}
+
+	if !result.IsModerate() && !result.IsDefinite() {
+		t.Errorf("expected moderate or definite confidence level, got %s", result.ConfidenceLevel())
+	}
+
+	// Verify evidence
+	hasImport := false
+	for _, ev := range result.Evidence {
+		if ev.Source == "import" && !ev.Negative {
+			hasImport = true
 		}
-		if result.ConfigPath != "apps/web/vitest.config.ts" {
-			t.Errorf("ConfigPath = %q, want apps/web/vitest.config.ts", result.ConfigPath)
-		}
+	}
+
+	if !hasImport {
+		t.Error("expected import evidence")
+	}
+}
+
+// TestDetector_Detect_ContentBasedDetection tests moderate confidence detection via content patterns.
+func TestDetector_Detect_ContentBasedDetection(t *testing.T) {
+	registry := framework.NewRegistry()
+	registry.Register(&framework.Definition{
+		Name:      "playwright",
+		Languages: []domain.Language{domain.LanguageTypeScript},
+		Matchers: []framework.Matcher{
+			matchers.NewImportMatcher("@playwright/test", "@playwright/test/"),
+			matchers.NewContentMatcherFromStrings(`test\.describe\(`),
+		},
 	})
 
-	t.Run("api subproject uses jest", func(t *testing.T) {
-		t.Parallel()
+	detector := NewDetector(registry)
 
-		result := detector.DetectWithContext(
-			context.Background(),
-			"apps/api/src/handler.test.ts",
-			[]byte(content),
-			projectCtx,
-		)
+	// No imports, but has content pattern
+	content := []byte(`
+test.describe('test suite', () => {
+  test('should work', async ({ page }) => {
+    await page.goto('https://example.com');
+  });
+});
+`)
 
-		if result.Framework != "jest" {
-			t.Errorf("Framework = %q, want jest", result.Framework)
+	result := detector.Detect(context.Background(), "/project/e2e/test.spec.ts", content)
+
+	if result.Framework != "playwright" {
+		t.Errorf("expected framework 'playwright', got '%s'", result.Framework)
+	}
+
+	// Should have moderate confidence from content only
+	if result.Confidence < 40 {
+		t.Errorf("expected confidence >= 40, got %d", result.Confidence)
+	}
+
+	if !result.IsModerate() && !result.IsDefinite() {
+		t.Errorf("expected moderate or definite confidence level, got %s", result.ConfidenceLevel())
+	}
+
+	// Verify evidence
+	hasContent := false
+	for _, ev := range result.Evidence {
+		if ev.Source == "content" && !ev.Negative {
+			hasContent = true
 		}
-		if result.ConfigPath != "apps/api/jest.config.js" {
-			t.Errorf("ConfigPath = %q, want apps/api/jest.config.js", result.ConfigPath)
-		}
+	}
+
+	if !hasContent {
+		t.Error("expected content evidence")
+	}
+}
+
+// TestDetector_Detect_MultipleSignals tests confidence accumulation from multiple sources.
+func TestDetector_Detect_MultipleSignals(t *testing.T) {
+	registry := framework.NewRegistry()
+	registry.Register(&framework.Definition{
+		Name:      "jest",
+		Languages: []domain.Language{domain.LanguageTypeScript},
+		Matchers: []framework.Matcher{
+			matchers.NewImportMatcher("@jest/globals", "@jest/globals/"),
+			matchers.NewContentMatcherFromStrings(`describe\(`, `it\(`, `expect\(`),
+		},
 	})
+
+	detector := NewDetector(registry)
+
+	// Setup scope
+	projectScope := framework.NewProjectScope()
+	configScope := &framework.ConfigScope{
+		ConfigPath:  "/project/jest.config.js",
+		BaseDir:     "/project",
+		Framework:   "jest",
+		GlobalsMode: false,
+	}
+	projectScope.AddConfig("/project/jest.config.js", configScope)
+	detector.SetProjectScope(projectScope)
+
+	// File with scope + import + content
+	content := []byte(`
+import { describe, it, expect } from '@jest/globals';
+
+describe('test suite', () => {
+  it('should work', () => {
+    expect(true).toBe(true);
+  });
+});
+`)
+
+	result := detector.Detect(context.Background(), "/project/src/test.spec.ts", content)
+
+	if result.Framework != "jest" {
+		t.Errorf("expected framework 'jest', got '%s'", result.Framework)
+	}
+
+	// Should have very high confidence (capped at 100)
+	if result.Confidence < 90 {
+		t.Errorf("expected confidence >= 90, got %d", result.Confidence)
+	}
+
+	if result.Confidence > 100 {
+		t.Errorf("expected confidence capped at 100, got %d", result.Confidence)
+	}
+
+	// Verify multiple evidence sources
+	sources := make(map[string]bool)
+	for _, ev := range result.Evidence {
+		if !ev.Negative {
+			sources[ev.Source] = true
+		}
+	}
+
+	if !sources["config-scope"] {
+		t.Error("expected config-scope evidence")
+	}
+	if !sources["import"] {
+		t.Error("expected import evidence")
+	}
+	if !sources["content"] {
+		t.Error("expected content evidence")
+	}
+}
+
+// TestDetector_Detect_NegativeEvidence tests that negative evidence excludes frameworks.
+func TestDetector_Detect_NegativeEvidence(t *testing.T) {
+	registry := framework.NewRegistry()
+
+	// Register Jest
+	registry.Register(&framework.Definition{
+		Name:      "jest",
+		Languages: []domain.Language{domain.LanguageTypeScript},
+		Matchers: []framework.Matcher{
+			matchers.NewImportMatcher("@jest/globals", "@jest/globals/"),
+			matchers.NewContentMatcherFromStrings(`describe\(`, `it\(`, `expect\(`),
+		},
+	})
+
+	// Register Vitest with negative matcher for Jest imports
+	registry.Register(&framework.Definition{
+		Name:      "vitest",
+		Languages: []domain.Language{domain.LanguageTypeScript},
+		Matchers: []framework.Matcher{
+			matchers.NewImportMatcher("vitest", "vitest/"),
+			&negativeMatcher{pattern: "@jest/globals"},
+		},
+	})
+
+	detector := NewDetector(registry)
+
+	// File imports from Jest, which should exclude Vitest
+	content := []byte(`
+import { describe, it, expect } from '@jest/globals';
+
+describe('test suite', () => {
+  it('should work', () => {
+    expect(true).toBe(true);
+  });
+});
+`)
+
+	result := detector.Detect(context.Background(), "/project/test.spec.ts", content)
+
+	if result.Framework != "jest" {
+		t.Errorf("expected framework 'jest', got '%s'", result.Framework)
+	}
+
+	// Vitest should not be detected despite content match
+	if result.Framework == "vitest" {
+		t.Error("vitest should be excluded due to negative evidence")
+	}
+}
+
+// TestDetector_Detect_NoMatch tests detection when no framework matches.
+func TestDetector_Detect_NoMatch(t *testing.T) {
+	registry := framework.NewRegistry()
+	detector := NewDetector(registry)
+
+	content := []byte(`
+console.log('hello world');
+`)
+
+	result := detector.Detect(context.Background(), "/project/test.ts", content)
+
+	if result.Framework != "" {
+		t.Errorf("expected no framework, got '%s'", result.Framework)
+	}
+
+	if result.Confidence != 0 {
+		t.Errorf("expected confidence 0, got %d", result.Confidence)
+	}
+
+	if result.ConfidenceLevel() != "none" {
+		t.Errorf("expected confidence level 'none', got '%s'", result.ConfidenceLevel())
+	}
+}
+
+// TestDetector_Detect_UnsupportedLanguage tests detection for unsupported file types.
+func TestDetector_Detect_UnsupportedLanguage(t *testing.T) {
+	registry := framework.NewRegistry()
+	registry.Register(&framework.Definition{
+		Name:      "jest",
+		Languages: []domain.Language{domain.LanguageTypeScript},
+		Matchers:  []framework.Matcher{},
+	})
+
+	detector := NewDetector(registry)
+
+	content := []byte(`print("hello world")`)
+
+	result := detector.Detect(context.Background(), "/project/test.py", content)
+
+	if result.Framework != "" {
+		t.Errorf("expected no framework for Python file, got '%s'", result.Framework)
+	}
+}
+
+// TestResult_ConfidenceLevels tests confidence level classification.
+func TestResult_ConfidenceLevels(t *testing.T) {
+	tests := []struct {
+		name       string
+		confidence int
+		wantLevel  string
+		wantDef    bool
+		wantMod    bool
+		wantWeak   bool
+	}{
+		{"definite high", 100, "definite", true, false, false},
+		{"definite low", 71, "definite", true, false, false},
+		{"moderate high", 70, "moderate", false, true, false},
+		{"moderate low", 31, "moderate", false, true, false},
+		{"weak high", 30, "weak", false, false, true},
+		{"weak low", 1, "weak", false, false, true},
+		{"none", 0, "none", false, false, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := Result{
+				Framework:  "test",
+				Confidence: tt.confidence,
+			}
+
+			if got := result.ConfidenceLevel(); got != tt.wantLevel {
+				t.Errorf("ConfidenceLevel() = %v, want %v", got, tt.wantLevel)
+			}
+
+			if got := result.IsDefinite(); got != tt.wantDef {
+				t.Errorf("IsDefinite() = %v, want %v", got, tt.wantDef)
+			}
+
+			if got := result.IsModerate(); got != tt.wantMod {
+				t.Errorf("IsModerate() = %v, want %v", got, tt.wantMod)
+			}
+
+			if got := result.IsWeak(); got != tt.wantWeak {
+				t.Errorf("IsWeak() = %v, want %v", got, tt.wantWeak)
+			}
+		})
+	}
+}
+
+// TestDetectLanguage tests language detection from file extensions.
+func TestDetectLanguage(t *testing.T) {
+	tests := []struct {
+		path string
+		want domain.Language
+	}{
+		{"/project/test.ts", domain.LanguageTypeScript},
+		{"/project/test.tsx", domain.LanguageTypeScript},
+		{"/project/test.js", domain.LanguageJavaScript},
+		{"/project/test.jsx", domain.LanguageJavaScript},
+		{"/project/test.mjs", domain.LanguageJavaScript},
+		{"/project/test.cjs", domain.LanguageJavaScript},
+		{"/project/test.go", domain.LanguageGo},
+		{"/project/test.py", ""},
+		{"/project/test.txt", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.path, func(t *testing.T) {
+			if got := detectLanguage(tt.path); got != tt.want {
+				t.Errorf("detectLanguage() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// negativeMatcher is a test helper that produces negative matches for a pattern.
+type negativeMatcher struct {
+	pattern string
+}
+
+func (m *negativeMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
+	if signal.Type != framework.SignalImport {
+		return framework.NoMatch()
+	}
+
+	// Check if import contains the pattern
+	matched, err := regexp.MatchString(m.pattern, signal.Value)
+	if err != nil || !matched {
+		return framework.NoMatch()
+	}
+
+	// Return negative match
+	return framework.NegativeMatch("conflicting import: " + signal.Value)
 }

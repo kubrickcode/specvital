@@ -24,13 +24,13 @@ import (
     "context"
     "fmt"
 
-    "github.com/specvital/core/parser"
+    "github.com/specvital/core/pkg/parser"
 
     // Import strategies to register them
-    _ "github.com/specvital/core/parser/strategies/gotesting"
-    _ "github.com/specvital/core/parser/strategies/jest"
-    _ "github.com/specvital/core/parser/strategies/playwright"
-    _ "github.com/specvital/core/parser/strategies/vitest"
+    _ "github.com/specvital/core/pkg/parser/strategies/gotesting"
+    _ "github.com/specvital/core/pkg/parser/strategies/jest"
+    _ "github.com/specvital/core/pkg/parser/strategies/playwright"
+    _ "github.com/specvital/core/pkg/parser/strategies/vitest"
 )
 
 func main() {

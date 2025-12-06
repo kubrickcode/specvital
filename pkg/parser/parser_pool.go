@@ -13,7 +13,6 @@ import (
 
 // ParseWithPool parses source using a pooled parser.
 // Caller must close the returned tree.
-// Deprecated: Use tspool.Parse instead.
 func ParseWithPool(ctx context.Context, lang domain.Language, source []byte) (*sitter.Tree, error) {
 	return tspool.Parse(ctx, lang, source)
 }
