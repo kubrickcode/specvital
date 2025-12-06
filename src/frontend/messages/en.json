@@ -1,0 +1,54 @@
+{
+  "common": {
+    "appName": "SpecVital",
+    "loading": "Loading...",
+    "error": "Error",
+    "tryAgain": "Try again",
+    "goHome": "Go home"
+  },
+  "header": {
+    "analyzeAnother": "Analyze Another",
+    "selectLanguage": "Select language"
+  },
+  "home": {
+    "title": "SpecVital",
+    "subtitle": "Analyze test specifications from public GitHub repositories",
+    "inputPlaceholder": "https://github.com/owner/repo",
+    "analyzeButton": "Analyze",
+    "helperText": "Enter a public GitHub repository URL to analyze its test files",
+    "inputLabel": "GitHub Repository URL"
+  },
+  "analyze": {
+    "viewOnGitHub": "View on GitHub",
+    "analyzedAt": "Analyzed: {date}",
+    "testSuites": "Test Suites",
+    "noTestSuites": "No test suites found in this repository."
+  },
+  "stats": {
+    "label": "Test Summary",
+    "total": "Total",
+    "active": "Active",
+    "skipped": "Skipped",
+    "todo": "Todo"
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred",
+    "invalidRequest": "Invalid Request",
+    "accessDenied": "Access Denied",
+    "notFound": "Repository Not Found",
+    "rateLimitExceeded": "Rate Limit Exceeded",
+    "networkError": "Network Error",
+    "serverError": "Server Error",
+    "validationError": "Validation Error",
+    "parseError": "Parse Error",
+    "errorCode": "Error code: {code}",
+    "technicalDetails": "Technical details"
+  },
+  "metadata": {
+    "defaultTitle": "SpecVital - Test Spec Analyzer",
+    "defaultDescription": "Analyze test specifications from GitHub repositories",
+    "analyzeTitle": "{owner}/{repo} - Test Analysis | SpecVital",
+    "analyzeDescription": "Test specification analysis for {owner}/{repo} repository"
+  }
+}

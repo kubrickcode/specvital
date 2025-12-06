@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { parseGitHubUrl } from "@/lib/github-url";
+import { useRouter } from "@/i18n/navigation";
 
 export const UrlInputForm = () => {
   const router = useRouter();
+  const t = useTranslations("home");
   const [error, setError] = useState<string | null>(null);
   const [url, setUrl] = useState("");
 
@@ -37,22 +39,22 @@ export const UrlInputForm = () => {
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-2">
       <label htmlFor="github-url" className="sr-only">
-        GitHub Repository URL
+        {t("inputLabel")}
       </label>
       <div className="flex gap-2">
         <Input
           id="github-url"
           type="url"
-          placeholder="https://github.com/owner/repo"
+          placeholder={t("inputPlaceholder")}
           value={url}
           onChange={handleChange}
           aria-invalid={!!error}
           aria-describedby={error ? "url-error" : undefined}
-          aria-label="GitHub repository URL"
+          aria-label={t("inputLabel")}
           className="flex-1"
         />
-        <Button type="submit" size="lg" aria-label="Analyze repository">
-          Analyze
+        <Button type="submit" size="lg" aria-label={t("analyzeButton")}>
+          {t("analyzeButton")}
           <ArrowRight aria-hidden="true" />
         </Button>
       </div>
