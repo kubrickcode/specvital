@@ -2,6 +2,7 @@
 
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useLayoutEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { TestSuite } from "@/lib/api";
 import { TestSuiteAccordion } from "./test-suite-accordion";
 
@@ -27,10 +28,12 @@ export const TestList = ({ suites }: TestListProps) => {
     scrollMargin,
   });
 
+  const t = useTranslations("analyze");
+
   if (suites.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
-        No test suites found in this repository.
+        {t("noTestSuites")}
       </div>
     );
   }

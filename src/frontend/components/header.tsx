@@ -1,13 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Home } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { LanguageSelector } from "@/components/language-selector";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Link, usePathname } from "@/i18n/navigation";
 
 export const Header = () => {
   const pathname = usePathname();
+  const t = useTranslations("header");
+  const tCommon = useTranslations("common");
   const isHomePage = pathname === "/";
 
   return (
@@ -18,7 +21,7 @@ export const Header = () => {
             href="/"
             className="flex items-center space-x-2 text-lg font-semibold hover:opacity-80 transition-opacity"
           >
-            <span>SpecVital</span>
+            <span>{tCommon("appName")}</span>
           </Link>
         </div>
 
@@ -27,10 +30,11 @@ export const Header = () => {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/" className="flex items-center gap-2">
                 <Home className="h-4 w-4" />
-                <span className="hidden sm:inline">Analyze Another</span>
+                <span className="hidden sm:inline">{t("analyzeAnother")}</span>
               </Link>
             </Button>
           )}
+          <LanguageSelector />
           <ThemeToggle />
         </div>
       </div>

@@ -33,6 +33,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **IMPORTANT**
 
+- Next.js App Router: Client components as leaf nodes
+  - Server components by default - render static content on server
+  - Client components (`"use client"`) only for interactive parts (forms, state, event handlers)
+  - Static text (titles, descriptions) → server component, interactive logic → client component
 - Avoid unfounded assumptions - verify critical details
   - Don't guess file paths - use Glob/Grep to find them
   - Don't guess API contracts or function signatures - read the actual code
