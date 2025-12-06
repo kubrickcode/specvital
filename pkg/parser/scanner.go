@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -522,17 +521,8 @@ func (s *Scanner) parseFile(ctx context.Context, path string) (*domain.TestFile,
 	}
 
 	detectionResult := s.detector.Detect(ctx, path, content)
-	confidenceLevel := detectionResult.ConfidenceLevel()
 
-	if detectionResult.Confidence < s.options.MinConfidence {
-		if s.options.LogLowConfidence && detectionResult.Framework != "" {
-			log.Printf("[scanner] Low confidence detection for %s: %s (%d%%, threshold: %d%%)",
-				path, detectionResult.Framework, detectionResult.Confidence, s.options.MinConfidence)
-		}
-		return nil, nil, confidenceLevel
-	}
-
-	if detectionResult.Framework == "" {
+	if !detectionResult.IsDetected() {
 		return nil, nil, "unknown"
 	}
 
@@ -542,12 +532,7 @@ func (s *Scanner) parseFile(ctx context.Context, path string) (*domain.TestFile,
 			Err:   fmt.Errorf("no parser for framework %s", detectionResult.Framework),
 			Path:  path,
 			Phase: "detection",
-		}, confidenceLevel
-	}
-
-	if s.options.LogLowConfidence && !detectionResult.IsDefinite() && !detectionResult.IsModerate() {
-		log.Printf("[scanner] Weak confidence detection for %s: %s (%d%%)",
-			path, detectionResult.Framework, detectionResult.Confidence)
+		}, string(detectionResult.Source)
 	}
 
 	testFile, err := def.Parser.Parse(ctx, content, path)
@@ -556,10 +541,10 @@ func (s *Scanner) parseFile(ctx context.Context, path string) (*domain.TestFile,
 			Err:   fmt.Errorf("parse: %w", err),
 			Path:  path,
 			Phase: "parsing",
-		}, confidenceLevel
+		}, string(detectionResult.Source)
 	}
 
-	return testFile, nil, confidenceLevel
+	return testFile, nil, string(detectionResult.Source)
 }
 
 func buildSkipSet(patterns []string) map[string]bool {
@@ -638,7 +623,6 @@ func Scan(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult
 }
 
 func DetectTestFiles(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult, error) {
-	allOpts := append(opts, WithMinConfidence(0))
-	scanner := NewScanner(allOpts...)
+	scanner := NewScanner(opts...)
 	return scanner.Scan(ctx, rootPath)
 }

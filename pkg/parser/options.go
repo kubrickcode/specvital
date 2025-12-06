@@ -3,7 +3,6 @@ package parser
 import (
 	"time"
 
-	"github.com/specvital/core/pkg/parser/detection"
 	"github.com/specvital/core/pkg/parser/framework"
 )
 
@@ -32,15 +31,6 @@ type ScanOptions struct {
 	// Registry is the framework registry to use for detection.
 	// If nil, uses framework.DefaultRegistry().
 	Registry *framework.Registry
-
-	// MinConfidence is the minimum detection confidence required to parse a file.
-	// Files with lower confidence are skipped.
-	// Valid values: 0-100. Default: ConfidenceModerate (31).
-	MinConfidence int
-
-	// LogLowConfidence enables logging of low-confidence detections.
-	// Useful for debugging detection issues.
-	LogLowConfidence bool
 }
 
 // ScanOption is a functional option for configuring Scanner.
@@ -94,26 +84,6 @@ func WithRegistry(registry *framework.Registry) ScanOption {
 	}
 }
 
-// WithMinConfidence sets the minimum detection confidence threshold.
-func WithMinConfidence(confidence int) ScanOption {
-	return func(o *ScanOptions) {
-		if confidence < 0 {
-			confidence = 0
-		}
-		if confidence > 100 {
-			confidence = 100
-		}
-		o.MinConfidence = confidence
-	}
-}
-
-// WithLogLowConfidence enables logging of low-confidence detections.
-func WithLogLowConfidence(enabled bool) ScanOption {
-	return func(o *ScanOptions) {
-		o.LogLowConfidence = enabled
-	}
-}
-
 func applyDefaults(opts *ScanOptions) {
 	if opts.Timeout <= 0 {
 		opts.Timeout = DefaultTimeout
@@ -123,9 +93,6 @@ func applyDefaults(opts *ScanOptions) {
 	}
 	if opts.Registry == nil {
 		opts.Registry = framework.DefaultRegistry()
-	}
-	if opts.MinConfidence == 0 {
-		opts.MinConfidence = detection.ConfidenceModerate
 	}
 }
 
@@ -148,4 +115,16 @@ func WithScanMaxFileSize(size int64) ScanOption {
 			o.MaxFileSize = size
 		}
 	}
+}
+
+// Deprecated: MinConfidence is no longer used with early-return detection.
+// Kept for backward compatibility.
+func WithMinConfidence(_ int) ScanOption {
+	return func(_ *ScanOptions) {}
+}
+
+// Deprecated: LogLowConfidence is no longer used with early-return detection.
+// Kept for backward compatibility.
+func WithLogLowConfidence(_ bool) ScanOption {
+	return func(_ *ScanOptions) {}
 }
