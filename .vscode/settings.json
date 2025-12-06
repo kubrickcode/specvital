@@ -71,6 +71,14 @@
           "terminalName": "Forced Push"
         },
         {
+          "color": "",
+          "command": "git pull",
+          "name": "pull",
+          "shortcut": "l",
+          "terminalName": "pull",
+          "useVsCodeApi": false
+        },
+        {
           "command": "git add . && git commit --amend --no-edit",
           "name": "Commit",
           "shortcut": "c",
