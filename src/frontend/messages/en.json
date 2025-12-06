@@ -24,6 +24,12 @@
     "testSuites": "Test Suites",
     "noTestSuites": "No test suites found in this repository."
   },
+  "emptyState": {
+    "title": "No tests found",
+    "description": "We couldn't find any test files in this repository.",
+    "supportedFrameworks": "Supported frameworks:",
+    "analyzeAnother": "Analyze Another Repository"
+  },
   "stats": {
     "label": "Test Statistics",
     "total": "Total",

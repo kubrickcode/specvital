@@ -2,8 +2,8 @@
 
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useLayoutEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
 import type { TestSuite } from "@/lib/api";
+import { EmptyState } from "./empty-state";
 import { TestSuiteAccordion } from "./test-suite-accordion";
 
 type TestListProps = {
@@ -28,14 +28,8 @@ export const TestList = ({ suites }: TestListProps) => {
     scrollMargin,
   });
 
-  const t = useTranslations("analyze");
-
   if (suites.length === 0) {
-    return (
-      <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
-        {t("noTestSuites")}
-      </div>
-    );
+    return <EmptyState />;
   }
 
   const virtualItems = virtualizer.getVirtualItems();
