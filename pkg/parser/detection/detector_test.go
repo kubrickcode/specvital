@@ -400,6 +400,62 @@ func TestResult_String(t *testing.T) {
 	}
 }
 
+// TestDetector_GoTestFile tests Go test file detection by naming convention.
+func TestDetector_GoTestFile(t *testing.T) {
+	registry := framework.NewRegistry()
+	registry.Register(&framework.Definition{
+		Name:      "go-testing",
+		Languages: []domain.Language{domain.LanguageGo},
+		Matchers:  []framework.Matcher{},
+	})
+
+	detector := NewDetector(registry)
+
+	content := []byte(`
+package service
+
+import "testing"
+
+func TestService(t *testing.T) {
+	t.Run("should work", func(t *testing.T) {})
+}
+`)
+
+	result := detector.Detect(context.Background(), "/project/service_test.go", content)
+
+	if result.Framework != "go-testing" {
+		t.Errorf("expected framework 'go-testing', got '%s'", result.Framework)
+	}
+
+	if result.Source != SourceContentPattern {
+		t.Errorf("expected source 'content-pattern', got '%s'", result.Source)
+	}
+}
+
+// TestDetector_GoNonTestFile tests that non-test Go files are not detected.
+func TestDetector_GoNonTestFile(t *testing.T) {
+	registry := framework.NewRegistry()
+	registry.Register(&framework.Definition{
+		Name:      "go-testing",
+		Languages: []domain.Language{domain.LanguageGo},
+		Matchers:  []framework.Matcher{},
+	})
+
+	detector := NewDetector(registry)
+
+	content := []byte(`
+package service
+
+func DoSomething() {}
+`)
+
+	result := detector.Detect(context.Background(), "/project/service.go", content)
+
+	if result.Framework != "" {
+		t.Errorf("expected no framework for non-test Go file, got '%s'", result.Framework)
+	}
+}
+
 // TestResult_IsDetected tests IsDetected method.
 func TestResult_IsDetected(t *testing.T) {
 	tests := []struct {

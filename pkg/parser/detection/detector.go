@@ -43,6 +43,14 @@ func (d *Detector) Detect(ctx context.Context, filePath string, content []byte) 
 		return Unknown()
 	}
 
+	// Go test files are detected by naming convention (*_test.go)
+	if lang == domain.LanguageGo {
+		if strings.HasSuffix(filepath.Base(filePath), "_test.go") {
+			return Confirmed("go-testing", SourceContentPattern)
+		}
+		return Unknown()
+	}
+
 	frameworks := d.registry.FindByLanguage(lang)
 	if len(frameworks) == 0 {
 		return Unknown()
