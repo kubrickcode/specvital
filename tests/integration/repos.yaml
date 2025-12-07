@@ -107,3 +107,8 @@ repositories:
     url: https://github.com/apache/commons-lang
     ref: rel/commons-lang-3.17.0
     framework: junit5
+
+  - name: fluentassertions
+    url: https://github.com/fluentassertions/fluentassertions
+    ref: 8.3.0
+    framework: xunit

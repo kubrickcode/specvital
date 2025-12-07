@@ -16,6 +16,7 @@ import (
 	"github.com/specvital/core/pkg/domain"
 	"github.com/specvital/core/pkg/parser/detection"
 	"github.com/specvital/core/pkg/parser/framework"
+	"github.com/specvital/core/pkg/parser/strategies/shared/dotnetast"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 )
@@ -579,6 +580,8 @@ func isTestFileCandidate(path string) bool {
 		return isJavaTestFile(path)
 	case ".py":
 		return isPythonTestFile(path)
+	case ".cs":
+		return isCSharpTestFile(path)
 	default:
 		return false
 	}
@@ -650,6 +653,32 @@ func isPythonTestFile(path string) bool {
 	normalizedPath := filepath.ToSlash(path)
 	if strings.Contains(normalizedPath, "/tests/") || strings.HasPrefix(normalizedPath, "tests/") {
 		return strings.HasSuffix(base, ".py")
+	}
+
+	return false
+}
+
+func isCSharpTestFile(path string) bool {
+	// Check filename pattern first
+	if dotnetast.IsCSharpTestFileName(path) {
+		return true
+	}
+
+	// Check directory patterns for .NET project conventions
+	normalizedPath := filepath.ToSlash(path)
+	if strings.Contains(normalizedPath, "/test/") || strings.Contains(normalizedPath, "/tests/") {
+		return true
+	}
+	if strings.Contains(normalizedPath, ".Tests/") || strings.Contains(normalizedPath, ".Test/") {
+		return true
+	}
+	if strings.Contains(normalizedPath, ".Specs/") || strings.Contains(normalizedPath, ".Spec/") {
+		return true
+	}
+	// "Tests/" as project folder pattern (both capitalized and lowercase)
+	if strings.HasPrefix(normalizedPath, "Tests/") || strings.Contains(normalizedPath, "/Tests/") ||
+		strings.HasPrefix(normalizedPath, "tests/") {
+		return true
 	}
 
 	return false

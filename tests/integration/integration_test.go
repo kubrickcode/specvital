@@ -17,6 +17,7 @@ import (
 	_ "github.com/specvital/core/pkg/parser/strategies/pytest"
 	_ "github.com/specvital/core/pkg/parser/strategies/unittest"
 	_ "github.com/specvital/core/pkg/parser/strategies/vitest"
+	_ "github.com/specvital/core/pkg/parser/strategies/xunit"
 )
 
 const scanTimeout = 10 * time.Minute

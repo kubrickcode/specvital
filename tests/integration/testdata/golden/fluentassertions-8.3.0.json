@@ -1,0 +1,136 @@
+{
+  "repository": "fluentassertions",
+  "ref": "8.3.0",
+  "expectedFramework": "xunit",
+  "fileCount": 326,
+  "testCount": 4863,
+  "frameworkCounts": {
+    "xunit": 326
+  },
+  "sampleFiles": [
+    {
+      "path": "Tests/Approval.Tests/ApiApproval.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/AssertionRuleSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 18
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/BasicSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 40
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/CollectionSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 115
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/CyclicReferencesSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 15
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/DateTimePropertiesSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/DictionarySpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 50
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/EnumSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 23
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/ExtensibilitySpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 43
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/MemberConversionSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 13
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/MemberLessObjectsSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/MemberMatchingSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 33
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/NestedPropertiesSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/NonEquivalencySpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/ObjectReferenceSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/RecordSpecs.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/SelectionRulesSpecs.Accessibility.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/SelectionRulesSpecs.Basic.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/SelectionRulesSpecs.Browsability.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 22
+    },
+    {
+      "path": "Tests/FluentAssertions.Equivalency.Specs/SelectionRulesSpecs.Covariance.cs",
+      "framework": "xunit",
+      "suiteCount": 1,
+      "testCount": 2
+    }
+  ],
+  "stats": {
+    "filesMatched": 326,
+    "filesScanned": 738
+  }
+}

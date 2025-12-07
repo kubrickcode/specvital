@@ -86,6 +86,8 @@ func (d *Detector) detectFromImport(ctx context.Context, lang domain.Language, c
 		imports = extraction.ExtractJavaImports(ctx, content)
 	case domain.LanguagePython:
 		imports = extraction.ExtractPythonImports(ctx, content)
+	case domain.LanguageCSharp:
+		imports = extraction.ExtractCSharpUsings(ctx, content)
 	}
 
 	if len(imports) == 0 {
@@ -201,6 +203,8 @@ func detectLanguage(filePath string) domain.Language {
 		return domain.LanguageJava
 	case ".py":
 		return domain.LanguagePython
+	case ".cs":
+		return domain.LanguageCSharp
 	default:
 		return ""
 	}

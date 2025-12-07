@@ -6,6 +6,7 @@ type Language string
 
 // Supported languages for test file parsing.
 const (
+	LanguageCSharp     Language = "csharp"
 	LanguageGo         Language = "go"
 	LanguageJava       Language = "java"
 	LanguageJavaScript Language = "javascript"
