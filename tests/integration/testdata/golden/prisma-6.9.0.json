@@ -5,8 +5,8 @@
   "fileCount": 449,
   "testCount": 1640,
   "frameworkCounts": {
-    "jest": 404,
-    "vitest": 45
+    "jest": 400,
+    "vitest": 49
   },
   "sampleFiles": [
     {
@@ -47,7 +47,7 @@
     },
     {
       "path": "packages/cli/src/__tests__/commands/Format.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 1,
       "testCount": 12
     },
@@ -83,7 +83,7 @@
     },
     {
       "path": "packages/cli/src/__tests__/config.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 0
     },
@@ -101,7 +101,7 @@
     },
     {
       "path": "packages/cli/src/__tests__/dotenv-2-prisma-folder.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 1
     },

@@ -53,6 +53,17 @@ test target="all":
         ;;
     esac
 
+snapshot-update repo="all":
+    #!/usr/bin/env bash
+    set -euox pipefail
+    cd {{ root_dir }}
+    if [ "{{ repo }}" = "all" ]; then
+        go test -tags integration ./tests/integration/... -v -timeout 15m -update
+    else
+        go test -tags integration ./tests/integration/... -v -timeout 15m -update -run "TestSingleFramework/{{ repo }}"
+    fi
+    just lint config
+
 release:
     #!/usr/bin/env bash
     set -euo pipefail

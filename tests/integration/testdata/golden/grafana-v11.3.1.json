@@ -3,11 +3,11 @@
   "ref": "v11.3.1",
   "expectedFramework": "go-testing",
   "fileCount": 2549,
-  "testCount": 15801,
+  "testCount": 15783,
   "frameworkCounts": {
     "go-testing": 972,
-    "jest": 1393,
-    "playwright": 184
+    "jest": 1366,
+    "playwright": 211
   },
   "sampleFiles": [
     {
@@ -24,9 +24,9 @@
     },
     {
       "path": "e2e/dashboards-suite/Repeating_a_panel_horizontally.spec.ts",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 3
+      "framework": "playwright",
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
       "path": "e2e/dashboards-suite/Repeating_a_panel_vertically.spec.ts",
@@ -42,9 +42,9 @@
     },
     {
       "path": "e2e/dashboards-suite/dashboard-browse-nested.spec.ts",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 1
+      "framework": "playwright",
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
       "path": "e2e/dashboards-suite/dashboard-browse.spec.ts",
@@ -54,15 +54,15 @@
     },
     {
       "path": "e2e/dashboards-suite/dashboard-export-json.spec.ts",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "e2e/dashboards-suite/dashboard-keybindings.spec.ts",
       "framework": "playwright",
       "suiteCount": 0,
       "testCount": 0
+    },
+    {
+      "path": "e2e/dashboards-suite/dashboard-keybindings.spec.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
     },
     {
       "path": "e2e/dashboards-suite/dashboard-live-streaming.spec.ts",
@@ -120,9 +120,9 @@
     },
     {
       "path": "e2e/dashboards-suite/embedded-dashboard.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 0
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
     },
     {
       "path": "e2e/dashboards-suite/general-dashboards.spec.ts",
@@ -133,6 +133,6 @@
   ],
   "stats": {
     "filesMatched": 2549,
-    "filesScanned": 2549
+    "filesScanned": 2553
   }
 }
