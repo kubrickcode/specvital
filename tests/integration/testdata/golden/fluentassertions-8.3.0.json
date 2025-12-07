@@ -2,9 +2,10 @@
   "repository": "fluentassertions",
   "ref": "8.3.0",
   "expectedFramework": "xunit",
-  "fileCount": 326,
-  "testCount": 4863,
+  "fileCount": 329,
+  "testCount": 4866,
   "frameworkCounts": {
+    "nunit": 3,
     "xunit": 326
   },
   "sampleFiles": [
@@ -130,7 +131,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 326,
+    "filesMatched": 329,
     "filesScanned": 738
   }
 }

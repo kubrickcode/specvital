@@ -1,0 +1,136 @@
+{
+  "repository": "nunit",
+  "ref": "4.3.2",
+  "expectedFramework": "nunit",
+  "fileCount": 376,
+  "testCount": 3868,
+  "frameworkCounts": {
+    "nunit": 376
+  },
+  "sampleFiles": [
+    {
+      "path": "CakeScripts.Tests/Usings.cs",
+      "framework": "nunit",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "CakeScripts.Tests/VersionParsersTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "src/NUnitFramework/benchmarks/nunit.framework.benchmarks/CompositeWorkItemBenchmark.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "src/NUnitFramework/benchmarks/nunit.framework.benchmarks/Program.cs",
+      "framework": "nunit",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/NUnitFramework/framework/Attributes/TestAttribute.cs",
+      "framework": "nunit",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/NUnitFramework/framework/Attributes/TheoryAttribute.cs",
+      "framework": "nunit",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/NUnitFramework/mock-assembly/MockAssembly.cs",
+      "framework": "nunit",
+      "suiteCount": 9,
+      "testCount": 25
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/ArrayNotEqualFixture.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/Assert.Types.Tests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/AssertEqualsTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 45
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/CollectionAssertTest.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 80
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/ConditionAssertTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 38
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/ContainsFixture.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/DirectoryAssertTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 22
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/FileAssertTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 39
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/GreaterEqualFixture.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 12
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/GreaterFixture.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/LessEqualFixture.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/LessFixture.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/NegativeFixture.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 3
+    }
+  ],
+  "stats": {
+    "filesMatched": 376,
+    "filesScanned": 946
+  }
+}

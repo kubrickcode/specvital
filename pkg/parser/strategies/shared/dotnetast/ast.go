@@ -205,6 +205,41 @@ func IsPublicMethod(node *sitter.Node, source []byte) bool {
 	return false
 }
 
+// FindAttributeArgumentList finds the attribute_argument_list child of an attribute node.
+// Used by xUnit, NUnit, and other .NET framework parsers.
+func FindAttributeArgumentList(attr *sitter.Node) *sitter.Node {
+	for i := 0; i < int(attr.ChildCount()); i++ {
+		child := attr.Child(i)
+		if child.Type() == NodeAttributeArgumentList {
+			return child
+		}
+	}
+	return nil
+}
+
+// ParseAssignmentExpression extracts name and value from an assignment_expression node.
+// For "Skip = \"reason\"", returns ("Skip", "reason").
+// Used by xUnit (Skip, DisplayName), NUnit (Description), and other .NET framework parsers.
+func ParseAssignmentExpression(argNode *sitter.Node, source []byte) (string, string) {
+	for i := 0; i < int(argNode.ChildCount()); i++ {
+		child := argNode.Child(i)
+		if child.Type() == NodeAssignmentExpression {
+			var name, value string
+			for j := 0; j < int(child.ChildCount()); j++ {
+				part := child.Child(j)
+				switch part.Type() {
+				case NodeIdentifier:
+					name = part.Content(source)
+				case NodeStringLiteral:
+					value = ExtractStringContent(part, source)
+				}
+			}
+			return name, value
+		}
+	}
+	return "", ""
+}
+
 // IsCSharpTestFileName checks if a filename follows C# test file naming conventions.
 // Matches: *Test.cs, *Tests.cs, Test*.cs, *Spec.cs, *Specs.cs
 func IsCSharpTestFileName(filename string) bool {

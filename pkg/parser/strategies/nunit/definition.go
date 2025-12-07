@@ -1,5 +1,5 @@
-// Package xunit implements xUnit test framework support for C# test files.
-package xunit
+// Package nunit implements NUnit test framework support for C# test files.
+package nunit
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	"github.com/specvital/core/pkg/parser/strategies/shared/dotnetast"
 )
 
-const frameworkName = "xunit"
+const frameworkName = "nunit"
 
 func init() {
 	framework.Register(NewDefinition())
@@ -27,50 +27,49 @@ func NewDefinition() *framework.Definition {
 		Languages: []domain.Language{domain.LanguageCSharp},
 		Matchers: []framework.Matcher{
 			matchers.NewImportMatcher(
-				"Xunit",
-				"using Xunit",
+				"NUnit.Framework",
+				"using NUnit.Framework",
 			),
-			&XUnitFileMatcher{},
-			&XUnitContentMatcher{},
+			&NUnitFileMatcher{},
+			&NUnitContentMatcher{},
 		},
 		ConfigParser: nil,
-		Parser:       &XUnitParser{},
+		Parser:       &NUnitParser{},
 		Priority:     framework.PriorityGeneric,
 	}
 }
 
-// XUnitFileMatcher matches *Test.cs, *Tests.cs, Test*.cs, *Spec.cs, *Specs.cs files.
-type XUnitFileMatcher struct{}
+// NUnitFileMatcher matches *Test.cs, *Tests.cs, Test*.cs, *Spec.cs, *Specs.cs files.
+type NUnitFileMatcher struct{}
 
-func (m *XUnitFileMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
+func (m *NUnitFileMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
 	if signal.Type != framework.SignalFileName {
 		return framework.NoMatch()
 	}
 
 	if dotnetast.IsCSharpTestFileName(signal.Value) {
-		return framework.PartialMatch(20, "xUnit file naming convention")
+		return framework.PartialMatch(20, "NUnit file naming convention")
 	}
 
 	return framework.NoMatch()
 }
 
-// XUnitContentMatcher matches xUnit specific patterns.
-type XUnitContentMatcher struct{}
+// NUnitContentMatcher matches NUnit specific patterns.
+type NUnitContentMatcher struct{}
 
-var xunitPatterns = []struct {
+var nunitPatterns = []struct {
 	pattern *regexp.Regexp
 	desc    string
 }{
-	{regexp.MustCompile(`\[Fact\]`), "[Fact] attribute"},
-	{regexp.MustCompile(`\[Theory\]`), "[Theory] attribute"},
-	{regexp.MustCompile(`\[InlineData\(`), "[InlineData] attribute"},
-	{regexp.MustCompile(`\[MemberData\(`), "[MemberData] attribute"},
-	{regexp.MustCompile(`\[ClassData\(`), "[ClassData] attribute"},
-	{regexp.MustCompile(`using\s+Xunit\s*;`), "using Xunit"},
-	{regexp.MustCompile(`\[Skip\(`), "[Skip] attribute"},
+	{regexp.MustCompile(`\[Test\]`), "[Test] attribute"},
+	{regexp.MustCompile(`\[TestCase\(`), "[TestCase] attribute"},
+	{regexp.MustCompile(`\[TestFixture\]`), "[TestFixture] attribute"},
+	{regexp.MustCompile(`\[TestCaseSource\(`), "[TestCaseSource] attribute"},
+	{regexp.MustCompile(`using\s+NUnit\.Framework\s*;`), "using NUnit.Framework"},
+	{regexp.MustCompile(`\[Ignore\(`), "[Ignore] attribute"},
 }
 
-func (m *XUnitContentMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
+func (m *NUnitContentMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
 	if signal.Type != framework.SignalFileContent {
 		return framework.NoMatch()
 	}
@@ -80,22 +79,22 @@ func (m *XUnitContentMatcher) Match(ctx context.Context, signal framework.Signal
 		content = []byte(signal.Value)
 	}
 
-	for _, p := range xunitPatterns {
+	for _, p := range nunitPatterns {
 		if p.pattern.Match(content) {
-			return framework.PartialMatch(40, "Found xUnit pattern: "+p.desc)
+			return framework.PartialMatch(40, "Found NUnit pattern: "+p.desc)
 		}
 	}
 
 	return framework.NoMatch()
 }
 
-// XUnitParser extracts test definitions from C# xUnit files.
-type XUnitParser struct{}
+// NUnitParser extracts test definitions from C# NUnit files.
+type NUnitParser struct{}
 
-func (p *XUnitParser) Parse(ctx context.Context, source []byte, filename string) (*domain.TestFile, error) {
+func (p *NUnitParser) Parse(ctx context.Context, source []byte, filename string) (*domain.TestFile, error) {
 	tree, err := parser.ParseWithPool(ctx, domain.LanguageCSharp, source)
 	if err != nil {
-		return nil, fmt.Errorf("xunit parser: failed to parse %s: %w", filename, err)
+		return nil, fmt.Errorf("nunit parser: failed to parse %s: %w", filename, err)
 	}
 	defer tree.Close()
 
@@ -112,21 +111,21 @@ func (p *XUnitParser) Parse(ctx context.Context, source []byte, filename string)
 
 // maxNestedDepth limits recursion depth for nested class parsing.
 // C# allows unlimited class nesting, but 20 levels provides a safe buffer
-// (real-world maximum observed: 3 in FluentAssertions test suite).
+// (real-world maximum observed: 3 in NUnit's own test suite).
 const maxNestedDepth = 20
 
 func getClassStatus(attrLists []*sitter.Node, source []byte) domain.TestStatus {
 	for _, attr := range dotnetast.GetAttributes(attrLists) {
 		name := dotnetast.GetAttributeName(attr, source)
-		if name == "Skip" || name == "SkipAttribute" {
+		if name == "Ignore" || name == "IgnoreAttribute" {
 			return domain.TestStatusSkipped
 		}
 	}
 	return ""
 }
 
-// getDisplayNameFromAttribute extracts DisplayName from [Fact(DisplayName = "...")] or [Theory(DisplayName = "...")].
-func getDisplayNameFromAttribute(attr *sitter.Node, source []byte) string {
+// getDescriptionFromAttribute extracts Description from [Test(Description = "...")] or [TestCase(Description = "...")].
+func getDescriptionFromAttribute(attr *sitter.Node, source []byte) string {
 	argList := dotnetast.FindAttributeArgumentList(attr)
 	if argList == nil {
 		return ""
@@ -136,7 +135,7 @@ func getDisplayNameFromAttribute(attr *sitter.Node, source []byte) string {
 		arg := argList.Child(i)
 		if arg.Type() == dotnetast.NodeAttributeArgument {
 			name, value := dotnetast.ParseAssignmentExpression(arg, source)
-			if name == "DisplayName" {
+			if name == "Description" {
 				return value
 			}
 		}
@@ -144,20 +143,13 @@ func getDisplayNameFromAttribute(attr *sitter.Node, source []byte) string {
 	return ""
 }
 
-// isSkipped checks if the attribute has Skip parameter set.
-func isSkipped(attr *sitter.Node, source []byte) bool {
-	argList := dotnetast.FindAttributeArgumentList(attr)
-	if argList == nil {
-		return false
-	}
-
-	for i := 0; i < int(argList.ChildCount()); i++ {
-		arg := argList.Child(i)
-		if arg.Type() == dotnetast.NodeAttributeArgument {
-			name, _ := dotnetast.ParseAssignmentExpression(arg, source)
-			if name == "Skip" {
-				return true
-			}
+// isIgnored checks if [Ignore] or [IgnoreAttribute] is applied to the test method.
+// Unlike xUnit's Skip parameter, NUnit uses a separate attribute: [Ignore("reason")].
+func isIgnored(attrLists []*sitter.Node, source []byte) bool {
+	for _, attr := range dotnetast.GetAttributes(attrLists) {
+		name := dotnetast.GetAttributeName(attr, source)
+		if name == "Ignore" || name == "IgnoreAttribute" {
+			return true
 		}
 	}
 	return false
@@ -210,8 +202,8 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 			}
 
 		case dotnetast.NodeClassDeclaration:
-			// xUnit automatically discovers nested classes without annotation.
-			// Unlike JUnit5's @Nested requirement, any nested class can contain test methods.
+			// NUnit discovers nested classes with [TestFixture] or test method attributes.
+			// Nested classes inherit parent's [Ignore] status through classStatus propagation.
 			if nested := parseTestClassWithDepth(child, source, filename, depth+1); nested != nil {
 				nestedSuites = append(nestedSuites, *nested)
 			}
@@ -240,29 +232,30 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	attributes := dotnetast.GetAttributes(attrLists)
 	isTest := false
 	status := classStatus
-	var displayName string
+	var description string
 
 	for _, attr := range attributes {
 		name := dotnetast.GetAttributeName(attr, source)
 
 		switch name {
-		case "Fact", "FactAttribute":
+		case "Test", "TestAttribute":
 			isTest = true
-			displayName = getDisplayNameFromAttribute(attr, source)
-			if isSkipped(attr, source) {
-				status = domain.TestStatusSkipped
-			}
-		case "Theory", "TheoryAttribute":
+			description = getDescriptionFromAttribute(attr, source)
+		case "TestCase", "TestCaseAttribute":
 			isTest = true
-			displayName = getDisplayNameFromAttribute(attr, source)
-			if isSkipped(attr, source) {
-				status = domain.TestStatusSkipped
-			}
+			description = getDescriptionFromAttribute(attr, source)
+		case "TestCaseSource", "TestCaseSourceAttribute":
+			isTest = true
 		}
 	}
 
 	if !isTest {
 		return nil
+	}
+
+	// Check for [Ignore] attribute
+	if isIgnored(attrLists, source) {
+		status = domain.TestStatusSkipped
 	}
 
 	methodName := dotnetast.GetMethodName(node, source)
@@ -271,8 +264,8 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	}
 
 	testName := methodName
-	if displayName != "" {
-		testName = displayName
+	if description != "" {
+		testName = description
 	}
 
 	return &domain.Test{
