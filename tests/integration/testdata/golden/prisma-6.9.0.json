@@ -5,8 +5,8 @@
   "fileCount": 449,
   "testCount": 1640,
   "frameworkCounts": {
-    "jest": 400,
-    "vitest": 49
+    "jest": 393,
+    "vitest": 56
   },
   "sampleFiles": [
     {
@@ -29,19 +29,19 @@
     },
     {
       "path": "packages/cli/src/__tests__/commandState.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 1,
       "testCount": 3
     },
     {
       "path": "packages/cli/src/__tests__/commands/CLI.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 1,
       "testCount": 11
     },
     {
       "path": "packages/cli/src/__tests__/commands/DebugInfo.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 1,
       "testCount": 6
     },
@@ -53,13 +53,13 @@
     },
     {
       "path": "packages/cli/src/__tests__/commands/Generate.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 5,
       "testCount": 38
     },
     {
       "path": "packages/cli/src/__tests__/commands/Studio.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 2,
       "testCount": 10
     },
@@ -83,7 +83,7 @@
     },
     {
       "path": "packages/cli/src/__tests__/config.test.ts",
-      "framework": "vitest",
+      "framework": "jest",
       "suiteCount": 0,
       "testCount": 0
     },
@@ -101,13 +101,13 @@
     },
     {
       "path": "packages/cli/src/__tests__/dotenv-2-prisma-folder.test.ts",
-      "framework": "vitest",
+      "framework": "jest",
       "suiteCount": 0,
       "testCount": 1
     },
     {
       "path": "packages/cli/src/__tests__/dotenv-3-conflict.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 1
     },
@@ -119,7 +119,7 @@
     },
     {
       "path": "packages/cli/src/__tests__/dotenv-5-only-root.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 1
     },

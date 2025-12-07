@@ -3,11 +3,11 @@
   "ref": "v11.3.1",
   "expectedFramework": "go-testing",
   "fileCount": 2549,
-  "testCount": 15783,
+  "testCount": 15802,
   "frameworkCounts": {
     "go-testing": 972,
-    "jest": 1366,
-    "playwright": 211
+    "jest": 1397,
+    "playwright": 180
   },
   "sampleFiles": [
     {
@@ -24,9 +24,9 @@
     },
     {
       "path": "e2e/dashboards-suite/Repeating_a_panel_horizontally.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 0
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 3
     },
     {
       "path": "e2e/dashboards-suite/Repeating_a_panel_vertically.spec.ts",
@@ -42,9 +42,9 @@
     },
     {
       "path": "e2e/dashboards-suite/dashboard-browse-nested.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 0
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
     },
     {
       "path": "e2e/dashboards-suite/dashboard-browse.spec.ts",
@@ -54,9 +54,9 @@
     },
     {
       "path": "e2e/dashboards-suite/dashboard-export-json.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 0
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
     },
     {
       "path": "e2e/dashboards-suite/dashboard-keybindings.spec.ts",
@@ -72,9 +72,9 @@
     },
     {
       "path": "e2e/dashboards-suite/dashboard-public-create.spec.ts",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 3
+      "framework": "playwright",
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
       "path": "e2e/dashboards-suite/dashboard-public-templating.spec.ts",
@@ -84,21 +84,21 @@
     },
     {
       "path": "e2e/dashboards-suite/dashboard-share-externally-create.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 0
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 4
     },
     {
       "path": "e2e/dashboards-suite/dashboard-share-internally.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 0
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 4
     },
     {
       "path": "e2e/dashboards-suite/dashboard-share-snapshot-create.spec.ts",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 1
+      "framework": "playwright",
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
       "path": "e2e/dashboards-suite/dashboard-templating.spec.ts",

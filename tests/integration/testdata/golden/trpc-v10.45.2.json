@@ -5,8 +5,8 @@
   "fileCount": 172,
   "testCount": 742,
   "frameworkCounts": {
-    "playwright": 10,
-    "vitest": 162
+    "playwright": 11,
+    "vitest": 161
   },
   "sampleFiles": [
     {
@@ -35,7 +35,7 @@
     },
     {
       "path": "examples/.interop/next-prisma-starter/src/server/routers/post.test.ts",
-      "framework": "vitest",
+      "framework": "playwright",
       "suiteCount": 0,
       "testCount": 1
     },
