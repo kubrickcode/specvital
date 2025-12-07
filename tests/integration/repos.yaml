@@ -91,3 +91,19 @@ repositories:
     ref: v3.5.17
     framework: go-testing
     complex: true
+
+  - name: junit5-samples
+    url: https://github.com/junit-team/junit5-samples
+    ref: main
+    framework: junit5
+
+  - name: testcontainers-java
+    url: https://github.com/testcontainers/testcontainers-java
+    ref: 1.20.4
+    framework: junit5
+    complex: true
+
+  - name: commons-lang
+    url: https://github.com/apache/commons-lang
+    ref: rel/commons-lang-3.17.0
+    framework: junit5

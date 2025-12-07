@@ -1,0 +1,136 @@
+{
+  "repository": "commons-lang",
+  "ref": "rel/commons-lang-3.17.0",
+  "expectedFramework": "junit5",
+  "fileCount": 218,
+  "testCount": 4339,
+  "frameworkCounts": {
+    "junit5": 218
+  },
+  "sampleFiles": [
+    {
+      "path": "src/test/java/org/apache/commons/lang3/AbstractLangTest.java",
+      "framework": "junit5",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/AnnotationUtilsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/AppendableJoinerTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/ArchUtilsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/ArrayFillTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 16
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/ArraySorterTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/ArrayUtilsAddTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 22
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/ArrayUtilsInsertTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/ArrayUtilsRemoveMultipleTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 55
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/ArrayUtilsRemoveTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 37
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/ArrayUtilsSetTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/ArrayUtilsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 341
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/BitFieldTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 15
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/BooleanUtilsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 90
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/CachedRandomBitsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/CharEncodingTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/CharRangeTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 17
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/CharSequenceUtilsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/CharSetTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 15
+    },
+    {
+      "path": "src/test/java/org/apache/commons/lang3/CharSetUtilsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 11
+    }
+  ],
+  "stats": {
+    "filesMatched": 218,
+    "filesScanned": 500
+  }
+}

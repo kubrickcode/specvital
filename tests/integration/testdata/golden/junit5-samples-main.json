@@ -1,0 +1,136 @@
+{
+  "repository": "junit5-samples",
+  "ref": "main",
+  "expectedFramework": "junit5",
+  "fileCount": 30,
+  "testCount": 40,
+  "frameworkCounts": {
+    "junit5": 30
+  },
+  "sampleFiles": [
+    {
+      "path": "junit-jupiter-extensions/src/main/java/com/example/cartesian/CartesianProductContext.java",
+      "framework": "junit5",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "junit-jupiter-extensions/src/main/java/com/example/cartesian/CartesianProductProvider.java",
+      "framework": "junit5",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "junit-jupiter-extensions/src/main/java/com/example/cartesian/CartesianProductResolver.java",
+      "framework": "junit5",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "junit-jupiter-extensions/src/main/java/com/example/cartesian/CartesianProductTest.java",
+      "framework": "junit5",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "junit-jupiter-extensions/src/main/java/com/example/random/RandomParametersExtension.java",
+      "framework": "junit5",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "junit-jupiter-extensions/src/test/java/com/example/cartesian/CartesianProductTests.java",
+      "framework": "junit5",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "junit-jupiter-extensions/src/test/java/com/example/random/RandomParametersExtensionTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-jupiter-starter-ant/src/test/java/com/example/project/CalculatorTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-jupiter-starter-bazel/src/test/java/com/example/project/CalculatorTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-jupiter-starter-gradle/src/test/java/com/example/project/CalculatorTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-jupiter-starter-maven/src/test/java/com/example/project/CalculatorTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-migration-gradle/src/test/java/com/example/project/FirstTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "junit-migration-gradle/src/test/java/com/example/project/JUnit4Test.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "junit-migration-gradle/src/test/java/com/example/project/OtherTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-migration-gradle/src/test/java/com/example/project/SecondTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-migration-maven/src/test/java/com/example/project/FirstTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "junit-migration-maven/src/test/java/com/example/project/JUnit4Test.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "junit-migration-maven/src/test/java/com/example/project/OtherTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-migration-maven/src/test/java/com/example/project/SecondTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-modular-world/src/test/com.example.application/com/example/application/MainTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    }
+  ],
+  "stats": {
+    "filesMatched": 30,
+    "filesScanned": 62
+  }
+}

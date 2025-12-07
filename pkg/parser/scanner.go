@@ -575,6 +575,8 @@ func isTestFileCandidate(path string) bool {
 		return isJSTestFile(path)
 	case ".go":
 		return isGoTestFile(path)
+	case ".java":
+		return isJavaTestFile(path)
 	case ".py":
 		return isPythonTestFile(path)
 	default:
@@ -585,6 +587,30 @@ func isTestFileCandidate(path string) bool {
 func isGoTestFile(path string) bool {
 	base := filepath.Base(path)
 	return strings.HasSuffix(base, "_test.go")
+}
+
+func isJavaTestFile(path string) bool {
+	base := filepath.Base(path)
+	name := strings.TrimSuffix(base, ".java")
+
+	// JUnit conventions: *Test.java, *Tests.java, Test*.java
+	if strings.HasSuffix(name, "Test") || strings.HasSuffix(name, "Tests") {
+		return true
+	}
+	if strings.HasPrefix(name, "Test") {
+		return true
+	}
+
+	// Files in test/ or tests/ directory
+	normalizedPath := filepath.ToSlash(path)
+	if strings.Contains(normalizedPath, "/test/") || strings.Contains(normalizedPath, "/tests/") {
+		return true
+	}
+	if strings.Contains(normalizedPath, "/src/test/") {
+		return true
+	}
+
+	return false
 }
 
 func isJSTestFile(path string) bool {
