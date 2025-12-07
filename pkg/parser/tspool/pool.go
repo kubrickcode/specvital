@@ -20,6 +20,7 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/javascript"
+	"github.com/smacker/go-tree-sitter/python"
 	"github.com/smacker/go-tree-sitter/typescript/typescript"
 
 	"github.com/specvital/core/pkg/domain"
@@ -31,6 +32,7 @@ const MaxTreeDepth = 1000
 var (
 	goLang *sitter.Language
 	jsLang *sitter.Language
+	pyLang *sitter.Language
 	tsLang *sitter.Language
 
 	langOnce sync.Once
@@ -40,6 +42,7 @@ func initLanguages() {
 	langOnce.Do(func() {
 		goLang = golang.GetLanguage()
 		jsLang = javascript.GetLanguage()
+		pyLang = python.GetLanguage()
 		tsLang = typescript.GetLanguage()
 	})
 }
@@ -52,6 +55,8 @@ func GetLanguage(lang domain.Language) *sitter.Language {
 		return goLang
 	case domain.LanguageJavaScript:
 		return jsLang
+	case domain.LanguagePython:
+		return pyLang
 	default:
 		return tsLang
 	}
@@ -60,6 +65,7 @@ func GetLanguage(lang domain.Language) *sitter.Language {
 var (
 	goParserPool sync.Pool
 	jsParserPool sync.Pool
+	pyParserPool sync.Pool
 	tsParserPool sync.Pool
 )
 
@@ -69,6 +75,8 @@ func getParserPool(lang domain.Language) *sync.Pool {
 		return &goParserPool
 	case domain.LanguageJavaScript:
 		return &jsParserPool
+	case domain.LanguagePython:
+		return &pyParserPool
 	default:
 		return &tsParserPool
 	}

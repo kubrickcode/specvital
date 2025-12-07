@@ -278,6 +278,9 @@ func (s *Scanner) discoverConfigFiles(ctx context.Context, rootPath string) []st
 		"vitest.config.cjs",
 		"playwright.config.js",
 		"playwright.config.ts",
+		"pytest.ini",
+		"pyproject.toml",
+		"conftest.py",
 	}
 
 	skipSet := buildSkipSet(s.options.ExcludePatterns)
@@ -572,6 +575,8 @@ func isTestFileCandidate(path string) bool {
 		return isJSTestFile(path)
 	case ".go":
 		return isGoTestFile(path)
+	case ".py":
+		return isPythonTestFile(path)
 	default:
 		return false
 	}
@@ -593,6 +598,32 @@ func isJSTestFile(path string) bool {
 	normalizedPath := filepath.ToSlash(path)
 	if strings.Contains(normalizedPath, "/__tests__/") || strings.HasPrefix(normalizedPath, "__tests__/") {
 		return true
+	}
+
+	return false
+}
+
+func isPythonTestFile(path string) bool {
+	base := filepath.Base(path)
+
+	// pytest conventions: test_*.py or *_test.py
+	if strings.HasPrefix(base, "test_") && strings.HasSuffix(base, ".py") {
+		return true
+	}
+	if strings.HasSuffix(base, "_test.py") {
+		return true
+	}
+
+	// conftest.py is a pytest configuration/fixture file, not a test file.
+	// It's discovered as a config file but doesn't contain tests.
+	if base == "conftest.py" {
+		return false
+	}
+
+	// Files in tests/ directory
+	normalizedPath := filepath.ToSlash(path)
+	if strings.Contains(normalizedPath, "/tests/") || strings.HasPrefix(normalizedPath, "tests/") {
+		return strings.HasSuffix(base, ".py")
 	}
 
 	return false

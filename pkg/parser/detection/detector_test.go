@@ -333,12 +333,13 @@ func TestDetector_UnsupportedLanguage(t *testing.T) {
 
 	detector := NewDetector(registry)
 
-	content := []byte(`print("hello world")`)
+	// Use a truly unsupported file type (.rb)
+	content := []byte(`puts "hello world"`)
 
-	result := detector.Detect(context.Background(), "/project/test.py", content)
+	result := detector.Detect(context.Background(), "/project/test.rb", content)
 
 	if result.Framework != "" {
-		t.Errorf("expected no framework for Python file, got '%s'", result.Framework)
+		t.Errorf("expected no framework for Ruby file, got '%s'", result.Framework)
 	}
 
 	if result.Source != SourceUnknown {
@@ -359,7 +360,7 @@ func TestDetectLanguage(t *testing.T) {
 		{"/project/test.mjs", domain.LanguageJavaScript},
 		{"/project/test.cjs", domain.LanguageJavaScript},
 		{"/project/test.go", domain.LanguageGo},
-		{"/project/test.py", ""},
+		{"/project/test.py", domain.LanguagePython},
 		{"/project/test.txt", ""},
 	}
 

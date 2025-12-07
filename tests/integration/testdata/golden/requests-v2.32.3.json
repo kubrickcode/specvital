@@ -1,0 +1,52 @@
+{
+  "repository": "requests",
+  "ref": "v2.32.3",
+  "expectedFramework": "pytest",
+  "fileCount": 6,
+  "testCount": 326,
+  "frameworkCounts": {
+    "pytest": 6
+  },
+  "sampleFiles": [
+    {
+      "path": "tests/test_hooks.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "tests/test_lowlevel.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 13
+    },
+    {
+      "path": "tests/test_requests.py",
+      "framework": "pytest",
+      "suiteCount": 6,
+      "testCount": 230
+    },
+    {
+      "path": "tests/test_structures.py",
+      "framework": "pytest",
+      "suiteCount": 2,
+      "testCount": 10
+    },
+    {
+      "path": "tests/test_testserver.py",
+      "framework": "pytest",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "tests/test_utils.py",
+      "framework": "pytest",
+      "suiteCount": 11,
+      "testCount": 60
+    }
+  ],
+  "stats": {
+    "filesMatched": 6,
+    "filesScanned": 35
+  }
+}

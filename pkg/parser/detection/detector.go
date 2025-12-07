@@ -82,6 +82,8 @@ func (d *Detector) detectFromImport(ctx context.Context, lang domain.Language, c
 	case domain.LanguageGo:
 		// Go uses testing package directly, not detected via imports
 		return ""
+	case domain.LanguagePython:
+		imports = extraction.ExtractPythonImports(ctx, content)
 	}
 
 	if len(imports) == 0 {
@@ -193,6 +195,8 @@ func detectLanguage(filePath string) domain.Language {
 		return domain.LanguageJavaScript
 	case ".go":
 		return domain.LanguageGo
+	case ".py":
+		return domain.LanguagePython
 	default:
 		return ""
 	}
