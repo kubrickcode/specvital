@@ -5,23 +5,10 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/specvital/web/src/backend/common/clients/github"
 	"github.com/specvital/web/src/backend/common/dto"
-)
-
-// Mock repo prefixes for testing error states (development only).
-// Usage examples:
-//   - /api/analyze/owner/private-repo  -> 403 Forbidden
-//   - /api/analyze/owner/notfound-repo -> 404 Not Found
-//   - /api/analyze/owner/ratelimit-repo -> 429 Too Many Requests
-const (
-	mockPrivatePrefix   = "private-"
-	mockNotFoundPrefix  = "notfound-"
-	mockRateLimitPrefix = "ratelimit-"
 )
 
 type Handler struct {
@@ -30,18 +17,6 @@ type Handler struct {
 
 func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
-}
-
-func isMockMode() bool {
-	return os.Getenv("MOCK_MODE") == "true"
-}
-
-func isMockErrorsEnabled() bool {
-	env := os.Getenv("ENV")
-	if env == "production" || env == "prod" {
-		return false
-	}
-	return os.Getenv("ENABLE_MOCK_ERRORS") == "true"
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
@@ -56,27 +31,6 @@ func (h *Handler) handleAnalyze(w http.ResponseWriter, r *http.Request) {
 
 	if owner == "" || repo == "" {
 		dto.SendProblemDetail(w, r, http.StatusBadRequest, "Bad Request", "owner and repo are required")
-		return
-	}
-
-	if isMockErrorsEnabled() {
-		if strings.HasPrefix(repo, mockPrivatePrefix) {
-			dto.SendProblemDetail(w, r, http.StatusForbidden, "Forbidden", "This repository is private or you don't have access")
-			return
-		}
-		if strings.HasPrefix(repo, mockNotFoundPrefix) {
-			dto.SendProblemDetail(w, r, http.StatusNotFound, "Not Found", "Repository not found")
-			return
-		}
-		if strings.HasPrefix(repo, mockRateLimitPrefix) {
-			dto.SendProblemDetail(w, r, http.StatusTooManyRequests, "Too Many Requests", "GitHub API rate limit exceeded. Please try again later")
-			return
-		}
-	}
-
-	if isMockMode() {
-		result := GenerateMockResult(owner, repo)
-		sendJSON(w, result)
 		return
 	}
 

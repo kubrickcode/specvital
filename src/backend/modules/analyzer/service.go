@@ -392,3 +392,44 @@ func (s *Service) CheckRateLimit() (int, error) {
 func (s *Service) GetRateLimit() github.RateLimitInfo {
 	return s.gitHost.GetRateLimit()
 }
+
+func calculateSummary(suites []TestSuite) Summary {
+	frameworkStats := make(map[Framework]*FrameworkSummary)
+	var totalActive, totalSkipped, totalTodo int
+
+	for _, suite := range suites {
+		stats, exists := frameworkStats[suite.Framework]
+		if !exists {
+			stats = &FrameworkSummary{Framework: suite.Framework}
+			frameworkStats[suite.Framework] = stats
+		}
+
+		for _, test := range suite.Tests {
+			stats.Total++
+			switch test.Status {
+			case TestStatusActive:
+				stats.Active++
+				totalActive++
+			case TestStatusSkipped:
+				stats.Skipped++
+				totalSkipped++
+			case TestStatusTodo:
+				stats.Todo++
+				totalTodo++
+			}
+		}
+	}
+
+	frameworks := make([]FrameworkSummary, 0, len(frameworkStats))
+	for _, stats := range frameworkStats {
+		frameworks = append(frameworks, *stats)
+	}
+
+	return Summary{
+		Active:     totalActive,
+		Frameworks: frameworks,
+		Skipped:    totalSkipped,
+		Todo:       totalTodo,
+		Total:      totalActive + totalSkipped + totalTodo,
+	}
+}

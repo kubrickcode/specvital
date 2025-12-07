@@ -22,8 +22,8 @@ const AnalyzePage = async ({ params }: AnalyzePageProps) => {
   const { locale, owner, repo } = await params;
   setRequestLocale(locale);
 
-  const mockUrl = `https://github.com/${owner}/${repo}`;
-  if (!isValidGitHubUrl(mockUrl)) {
+  const repoUrl = `https://github.com/${owner}/${repo}`;
+  if (!isValidGitHubUrl(repoUrl)) {
     notFound();
   }
 
