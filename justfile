@@ -10,6 +10,9 @@ deps-root:
 deps-frontend:
     cd src/frontend && pnpm install
 
+install-playwright:
+    npx playwright install --with-deps chromium
+
 lint target="all":
     #!/usr/bin/env bash
     set -euox pipefail
