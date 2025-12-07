@@ -21,6 +21,7 @@ import (
 	// Framework registration via blank imports
 	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
 	_ "github.com/specvital/core/pkg/parser/strategies/jest"
+	_ "github.com/specvital/core/pkg/parser/strategies/junit5"
 	_ "github.com/specvital/core/pkg/parser/strategies/playwright"
 	_ "github.com/specvital/core/pkg/parser/strategies/pytest"
 	_ "github.com/specvital/core/pkg/parser/strategies/unittest"
@@ -44,6 +45,10 @@ var testFilePatterns = []*regexp.Regexp{
 	regexp.MustCompile(`(^|/)test_[^/]+\.py$`),
 	regexp.MustCompile(`_test\.py$`),
 	regexp.MustCompile(`(^|/)conftest\.py$`),
+	// Java/JUnit patterns
+	regexp.MustCompile(`Test\.java$`),
+	regexp.MustCompile(`Tests\.java$`),
+	regexp.MustCompile(`(^|/)Test[A-Z][^/]*\.java$`),
 }
 
 var (
