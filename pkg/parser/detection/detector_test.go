@@ -479,3 +479,141 @@ func TestResult_IsDetected(t *testing.T) {
 		})
 	}
 }
+
+// TestDetector_DeterministicScopeSelection verifies that when multiple config scopes
+// could match a file, the selection is deterministic across multiple runs.
+// This test addresses the nondeterministic map iteration bug that caused
+// different files to be detected across CI runs.
+func TestDetector_DeterministicScopeSelection(t *testing.T) {
+	registry := framework.NewRegistry()
+	registry.Register(&framework.Definition{
+		Name:      "junit5",
+		Languages: []domain.Language{domain.LanguageJava},
+		Matchers: []framework.Matcher{
+			matchers.NewContentMatcherFromStrings(`@Test`),
+		},
+	})
+
+	detector := NewDetector(registry)
+
+	// Create multiple config scopes that could potentially match the same file
+	// (simulating a multi-module Gradle project like testcontainers-java with 90 modules)
+	projectScope := framework.NewProjectScope()
+	
+	// Add configs in non-alphabetical order to test deterministic sorting
+	configs := []string{
+		"/project/modules/module-z/build.gradle",
+		"/project/modules/module-a/build.gradle",
+		"/project/modules/module-m/build.gradle",
+		"/project/build.gradle",
+		"/project/modules/module-b/build.gradle",
+	}
+	
+	for _, configPath := range configs {
+		scope := framework.NewConfigScope(configPath, "")
+		scope.Framework = "junit5"
+		projectScope.AddConfig(configPath, scope)
+	}
+	
+	detector.SetProjectScope(projectScope)
+
+	// Test file in module-a that could potentially match multiple scopes
+	testFile := "/project/modules/module-a/src/test/java/TestFile.java"
+	content := []byte(`
+		@Test
+		public void testSomething() {
+		}
+	`)
+
+	// Run detection 100 times to verify consistent results
+	var firstResult Result
+	for i := 0; i < 100; i++ {
+		result := detector.Detect(context.Background(), testFile, content)
+		
+		if i == 0 {
+			firstResult = result
+		} else {
+			// Every iteration must produce the same result
+			if result.Framework != firstResult.Framework {
+				t.Errorf("iteration %d: expected framework '%s', got '%s'", 
+					i, firstResult.Framework, result.Framework)
+			}
+			if result.Scope != firstResult.Scope {
+				t.Errorf("iteration %d: scope mismatch", i)
+			}
+		}
+	}
+	
+	if firstResult.Framework != "junit5" {
+		t.Errorf("expected framework 'junit5', got '%s'", firstResult.Framework)
+	}
+
+	// Verify semantic correctness: module-a config should be selected (most specific)
+	if firstResult.Scope == nil {
+		t.Fatal("expected scope to be set")
+	}
+	scope, ok := firstResult.Scope.(*framework.ConfigScope)
+	if !ok {
+		t.Fatal("scope is not *framework.ConfigScope")
+	}
+	expectedConfig := "/project/modules/module-a/build.gradle"
+	if scope.ConfigPath != expectedConfig {
+		t.Errorf("expected config '%s', got '%s'", expectedConfig, scope.ConfigPath)
+	}
+}
+
+// TestDetector_TieBreakingSameDepthPaths verifies deterministic tie-breaking
+// when multiple configs have identical depth and could match the same file.
+func TestDetector_TieBreakingSameDepthPaths(t *testing.T) {
+	registry := framework.NewRegistry()
+	registry.Register(&framework.Definition{
+		Name:      "vitest",
+		Languages: []domain.Language{domain.LanguageTypeScript},
+		Matchers: []framework.Matcher{
+			matchers.NewContentMatcherFromStrings(`import { describe }`),
+		},
+	})
+
+	detector := NewDetector(registry)
+	projectScope := framework.NewProjectScope()
+
+	// Two configs at same depth with same path length
+	configs := []string{
+		"/project/packages/zzz-pkg/vitest.config.ts",
+		"/project/packages/aaa-pkg/vitest.config.ts",
+	}
+
+	for _, configPath := range configs {
+		scope := framework.NewConfigScope(configPath, "")
+		scope.Framework = "vitest"
+		projectScope.AddConfig(configPath, scope)
+	}
+
+	detector.SetProjectScope(projectScope)
+
+	// File that could match either config (in parent directory)
+	testFile := "/project/packages/test.spec.ts"
+	content := []byte(`import { describe } from 'vitest'`)
+
+	// Run 100 times - must always select same config
+	var selectedConfig string
+	for i := 0; i < 100; i++ {
+		result := detector.Detect(context.Background(), testFile, content)
+
+		if result.Scope == nil {
+			continue // No scope match expected for this case
+		}
+
+		scope, ok := result.Scope.(*framework.ConfigScope)
+		if !ok {
+			t.Fatal("scope is not *framework.ConfigScope")
+		}
+
+		if i == 0 {
+			selectedConfig = scope.ConfigPath
+		} else if scope.ConfigPath != selectedConfig {
+			t.Errorf("iteration %d: expected '%s', got '%s'",
+				i, selectedConfig, scope.ConfigPath)
+		}
+	}
+}

@@ -3,6 +3,7 @@ package detection
 import (
 	"context"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/specvital/core/pkg/domain"
@@ -126,8 +127,16 @@ func (d *Detector) detectFromScope(filePath string, lang domain.Language) Result
 		depth int
 	}
 
+	// Sort config paths for deterministic iteration (fixes nondeterministic map iteration)
+	configPaths := make([]string, 0, len(d.projectScope.Configs))
+	for path := range d.projectScope.Configs {
+		configPaths = append(configPaths, path)
+	}
+	sort.Strings(configPaths)
+
 	var matches []scopeMatch
-	for path, scope := range d.projectScope.Configs {
+	for _, path := range configPaths {
+		scope := d.projectScope.Configs[path]
 		def := d.registry.Find(scope.Framework)
 		if def == nil {
 			continue
@@ -158,10 +167,22 @@ func (d *Detector) detectFromScope(filePath string, lang domain.Language) Result
 		return Unknown()
 	}
 
+	// Select the best match using deterministic tie-breaking
 	best := matches[0]
 	for _, m := range matches[1:] {
 		if m.depth > best.depth {
+			// Prefer deeper (more specific) config
 			best = m
+		} else if m.depth == best.depth {
+			// Tie-breaker 1: prefer longer config path (more specific)
+			if len(m.path) > len(best.path) {
+				best = m
+			} else if len(m.path) == len(best.path) {
+				// Tie-breaker 2: lexicographic order for determinism
+				if m.path < best.path {
+					best = m
+				}
+			}
 		}
 	}
 

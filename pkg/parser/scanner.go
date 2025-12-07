@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -502,6 +503,12 @@ func (s *Scanner) parseFilesParallel(ctx context.Context, files []string, result
 	}
 
 	_ = g.Wait()
+
+	// Sort by path for deterministic output order.
+	// Parallel goroutines complete in variable order based on file size and parsing complexity.
+	sort.Slice(testFiles, func(i, j int) bool {
+		return testFiles[i].Path < testFiles[j].Path
+	})
 
 	return testFiles, scanErrors
 }
