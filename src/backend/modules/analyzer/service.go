@@ -43,6 +43,10 @@ var testFilePatterns = []*regexp.Regexp{
 	regexp.MustCompile(`Test\.java$`),
 	regexp.MustCompile(`Tests\.java$`),
 	regexp.MustCompile(`(^|/)Test[A-Z][^/]*\.java$`),
+	// C#/xUnit patterns
+	regexp.MustCompile(`Tests?\.cs$`),
+	regexp.MustCompile(`Specs?\.cs$`),
+	regexp.MustCompile(`(^|/)Tests/.*\.cs$`),
 }
 
 var (

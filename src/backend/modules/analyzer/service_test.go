@@ -81,6 +81,19 @@ func TestIsTestFile(t *testing.T) {
 		{"tests/conftest.py", true},
 		{"conftest.py", true},
 
+		// Java test files
+		{"src/test/java/UserTest.java", true},
+		{"src/test/java/UserTests.java", true},
+		{"src/test/java/TestUserService.java", true},
+
+		// C#/xUnit test files
+		{"Tests/UserTests.cs", true},
+		{"Tests/UserTest.cs", true},
+		{"Tests/UserSpecs.cs", true},
+		{"Tests/UserSpec.cs", true},
+		{"Tests/FluentAssertions.Specs/BasicSpecs.cs", true},
+		{"src/MyProject.Tests/UserTests.cs", true},
+
 		// Non-test files
 		{"src/components/Button.ts", false},
 		{"src/components/Button.tsx", false},
@@ -88,6 +101,8 @@ func TestIsTestFile(t *testing.T) {
 		{"main.go", false},
 		{"package.json", false},
 		{"README.md", false},
+		{"src/User.cs", false},
+		{"src/Services/UserService.cs", false},
 
 		// Files in skip directories
 		{"node_modules/package/file.test.ts", false},
