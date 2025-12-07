@@ -92,3 +92,6 @@ test target="all":
         exit 1
         ;;
     esac
+
+update-core:
+    cd src/backend && GOPROXY=direct go get -u github.com/specvital/core@main && go mod tidy
