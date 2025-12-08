@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/specvital/core/pkg/parser"
+	"github.com/specvital/core/pkg/source"
 
 	// Import strategies to register them with the default registry.
 	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
@@ -17,8 +18,16 @@ import (
 func Example() {
 	ctx := context.Background()
 
+	// Create a source for the project directory
+	src, err := source.NewLocalSource("/path/to/project")
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	defer src.Close()
+
 	// Scan a project directory for test files
-	result, err := parser.Scan(ctx, "/path/to/project")
+	result, err := parser.Scan(ctx, src)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -39,8 +48,16 @@ func Example() {
 func Example_withOptions() {
 	ctx := context.Background()
 
+	// Create a source for the project directory
+	src, err := source.NewLocalSource("/path/to/project")
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	defer src.Close()
+
 	// Scan with custom options
-	result, err := parser.Scan(ctx, "/path/to/project",
+	result, err := parser.Scan(ctx, src,
 		parser.WithWorkers(4),                             // Use 4 parallel workers
 		parser.WithTimeout(2*time.Minute),                 // Set 2 minute timeout
 		parser.WithExclude([]string{"fixtures"}),          // Skip fixtures directory
@@ -57,8 +74,16 @@ func Example_withOptions() {
 func ExampleDetectTestFiles() {
 	ctx := context.Background()
 
+	// Create a source for the project directory
+	src, err := source.NewLocalSource("/path/to/project")
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	defer src.Close()
+
 	// Detect test files without parsing
-	result, err := parser.DetectTestFiles(ctx, "/path/to/project")
+	result, err := parser.DetectTestFiles(ctx, src)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -73,8 +98,16 @@ func ExampleDetectTestFiles() {
 func ExampleDetectTestFiles_withPatterns() {
 	ctx := context.Background()
 
+	// Create a source for the project directory
+	src, err := source.NewLocalSource("/path/to/project")
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	defer src.Close()
+
 	// Detect only specific test files
-	result, err := parser.DetectTestFiles(ctx, "/path/to/project",
+	result, err := parser.DetectTestFiles(ctx, src,
 		parser.WithPatterns([]string{"src/**/*.spec.ts"}),
 		parser.WithMaxFileSize(5*1024*1024), // 5MB max
 	)
@@ -89,7 +122,15 @@ func ExampleDetectTestFiles_withPatterns() {
 func ExampleScan_testInventory() {
 	ctx := context.Background()
 
-	result, err := parser.Scan(ctx, "/path/to/project")
+	// Create a source for the project directory
+	src, err := source.NewLocalSource("/path/to/project")
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	defer src.Close()
+
+	result, err := parser.Scan(ctx, src)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return

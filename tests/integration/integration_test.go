@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/specvital/core/pkg/parser"
+	"github.com/specvital/core/pkg/source"
 
 	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
 	_ "github.com/specvital/core/pkg/parser/strategies/jest"
@@ -51,7 +52,13 @@ func TestSingleFramework(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), scanTimeout)
 			defer cancel()
 
-			scanResult, err := parser.Scan(ctx, cloneResult.Path)
+			src, err := source.NewLocalSource(cloneResult.Path)
+			if err != nil {
+				t.Fatalf("create source for %s: %v", repo.Name, err)
+			}
+			defer src.Close()
+
+			scanResult, err := parser.Scan(ctx, src)
 			if err != nil {
 				t.Fatalf("scan %s: %v", repo.Name, err)
 			}

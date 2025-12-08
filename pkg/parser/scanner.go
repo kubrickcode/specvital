@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -18,6 +18,7 @@ import (
 	"github.com/specvital/core/pkg/parser/detection"
 	"github.com/specvital/core/pkg/parser/framework"
 	"github.com/specvital/core/pkg/parser/strategies/shared/dotnetast"
+	"github.com/specvital/core/pkg/source"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 )
@@ -50,8 +51,6 @@ var (
 	ErrScanCancelled = errors.New("scanner: scan cancelled")
 	// ErrScanTimeout is returned when scanning exceeds the timeout duration.
 	ErrScanTimeout = errors.New("scanner: scan timeout")
-	// ErrInvalidRootPath is returned when the root path does not exist or is not a directory.
-	ErrInvalidRootPath = errors.New("scanner: root path does not exist or is not accessible")
 )
 
 // Scanner performs framework detection and test file parsing.
@@ -152,20 +151,17 @@ func (s *Scanner) SetProjectScope(scope *framework.AggregatedProjectScope) {
 //  3. Discover test files
 //  4. Detect framework for each file
 //  5. Parse test files in parallel
-func (s *Scanner) Scan(ctx context.Context, rootPath string) (*ScanResult, error) {
+//
+// The caller is responsible for calling src.Close() when done.
+// For GitSource, failure to close will leak temporary directories.
+func (s *Scanner) Scan(ctx context.Context, src source.Source) (*ScanResult, error) {
 	startTime := time.Now()
-
-	rootInfo, err := os.Stat(rootPath)
-	if err != nil {
-		return nil, ErrInvalidRootPath
-	}
-	if !rootInfo.IsDir() {
-		return nil, ErrInvalidRootPath
-	}
 
 	// Set up timeout
 	ctx, cancel := context.WithTimeout(ctx, s.options.Timeout)
 	defer cancel()
+
+	rootPath := src.Root()
 
 	result := &ScanResult{
 		Inventory: &domain.Inventory{
@@ -179,13 +175,13 @@ func (s *Scanner) Scan(ctx context.Context, rootPath string) (*ScanResult, error
 	}
 
 	if s.projectScope == nil {
-		configFiles := s.discoverConfigFiles(ctx, rootPath)
-		s.projectScope = s.parseConfigFiles(ctx, configFiles, &result.Errors)
+		configFiles := s.discoverConfigFiles(ctx, src)
+		s.projectScope = s.parseConfigFiles(ctx, src, configFiles, &result.Errors)
 		s.detector.SetProjectScope(s.projectScope)
 		result.Stats.ConfigsFound = len(s.projectScope.Configs)
 	}
 
-	testFiles, errs := s.discoverTestFiles(ctx, rootPath)
+	testFiles, errs := s.discoverTestFiles(ctx, src)
 	for _, err := range errs {
 		result.Errors = append(result.Errors, ScanError{
 			Err:   err,
@@ -199,7 +195,7 @@ func (s *Scanner) Scan(ctx context.Context, rootPath string) (*ScanResult, error
 		return result, nil
 	}
 
-	files, scanErrors := s.parseFilesParallel(ctx, testFiles, result)
+	files, scanErrors := s.parseFilesParallel(ctx, src, testFiles, result)
 	result.Inventory.Files = files
 	result.Errors = append(result.Errors, scanErrors...)
 
@@ -223,7 +219,9 @@ func (s *Scanner) Scan(ctx context.Context, rootPath string) (*ScanResult, error
 
 // ScanFiles scans specific files (for incremental/watch mode).
 // This bypasses file discovery and directly scans the provided file paths.
-func (s *Scanner) ScanFiles(ctx context.Context, files []string) (*ScanResult, error) {
+//
+// The caller is responsible for calling src.Close() when done.
+func (s *Scanner) ScanFiles(ctx context.Context, src source.Source, files []string) (*ScanResult, error) {
 	startTime := time.Now()
 
 	ctx, cancel := context.WithTimeout(ctx, s.options.Timeout)
@@ -231,7 +229,7 @@ func (s *Scanner) ScanFiles(ctx context.Context, files []string) (*ScanResult, e
 
 	result := &ScanResult{
 		Inventory: &domain.Inventory{
-			RootPath: "",
+			RootPath: src.Root(),
 			Files:    []domain.TestFile{},
 		},
 		Errors: []ScanError{},
@@ -246,7 +244,7 @@ func (s *Scanner) ScanFiles(ctx context.Context, files []string) (*ScanResult, e
 		return result, nil
 	}
 
-	parsedFiles, scanErrors := s.parseFilesParallel(ctx, files, result)
+	parsedFiles, scanErrors := s.parseFilesParallel(ctx, src, files, result)
 	result.Inventory.Files = parsedFiles
 	result.Errors = append(result.Errors, scanErrors...)
 
@@ -267,7 +265,9 @@ func (s *Scanner) ScanFiles(ctx context.Context, files []string) (*ScanResult, e
 	return result, nil
 }
 
-func (s *Scanner) discoverConfigFiles(ctx context.Context, rootPath string) []string {
+// discoverConfigFiles walks the source root to find framework config files.
+// Returns relative paths from the source root for consistent Source.Open() usage.
+func (s *Scanner) discoverConfigFiles(ctx context.Context, src source.Source) []string {
 	patterns := []string{
 		"jest.config.js",
 		"jest.config.ts",
@@ -288,6 +288,7 @@ func (s *Scanner) discoverConfigFiles(ctx context.Context, rootPath string) []st
 		"rails_helper.rb",
 	}
 
+	rootPath := src.Root()
 	skipSet := buildSkipSet(s.options.ExcludePatterns)
 	var configFiles []string
 
@@ -310,7 +311,10 @@ func (s *Scanner) discoverConfigFiles(ctx context.Context, rootPath string) []st
 		filename := filepath.Base(path)
 		for _, pattern := range patterns {
 			if filename == pattern {
-				configFiles = append(configFiles, path)
+				relPath, err := filepath.Rel(rootPath, path)
+				if err == nil {
+					configFiles = append(configFiles, relPath)
+				}
 				break
 			}
 		}
@@ -321,7 +325,7 @@ func (s *Scanner) discoverConfigFiles(ctx context.Context, rootPath string) []st
 	return configFiles
 }
 
-func (s *Scanner) parseConfigFiles(ctx context.Context, files []string, errors *[]ScanError) *framework.AggregatedProjectScope {
+func (s *Scanner) parseConfigFiles(ctx context.Context, src source.Source, files []string, errors *[]ScanError) *framework.AggregatedProjectScope {
 	scope := framework.NewProjectScope()
 
 	for _, file := range files {
@@ -329,7 +333,7 @@ func (s *Scanner) parseConfigFiles(ctx context.Context, files []string, errors *
 			break
 		}
 
-		content, err := os.ReadFile(file)
+		content, err := readFileFromSource(ctx, src, file)
 		if err != nil {
 			*errors = append(*errors, ScanError{
 				Err:   err,
@@ -389,7 +393,10 @@ func (s *Scanner) parseConfigFiles(ctx context.Context, files []string, errors *
 	return scope
 }
 
-func (s *Scanner) discoverTestFiles(ctx context.Context, rootPath string) ([]string, []error) {
+// discoverTestFiles walks the source root to find test file candidates.
+// Returns relative paths from the source root for consistent Source.Open() usage.
+func (s *Scanner) discoverTestFiles(ctx context.Context, src source.Source) ([]string, []error) {
+	rootPath := src.Root()
 	skipSet := buildSkipSet(append(DefaultSkipPatterns, s.options.ExcludePatterns...))
 
 	var (
@@ -440,8 +447,16 @@ func (s *Scanner) discoverTestFiles(ctx context.Context, rootPath string) ([]str
 			}
 		}
 
+		relPath, err := filepath.Rel(rootPath, path)
+		if err != nil {
+			mu.Lock()
+			errs = append(errs, fmt.Errorf("compute relative path for %s: %w", path, err))
+			mu.Unlock()
+			return nil
+		}
+
 		mu.Lock()
-		files = append(files, path)
+		files = append(files, relPath)
 		mu.Unlock()
 
 		return nil
@@ -456,7 +471,7 @@ func (s *Scanner) discoverTestFiles(ctx context.Context, rootPath string) ([]str
 	return files, errs
 }
 
-func (s *Scanner) parseFilesParallel(ctx context.Context, files []string, result *ScanResult) ([]domain.TestFile, []ScanError) {
+func (s *Scanner) parseFilesParallel(ctx context.Context, src source.Source, files []string, result *ScanResult) ([]domain.TestFile, []ScanError) {
 	workers := s.options.Workers
 	if workers <= 0 {
 		workers = runtime.GOMAXPROCS(0)
@@ -483,7 +498,7 @@ func (s *Scanner) parseFilesParallel(ctx context.Context, files []string, result
 			}
 			defer sem.Release(1)
 
-			testFile, scanErr, confidence := s.parseFile(gCtx, file)
+			testFile, scanErr, confidence := s.parseFile(gCtx, src, file)
 
 			mu.Lock()
 			defer mu.Unlock()
@@ -516,7 +531,7 @@ func (s *Scanner) parseFilesParallel(ctx context.Context, files []string, result
 	return testFiles, scanErrors
 }
 
-func (s *Scanner) parseFile(ctx context.Context, path string) (*domain.TestFile, *ScanError, string) {
+func (s *Scanner) parseFile(ctx context.Context, src source.Source, path string) (*domain.TestFile, *ScanError, string) {
 	if err := ctx.Err(); err != nil {
 		return nil, &ScanError{
 			Err:   err,
@@ -525,10 +540,10 @@ func (s *Scanner) parseFile(ctx context.Context, path string) (*domain.TestFile,
 		}, ""
 	}
 
-	content, err := os.ReadFile(path)
+	content, err := readFileFromSource(ctx, src, path)
 	if err != nil {
 		return nil, &ScanError{
-			Err:   fmt.Errorf("read file: %w", err),
+			Err:   err,
 			Path:  path,
 			Phase: "parsing",
 		}, ""
@@ -559,6 +574,27 @@ func (s *Scanner) parseFile(ctx context.Context, path string) (*domain.TestFile,
 	}
 
 	return testFile, nil, string(detectionResult.Source)
+}
+
+// readFileFromSource reads a file from source using relative path.
+// The relPath must be relative to src.Root().
+func readFileFromSource(ctx context.Context, src source.Source, relPath string) ([]byte, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	reader, err := src.Open(ctx, relPath)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = reader.Close() }()
+
+	content, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("read file %s: %w", relPath, err)
+	}
+
+	return content, nil
 }
 
 func buildSkipSet(patterns []string) map[string]bool {
@@ -741,12 +777,12 @@ func matchesAnyPattern(path, rootPath string, patterns []string) bool {
 	return false
 }
 
-func Scan(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult, error) {
+func Scan(ctx context.Context, src source.Source, opts ...ScanOption) (*ScanResult, error) {
 	scanner := NewScanner(opts...)
-	return scanner.Scan(ctx, rootPath)
+	return scanner.Scan(ctx, src)
 }
 
-func DetectTestFiles(ctx context.Context, rootPath string, opts ...ScanOption) (*ScanResult, error) {
+func DetectTestFiles(ctx context.Context, src source.Source, opts ...ScanOption) (*ScanResult, error) {
 	scanner := NewScanner(opts...)
-	return scanner.Scan(ctx, rootPath)
+	return scanner.Scan(ctx, src)
 }

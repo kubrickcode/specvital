@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/specvital/core/pkg/parser"
+	"github.com/specvital/core/pkg/source"
 
 	// Import frameworks to register them via init()
 	_ "github.com/specvital/core/pkg/parser/strategies/jest"
@@ -21,7 +22,13 @@ func TestScan(t *testing.T) {
 	t.Run("should return empty inventory for empty directory", func(t *testing.T) {
 		tmpDir := t.TempDir()
 
-		result, err := parser.Scan(context.Background(), tmpDir)
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -50,7 +57,13 @@ describe('UserService', () => {
 			t.Fatalf("failed to write test file: %v", err)
 		}
 
-		result, err := parser.Scan(context.Background(), tmpDir)
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -76,7 +89,13 @@ describe('UserService', () => {
 			t.Fatalf("failed to write: %v", err)
 		}
 
-		result, err := parser.Scan(context.Background(), tmpDir, parser.WithExclude([]string{"custom_exclude"}))
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src, parser.WithExclude([]string{"custom_exclude"}))
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -89,7 +108,13 @@ describe('UserService', () => {
 	t.Run("should respect worker count option", func(t *testing.T) {
 		tmpDir := t.TempDir()
 
-		result, err := parser.Scan(context.Background(), tmpDir, parser.WithWorkers(2))
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src, parser.WithWorkers(2))
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -102,7 +127,13 @@ describe('UserService', () => {
 	t.Run("should respect timeout option", func(t *testing.T) {
 		tmpDir := t.TempDir()
 
-		result, err := parser.Scan(context.Background(), tmpDir, parser.WithTimeout(30*time.Second))
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src, parser.WithTimeout(30*time.Second))
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -113,7 +144,7 @@ describe('UserService', () => {
 	})
 
 	t.Run("should return error for non-existent path", func(t *testing.T) {
-		_, err := parser.Scan(context.Background(), "/non/existent/path")
+		_, err := source.NewLocalSource("/non/existent/path")
 		if err == nil {
 			t.Error("expected error for non-existent path")
 		}
@@ -128,10 +159,16 @@ describe('UserService', () => {
 			t.Fatalf("failed to write: %v", err)
 		}
 
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 
-		_, err := parser.Scan(ctx, tmpDir)
+		_, err = parser.Scan(ctx, src)
 		// Note: The scan may complete very quickly before detecting cancellation
 		// on fast systems, so we just check it doesn't return unexpected errors
 		if err != nil && !errors.Is(err, parser.ErrScanCancelled) {
@@ -147,7 +184,13 @@ describe('UserService', () => {
 			t.Fatalf("failed to write: %v", err)
 		}
 
-		result, err := parser.Scan(context.Background(), tmpDir)
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -170,6 +213,12 @@ func TestScan_Concurrency(t *testing.T) {
 			}
 		}
 
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
 		var wg sync.WaitGroup
 		var errCount atomic.Int32
 
@@ -177,7 +226,7 @@ func TestScan_Concurrency(t *testing.T) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				_, err := parser.Scan(context.Background(), tmpDir, parser.WithWorkers(4))
+				_, err := parser.Scan(context.Background(), src, parser.WithWorkers(4))
 				if err != nil {
 					errCount.Add(1)
 				}
@@ -209,7 +258,13 @@ describe('Suite', () => {
 			}
 		}
 
-		result, err := parser.Scan(context.Background(), tmpDir, parser.WithWorkers(8))
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src, parser.WithWorkers(8))
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
