@@ -283,6 +283,9 @@ func (s *Scanner) discoverConfigFiles(ctx context.Context, rootPath string) []st
 		"pytest.ini",
 		"pyproject.toml",
 		"conftest.py",
+		".rspec",
+		"spec_helper.rb",
+		"rails_helper.rb",
 	}
 
 	skipSet := buildSkipSet(s.options.ExcludePatterns)
@@ -589,6 +592,8 @@ func isTestFileCandidate(path string) bool {
 		return isPythonTestFile(path)
 	case ".cs":
 		return isCSharpTestFile(path)
+	case ".rb":
+		return isRubyTestFile(path)
 	default:
 		return false
 	}
@@ -686,6 +691,32 @@ func isCSharpTestFile(path string) bool {
 	if strings.HasPrefix(normalizedPath, "Tests/") || strings.Contains(normalizedPath, "/Tests/") ||
 		strings.HasPrefix(normalizedPath, "tests/") {
 		return true
+	}
+
+	return false
+}
+
+func isRubyTestFile(path string) bool {
+	base := filepath.Base(path)
+
+	// Exclude config/helper files
+	if base == "spec_helper.rb" || base == "rails_helper.rb" {
+		return false
+	}
+
+	// RSpec convention: *_spec.rb
+	if strings.HasSuffix(base, "_spec.rb") {
+		return true
+	}
+
+	// Files in spec/ directory (excluding spec/support/ subdirectory)
+	normalizedPath := filepath.ToSlash(path)
+	if strings.Contains(normalizedPath, "/spec/") || strings.HasPrefix(normalizedPath, "spec/") {
+		// Exclude spec/support/ directory (helpers, not tests)
+		if strings.Contains(normalizedPath, "/spec/support/") || strings.HasPrefix(normalizedPath, "spec/support/") {
+			return false
+		}
+		return strings.HasSuffix(base, ".rb")
 	}
 
 	return false

@@ -117,3 +117,8 @@ repositories:
     url: https://github.com/nunit/nunit
     ref: 4.3.2
     framework: nunit
+
+  - name: rspec-core
+    url: https://github.com/rspec/rspec-core
+    ref: v3.13.2
+    framework: rspec

@@ -89,6 +89,8 @@ func (d *Detector) detectFromImport(ctx context.Context, lang domain.Language, c
 		imports = extraction.ExtractPythonImports(ctx, content)
 	case domain.LanguageCSharp:
 		imports = extraction.ExtractCSharpUsings(ctx, content)
+	case domain.LanguageRuby:
+		imports = extraction.ExtractRubyRequires(ctx, content)
 	}
 
 	if len(imports) == 0 {
@@ -226,6 +228,8 @@ func detectLanguage(filePath string) domain.Language {
 		return domain.LanguagePython
 	case ".cs":
 		return domain.LanguageCSharp
+	case ".rb":
+		return domain.LanguageRuby
 	default:
 		return ""
 	}

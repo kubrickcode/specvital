@@ -11,5 +11,6 @@ const (
 	LanguageJava       Language = "java"
 	LanguageJavaScript Language = "javascript"
 	LanguagePython     Language = "python"
+	LanguageRuby       Language = "ruby"
 	LanguageTypeScript Language = "typescript"
 )
