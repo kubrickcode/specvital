@@ -10,4 +10,62 @@ services:
       - ${HOME}/.env.secrets:/root/.env.secrets:ro
     env_file:
       - ${HOME}/.env.secrets
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/specvital?sslmode=disable
+      REDIS_URL: redis://redis:6379
     command: sleep infinity
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - specvital-network
+
+  postgres:
+    image: postgres:16
+    container_name: specvital-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: specvital
+    volumes:
+      - specvital-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d specvital"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - specvital-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: specvital-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - specvital-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    networks:
+      - specvital-network
+
+networks:
+  specvital-network:
+    name: specvital-network
+    driver: bridge
+
+volumes:
+  specvital-postgres-data:
+  specvital-redis-data:
