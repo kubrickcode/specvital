@@ -1,20 +1,14 @@
 package server
 
 import (
-	"os"
+	"context"
+	"fmt"
 
-	"github.com/specvital/web/src/backend/common/clients/github"
 	"github.com/specvital/web/src/backend/common/health"
+	"github.com/specvital/web/src/backend/internal/db"
+	"github.com/specvital/web/src/backend/internal/infra"
 	"github.com/specvital/web/src/backend/modules/analyzer"
 )
-
-type Clients struct {
-	GitHub *github.Client
-}
-
-type Services struct {
-	Analyzer *analyzer.Service
-}
 
 type Handlers struct {
 	Analyzer *analyzer.Handler
@@ -22,38 +16,32 @@ type Handlers struct {
 }
 
 type App struct {
-	Clients  *Clients
-	Services *Services
+	infra    *infra.Container
 	Handlers *Handlers
 }
 
-func NewApp() *App {
-	clients := initClients()
-	services := initServices(clients)
-	handlers := initHandlers(services)
+func NewApp(ctx context.Context) (*App, error) {
+	cfg := infra.ConfigFromEnv()
+	container, err := infra.NewContainer(ctx, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("init infra: %w", err)
+	}
+
+	handlers := initHandlers(container)
 
 	return &App{
-		Clients:  clients,
-		Services: services,
+		infra:    container,
 		Handlers: handlers,
-	}
+	}, nil
 }
 
-func initClients() *Clients {
-	return &Clients{
-		GitHub: github.NewClient(os.Getenv("GITHUB_TOKEN")),
-	}
-}
+func initHandlers(infra *infra.Container) *Handlers {
+	queries := db.New(infra.DB)
+	repo := analyzer.NewRepository(queries)
+	queueSvc := analyzer.NewQueueService(infra.Queue)
 
-func initServices(c *Clients) *Services {
-	return &Services{
-		Analyzer: analyzer.NewService(c.GitHub),
-	}
-}
-
-func initHandlers(s *Services) *Handlers {
 	return &Handlers{
-		Analyzer: analyzer.NewHandler(s.Analyzer),
+		Analyzer: analyzer.NewHandler(repo, queueSvc),
 		Health:   health.NewHandler(),
 	}
 }
@@ -63,4 +51,11 @@ func (a *App) RouteRegistrars() []RouteRegistrar {
 		a.Handlers.Analyzer,
 		a.Handlers.Health,
 	}
+}
+
+func (a *App) Close() error {
+	if a.infra != nil {
+		return a.infra.Close()
+	}
+	return nil
 }

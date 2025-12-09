@@ -2,55 +2,20 @@ package infra
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/hibiken/asynq"
 )
 
-const (
-	defaultDialTimeout  = 10 * time.Second
-	defaultReadTimeout  = 5 * time.Second
-	defaultWriteTimeout = 5 * time.Second
-)
-
-type RedisConfig struct {
-	Addr         string
-	Password     string
-	DB           int
-	DialTimeout  time.Duration
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-}
-
-func (c RedisConfig) toRedisOpt() asynq.RedisClientOpt {
-	opt := asynq.RedisClientOpt{
-		Addr:         c.Addr,
-		Password:     c.Password,
-		DB:           c.DB,
-		DialTimeout:  c.DialTimeout,
-		ReadTimeout:  c.ReadTimeout,
-		WriteTimeout: c.WriteTimeout,
+func NewAsynqClient(redisURL string) (*asynq.Client, error) {
+	opt, err := asynq.ParseRedisURI(redisURL)
+	if err != nil {
+		return nil, fmt.Errorf("parse redis URL: %w", err)
 	}
 
-	if opt.DialTimeout == 0 {
-		opt.DialTimeout = defaultDialTimeout
-	}
-	if opt.ReadTimeout == 0 {
-		opt.ReadTimeout = defaultReadTimeout
-	}
-	if opt.WriteTimeout == 0 {
-		opt.WriteTimeout = defaultWriteTimeout
-	}
+	client := asynq.NewClient(opt)
 
-	return opt
-}
-
-func NewAsynqClient(cfg RedisConfig) (*asynq.Client, error) {
-	redisOpt := cfg.toRedisOpt()
-	client := asynq.NewClient(redisOpt)
-
-	inspector := asynq.NewInspector(redisOpt)
-	_, err := inspector.Servers()
+	inspector := asynq.NewInspector(opt)
+	_, err = inspector.Servers()
 	inspector.Close()
 
 	if err != nil {

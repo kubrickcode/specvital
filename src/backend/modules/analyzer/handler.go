@@ -1,27 +1,40 @@
 package analyzer
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
+	"regexp"
+	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/specvital/web/src/backend/common/clients/github"
 	"github.com/specvital/web/src/backend/common/dto"
 )
 
+const (
+	dbTimeout = 5 * time.Second
+)
+
+var validNamePattern = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+
 type Handler struct {
-	service *Service
+	queue QueueService
+	repo  Repository
 }
 
-func NewHandler(service *Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(repo Repository, queue QueueService) *Handler {
+	return &Handler{
+		queue: queue,
+		repo:  repo,
+	}
 }
 
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Route("/api/analyze", func(r chi.Router) {
 		r.Get("/{owner}/{repo}", h.handleAnalyze)
+		r.Get("/{owner}/{repo}/status", h.handleStatus)
 	})
 }
 
@@ -29,53 +42,168 @@ func (h *Handler) handleAnalyze(w http.ResponseWriter, r *http.Request) {
 	owner := chi.URLParam(r, "owner")
 	repo := chi.URLParam(r, "repo")
 
-	if owner == "" || repo == "" {
-		dto.SendProblemDetail(w, r, http.StatusBadRequest, "Bad Request", "owner and repo are required")
+	if err := validateOwnerRepo(owner, repo); err != nil {
+		dto.SendProblemDetail(w, r, http.StatusBadRequest, "Bad Request", err.Error())
 		return
 	}
 
-	result, err := h.service.Analyze(r.Context(), owner, repo)
+	ctx, cancel := context.WithTimeout(r.Context(), dbTimeout)
+	defer cancel()
+
+	analysis, err := h.repo.GetLatestCompletedAnalysis(ctx, owner, repo)
+	if err == nil {
+		sendAnalysisResponse(w, http.StatusOK, &AnalysisResponse{
+			Status: StatusCompleted,
+			Data:   toAnalysisResult(analysis),
+		})
+		return
+	}
+
+	if !errors.Is(err, ErrNotFound) {
+		slog.Error("failed to get analysis", "owner", owner, "repo", repo, "error", err)
+		dto.SendProblemDetail(w, r, http.StatusInternalServerError, "Internal Server Error", "failed to get analysis")
+		return
+	}
+
+	status, err := h.repo.GetAnalysisStatus(ctx, owner, repo)
+	if err == nil {
+		sendAnalysisResponse(w, http.StatusAccepted, &AnalysisResponse{
+			Status: mapDBStatus(status.Status),
+			Error:  ptrToString(status.ErrorMessage),
+		})
+		return
+	}
+
+	if !errors.Is(err, ErrNotFound) {
+		slog.Error("failed to get status", "owner", owner, "repo", repo, "error", err)
+		dto.SendProblemDetail(w, r, http.StatusInternalServerError, "Internal Server Error", "failed to get status")
+		return
+	}
+
+	analysisID, err := h.repo.CreatePendingAnalysis(ctx, owner, repo)
 	if err != nil {
-		h.handleAnalyzeError(w, r, err)
+		slog.Error("failed to create analysis", "owner", owner, "repo", repo, "error", err)
+		dto.SendProblemDetail(w, r, http.StatusInternalServerError, "Internal Server Error", "failed to create analysis")
 		return
 	}
 
-	sendJSON(w, result)
-}
-
-func (h *Handler) handleAnalyzeError(w http.ResponseWriter, r *http.Request, err error) {
-	slog.Error("analysis failed", "error", err)
-
-	rateLimit := h.service.GetRateLimit()
-	var rateLimitExt *dto.RateLimitExtension
-	if rateLimit.Limit > 0 {
-		rateLimitExt = &dto.RateLimitExtension{
-			Limit:     rateLimit.Limit,
-			Remaining: rateLimit.Remaining,
-			ResetAt:   rateLimit.ResetAt,
+	if err := h.queue.Enqueue(ctx, analysisID, owner, repo); err != nil {
+		slog.Error("failed to enqueue", "owner", owner, "repo", repo, "analysisId", analysisID, "error", err)
+		if cleanupErr := h.repo.MarkAnalysisFailed(ctx, analysisID, "queue registration failed"); cleanupErr != nil {
+			slog.Error("failed to cleanup after enqueue error", "analysisId", analysisID, "error", cleanupErr)
 		}
+		dto.SendProblemDetail(w, r, http.StatusInternalServerError, "Internal Server Error", "failed to queue analysis")
+		return
 	}
 
-	switch {
-	case errors.Is(err, github.ErrNotFound):
-		dto.SendProblemDetailWithRateLimit(w, r, http.StatusNotFound, "Not Found", "Repository not found", rateLimitExt)
-	case errors.Is(err, github.ErrForbidden):
-		dto.SendProblemDetailWithRateLimit(w, r, http.StatusForbidden, "Forbidden", "This repository is private or you don't have access", rateLimitExt)
-	case errors.Is(err, github.ErrRateLimited):
-		dto.SendProblemDetailWithRateLimit(w, r, http.StatusTooManyRequests, "Too Many Requests", "GitHub API rate limit exceeded. Please try again later", rateLimitExt)
-	case errors.Is(err, github.ErrTreeTruncated):
-		dto.SendProblemDetailWithRateLimit(w, r, http.StatusUnprocessableEntity, "Repository Too Large", "This repository is too large to analyze", rateLimitExt)
-	case errors.Is(err, ErrRateLimitTooLow):
-		dto.SendProblemDetailWithRateLimit(w, r, http.StatusTooManyRequests, "Too Many Requests", "GitHub API rate limit too low. Please try again later", rateLimitExt)
-	default:
-		dto.SendProblemDetailWithRateLimit(w, r, http.StatusInternalServerError, "Internal Server Error", "An unexpected error occurred during analysis", rateLimitExt)
-	}
+	sendAnalysisResponse(w, http.StatusAccepted, &AnalysisResponse{
+		Status: StatusQueued,
+	})
 }
 
-func sendJSON(w http.ResponseWriter, data any) {
+func (h *Handler) handleStatus(w http.ResponseWriter, r *http.Request) {
+	owner := chi.URLParam(r, "owner")
+	repo := chi.URLParam(r, "repo")
+
+	if err := validateOwnerRepo(owner, repo); err != nil {
+		dto.SendProblemDetail(w, r, http.StatusBadRequest, "Bad Request", err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), dbTimeout)
+	defer cancel()
+
+	analysis, err := h.repo.GetLatestCompletedAnalysis(ctx, owner, repo)
+	if err == nil {
+		sendAnalysisResponse(w, http.StatusOK, &AnalysisResponse{
+			Status: StatusCompleted,
+			Data:   toAnalysisResult(analysis),
+		})
+		return
+	}
+
+	if !errors.Is(err, ErrNotFound) {
+		slog.Error("failed to get analysis", "owner", owner, "repo", repo, "error", err)
+		dto.SendProblemDetail(w, r, http.StatusInternalServerError, "Internal Server Error", "failed to get analysis")
+		return
+	}
+
+	status, err := h.repo.GetAnalysisStatus(ctx, owner, repo)
+	if err == nil {
+		httpStatus := http.StatusOK
+		if status.Status != "completed" {
+			httpStatus = http.StatusAccepted
+		}
+		sendAnalysisResponse(w, httpStatus, &AnalysisResponse{
+			Status: mapDBStatus(status.Status),
+			Error:  ptrToString(status.ErrorMessage),
+		})
+		return
+	}
+
+	if errors.Is(err, ErrNotFound) {
+		dto.SendProblemDetail(w, r, http.StatusNotFound, "Not Found", "analysis not found")
+		return
+	}
+
+	slog.Error("failed to get status", "owner", owner, "repo", repo, "error", err)
+	dto.SendProblemDetail(w, r, http.StatusInternalServerError, "Internal Server Error", "failed to get status")
+}
+
+func validateOwnerRepo(owner, repo string) error {
+	if owner == "" || repo == "" {
+		return errors.New("owner and repo are required")
+	}
+	if !validNamePattern.MatchString(owner) {
+		return errors.New("invalid owner format")
+	}
+	if !validNamePattern.MatchString(repo) {
+		return errors.New("invalid repo format")
+	}
+	return nil
+}
+
+func sendAnalysisResponse(w http.ResponseWriter, statusCode int, resp *AnalysisResponse) {
 	w.Header().Set(dto.ContentTypeHeader, dto.JSONContentType)
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		slog.Error("failed to encode response", "error", err)
 	}
+}
+
+func toAnalysisResult(a *CompletedAnalysis) *AnalysisResult {
+	return &AnalysisResult{
+		AnalyzedAt: a.CompletedAt.Format("2006-01-02T15:04:05Z"),
+		CommitSHA:  a.CommitSHA,
+		Owner:      a.Owner,
+		Repo:       a.Repo,
+		Suites:     []TestSuite{},
+		Summary: Summary{
+			Frameworks: []FrameworkSummary{},
+			Total:      a.TotalTests,
+		},
+	}
+}
+
+func mapDBStatus(status string) AnalysisStatusType {
+	switch status {
+	case "completed":
+		return StatusCompleted
+	case "running":
+		return StatusAnalyzing
+	case "pending":
+		return StatusQueued
+	case "failed":
+		return StatusFailed
+	default:
+		slog.Warn("unknown analysis status, treating as failed", "status", status)
+		return StatusFailed
+	}
+}
+
+func ptrToString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }

@@ -34,10 +34,6 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
-	if os.Getenv("GITHUB_TOKEN") == "" {
-		slog.Warn("GITHUB_TOKEN not set")
-	}
-
 	if err := run(); err != nil {
 		slog.Error("application failed", "error", err)
 		os.Exit(1)
@@ -45,12 +41,23 @@ func main() {
 }
 
 func run() error {
+	ctx := context.Background()
+
 	origins, err := middleware.GetAllowedOrigins()
 	if err != nil {
 		return fmt.Errorf("failed to get allowed origins: %w", err)
 	}
 
-	app := server.NewApp()
+	app, err := server.NewApp(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create app: %w", err)
+	}
+	defer func() {
+		if err := app.Close(); err != nil {
+			slog.Error("failed to close app", "error", err)
+		}
+	}()
+
 	router := newRouter(origins, app.RouteRegistrars())
 
 	return startServer(router)

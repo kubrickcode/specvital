@@ -48,3 +48,20 @@ type AnalysisResult struct {
 	Suites     []TestSuite `json:"suites"`
 	Summary    Summary     `json:"summary"`
 }
+
+// AnalysisStatusType represents the status of an analysis job.
+type AnalysisStatusType string
+
+const (
+	StatusCompleted AnalysisStatusType = "completed"
+	StatusAnalyzing AnalysisStatusType = "analyzing"
+	StatusQueued    AnalysisStatusType = "queued"
+	StatusFailed    AnalysisStatusType = "failed"
+)
+
+// AnalysisResponse is the API response for analysis endpoints.
+type AnalysisResponse struct {
+	Data   *AnalysisResult    `json:"data,omitempty"`
+	Error  string             `json:"error,omitempty"`
+	Status AnalysisStatusType `json:"status"`
+}

@@ -4,21 +4,29 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/hibiken/asynq"
 )
 
 const (
 	TypeAnalyze = "analysis:analyze"
+
+	queueName      = "default"
+	maxRetries     = 3
+	taskTimeout    = 10 * time.Minute
+	uniqueDuration = 1 * time.Hour
+	enqueueTimeout = 5 * time.Second
 )
 
 type AnalyzePayload struct {
-	Owner string `json:"owner"`
-	Repo  string `json:"repo"`
+	AnalysisID string `json:"analysisId"`
+	Owner      string `json:"owner"`
+	Repo       string `json:"repo"`
 }
 
 type QueueService interface {
-	Enqueue(ctx context.Context, owner, repo string) error
+	Enqueue(ctx context.Context, analysisID, owner, repo string) error
 	Close() error
 }
 
@@ -30,23 +38,31 @@ func NewQueueService(client *asynq.Client) QueueService {
 	return &queueService{client: client}
 }
 
-func (s *queueService) Enqueue(ctx context.Context, owner, repo string) error {
+func (s *queueService) Enqueue(ctx context.Context, analysisID, owner, repo string) error {
+	ctx, cancel := context.WithTimeout(ctx, enqueueTimeout)
+	defer cancel()
+
 	payload, err := json.Marshal(AnalyzePayload{
-		Owner: owner,
-		Repo:  repo,
+		AnalysisID: analysisID,
+		Owner:      owner,
+		Repo:       repo,
 	})
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
 
+	taskID := fmt.Sprintf("analyze:%s:%s", owner, repo)
 	task := asynq.NewTask(TypeAnalyze, payload)
 
 	_, err = s.client.EnqueueContext(ctx, task,
-		asynq.MaxRetry(3),
-		asynq.Queue("default"),
+		asynq.TaskID(taskID),
+		asynq.Unique(uniqueDuration),
+		asynq.MaxRetry(maxRetries),
+		asynq.Timeout(taskTimeout),
+		asynq.Queue(queueName),
 	)
 	if err != nil {
-		return fmt.Errorf("enqueue task: %w", err)
+		return fmt.Errorf("enqueue task for %s/%s: %w", owner, repo, err)
 	}
 
 	return nil

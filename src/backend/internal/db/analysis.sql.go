@@ -11,6 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createPendingAnalysis = `-- name: CreatePendingAnalysis :one
+INSERT INTO analyses (codebase_id, commit_sha, status)
+VALUES ($1, '', 'pending')
+RETURNING id
+`
+
+func (q *Queries) CreatePendingAnalysis(ctx context.Context, codebaseID pgtype.UUID) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createPendingAnalysis, codebaseID)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getAnalysisStatus = `-- name: GetAnalysisStatus :one
 SELECT
     a.id,
@@ -98,4 +111,40 @@ func (q *Queries) GetLatestCompletedAnalysis(ctx context.Context, arg GetLatestC
 		&i.Repo,
 	)
 	return i, err
+}
+
+const markAnalysisFailed = `-- name: MarkAnalysisFailed :exec
+UPDATE analyses
+SET status = 'failed', error_message = $2
+WHERE id = $1
+`
+
+type MarkAnalysisFailedParams struct {
+	ID           pgtype.UUID `json:"id"`
+	ErrorMessage pgtype.Text `json:"error_message"`
+}
+
+func (q *Queries) MarkAnalysisFailed(ctx context.Context, arg MarkAnalysisFailedParams) error {
+	_, err := q.db.Exec(ctx, markAnalysisFailed, arg.ID, arg.ErrorMessage)
+	return err
+}
+
+const upsertCodebase = `-- name: UpsertCodebase :one
+INSERT INTO codebases (host, owner, name)
+VALUES ($1, $2, $3)
+ON CONFLICT (host, owner, name) DO UPDATE SET updated_at = now()
+RETURNING id
+`
+
+type UpsertCodebaseParams struct {
+	Host  string `json:"host"`
+	Owner string `json:"owner"`
+	Name  string `json:"name"`
+}
+
+func (q *Queries) UpsertCodebase(ctx context.Context, arg UpsertCodebaseParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, upsertCodebase, arg.Host, arg.Owner, arg.Name)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
