@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { AnalysisResult, ProblemDetail } from "./types";
+import type { AnalysisResponse, ProblemDetail } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const DEFAULT_TIMEOUT_MS = 30000;
@@ -26,7 +26,6 @@ export const ERROR_TYPES = {
 export type ErrorType = (typeof ERROR_TYPES)[keyof typeof ERROR_TYPES];
 
 const testStatusSchema = z.enum(["active", "skipped", "todo"]);
-
 const frameworkSchema = z.string();
 
 const testCaseSchema = z.object({
@@ -68,6 +67,13 @@ const analysisResultSchema = z.object({
   summary: summarySchema,
 });
 
+const analysisResponseSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("completed"), data: analysisResultSchema }),
+  z.object({ status: z.literal("analyzing") }),
+  z.object({ status: z.literal("queued") }),
+  z.object({ status: z.literal("failed"), error: z.string() }),
+]);
+
 const rateLimitInfoSchema = z.object({
   limit: z.number(),
   remaining: z.number(),
@@ -95,22 +101,17 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = "ApiError";
-
-    // Use override if provided, otherwise categorize based on status code
     this.errorType = errorTypeOverride ?? this.categorizeError();
 
-    // Extract ProblemDetail if available
     if (this.isProblemDetail(responseBody)) {
       this.problemDetail = responseBody;
     }
   }
 
-  /** Factory method for timeout errors */
   static timeout(message = "Request timed out"): ApiError {
     return new ApiError(message, undefined, undefined, ERROR_TYPES.TIMEOUT);
   }
 
-  /** Factory method for parse errors */
   static parseError(message: string, data?: unknown): ApiError {
     return new ApiError(message, undefined, data, ERROR_TYPES.PARSE_ERROR);
   }
@@ -127,10 +128,10 @@ export class ApiError extends Error {
         return ERROR_TYPES.FORBIDDEN;
       case 404:
         return ERROR_TYPES.NOT_FOUND;
-      case 429:
-        return ERROR_TYPES.RATE_LIMIT;
       case 422:
         return ERROR_TYPES.VALIDATION_ERROR;
+      case 429:
+        return ERROR_TYPES.RATE_LIMIT;
       default:
         if (this.status >= 500) {
           return ERROR_TYPES.SERVER_ERROR;
@@ -144,12 +145,10 @@ export class ApiError extends Error {
   }
 
   public getUserMessage(): string {
-    // Use ProblemDetail message if available
     if (this.problemDetail) {
       return this.problemDetail.detail;
     }
 
-    // Fallback to error type based messages
     switch (this.errorType) {
       case ERROR_TYPES.BAD_REQUEST:
         return "Invalid request. Please check the repository owner and name.";
@@ -157,25 +156,24 @@ export class ApiError extends Error {
         return "Access denied. This repository may be private or require authentication.";
       case ERROR_TYPES.NOT_FOUND:
         return "Repository not found. Please verify the owner and repository name.";
-      case ERROR_TYPES.RATE_LIMIT:
-        return "Rate limit exceeded. Please try again later.";
       case ERROR_TYPES.NETWORK:
         return "Network error. Please check your connection and try again.";
-      case ERROR_TYPES.SERVER_ERROR:
-        return "Server error. Please try again later.";
-      case ERROR_TYPES.VALIDATION_ERROR:
-        return "Validation error. The provided data is invalid.";
       case ERROR_TYPES.PARSE_ERROR:
         return "Failed to parse server response. Please try again.";
+      case ERROR_TYPES.RATE_LIMIT:
+        return "Rate limit exceeded. Please try again later.";
+      case ERROR_TYPES.SERVER_ERROR:
+        return "Server error. Please try again later.";
       case ERROR_TYPES.TIMEOUT:
         return "Request timed out. Please try again.";
+      case ERROR_TYPES.VALIDATION_ERROR:
+        return "Validation error. The provided data is invalid.";
       default:
         return this.message;
     }
   }
 }
 
-// Helper function to get user-friendly error message
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof ApiError) {
     return error.getUserMessage();
@@ -192,7 +190,7 @@ export const fetchAnalysis = async (
   owner: string,
   repo: string,
   timeoutMs = DEFAULT_TIMEOUT_MS
-): Promise<AnalysisResult> => {
+): Promise<AnalysisResponse> => {
   const url = getApiUrl(`/api/analyze/${owner}/${repo}`);
 
   const controller = new AbortController();
@@ -203,16 +201,13 @@ export const fetchAnalysis = async (
   try {
     response = await fetch(url, {
       cache: "no-store",
-      headers: {
-        Accept: "application/json",
-      },
+      headers: { Accept: "application/json" },
       signal: controller.signal,
     });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       throw ApiError.timeout();
     }
-
     throw new ApiError(
       `Failed to fetch analysis: ${error instanceof Error ? error.message : "Network error"}`
     );
@@ -220,20 +215,18 @@ export const fetchAnalysis = async (
     clearTimeout(timeoutId);
   }
 
-  if (!response.ok) {
+  // 202 Accepted is valid for queued/analyzing status
+  if (!response.ok && response.status !== 202) {
     let responseBody: unknown;
-
     try {
       responseBody = await response.json();
     } catch {
       responseBody = await response.text();
     }
-
     throw new ApiError(`API request failed: ${response.statusText}`, response.status, responseBody);
   }
 
   let data: unknown;
-
   try {
     data = await response.json();
   } catch (error) {
@@ -242,8 +235,7 @@ export const fetchAnalysis = async (
     );
   }
 
-  const parseResult = analysisResultSchema.safeParse(data);
-
+  const parseResult = analysisResponseSchema.safeParse(data);
   if (!parseResult.success) {
     throw ApiError.parseError(`Invalid response format: ${parseResult.error.message}`, data);
   }

@@ -58,3 +58,13 @@ export type AnalysisResult = {
   suites: TestSuite[];
   summary: Summary;
 };
+
+// Queue-based analysis status
+export type AnalysisStatus = "analyzing" | "completed" | "failed" | "queued";
+
+// Response from /api/analyze/{owner}/{repo}
+export type AnalysisResponse =
+  | { status: "completed"; data: AnalysisResult }
+  | { status: "analyzing" }
+  | { status: "queued" }
+  | { status: "failed"; error: string };

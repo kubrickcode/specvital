@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
 import { isValidLocale, locales } from "@/i18n/config";
+import { QueryProvider } from "@/lib/query";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -39,12 +40,14 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-        <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>
-            <Header />
-            {children}
-          </ThemeProvider>
-        </NextIntlClientProvider>
+        <QueryProvider>
+          <NextIntlClientProvider messages={messages}>
+            <ThemeProvider>
+              <Header />
+              {children}
+            </ThemeProvider>
+          </NextIntlClientProvider>
+        </QueryProvider>
       </body>
     </html>
   );

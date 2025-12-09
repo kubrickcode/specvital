@@ -194,10 +194,10 @@ describe("fetchAnalysis", () => {
     suites: [],
     summary: {
       active: 10,
+      frameworks: [],
       skipped: 2,
       todo: 1,
       total: 13,
-      frameworks: [],
     },
   };
 
@@ -209,14 +209,49 @@ describe("fetchAnalysis", () => {
     vi.unstubAllGlobals();
   });
 
-  it("returns parsed result on success", async () => {
+  it("returns completed response on success", async () => {
+    const response = { status: "completed", data: mockAnalysisResult };
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(mockAnalysisResult),
+      json: () => Promise.resolve(response),
     } as Response);
 
     const result = await fetchAnalysis("owner", "repo");
-    expect(result).toEqual(mockAnalysisResult);
+    expect(result).toEqual(response);
+  });
+
+  it("returns queued response with 202 status", async () => {
+    const response = { status: "queued" };
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      status: 202,
+      json: () => Promise.resolve(response),
+    } as Response);
+
+    const result = await fetchAnalysis("owner", "repo");
+    expect(result).toEqual(response);
+  });
+
+  it("returns analyzing response", async () => {
+    const response = { status: "analyzing" };
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(response),
+    } as Response);
+
+    const result = await fetchAnalysis("owner", "repo");
+    expect(result).toEqual(response);
+  });
+
+  it("returns failed response", async () => {
+    const response = { status: "failed", error: "Analysis failed" };
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(response),
+    } as Response);
+
+    const result = await fetchAnalysis("owner", "repo");
+    expect(result).toEqual(response);
   });
 
   it("throws ApiError on HTTP error with ProblemDetail", async () => {

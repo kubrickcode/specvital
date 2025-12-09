@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { locales } from "@/i18n/config";
 import { isValidGitHubUrl } from "@/features/home";
-import { AnalysisContent } from "@/features/analysis";
-import { fetchAnalysis } from "@/lib/api";
-import Loading from "./loading";
+import { AnalysisPage } from "./analysis-page";
 
 export const dynamic = "force-dynamic";
 
@@ -27,13 +24,7 @@ const AnalyzePage = async ({ params }: AnalyzePageProps) => {
     notFound();
   }
 
-  const dataPromise = fetchAnalysis(owner, repo);
-
-  return (
-    <Suspense fallback={<Loading />}>
-      <AnalysisContent dataPromise={dataPromise} />
-    </Suspense>
-  );
+  return <AnalysisPage owner={owner} repo={repo} />;
 };
 
 export default AnalyzePage;

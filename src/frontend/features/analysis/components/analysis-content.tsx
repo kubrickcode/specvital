@@ -1,6 +1,5 @@
 "use client";
 
-import { use } from "react";
 import { ExternalLink, GitCommit } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { AnalysisResult } from "@/lib/api";
@@ -9,12 +8,11 @@ import { StatsCard } from "./stats-card";
 import { TestList } from "./test-list";
 
 type AnalysisContentProps = {
-  dataPromise: Promise<AnalysisResult>;
+  result: AnalysisResult;
 };
 
-export const AnalysisContent = ({ dataPromise }: AnalysisContentProps) => {
+export const AnalysisContent = ({ result }: AnalysisContentProps) => {
   const t = useTranslations("analyze");
-  const result = use(dataPromise);
 
   return (
     <main className="container mx-auto px-4 py-8">
