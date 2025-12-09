@@ -113,6 +113,88 @@ func (q *Queries) GetLatestCompletedAnalysis(ctx context.Context, arg GetLatestC
 	return i, err
 }
 
+const getTestCasesBySuiteIDs = `-- name: GetTestCasesBySuiteIDs :many
+SELECT
+    tc.id,
+    tc.suite_id,
+    tc.name,
+    tc.line_number,
+    tc.status
+FROM test_cases tc
+WHERE tc.suite_id = ANY($1::uuid[])
+ORDER BY tc.suite_id, tc.line_number
+`
+
+type GetTestCasesBySuiteIDsRow struct {
+	ID         pgtype.UUID `json:"id"`
+	SuiteID    pgtype.UUID `json:"suite_id"`
+	Name       string      `json:"name"`
+	LineNumber pgtype.Int4 `json:"line_number"`
+	Status     TestStatus  `json:"status"`
+}
+
+func (q *Queries) GetTestCasesBySuiteIDs(ctx context.Context, dollar_1 []pgtype.UUID) ([]GetTestCasesBySuiteIDsRow, error) {
+	rows, err := q.db.Query(ctx, getTestCasesBySuiteIDs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTestCasesBySuiteIDsRow
+	for rows.Next() {
+		var i GetTestCasesBySuiteIDsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.SuiteID,
+			&i.Name,
+			&i.LineNumber,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTestSuitesByAnalysisID = `-- name: GetTestSuitesByAnalysisID :many
+SELECT
+    ts.id,
+    ts.file_path,
+    ts.framework
+FROM test_suites ts
+WHERE ts.analysis_id = $1
+ORDER BY ts.file_path
+`
+
+type GetTestSuitesByAnalysisIDRow struct {
+	ID        pgtype.UUID `json:"id"`
+	FilePath  string      `json:"file_path"`
+	Framework pgtype.Text `json:"framework"`
+}
+
+func (q *Queries) GetTestSuitesByAnalysisID(ctx context.Context, analysisID pgtype.UUID) ([]GetTestSuitesByAnalysisIDRow, error) {
+	rows, err := q.db.Query(ctx, getTestSuitesByAnalysisID, analysisID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTestSuitesByAnalysisIDRow
+	for rows.Next() {
+		var i GetTestSuitesByAnalysisIDRow
+		if err := rows.Scan(&i.ID, &i.FilePath, &i.Framework); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const markAnalysisFailed = `-- name: MarkAnalysisFailed :exec
 UPDATE analyses
 SET status = 'failed', error_message = $2

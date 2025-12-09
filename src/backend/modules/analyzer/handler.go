@@ -52,9 +52,15 @@ func (h *Handler) handleAnalyze(w http.ResponseWriter, r *http.Request) {
 
 	analysis, err := h.repo.GetLatestCompletedAnalysis(ctx, owner, repo)
 	if err == nil {
+		result, buildErr := h.buildAnalysisResult(ctx, analysis)
+		if buildErr != nil {
+			slog.Error("failed to build analysis result", "owner", owner, "repo", repo, "error", buildErr)
+			dto.SendProblemDetail(w, r, http.StatusInternalServerError, "Internal Server Error", "failed to build analysis result")
+			return
+		}
 		sendAnalysisResponse(w, http.StatusOK, &AnalysisResponse{
 			Status: StatusCompleted,
-			Data:   toAnalysisResult(analysis),
+			Data:   result,
 		})
 		return
 	}
@@ -115,9 +121,15 @@ func (h *Handler) handleStatus(w http.ResponseWriter, r *http.Request) {
 
 	analysis, err := h.repo.GetLatestCompletedAnalysis(ctx, owner, repo)
 	if err == nil {
+		result, buildErr := h.buildAnalysisResult(ctx, analysis)
+		if buildErr != nil {
+			slog.Error("failed to build analysis result", "owner", owner, "repo", repo, "error", buildErr)
+			dto.SendProblemDetail(w, r, http.StatusInternalServerError, "Internal Server Error", "failed to build analysis result")
+			return
+		}
 		sendAnalysisResponse(w, http.StatusOK, &AnalysisResponse{
 			Status: StatusCompleted,
-			Data:   toAnalysisResult(analysis),
+			Data:   result,
 		})
 		return
 	}
@@ -171,18 +183,72 @@ func sendAnalysisResponse(w http.ResponseWriter, statusCode int, resp *AnalysisR
 	}
 }
 
-func toAnalysisResult(a *CompletedAnalysis) *AnalysisResult {
+func (h *Handler) buildAnalysisResult(ctx context.Context, a *CompletedAnalysis) (*AnalysisResult, error) {
+	suitesWithCases, err := h.repo.GetTestSuitesWithCases(ctx, a.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	suites := make([]TestSuite, len(suitesWithCases))
+	frameworkStats := make(map[Framework]*FrameworkSummary)
+
+	for i, s := range suitesWithCases {
+		tests := make([]TestCase, len(s.Tests))
+		for j, t := range s.Tests {
+			tests[j] = TestCase{
+				FilePath:  s.FilePath,
+				Framework: Framework(s.Framework),
+				Line:      t.Line,
+				Name:      t.Name,
+				Status:    TestStatus(t.Status),
+			}
+
+			if _, ok := frameworkStats[Framework(s.Framework)]; !ok {
+				frameworkStats[Framework(s.Framework)] = &FrameworkSummary{
+					Framework: Framework(s.Framework),
+				}
+			}
+			fs := frameworkStats[Framework(s.Framework)]
+			fs.Total++
+			switch TestStatus(t.Status) {
+			case TestStatusActive:
+				fs.Active++
+			case TestStatusSkipped:
+				fs.Skipped++
+			case TestStatusTodo:
+				fs.Todo++
+			}
+		}
+		suites[i] = TestSuite{
+			FilePath:  s.FilePath,
+			Framework: Framework(s.Framework),
+			Tests:     tests,
+		}
+	}
+
+	frameworks := make([]FrameworkSummary, 0, len(frameworkStats))
+	var totalActive, totalSkipped, totalTodo int
+	for _, fs := range frameworkStats {
+		frameworks = append(frameworks, *fs)
+		totalActive += fs.Active
+		totalSkipped += fs.Skipped
+		totalTodo += fs.Todo
+	}
+
 	return &AnalysisResult{
 		AnalyzedAt: a.CompletedAt.Format("2006-01-02T15:04:05Z"),
 		CommitSHA:  a.CommitSHA,
 		Owner:      a.Owner,
 		Repo:       a.Repo,
-		Suites:     []TestSuite{},
+		Suites:     suites,
 		Summary: Summary{
-			Frameworks: []FrameworkSummary{},
+			Active:     totalActive,
+			Frameworks: frameworks,
+			Skipped:    totalSkipped,
+			Todo:       totalTodo,
 			Total:      a.TotalTests,
 		},
-	}
+	}, nil
 }
 
 func mapDBStatus(status string) AnalysisStatusType {

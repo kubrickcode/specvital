@@ -23,6 +23,7 @@ type Repository interface {
 	CreatePendingAnalysis(ctx context.Context, owner, repo string) (string, error)
 	GetAnalysisStatus(ctx context.Context, owner, repo string) (*AnalysisStatus, error)
 	GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error)
+	GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error)
 	MarkAnalysisFailed(ctx context.Context, analysisID, errorMsg string) error
 }
 
@@ -34,6 +35,19 @@ type CompletedAnalysis struct {
 	CompletedAt time.Time
 	TotalSuites int
 	TotalTests  int
+}
+
+type TestSuiteWithCases struct {
+	ID        string
+	FilePath  string
+	Framework string
+	Tests     []TestCaseRow
+}
+
+type TestCaseRow struct {
+	Name   string
+	Line   int
+	Status string
 }
 
 type AnalysisStatus struct {
@@ -137,6 +151,63 @@ func (r *repositoryImpl) MarkAnalysisFailed(ctx context.Context, analysisID, err
 		return fmt.Errorf("mark analysis failed: %w", err)
 	}
 	return nil
+}
+
+func (r *repositoryImpl) GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error) {
+	uuid, err := stringToUUID(analysisID)
+	if err != nil {
+		return nil, fmt.Errorf("parse analysis ID: %w", err)
+	}
+
+	suiteRows, err := r.queries.GetTestSuitesByAnalysisID(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("get test suites: %w", err)
+	}
+
+	if len(suiteRows) == 0 {
+		return []TestSuiteWithCases{}, nil
+	}
+
+	suiteIDs := make([]pgtype.UUID, len(suiteRows))
+	for i, s := range suiteRows {
+		suiteIDs[i] = s.ID
+	}
+
+	testRows, err := r.queries.GetTestCasesBySuiteIDs(ctx, suiteIDs)
+	if err != nil {
+		return nil, fmt.Errorf("get test cases: %w", err)
+	}
+
+	testsBySuite := make(map[string][]TestCaseRow)
+	for _, t := range testRows {
+		suiteID := uuidToString(t.SuiteID)
+		line := 0
+		if t.LineNumber.Valid {
+			line = int(t.LineNumber.Int32)
+		}
+		testsBySuite[suiteID] = append(testsBySuite[suiteID], TestCaseRow{
+			Name:   t.Name,
+			Line:   line,
+			Status: string(t.Status),
+		})
+	}
+
+	suites := make([]TestSuiteWithCases, len(suiteRows))
+	for i, s := range suiteRows {
+		suiteID := uuidToString(s.ID)
+		framework := ""
+		if s.Framework.Valid {
+			framework = s.Framework.String
+		}
+		suites[i] = TestSuiteWithCases{
+			ID:        suiteID,
+			FilePath:  s.FilePath,
+			Framework: framework,
+			Tests:     testsBySuite[suiteID],
+		}
+	}
+
+	return suites, nil
 }
 
 func uuidToString(u pgtype.UUID) string {

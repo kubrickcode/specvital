@@ -42,3 +42,23 @@ RETURNING id;
 UPDATE analyses
 SET status = 'failed', error_message = $2
 WHERE id = $1;
+
+-- name: GetTestSuitesByAnalysisID :many
+SELECT
+    ts.id,
+    ts.file_path,
+    ts.framework
+FROM test_suites ts
+WHERE ts.analysis_id = $1
+ORDER BY ts.file_path;
+
+-- name: GetTestCasesBySuiteIDs :many
+SELECT
+    tc.id,
+    tc.suite_id,
+    tc.name,
+    tc.line_number,
+    tc.status
+FROM test_cases tc
+WHERE tc.suite_id = ANY($1::uuid[])
+ORDER BY tc.suite_id, tc.line_number;

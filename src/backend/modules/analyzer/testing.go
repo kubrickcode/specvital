@@ -11,6 +11,7 @@ type mockRepository struct {
 	completedAnalysis *CompletedAnalysis
 	analysisStatus    *AnalysisStatus
 	createdAnalysisID string
+	suitesWithCases   []TestSuiteWithCases
 	err               error
 	createErr         error
 }
@@ -47,6 +48,13 @@ func (m *mockRepository) GetAnalysisStatus(ctx context.Context, owner, repo stri
 
 func (m *mockRepository) MarkAnalysisFailed(ctx context.Context, analysisID, errorMsg string) error {
 	return nil
+}
+
+func (m *mockRepository) GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error) {
+	if m.suitesWithCases == nil {
+		return []TestSuiteWithCases{}, nil
+	}
+	return m.suitesWithCases, nil
 }
 
 // mockQueueService is a test double for QueueService.
