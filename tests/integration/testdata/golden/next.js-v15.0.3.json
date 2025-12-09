@@ -2,14 +2,99 @@
   "repository": "next.js",
   "ref": "v15.0.3",
   "expectedFramework": "jest",
-  "fileCount": 1202,
-  "testCount": 6470,
+  "fileCount": 1258,
+  "testCount": 6661,
   "frameworkCounts": {
+    "cargo-test": 56,
     "jest": 1194,
     "playwright": 3,
     "vitest": 5
   },
   "sampleFiles": [
+    {
+      "path": "crates/napi/src/transform.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "crates/next-core/src/bootstrap.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "crates/next-core/src/next_app/metadata/mod.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "crates/next-core/src/next_config.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 4
+    },
+    {
+      "path": "crates/next-core/src/next_font/google/font_fallback.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "crates/next-core/src/next_font/google/options.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "crates/next-core/src/next_font/google/util.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 13
+    },
+    {
+      "path": "crates/next-core/src/next_font/local/font_fallback.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "crates/next-core/src/next_font/local/options.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "crates/next-core/src/next_font/local/request.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "crates/next-core/src/next_manifests/mod.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "crates/next-core/src/url_node.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 24
+    },
+    {
+      "path": "crates/next-custom-transforms/src/transforms/page_static_info/mod.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "crates/next-custom-transforms/tests/telemetry.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 1
+    },
     {
       "path": "examples/with-jest-babel/__tests__/index.test.tsx",
       "framework": "jest",
@@ -45,94 +130,10 @@
       "framework": "jest",
       "suiteCount": 0,
       "testCount": 1
-    },
-    {
-      "path": "examples/with-jest/app/page.test.tsx",
-      "framework": "jest",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-jest/app/utils/add.test.ts",
-      "framework": "jest",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-playwright/e2e/app.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-playwright/e2e/pages.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-typescript-graphql/test/index.test.tsx",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-vitest/__tests__/Home.test.tsx",
-      "framework": "vitest",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-vitest/app/blog/[slug]/page.test.tsx",
-      "framework": "vitest",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-vitest/app/counter.test.tsx",
-      "framework": "vitest",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-vitest/app/page.test.tsx",
-      "framework": "vitest",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-vitest/app/utils/add.test.ts",
-      "framework": "vitest",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-zones/home/test/next-config.test.ts",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 3
-    },
-    {
-      "path": "packages/font/src/google/loader.test.ts",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "packages/font/src/local/loader.test.ts",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 5
-    },
-    {
-      "path": "packages/next/src/lib/batcher.test.ts",
-      "framework": "jest",
-      "suiteCount": 1,
-      "testCount": 5
     }
   ],
   "stats": {
-    "filesMatched": 1202,
-    "filesScanned": 1290
+    "filesMatched": 1258,
+    "filesScanned": 2182
   }
 }
