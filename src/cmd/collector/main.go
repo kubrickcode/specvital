@@ -4,9 +4,19 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/specvital/collector/internal/config"
 	"github.com/specvital/collector/internal/db"
+	"github.com/specvital/collector/internal/jobs"
+	"github.com/specvital/collector/internal/queue"
+)
+
+const (
+	workerConcurrency = 5
+	shutdownTimeout   = 30 * time.Second
 )
 
 func main() {
@@ -33,14 +43,52 @@ func main() {
 		slog.Error("failed to connect to database", "error", err)
 		os.Exit(1)
 	}
-	defer pool.Close()
 
 	slog.Info("postgres connected")
 
 	// pool will be used by sqlc Queries in Commit 4
 	_ = pool
 
-	slog.Info("collector initialized")
+	srv, err := queue.NewServer(queue.ServerConfig{
+		RedisURL:    cfg.RedisURL,
+		Concurrency: workerConcurrency,
+	})
+	if err != nil {
+		slog.Error("failed to create queue server", "error", err)
+		pool.Close()
+		os.Exit(1)
+	}
+
+	mux := queue.NewServeMux()
+	analyzeHandler := jobs.NewAnalyzeHandler()
+	mux.HandleFunc(jobs.TypeAnalyze, analyzeHandler.ProcessTask)
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
+
+	errChan := make(chan error, 1)
+	go func() {
+		slog.Info("worker ready", "concurrency", workerConcurrency)
+		if err := srv.Run(mux); err != nil {
+			errChan <- err
+		}
+	}()
+
+	select {
+	case sig := <-shutdown:
+		slog.Info("shutdown signal received", "signal", sig.String())
+	case err := <-errChan:
+		slog.Error("worker failed", "error", err)
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+
+	srv.Shutdown()
+	<-shutdownCtx.Done()
+
+	pool.Close()
+	slog.Info("collector shutdown complete")
 }
 
 func maskURL(url string) string {
