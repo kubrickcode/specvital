@@ -3,11 +3,10 @@
   "ref": "v11.3.1",
   "expectedFramework": "go-testing",
   "fileCount": 2549,
-  "testCount": 15802,
+  "testCount": 17347,
   "frameworkCounts": {
     "go-testing": 972,
-    "jest": 1397,
-    "playwright": 180
+    "jest": 1577
   },
   "sampleFiles": [
     {
@@ -72,9 +71,9 @@
     },
     {
       "path": "e2e/dashboards-suite/dashboard-public-create.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 0
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 3
     },
     {
       "path": "e2e/dashboards-suite/dashboard-public-templating.spec.ts",
@@ -96,9 +95,9 @@
     },
     {
       "path": "e2e/dashboards-suite/dashboard-share-snapshot-create.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 0
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
     },
     {
       "path": "e2e/dashboards-suite/dashboard-templating.spec.ts",

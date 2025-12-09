@@ -5,8 +5,8 @@
   "fileCount": 449,
   "testCount": 1640,
   "frameworkCounts": {
-    "jest": 393,
-    "vitest": 56
+    "jest": 370,
+    "vitest": 79
   },
   "sampleFiles": [
     {
@@ -17,13 +17,13 @@
     },
     {
       "path": "packages/cli/src/__tests__/artificial-panic.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 5,
       "testCount": 6
     },
     {
       "path": "packages/cli/src/__tests__/checkpoint.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 12
     },
@@ -71,37 +71,37 @@
     },
     {
       "path": "packages/cli/src/__tests__/commands/Validate.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 1,
       "testCount": 14
     },
     {
       "path": "packages/cli/src/__tests__/commands/Version.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 1,
       "testCount": 0
     },
     {
       "path": "packages/cli/src/__tests__/config.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 0
     },
     {
       "path": "packages/cli/src/__tests__/dependent-generator.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 1
     },
     {
       "path": "packages/cli/src/__tests__/dotenv-1-custom-schema-path.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 1
     },
     {
       "path": "packages/cli/src/__tests__/dotenv-2-prisma-folder.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 1
     },
@@ -113,7 +113,7 @@
     },
     {
       "path": "packages/cli/src/__tests__/dotenv-4-prisma-when-no-schema.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 1
     },
@@ -125,7 +125,7 @@
     },
     {
       "path": "packages/cli/src/__tests__/dotenv-6-expand.test.ts",
-      "framework": "jest",
+      "framework": "vitest",
       "suiteCount": 0,
       "testCount": 1
     }
