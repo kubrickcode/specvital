@@ -158,22 +158,22 @@ func processNode(node *sitter.Node, source []byte, filename string, file *domain
 }
 
 func processCallExpression(node *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite) {
-	funcName, status := parseFunctionName(node, source)
+	funcName, status, modifier := parseFunctionName(node, source)
 	if funcName == "" {
 		return
 	}
 
 	switch funcName {
 	case funcDescribe, funcContext:
-		processSuite(node, source, filename, file, currentSuite, status)
+		processSuite(node, source, filename, file, currentSuite, status, modifier)
 	case funcIt, funcSpecify, funcExample:
-		processTest(node, source, filename, file, currentSuite, status)
+		processTest(node, source, filename, file, currentSuite, status, modifier)
 	case modifierSkip, modifierPending:
-		processPendingBlock(node, source, filename, file, currentSuite)
+		processPendingBlock(node, source, filename, file, currentSuite, modifier)
 	}
 }
 
-func parseFunctionName(node *sitter.Node, source []byte) (string, domain.TestStatus) {
+func parseFunctionName(node *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	// Handle method call: receiver.method
 	methodNode := node.ChildByFieldName("method")
 	if methodNode != nil {
@@ -184,49 +184,49 @@ func parseFunctionName(node *sitter.Node, source []byte) (string, domain.TestSta
 		if receiver != nil {
 			receiverName := parser.GetNodeText(receiver, source)
 			if receiverName == "RSpec" && methodName == funcDescribe {
-				return funcDescribe, ""
+				return funcDescribe, domain.TestStatusActive, ""
 			}
 		}
 
 		// Check for skip/pending modifiers
-		status := getStatusFromMethod(methodName)
+		status, modifier := getStatusAndModifierFromMethod(methodName)
 		baseName := getBaseMethod(methodName)
 		if baseName != "" {
-			return baseName, status
+			return baseName, status, modifier
 		}
 
-		return methodName, status
+		return methodName, status, modifier
 	}
 
 	// Handle simple call: method_name
 	nameNode := parser.FindChildByType(node, rubyast.NodeIdentifier)
 	if nameNode != nil {
 		name := parser.GetNodeText(nameNode, source)
-		status := getStatusFromMethod(name)
+		status, modifier := getStatusAndModifierFromMethod(name)
 		baseName := getBaseMethod(name)
 		if baseName != "" {
-			return baseName, status
+			return baseName, status, modifier
 		}
-		return name, status
+		return name, status, modifier
 	}
 
-	return "", ""
+	return "", domain.TestStatusActive, ""
 }
 
-func getStatusFromMethod(name string) domain.TestStatus {
+func getStatusAndModifierFromMethod(name string) (domain.TestStatus, string) {
 	// Handle x-prefixed (xdescribe, xit, etc.)
 	if strings.HasPrefix(name, modifierX) {
-		return domain.TestStatusSkipped
+		return domain.TestStatusSkipped, name
 	}
 	// skip is a status indicator
 	if name == modifierSkip {
-		return domain.TestStatusSkipped
+		return domain.TestStatusSkipped, modifierSkip
 	}
 	// RSpec pending runs test but expects failure (xfail semantics)
 	if name == modifierPending {
-		return domain.TestStatusXfail
+		return domain.TestStatusXfail, modifierPending
 	}
-	return domain.TestStatusActive
+	return domain.TestStatusActive, ""
 }
 
 func getBaseMethod(name string) string {
@@ -246,7 +246,7 @@ func getBaseMethod(name string) string {
 	return ""
 }
 
-func processSuite(node *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus) {
+func processSuite(node *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string) {
 	name := extractName(node, source)
 	if name == "" {
 		return
@@ -255,6 +255,7 @@ func processSuite(node *sitter.Node, source []byte, filename string, file *domai
 	suite := domain.TestSuite{
 		Name:     name,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(node, filename),
 	}
 
@@ -267,7 +268,7 @@ func processSuite(node *sitter.Node, source []byte, filename string, file *domai
 	addSuiteToTarget(suite, parentSuite, file)
 }
 
-func processTest(node *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus) {
+func processTest(node *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string) {
 	name := extractName(node, source)
 	if name == "" {
 		// Handle pending tests without description: it { ... } or specify { ... }
@@ -277,13 +278,14 @@ func processTest(node *sitter.Node, source []byte, filename string, file *domain
 	test := domain.Test{
 		Name:     name,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(node, filename),
 	}
 
 	addTestToTarget(test, parentSuite, file)
 }
 
-func processPendingBlock(node *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite) {
+func processPendingBlock(node *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite, modifier string) {
 	// Handle skip/pending with string: skip "reason" or pending "reason"
 	name := extractName(node, source)
 	if name == "" {
@@ -297,6 +299,7 @@ func processPendingBlock(node *sitter.Node, source []byte, filename string, file
 		suite := domain.TestSuite{
 			Name:     name,
 			Status:   domain.TestStatusSkipped,
+			Modifier: modifier,
 			Location: parser.GetLocation(node, filename),
 		}
 		parseNode(block, source, filename, file, &suite)
@@ -306,6 +309,7 @@ func processPendingBlock(node *sitter.Node, source []byte, filename string, file
 		test := domain.Test{
 			Name:     name,
 			Status:   domain.TestStatusSkipped,
+			Modifier: modifier,
 			Location: parser.GetLocation(node, filename),
 		}
 		addTestToTarget(test, currentSuite, file)

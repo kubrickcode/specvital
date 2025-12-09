@@ -133,30 +133,30 @@ func ExtractTestName(args *sitter.Node, source []byte) string {
 	return ""
 }
 
-func ParseSimpleMemberExpression(obj, prop *sitter.Node, source []byte) (string, domain.TestStatus) {
+func ParseSimpleMemberExpression(obj, prop *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	objName := parser.GetNodeText(obj, source)
 	propName := parser.GetNodeText(prop, source)
 
 	switch propName {
 	case ModifierSkip:
-		return objName, domain.TestStatusSkipped
+		return objName, domain.TestStatusSkipped, ModifierSkip
 	case ModifierTodo:
-		return objName, domain.TestStatusTodo
+		return objName, domain.TestStatusTodo, ModifierTodo
 	case ModifierOnly:
-		return objName, domain.TestStatusFocused
+		return objName, domain.TestStatusFocused, ModifierOnly
 	case ModifierEach:
-		return objName + "." + ModifierEach, domain.TestStatusActive
+		return objName + "." + ModifierEach, domain.TestStatusActive, ""
 	default:
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	}
 }
 
-func ParseNestedMemberExpression(obj, prop *sitter.Node, source []byte) (string, domain.TestStatus) {
+func ParseNestedMemberExpression(obj, prop *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	innerObj := obj.ChildByFieldName("object")
 	innerProp := obj.ChildByFieldName("property")
 
 	if innerObj == nil || innerProp == nil {
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	}
 
 	objName := parser.GetNodeText(innerObj, source)
@@ -164,20 +164,24 @@ func ParseNestedMemberExpression(obj, prop *sitter.Node, source []byte) (string,
 	propName := parser.GetNodeText(prop, source)
 
 	status := ParseModifierStatus(middleProp)
-
-	if propName == ModifierEach {
-		return objName + "." + ModifierEach, status
+	modifier := ""
+	if status != domain.TestStatusActive {
+		modifier = middleProp
 	}
 
-	return "", status
+	if propName == ModifierEach {
+		return objName + "." + ModifierEach, status, modifier
+	}
+
+	return "", status, modifier
 }
 
-func ParseMemberExpressionFunction(node *sitter.Node, source []byte) (string, domain.TestStatus) {
+func ParseMemberExpressionFunction(node *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	obj := node.ChildByFieldName("object")
 	prop := node.ChildByFieldName("property")
 
 	if obj == nil || prop == nil {
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	}
 
 	if obj.Type() == "member_expression" {
@@ -187,27 +191,27 @@ func ParseMemberExpressionFunction(node *sitter.Node, source []byte) (string, do
 	return ParseSimpleMemberExpression(obj, prop, source)
 }
 
-func ParseIdentifierFunction(node *sitter.Node, source []byte) (string, domain.TestStatus) {
+func ParseIdentifierFunction(node *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	name := parser.GetNodeText(node, source)
 
 	if baseName, ok := SkippedFunctionAliases[name]; ok {
-		return baseName, domain.TestStatusSkipped
+		return baseName, domain.TestStatusSkipped, name
 	}
 
 	if baseName, ok := FocusedFunctionAliases[name]; ok {
-		return baseName, domain.TestStatusFocused
+		return baseName, domain.TestStatusFocused, name
 	}
 
-	return name, domain.TestStatusActive
+	return name, domain.TestStatusActive, ""
 }
 
-func ParseFunctionName(node *sitter.Node, source []byte) (string, domain.TestStatus) {
+func ParseFunctionName(node *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	switch node.Type() {
 	case "identifier":
 		return ParseIdentifierFunction(node, source)
 	case "member_expression":
 		return ParseMemberExpressionFunction(node, source)
 	default:
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	}
 }

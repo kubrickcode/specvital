@@ -115,14 +115,14 @@ func (p *XUnitParser) Parse(ctx context.Context, source []byte, filename string)
 // (real-world maximum observed: 3 in FluentAssertions test suite).
 const maxNestedDepth = 20
 
-func getClassStatus(attrLists []*sitter.Node, source []byte) domain.TestStatus {
+func getClassStatusAndModifier(attrLists []*sitter.Node, source []byte) (domain.TestStatus, string) {
 	for _, attr := range dotnetast.GetAttributes(attrLists) {
 		name := dotnetast.GetAttributeName(attr, source)
 		if name == "Skip" || name == "SkipAttribute" {
-			return domain.TestStatusSkipped
+			return domain.TestStatusSkipped, "[Skip]"
 		}
 	}
-	return domain.TestStatusActive
+	return domain.TestStatusActive, ""
 }
 
 // getDisplayNameFromAttribute extracts DisplayName from [Fact(DisplayName = "...")] or [Theory(DisplayName = "...")].
@@ -190,7 +190,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	}
 
 	attrLists := dotnetast.GetAttributeLists(node)
-	classStatus := getClassStatus(attrLists, source)
+	classStatus, classModifier := getClassStatusAndModifier(attrLists, source)
 
 	body := dotnetast.GetDeclarationList(node)
 	if body == nil {
@@ -205,7 +205,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 
 		switch child.Type() {
 		case dotnetast.NodeMethodDeclaration:
-			if test := parseTestMethod(child, source, filename, classStatus); test != nil {
+			if test := parseTestMethod(child, source, filename, classStatus, classModifier); test != nil {
 				tests = append(tests, *test)
 			}
 
@@ -225,13 +225,14 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	return &domain.TestSuite{
 		Name:     className,
 		Status:   classStatus,
+		Modifier: classModifier,
 		Location: parser.GetLocation(node, filename),
 		Tests:    tests,
 		Suites:   nestedSuites,
 	}
 }
 
-func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus) *domain.Test {
+func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string) *domain.Test {
 	attrLists := dotnetast.GetAttributeLists(node)
 	if len(attrLists) == 0 {
 		return nil
@@ -240,6 +241,7 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	attributes := dotnetast.GetAttributes(attrLists)
 	isTest := false
 	status := classStatus
+	modifier := classModifier
 	var displayName string
 
 	for _, attr := range attributes {
@@ -251,12 +253,14 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 			displayName = getDisplayNameFromAttribute(attr, source)
 			if isSkipped(attr, source) {
 				status = domain.TestStatusSkipped
+				modifier = "Skip"
 			}
 		case "Theory", "TheoryAttribute":
 			isTest = true
 			displayName = getDisplayNameFromAttribute(attr, source)
 			if isSkipped(attr, source) {
 				status = domain.TestStatusSkipped
+				modifier = "Skip"
 			}
 		}
 	}
@@ -278,6 +282,7 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	return &domain.Test{
 		Name:     testName,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(node, filename),
 	}
 }

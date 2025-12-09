@@ -114,14 +114,14 @@ func (p *NUnitParser) Parse(ctx context.Context, source []byte, filename string)
 // (real-world maximum observed: 3 in NUnit's own test suite).
 const maxNestedDepth = 20
 
-func getClassStatus(attrLists []*sitter.Node, source []byte) domain.TestStatus {
+func getClassStatusAndModifier(attrLists []*sitter.Node, source []byte) (domain.TestStatus, string) {
 	for _, attr := range dotnetast.GetAttributes(attrLists) {
 		name := dotnetast.GetAttributeName(attr, source)
 		if name == "Ignore" || name == "IgnoreAttribute" {
-			return domain.TestStatusSkipped
+			return domain.TestStatusSkipped, "[Ignore]"
 		}
 	}
-	return domain.TestStatusActive
+	return domain.TestStatusActive, ""
 }
 
 // getDescriptionFromAttribute extracts Description from [Test(Description = "...")] or [TestCase(Description = "...")].
@@ -143,16 +143,16 @@ func getDescriptionFromAttribute(attr *sitter.Node, source []byte) string {
 	return ""
 }
 
-// isIgnored checks if [Ignore] or [IgnoreAttribute] is applied to the test method.
+// isIgnoredWithModifier checks if [Ignore] or [IgnoreAttribute] is applied to the test method.
 // Unlike xUnit's Skip parameter, NUnit uses a separate attribute: [Ignore("reason")].
-func isIgnored(attrLists []*sitter.Node, source []byte) bool {
+func isIgnoredWithModifier(attrLists []*sitter.Node, source []byte) (bool, string) {
 	for _, attr := range dotnetast.GetAttributes(attrLists) {
 		name := dotnetast.GetAttributeName(attr, source)
 		if name == "Ignore" || name == "IgnoreAttribute" {
-			return true
+			return true, "[Ignore]"
 		}
 	}
-	return false
+	return false, ""
 }
 
 func parseTestClasses(root *sitter.Node, source []byte, filename string) []domain.TestSuite {
@@ -182,7 +182,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	}
 
 	attrLists := dotnetast.GetAttributeLists(node)
-	classStatus := getClassStatus(attrLists, source)
+	classStatus, classModifier := getClassStatusAndModifier(attrLists, source)
 
 	body := dotnetast.GetDeclarationList(node)
 	if body == nil {
@@ -197,7 +197,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 
 		switch child.Type() {
 		case dotnetast.NodeMethodDeclaration:
-			if test := parseTestMethod(child, source, filename, classStatus); test != nil {
+			if test := parseTestMethod(child, source, filename, classStatus, classModifier); test != nil {
 				tests = append(tests, *test)
 			}
 
@@ -217,13 +217,14 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	return &domain.TestSuite{
 		Name:     className,
 		Status:   classStatus,
+		Modifier: classModifier,
 		Location: parser.GetLocation(node, filename),
 		Tests:    tests,
 		Suites:   nestedSuites,
 	}
 }
 
-func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus) *domain.Test {
+func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string) *domain.Test {
 	attrLists := dotnetast.GetAttributeLists(node)
 	if len(attrLists) == 0 {
 		return nil
@@ -232,6 +233,7 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	attributes := dotnetast.GetAttributes(attrLists)
 	isTest := false
 	status := classStatus
+	modifier := classModifier
 	var description string
 
 	for _, attr := range attributes {
@@ -254,8 +256,9 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	}
 
 	// Check for [Ignore] attribute
-	if isIgnored(attrLists, source) {
+	if ignored, mod := isIgnoredWithModifier(attrLists, source); ignored {
 		status = domain.TestStatusSkipped
+		modifier = mod
 	}
 
 	methodName := dotnetast.GetMethodName(node, source)
@@ -271,6 +274,7 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	return &domain.Test{
 		Name:     testName,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(node, filename),
 	}
 }

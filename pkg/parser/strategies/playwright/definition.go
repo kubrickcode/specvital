@@ -75,27 +75,27 @@ func (p *PlaywrightParser) Parse(ctx context.Context, source []byte, filename st
 	return testFile, nil
 }
 
-func parseFunctionName(node *sitter.Node, source []byte) (string, domain.TestStatus) {
+func parseFunctionName(node *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	switch node.Type() {
 	case "identifier":
 		name := parser.GetNodeText(node, source)
 		if name == funcTest {
-			return funcTest, domain.TestStatusActive
+			return funcTest, domain.TestStatusActive, ""
 		}
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	case "member_expression":
 		return parseMemberExpression(node, source)
 	default:
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	}
 }
 
-func parseMemberExpression(node *sitter.Node, source []byte) (string, domain.TestStatus) {
+func parseMemberExpression(node *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	obj := node.ChildByFieldName("object")
 	prop := node.ChildByFieldName("property")
 
 	if obj == nil || prop == nil {
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	}
 
 	switch obj.Type() {
@@ -105,40 +105,43 @@ func parseMemberExpression(node *sitter.Node, source []byte) (string, domain.Tes
 		return parseNestedMemberExpression(obj, prop, source)
 	}
 
-	return "", domain.TestStatusActive
+	return "", domain.TestStatusActive, ""
 }
 
-func parseModifierStatus(modifier string) domain.TestStatus {
+func parseModifierStatusAndModifier(modifier string) (domain.TestStatus, string) {
 	switch modifier {
-	case jstest.ModifierSkip, modifierFixme:
-		return domain.TestStatusSkipped
+	case jstest.ModifierSkip:
+		return domain.TestStatusSkipped, jstest.ModifierSkip
+	case modifierFixme:
+		return domain.TestStatusSkipped, modifierFixme
 	case jstest.ModifierOnly:
-		return domain.TestStatusFocused
+		return domain.TestStatusFocused, jstest.ModifierOnly
 	default:
-		return domain.TestStatusActive
+		return domain.TestStatusActive, ""
 	}
 }
 
-func parseNestedMemberExpression(obj *sitter.Node, prop *sitter.Node, source []byte) (string, domain.TestStatus) {
+func parseNestedMemberExpression(obj *sitter.Node, prop *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	innerObj := obj.ChildByFieldName("object")
 	innerProp := obj.ChildByFieldName("property")
 
 	if innerObj == nil || innerProp == nil {
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	}
 
 	objName := parser.GetNodeText(innerObj, source)
 	if objName != funcTest {
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	}
 
 	middleProp := parser.GetNodeText(innerProp, source)
 	if middleProp == "describe" {
 		outerProp := parser.GetNodeText(prop, source)
-		return funcTestDescribe, parseModifierStatus(outerProp)
+		status, modifier := parseModifierStatusAndModifier(outerProp)
+		return funcTestDescribe, status, modifier
 	}
 
-	return "", domain.TestStatusActive
+	return "", domain.TestStatusActive, ""
 }
 
 func parseNode(node *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite) {
@@ -156,23 +159,25 @@ func parseNode(node *sitter.Node, source []byte, filename string, file *domain.T
 	}
 }
 
-func parseSimpleMemberExpression(obj *sitter.Node, prop *sitter.Node, source []byte) (string, domain.TestStatus) {
+func parseSimpleMemberExpression(obj *sitter.Node, prop *sitter.Node, source []byte) (string, domain.TestStatus, string) {
 	objName := parser.GetNodeText(obj, source)
 	if objName != funcTest {
-		return "", domain.TestStatusActive
+		return "", domain.TestStatusActive, ""
 	}
 
 	propName := parser.GetNodeText(prop, source)
 	switch propName {
 	case "describe":
-		return funcTestDescribe, domain.TestStatusActive
-	case jstest.ModifierSkip, modifierFixme:
-		return funcTest, domain.TestStatusSkipped
+		return funcTestDescribe, domain.TestStatusActive, ""
+	case jstest.ModifierSkip:
+		return funcTest, domain.TestStatusSkipped, jstest.ModifierSkip
+	case modifierFixme:
+		return funcTest, domain.TestStatusSkipped, modifierFixme
 	case jstest.ModifierOnly:
-		return funcTest, domain.TestStatusFocused
+		return funcTest, domain.TestStatusFocused, jstest.ModifierOnly
 	}
 
-	return "", domain.TestStatusActive
+	return "", domain.TestStatusActive, ""
 }
 
 func processCallExpression(node *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite) {
@@ -186,20 +191,20 @@ func processCallExpression(node *sitter.Node, source []byte, filename string, fi
 		return
 	}
 
-	funcName, status := parseFunctionName(funcNode, source)
+	funcName, status, modifier := parseFunctionName(funcNode, source)
 	if funcName == "" {
 		return
 	}
 
 	switch funcName {
 	case funcTestDescribe:
-		processSuite(node, args, source, filename, file, currentSuite, status)
+		processSuite(node, args, source, filename, file, currentSuite, status, modifier)
 	case funcTest:
-		processTest(node, args, source, filename, file, currentSuite, status)
+		processTest(node, args, source, filename, file, currentSuite, status, modifier)
 	}
 }
 
-func processSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus) {
+func processSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string) {
 	name := jstest.ExtractTestName(args, source)
 	if name == "" {
 		return
@@ -208,6 +213,7 @@ func processSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filen
 	suite := domain.TestSuite{
 		Name:     name,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(callNode, filename),
 	}
 
@@ -221,7 +227,7 @@ func processSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filen
 	jstest.AddSuiteToTarget(suite, parentSuite, file)
 }
 
-func processTest(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus) {
+func processTest(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string) {
 	name := jstest.ExtractTestName(args, source)
 	if name == "" {
 		return
@@ -230,6 +236,7 @@ func processTest(callNode *sitter.Node, args *sitter.Node, source []byte, filena
 	test := domain.Test{
 		Name:     name,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(callNode, filename),
 	}
 

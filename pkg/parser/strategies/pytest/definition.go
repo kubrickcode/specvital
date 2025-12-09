@@ -173,15 +173,15 @@ func parseTestModule(root *sitter.Node, source []byte, filename string) ([]domai
 			}
 
 			decorators := pyast.GetDecorators(child)
-			status := getStatusFromDecorators(decorators, source)
+			status, modifier := getStatusAndModifierFromDecorators(decorators, source)
 
 			switch definition.Type() {
 			case pyast.NodeFunctionDefinition:
-				if test := parseTestFunctionWithStatus(definition, source, filename, status); test != nil {
+				if test := parseTestFunctionWithStatus(definition, source, filename, status, modifier); test != nil {
 					tests = append(tests, *test)
 				}
 			case pyast.NodeClassDefinition:
-				if suite := parseTestClassWithStatus(definition, source, filename, status); suite != nil {
+				if suite := parseTestClassWithStatus(definition, source, filename, status, modifier); suite != nil {
 					suites = append(suites, *suite)
 				}
 			}
@@ -192,10 +192,10 @@ func parseTestModule(root *sitter.Node, source []byte, filename string) ([]domai
 }
 
 func parseTestFunction(node *sitter.Node, source []byte, filename string) *domain.Test {
-	return parseTestFunctionWithStatus(node, source, filename, domain.TestStatusActive)
+	return parseTestFunctionWithStatus(node, source, filename, domain.TestStatusActive, "")
 }
 
-func parseTestFunctionWithStatus(node *sitter.Node, source []byte, filename string, status domain.TestStatus) *domain.Test {
+func parseTestFunctionWithStatus(node *sitter.Node, source []byte, filename string, status domain.TestStatus, modifier string) *domain.Test {
 	nameNode := node.ChildByFieldName("name")
 	if nameNode == nil {
 		return nil
@@ -209,15 +209,16 @@ func parseTestFunctionWithStatus(node *sitter.Node, source []byte, filename stri
 	return &domain.Test{
 		Name:     name,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(node, filename),
 	}
 }
 
 func parseTestClass(node *sitter.Node, source []byte, filename string) *domain.TestSuite {
-	return parseTestClassWithStatus(node, source, filename, domain.TestStatusActive)
+	return parseTestClassWithStatus(node, source, filename, domain.TestStatusActive, "")
 }
 
-func parseTestClassWithStatus(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus) *domain.TestSuite {
+func parseTestClassWithStatus(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string) *domain.TestSuite {
 	nameNode := node.ChildByFieldName("name")
 	if nameNode == nil {
 		return nil
@@ -240,9 +241,10 @@ func parseTestClassWithStatus(node *sitter.Node, source []byte, filename string,
 		switch child.Type() {
 		case pyast.NodeFunctionDefinition:
 			if test := parseTestFunction(child, source, filename); test != nil {
-				// Inherit class status if method has default (active) status
+				// Inherit class status/modifier if method has default (active) status
 				if test.Status == domain.TestStatusActive && classStatus != domain.TestStatusActive {
 					test.Status = classStatus
+					test.Modifier = classModifier
 				}
 				tests = append(tests, *test)
 			}
@@ -254,13 +256,14 @@ func parseTestClassWithStatus(node *sitter.Node, source []byte, filename string,
 			}
 
 			decorators := pyast.GetDecorators(child)
-			status := getStatusFromDecorators(decorators, source)
-			// Inherit class status if method has default (active) status
+			status, modifier := getStatusAndModifierFromDecorators(decorators, source)
+			// Inherit class status/modifier if method has default (active) status
 			if status == domain.TestStatusActive && classStatus != domain.TestStatusActive {
 				status = classStatus
+				modifier = classModifier
 			}
 
-			if test := parseTestFunctionWithStatus(definition, source, filename, status); test != nil {
+			if test := parseTestFunctionWithStatus(definition, source, filename, status, modifier); test != nil {
 				tests = append(tests, *test)
 			}
 		}
@@ -273,23 +276,24 @@ func parseTestClassWithStatus(node *sitter.Node, source []byte, filename string,
 	return &domain.TestSuite{
 		Name:     name,
 		Status:   classStatus,
+		Modifier: classModifier,
 		Location: parser.GetLocation(node, filename),
 		Tests:    tests,
 	}
 }
 
-func getStatusFromDecorators(decorators []*sitter.Node, source []byte) domain.TestStatus {
+func getStatusAndModifierFromDecorators(decorators []*sitter.Node, source []byte) (domain.TestStatus, string) {
 	for _, dec := range decorators {
 		text := parser.GetNodeText(dec, source)
 
 		switch {
 		case strings.Contains(text, "pytest.mark.skip"):
-			return domain.TestStatusSkipped
+			return domain.TestStatusSkipped, "@pytest.mark.skip"
 		case strings.Contains(text, "pytest.mark.xfail"):
-			return domain.TestStatusXfail
+			return domain.TestStatusXfail, "@pytest.mark.xfail"
 		}
 	}
-	return domain.TestStatusActive
+	return domain.TestStatusActive, ""
 }
 
 func isTestFunction(name string) bool {

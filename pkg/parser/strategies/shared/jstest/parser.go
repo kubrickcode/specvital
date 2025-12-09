@@ -63,7 +63,7 @@ func ParseCallbackBody(callback *sitter.Node, source []byte, filename string, fi
 }
 
 // ProcessTest creates a test from a call expression.
-func ProcessTest(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus) {
+func ProcessTest(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string) {
 	name := ExtractTestName(args, source)
 	if name == "" {
 		return
@@ -72,6 +72,7 @@ func ProcessTest(callNode *sitter.Node, args *sitter.Node, source []byte, filena
 	test := domain.Test{
 		Name:     name,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(callNode, filename),
 	}
 
@@ -80,7 +81,7 @@ func ProcessTest(callNode *sitter.Node, args *sitter.Node, source []byte, filena
 
 // ProcessSuite creates a test suite from a call expression.
 // Handles both regular suites with callbacks and pending suites without callbacks.
-func ProcessSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus) {
+func ProcessSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string) {
 	name := ExtractTestName(args, source)
 	if name == "" {
 		return
@@ -89,6 +90,7 @@ func ProcessSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filen
 	suite := domain.TestSuite{
 		Name:     name,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(callNode, filename),
 	}
 
@@ -100,13 +102,14 @@ func ProcessSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filen
 }
 
 // ProcessEachTests creates multiple tests from a .each() call.
-func ProcessEachTests(callNode *sitter.Node, testCases []string, nameTemplate string, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus) {
+func ProcessEachTests(callNode *sitter.Node, testCases []string, nameTemplate string, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string) {
 	names := ResolveEachNames(nameTemplate, testCases)
 
 	for _, name := range names {
 		test := domain.Test{
 			Name:     name,
 			Status:   status,
+			Modifier: modifier,
 			Location: parser.GetLocation(callNode, filename),
 		}
 
@@ -115,7 +118,7 @@ func ProcessEachTests(callNode *sitter.Node, testCases []string, nameTemplate st
 }
 
 // ProcessEachSuites creates multiple suites from a describe.each() call.
-func ProcessEachSuites(callNode *sitter.Node, testCases []string, nameTemplate string, callback *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus) {
+func ProcessEachSuites(callNode *sitter.Node, testCases []string, nameTemplate string, callback *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string) {
 	if callback == nil {
 		return
 	}
@@ -126,6 +129,7 @@ func ProcessEachSuites(callNode *sitter.Node, testCases []string, nameTemplate s
 		suite := domain.TestSuite{
 			Name:     name,
 			Status:   status,
+			Modifier: modifier,
 			Location: parser.GetLocation(callNode, filename),
 		}
 
@@ -143,7 +147,7 @@ func ProcessEachCall(outerCall, innerCall, outerArgs *sitter.Node, source []byte
 		return
 	}
 
-	funcName, status := ParseFunctionName(innerFunc, source)
+	funcName, status, modifier := ParseFunctionName(innerFunc, source)
 	if funcName == "" {
 		return
 	}
@@ -154,9 +158,9 @@ func ProcessEachCall(outerCall, innerCall, outerArgs *sitter.Node, source []byte
 
 	switch funcName {
 	case FuncDescribe + "." + ModifierEach:
-		ProcessEachSuites(outerCall, testCases, nameTemplate, callback, source, filename, file, currentSuite, status)
+		ProcessEachSuites(outerCall, testCases, nameTemplate, callback, source, filename, file, currentSuite, status, modifier)
 	case FuncIt + "." + ModifierEach, FuncTest + "." + ModifierEach:
-		ProcessEachTests(outerCall, testCases, nameTemplate, filename, file, currentSuite, status)
+		ProcessEachTests(outerCall, testCases, nameTemplate, filename, file, currentSuite, status, modifier)
 	}
 }
 
@@ -177,16 +181,16 @@ func ProcessCallExpression(node *sitter.Node, source []byte, filename string, fi
 		return
 	}
 
-	funcName, status := ParseFunctionName(funcNode, source)
+	funcName, status, modifier := ParseFunctionName(funcNode, source)
 	if funcName == "" {
 		return
 	}
 
 	switch funcName {
 	case FuncDescribe:
-		ProcessSuite(node, args, source, filename, file, currentSuite, status)
+		ProcessSuite(node, args, source, filename, file, currentSuite, status, modifier)
 	case FuncIt, FuncTest:
-		ProcessTest(node, args, source, filename, file, currentSuite, status)
+		ProcessTest(node, args, source, filename, file, currentSuite, status, modifier)
 	}
 }
 

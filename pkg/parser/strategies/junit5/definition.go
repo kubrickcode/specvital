@@ -157,7 +157,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	}
 
 	modifiers := javaast.GetModifiers(node)
-	classStatus := getClassStatus(modifiers, source)
+	classStatus, classModifier := getClassStatusAndModifier(modifiers, source)
 
 	body := javaast.GetClassBody(node)
 	if body == nil {
@@ -172,7 +172,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 
 		switch child.Type() {
 		case javaast.NodeMethodDeclaration:
-			if test := parseTestMethod(child, source, filename, classStatus); test != nil {
+			if test := parseTestMethod(child, source, filename, classStatus, classModifier); test != nil {
 				tests = append(tests, *test)
 			}
 
@@ -194,13 +194,14 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	return &domain.TestSuite{
 		Name:     className,
 		Status:   classStatus,
+		Modifier: classModifier,
 		Location: parser.GetLocation(node, filename),
 		Tests:    tests,
 		Suites:   nestedSuites,
 	}
 }
 
-func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus) *domain.Test {
+func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string) *domain.Test {
 	modifiers := javaast.GetModifiers(node)
 	if modifiers == nil {
 		return nil
@@ -210,6 +211,7 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	isTest := false
 	var displayName string
 	status := classStatus
+	modifier := classModifier
 
 	for _, ann := range annotations {
 		name := javaast.GetAnnotationName(ann, source)
@@ -223,6 +225,7 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 			isTest = true
 		case "Disabled":
 			status = domain.TestStatusSkipped
+			modifier = "@Disabled"
 		case "DisplayName":
 			displayName = javaast.GetAnnotationArgument(ann, source)
 		}
@@ -245,18 +248,19 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	return &domain.Test{
 		Name:     testName,
 		Status:   status,
+		Modifier: modifier,
 		Location: parser.GetLocation(node, filename),
 	}
 }
 
-func getClassStatus(modifiers *sitter.Node, source []byte) domain.TestStatus {
+func getClassStatusAndModifier(modifiers *sitter.Node, source []byte) (domain.TestStatus, string) {
 	if modifiers == nil {
-		return domain.TestStatusActive
+		return domain.TestStatusActive, ""
 	}
 
 	if javaast.HasAnnotation(modifiers, source, "Disabled") {
-		return domain.TestStatusSkipped
+		return domain.TestStatusSkipped, "@Disabled"
 	}
 
-	return domain.TestStatusActive
+	return domain.TestStatusActive, ""
 }

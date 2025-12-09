@@ -8,6 +8,8 @@ type Test struct {
 	Name string `json:"name"`
 	// Status indicates if the test is skipped, only, etc.
 	Status TestStatus `json:"status"`
+	// Modifier is the original framework marker (skip, todo, fixme, @Disabled, etc.).
+	Modifier string `json:"modifier,omitempty"`
 }
 
 // TestSuite represents a test suite (describe, test.describe).
@@ -18,6 +20,8 @@ type TestSuite struct {
 	Name string `json:"name"`
 	// Status indicates if the suite is skipped, only, etc.
 	Status TestStatus `json:"status"`
+	// Modifier is the original framework marker (skip, todo, fixme, @Disabled, etc.).
+	Modifier string `json:"modifier,omitempty"`
 	// Suites contains nested test suites.
 	Suites []TestSuite `json:"suites,omitempty"`
 	// Tests contains the tests in this suite.
