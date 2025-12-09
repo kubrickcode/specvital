@@ -499,7 +499,7 @@ func TestDetector_DeterministicScopeSelection(t *testing.T) {
 	// Create multiple config scopes that could potentially match the same file
 	// (simulating a multi-module Gradle project like testcontainers-java with 90 modules)
 	projectScope := framework.NewProjectScope()
-	
+
 	// Add configs in non-alphabetical order to test deterministic sorting
 	configs := []string{
 		"/project/modules/module-z/build.gradle",
@@ -508,13 +508,13 @@ func TestDetector_DeterministicScopeSelection(t *testing.T) {
 		"/project/build.gradle",
 		"/project/modules/module-b/build.gradle",
 	}
-	
+
 	for _, configPath := range configs {
 		scope := framework.NewConfigScope(configPath, "")
 		scope.Framework = "junit5"
 		projectScope.AddConfig(configPath, scope)
 	}
-	
+
 	detector.SetProjectScope(projectScope)
 
 	// Test file in module-a that could potentially match multiple scopes
@@ -529,13 +529,13 @@ func TestDetector_DeterministicScopeSelection(t *testing.T) {
 	var firstResult Result
 	for i := 0; i < 100; i++ {
 		result := detector.Detect(context.Background(), testFile, content)
-		
+
 		if i == 0 {
 			firstResult = result
 		} else {
 			// Every iteration must produce the same result
 			if result.Framework != firstResult.Framework {
-				t.Errorf("iteration %d: expected framework '%s', got '%s'", 
+				t.Errorf("iteration %d: expected framework '%s', got '%s'",
 					i, firstResult.Framework, result.Framework)
 			}
 			if result.Scope != firstResult.Scope {
@@ -543,7 +543,7 @@ func TestDetector_DeterministicScopeSelection(t *testing.T) {
 			}
 		}
 	}
-	
+
 	if firstResult.Framework != "junit5" {
 		t.Errorf("expected framework 'junit5', got '%s'", firstResult.Framework)
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/specvital/core/pkg/parser"
 	"github.com/specvital/core/pkg/source"
 
+	_ "github.com/specvital/core/pkg/parser/strategies/cargotest"
 	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
 	_ "github.com/specvital/core/pkg/parser/strategies/jest"
 	_ "github.com/specvital/core/pkg/parser/strategies/junit5"

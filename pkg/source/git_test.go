@@ -424,11 +424,11 @@ func TestVerifyRepository(t *testing.T) {
 
 func TestInjectCredentials(t *testing.T) {
 	tests := []struct {
-		name     string
-		repoURL  string
-		creds    *GitCredentials
-		wantURL  string
-		wantErr  bool
+		name    string
+		repoURL string
+		creds   *GitCredentials
+		wantURL string
+		wantErr bool
 	}{
 		{
 			name:    "should not modify URL without credentials",

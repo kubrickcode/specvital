@@ -24,6 +24,7 @@ import (
 	"github.com/smacker/go-tree-sitter/javascript"
 	"github.com/smacker/go-tree-sitter/python"
 	"github.com/smacker/go-tree-sitter/ruby"
+	"github.com/smacker/go-tree-sitter/rust"
 	"github.com/smacker/go-tree-sitter/typescript/typescript"
 
 	"github.com/specvital/core/pkg/domain"
@@ -39,6 +40,7 @@ var (
 	jsLang   *sitter.Language
 	pyLang   *sitter.Language
 	rbLang   *sitter.Language
+	rsLang   *sitter.Language
 	tsLang   *sitter.Language
 
 	langOnce sync.Once
@@ -52,6 +54,7 @@ func initLanguages() {
 		jsLang = javascript.GetLanguage()
 		pyLang = python.GetLanguage()
 		rbLang = ruby.GetLanguage()
+		rsLang = rust.GetLanguage()
 		tsLang = typescript.GetLanguage()
 	})
 }
@@ -72,6 +75,8 @@ func GetLanguage(lang domain.Language) *sitter.Language {
 		return pyLang
 	case domain.LanguageRuby:
 		return rbLang
+	case domain.LanguageRust:
+		return rsLang
 	default:
 		return tsLang
 	}
@@ -84,6 +89,7 @@ var (
 	jsParserPool   sync.Pool
 	pyParserPool   sync.Pool
 	rbParserPool   sync.Pool
+	rsParserPool   sync.Pool
 	tsParserPool   sync.Pool
 )
 
@@ -101,6 +107,8 @@ func getParserPool(lang domain.Language) *sync.Pool {
 		return &pyParserPool
 	case domain.LanguageRuby:
 		return &rbParserPool
+	case domain.LanguageRust:
+		return &rsParserPool
 	default:
 		return &tsParserPool
 	}

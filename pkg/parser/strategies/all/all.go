@@ -3,6 +3,7 @@
 package all
 
 import (
+	_ "github.com/specvital/core/pkg/parser/strategies/cargotest"
 	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
 	_ "github.com/specvital/core/pkg/parser/strategies/jest"
 	_ "github.com/specvital/core/pkg/parser/strategies/junit5"

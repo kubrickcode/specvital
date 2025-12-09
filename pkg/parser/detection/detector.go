@@ -91,6 +91,11 @@ func (d *Detector) detectFromImport(ctx context.Context, lang domain.Language, c
 		imports = extraction.ExtractCSharpUsings(ctx, content)
 	case domain.LanguageRuby:
 		imports = extraction.ExtractRubyRequires(ctx, content)
+	case domain.LanguageRust:
+		// Rust built-in tests use #[test] attribute, not imports.
+		// Third-party frameworks (rstest, proptest, criterion) are not yet supported.
+		// Future: implement ExtractRustImports for `use rstest::rstest;` etc.
+		return ""
 	}
 
 	if len(imports) == 0 {
@@ -230,6 +235,8 @@ func detectLanguage(filePath string) domain.Language {
 		return domain.LanguageCSharp
 	case ".rb":
 		return domain.LanguageRuby
+	case ".rs":
+		return domain.LanguageRust
 	default:
 		return ""
 	}

@@ -630,6 +630,8 @@ func isTestFileCandidate(path string) bool {
 		return isCSharpTestFile(path)
 	case ".rb":
 		return isRubyTestFile(path)
+	case ".rs":
+		return isRustTestFile(path)
 	default:
 		return false
 	}
@@ -753,6 +755,29 @@ func isRubyTestFile(path string) bool {
 			return false
 		}
 		return strings.HasSuffix(base, ".rb")
+	}
+
+	return false
+}
+
+func isRustTestFile(path string) bool {
+	base := filepath.Base(path)
+
+	// Rust test file convention: *_test.rs
+	if strings.HasSuffix(base, "_test.rs") {
+		return true
+	}
+
+	normalizedPath := filepath.ToSlash(path)
+
+	// tests/ directory: all .rs files are candidates (content matcher filters non-tests)
+	if strings.Contains(normalizedPath, "/tests/") || strings.HasPrefix(normalizedPath, "tests/") {
+		return strings.HasSuffix(base, ".rs")
+	}
+
+	// src/ directory: Rust places unit tests inline with #[cfg(test)] modules
+	if strings.Contains(normalizedPath, "/src/") || strings.HasPrefix(normalizedPath, "src/") {
+		return strings.HasSuffix(base, ".rs")
 	}
 
 	return false

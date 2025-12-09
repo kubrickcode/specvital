@@ -122,3 +122,8 @@ repositories:
     url: https://github.com/rspec/rspec-core
     ref: v3.13.2
     framework: rspec
+
+  - name: ripgrep
+    url: https://github.com/BurntSushi/ripgrep
+    ref: 14.1.1
+    framework: cargo-test
