@@ -1,75 +1,31 @@
-// Synced with backend: src/backend/analyzer/types.go
+/**
+ * Re-export types from OpenAPI generated types.
+ * This provides backward-compatible type aliases for existing imports.
+ *
+ * @see generated-types.ts (auto-generated from backend/api/openapi.yaml)
+ */
 
-// RFC 7807 Problem Details for HTTP APIs with optional rate limit extension
-export type ProblemDetail = {
-  detail: string;
-  instance?: string;
-  rateLimit?: RateLimitInfo;
-  status: number;
-  title: string;
-  type?: string;
-};
+import type { components } from "./generated-types";
 
-export type RateLimitInfo = {
-  limit: number;
-  remaining: number;
-  resetAt: number;
-};
+// Core domain types
+export type AnalysisResult = components["schemas"]["AnalysisResult"];
+export type TestSuite = components["schemas"]["TestSuite"];
+export type TestCase = components["schemas"]["TestCase"];
+export type TestStatus = components["schemas"]["TestStatus"];
+export type Framework = components["schemas"]["Framework"];
+export type Summary = components["schemas"]["Summary"];
+export type FrameworkSummary = components["schemas"]["FrameworkSummary"];
 
-export type TestStatus = "active" | "focused" | "skipped" | "todo" | "xfail";
+// API response types
+export type AnalysisResponse = components["schemas"]["AnalysisResponse"];
+export type CompletedResponse = components["schemas"]["CompletedResponse"];
+export type AnalyzingResponse = components["schemas"]["AnalyzingResponse"];
+export type QueuedResponse = components["schemas"]["QueuedResponse"];
+export type FailedResponse = components["schemas"]["FailedResponse"];
 
-export type Framework = string;
+// Error types (RFC 7807)
+export type ProblemDetail = components["schemas"]["ProblemDetail"];
+export type RateLimitInfo = components["schemas"]["RateLimitInfo"];
 
-export type TestCase = {
-  filePath: string;
-  framework: Framework;
-  line: number;
-  modifier?: string;
-  name: string;
-  status: TestStatus;
-};
-
-export type TestSuite = {
-  filePath: string;
-  framework: Framework;
-  tests: TestCase[];
-};
-
-export type FrameworkSummary = {
-  active: number;
-  focused: number;
-  framework: Framework;
-  skipped: number;
-  todo: number;
-  total: number;
-  xfail: number;
-};
-
-export type Summary = {
-  active: number;
-  focused: number;
-  frameworks: FrameworkSummary[];
-  skipped: number;
-  todo: number;
-  total: number;
-  xfail: number;
-};
-
-export type AnalysisResult = {
-  analyzedAt: string;
-  commitSha: string;
-  owner: string;
-  repo: string;
-  suites: TestSuite[];
-  summary: Summary;
-};
-
-// Queue-based analysis status
-export type AnalysisStatus = "analyzing" | "completed" | "failed" | "queued";
-
-// Response from /api/analyze/{owner}/{repo}
-export type AnalysisResponse =
-  | { status: "completed"; data: AnalysisResult }
-  | { status: "analyzing" }
-  | { status: "queued" }
-  | { status: "failed"; error: string };
+// Convenience type for analysis status
+export type AnalysisStatus = AnalysisResponse["status"];
