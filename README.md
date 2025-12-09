@@ -68,6 +68,17 @@ just build backend
 just test frontend
 ```
 
+### API Type Generation
+
+This project uses OpenAPI-first approach. API types are auto-generated from `src/backend/api/openapi.yaml`.
+
+```bash
+# Generate Go and TypeScript types
+just gen-api
+```
+
+**Important**: Run `just gen-api` after modifying `openapi.yaml`. CI will fail if generated types are out of sync.
+
 ## Project Structure
 
 ```

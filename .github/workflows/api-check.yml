@@ -1,0 +1,65 @@
+name: API Type Check
+
+on:
+  pull_request:
+    types:
+      - synchronize
+      - opened
+      - reopened
+      - unlocked
+    paths:
+      - "src/backend/api/**"
+      - "src/backend/internal/api/**"
+      - "src/frontend/lib/api/generated-types.ts"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/backend/api/**"
+      - "src/backend/internal/api/**"
+      - "src/frontend/lib/api/generated-types.ts"
+  workflow_dispatch:
+
+jobs:
+  api-type-check:
+    name: Verify API types are in sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@master
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.24
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22.18.0"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Set up Just CLI
+        uses: extractions/setup-just@v3
+
+      - name: Install oapi-codegen
+        run: go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+
+      - name: Install frontend dependencies
+        run: just deps-frontend
+
+      - name: Regenerate API types
+        run: just gen-api
+
+      - name: Check for uncommitted changes
+        run: |
+          if ! git diff --exit-code; then
+            echo "❌ API types are out of sync!"
+            echo "Run 'just gen-api' locally and commit the changes."
+            exit 1
+          fi
+          echo "✅ API types are in sync"

@@ -68,6 +68,9 @@ just test                    # Test all
 just test backend            # go test -v ./...
 just test frontend           # pnpm test (vitest)
 
+# Code Generation
+just gen-api                 # Generate Go/TS types from OpenAPI spec
+
 # Lint
 just lint                    # All targets
 just lint go                 # gofmt
@@ -75,15 +78,23 @@ just lint go                 # gofmt
 
 ## Architecture
 
-### Backend (Go + Chi)
+### Backend (Go + Chi + OpenAPI)
+
+**Architecture**: OpenAPI-First with Strict Server Interface
 
 ```
 src/backend/
-├── cmd/server/main.go      # Entry point, router setup
-├── analyzer/               # Core analysis module
-│   ├── handler.go          # HTTP handlers
-│   ├── service.go          # Business logic (GitHub → Core parser)
-│   └── types.go            # AnalysisResult, TestSuite, TestCase
+├── cmd/server/main.go      # Entry point
+├── internal/
+│   ├── api/types.gen.go    # Generated from OpenAPI spec (DO NOT EDIT)
+│   └── app/app.go          # Router setup with strict handler
+├── api/
+│   ├── openapi.yaml        # API spec (single source of truth)
+│   └── oapi-codegen.yaml   # Code generation config
+├── modules/
+│   └── analyzer/           # Core analysis module
+│       ├── server.go       # StrictServerInterface implementation
+│       └── service.go      # Business logic (GitHub → Core parser)
 ├── github/                 # GitHub API client
 │   ├── client.go           # ListFiles, GetFileContent, rate limit tracking
 │   └── errors.go           # ErrNotFound, ErrForbidden, ErrRateLimited
@@ -91,6 +102,8 @@ src/backend/
     ├── dto/problem.go      # RFC 7807 error responses
     └── middleware/         # CORS, Logger, Compress
 ```
+
+**Type Generation**: OpenAPI spec → Go types (compile-time verified) + TS types
 
 ### Frontend (Next.js 16 App Router)
 
@@ -121,7 +134,10 @@ src/frontend/
 │   └── skeletons/                      # Loading skeletons
 │
 ├── lib/                                # Shared utilities
-│   ├── api/                            # API client, types, errors
+│   ├── api/                            # API client
+│   │   ├── generated-types.ts          # Generated from OpenAPI (DO NOT EDIT)
+│   │   ├── types.ts                    # Type re-exports for convenience
+│   │   └── client.ts                   # API client implementation
 │   ├── utils/                          # cn, formatAnalysisDate
 │   └── styles/                         # framework-colors
 │
