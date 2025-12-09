@@ -11,7 +11,7 @@ enum "analysis_status" {
 
 enum "test_status" {
   schema = schema.public
-  values = ["active", "skipped", "todo"]
+  values = ["active", "skipped", "todo", "focused", "xfail"]
 }
 
 // ==============================================================================
@@ -244,6 +244,11 @@ table "test_cases" {
   column "status" {
     type    = enum.test_status
     default = "active"
+  }
+
+  column "modifier" {
+    type = varchar(50)
+    null = true
   }
 
   column "tags" {
