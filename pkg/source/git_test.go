@@ -165,6 +165,56 @@ func TestNewGitSource(t *testing.T) {
 	})
 }
 
+func TestGitSource_Branch(t *testing.T) {
+	if !isGitInstalled() {
+		t.Skip("git not installed")
+	}
+
+	t.Run("should return branch from git when opts.Branch is empty", func(t *testing.T) {
+		// Given
+		repoDir := createLocalGitRepo(t)
+		ctx := context.Background()
+
+		src, err := NewGitSource(ctx, repoDir, nil)
+		if err != nil {
+			t.Fatalf("failed to create git source: %v", err)
+		}
+		defer src.Close()
+
+		// When
+		branch := src.Branch()
+
+		// Then
+		if branch == "" {
+			t.Error("expected non-empty branch name")
+		}
+		if branch != "master" && branch != "main" {
+			t.Errorf("expected 'master' or 'main', got %q", branch)
+		}
+	})
+
+	t.Run("should return opts.Branch when specified", func(t *testing.T) {
+		// Given
+		repoDir := createLocalGitRepoWithBranch(t, "feature")
+		ctx := context.Background()
+		opts := &GitOptions{Branch: "feature"}
+
+		src, err := NewGitSource(ctx, repoDir, opts)
+		if err != nil {
+			t.Fatalf("failed to create git source: %v", err)
+		}
+		defer src.Close()
+
+		// When
+		branch := src.Branch()
+
+		// Then
+		if branch != "feature" {
+			t.Errorf("expected 'feature', got %q", branch)
+		}
+	})
+}
+
 func TestGitSource_CommitSHA(t *testing.T) {
 	if !isGitInstalled() {
 		t.Skip("git not installed")

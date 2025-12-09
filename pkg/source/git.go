@@ -38,6 +38,7 @@ type GitSource struct {
 	closeErr  error
 	closeOnce sync.Once
 	commitSHA string
+	branch    string
 	local     *LocalSource
 	tempDir   string
 }
@@ -95,8 +96,21 @@ func NewGitSource(ctx context.Context, repoURL string, opts *GitOptions) (*GitSo
 		)
 	}
 
+	branch := opts.Branch
+	if branch == "" {
+		branch, err = getBranchName(ctx, tempDir)
+		if err != nil {
+			os.RemoveAll(tempDir)
+			return nil, sanitizeError(
+				fmt.Errorf("%w: %v", ErrGitCloneFailed, err),
+				repoURL, opts.Credentials,
+			)
+		}
+	}
+
 	return &GitSource{
 		commitSHA: commitSHA,
+		branch:    branch,
 		local:     local,
 		tempDir:   tempDir,
 	}, nil
@@ -110,6 +124,11 @@ func (s *GitSource) Root() string {
 // CommitSHA returns the HEAD commit SHA of the cloned repository.
 func (s *GitSource) CommitSHA() string {
 	return s.commitSHA
+}
+
+// Branch returns the branch name of the cloned repository.
+func (s *GitSource) Branch() string {
+	return s.branch
 }
 
 // Open opens the file at the given path for reading.
@@ -272,6 +291,21 @@ func getCommitSHA(ctx context.Context, repoDir string) (string, error) {
 
 	if err := cmd.Run(); err != nil {
 		return "", fmt.Errorf("failed to get commit SHA: %v: %s", err, stderr.String())
+	}
+
+	return strings.TrimSpace(stdout.String()), nil
+}
+
+// getBranchName retrieves the current branch name from the given repository directory.
+func getBranchName(ctx context.Context, repoDir string) (string, error) {
+	cmd := exec.CommandContext(ctx, "git", "rev-parse", "--abbrev-ref", "HEAD")
+	cmd.Dir = repoDir
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("failed to get branch name: %v: %s", err, stderr.String())
 	}
 
 	return strings.TrimSpace(stdout.String()), nil
