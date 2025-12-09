@@ -37,6 +37,7 @@ const defaultCloneDepth = 1
 type GitSource struct {
 	closeErr  error
 	closeOnce sync.Once
+	commitSHA string
 	local     *LocalSource
 	tempDir   string
 }
@@ -76,6 +77,15 @@ func NewGitSource(ctx context.Context, repoURL string, opts *GitOptions) (*GitSo
 		return nil, sanitizeError(err, repoURL, opts.Credentials)
 	}
 
+	commitSHA, err := getCommitSHA(ctx, tempDir)
+	if err != nil {
+		os.RemoveAll(tempDir)
+		return nil, sanitizeError(
+			fmt.Errorf("%w: %v", ErrGitCloneFailed, err),
+			repoURL, opts.Credentials,
+		)
+	}
+
 	local, err := NewLocalSource(tempDir)
 	if err != nil {
 		os.RemoveAll(tempDir)
@@ -86,14 +96,20 @@ func NewGitSource(ctx context.Context, repoURL string, opts *GitOptions) (*GitSo
 	}
 
 	return &GitSource{
-		local:   local,
-		tempDir: tempDir,
+		commitSHA: commitSHA,
+		local:     local,
+		tempDir:   tempDir,
 	}, nil
 }
 
 // Root returns the path to the cloned repository.
 func (s *GitSource) Root() string {
 	return s.local.Root()
+}
+
+// CommitSHA returns the HEAD commit SHA of the cloned repository.
+func (s *GitSource) CommitSHA() string {
+	return s.commitSHA
 }
 
 // Open opens the file at the given path for reading.
@@ -244,6 +260,21 @@ func sanitizeError(err error, originalURL string, creds *GitCredentials) error {
 	}
 
 	return fmt.Errorf("%s", errMsg)
+}
+
+// getCommitSHA retrieves the HEAD commit SHA from the given repository directory.
+func getCommitSHA(ctx context.Context, repoDir string) (string, error) {
+	cmd := exec.CommandContext(ctx, "git", "rev-parse", "HEAD")
+	cmd.Dir = repoDir
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("failed to get commit SHA: %v: %s", err, stderr.String())
+	}
+
+	return strings.TrimSpace(stdout.String()), nil
 }
 
 // sanitizeOutput removes credential information from command output.

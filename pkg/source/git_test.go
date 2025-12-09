@@ -165,6 +165,57 @@ func TestNewGitSource(t *testing.T) {
 	})
 }
 
+func TestGitSource_CommitSHA(t *testing.T) {
+	if !isGitInstalled() {
+		t.Skip("git not installed")
+	}
+
+	t.Run("should return valid commit SHA", func(t *testing.T) {
+		// Given
+		repoDir := createLocalGitRepo(t)
+		ctx := context.Background()
+
+		src, err := NewGitSource(ctx, repoDir, nil)
+		if err != nil {
+			t.Fatalf("failed to create git source: %v", err)
+		}
+		defer src.Close()
+
+		// When
+		sha := src.CommitSHA()
+
+		// Then
+		if sha == "" {
+			t.Error("expected non-empty commit SHA")
+		}
+		if len(sha) != 40 {
+			t.Errorf("expected 40 character SHA, got %d: %q", len(sha), sha)
+		}
+	})
+
+	t.Run("should return consistent SHA on multiple calls", func(t *testing.T) {
+		// Given
+		repoDir := createLocalGitRepo(t)
+		ctx := context.Background()
+
+		src, err := NewGitSource(ctx, repoDir, nil)
+		if err != nil {
+			t.Fatalf("failed to create git source: %v", err)
+		}
+		defer src.Close()
+
+		// When
+		sha1 := src.CommitSHA()
+		sha2 := src.CommitSHA()
+		sha3 := src.CommitSHA()
+
+		// Then
+		if sha1 != sha2 || sha2 != sha3 {
+			t.Errorf("expected consistent SHA, got %q, %q, %q", sha1, sha2, sha3)
+		}
+	})
+}
+
 func TestGitSource_Close(t *testing.T) {
 	if !isGitInstalled() {
 		t.Skip("git not installed")
