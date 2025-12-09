@@ -231,27 +231,16 @@ func (h *AnalyzeHandler) saveSuite(ctx context.Context, queries *db.Queries, ana
 }
 
 func (h *AnalyzeHandler) saveTest(ctx context.Context, queries *db.Queries, suiteID pgtype.UUID, test domain.Test) error {
-	status := mapTestStatus(test.Status)
 	_, err := queries.CreateTestCase(ctx, db.CreateTestCaseParams{
 		SuiteID:    suiteID,
 		Name:       test.Name,
 		LineNumber: pgtype.Int4{Int32: int32(test.Location.StartLine), Valid: true},
-		Status:     status,
+		Status:     db.TestStatus(test.Status),
 		Tags:       []byte("[]"),
+		Modifier:   pgtype.Text{String: test.Modifier, Valid: test.Modifier != ""},
 	})
 	if err != nil {
 		return fmt.Errorf("create test case: %w", err)
 	}
 	return nil
-}
-
-func mapTestStatus(status domain.TestStatus) db.TestStatus {
-	switch status {
-	case domain.TestStatusSkipped:
-		return db.TestStatusSkipped
-	case domain.TestStatusPending, domain.TestStatusFixme:
-		return db.TestStatusTodo
-	default:
-		return db.TestStatusActive
-	}
 }

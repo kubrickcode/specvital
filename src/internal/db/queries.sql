@@ -31,8 +31,8 @@ VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: CreateTestCase :one
-INSERT INTO test_cases (suite_id, name, line_number, status, tags)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO test_cases (suite_id, name, line_number, status, tags, modifier)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: GetTestSuitesByAnalysisID :many

@@ -5,7 +5,7 @@ go 1.24.11
 require (
 	github.com/hibiken/asynq v0.25.1
 	github.com/jackc/pgx/v5 v5.7.6
-	github.com/specvital/core v1.1.3-0.20251209060855-8d6f10d55650
+	github.com/specvital/core v1.1.3-0.20251209155247-a1b936332759
 )
 
 require (
