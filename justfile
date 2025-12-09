@@ -18,6 +18,10 @@ dump-schema:
 gen-sqlc:
     cd src/backend && sqlc generate
 
+gen-api:
+    cd src/backend && oapi-codegen -config api/oapi-codegen.yaml api/openapi.yaml
+    cd src/frontend && npx openapi-typescript ../backend/api/openapi.yaml -o lib/api/generated-types.ts
+
 install-playwright:
     npx playwright install --with-deps chromium
 
