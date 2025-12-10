@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { AnalysisContent, useAnalysis } from "@/features/analysis";
 import { Button } from "@/components/ui/button";
 import { ErrorFallback, LoadingFallback } from "@/components/feedback";
-import { getErrorMessage } from "@/lib/api";
 
 type AnalysisPageProps = {
   owner: string;
@@ -32,7 +31,7 @@ const getDisplayErrorMessage = (
   t: ReturnType<typeof useTranslations<"analyze">>
 ): string => {
   if (error) {
-    return getErrorMessage(error);
+    return error.message;
   }
   if (status === "failed") {
     return t("status.failed");
