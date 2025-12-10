@@ -1,3 +1,13 @@
+## 🔧 Maintenance
+
+### 🔧 Internal Fixes
+
+- **release:** fix broken commit links and long hash display in release notes ([fe38507](/commit/fe3850790f60df701af655b4e7177899bfcb80ff))
+
+### 🔨 Chore
+
+- adding recommended extensions ([328447f](/commit/328447f811601b35b6ca2e71c3bf83183a77af35))
+
 ## 🎯 Highlights
 
 ### ✨ Features
