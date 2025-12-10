@@ -146,12 +146,26 @@
     },
     {
       "color": "#2196F3",
-      "command": "just run",
-      "insertOnly": false,
       "name": "$(play-circle) Run",
       "shortcut": "r",
-      "terminalName": "run collector",
-      "useVsCodeApi": false
+      "group": [
+        {
+          "color": "",
+          "command": "just run local",
+          "name": "local",
+          "shortcut": "l",
+          "terminalName": "run local",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just run integration",
+          "name": "integration",
+          "shortcut": "i",
+          "terminalName": "run integration",
+          "useVsCodeApi": false
+        }
+      ]
     },
     {
       "color": "blue",
