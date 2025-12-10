@@ -199,21 +199,6 @@ func TestNewAnalysisService_WithMaxConcurrentClones(t *testing.T) {
 	}
 }
 
-func TestAnalysisService_SemaphoreLimitsConcurrentClones(t *testing.T) {
-	// TODO: This test requires mocking source.NewGitSource to properly verify
-	// concurrent clone limiting behavior. Current implementation uses real git clone
-	// which cannot be instrumented for concurrency tracking.
-	// Consider refactoring to inject GitSourceFactory for testability.
-	t.Skip("skipping: requires GitSource mocking to verify semaphore behavior")
-}
-
-func TestAnalysisService_SemaphoreRespectsContextCancellation(t *testing.T) {
-	// TODO: This test requires mocking source.NewGitSource to properly verify
-	// context cancellation while waiting for semaphore.
-	// Consider refactoring to inject GitSourceFactory for testability.
-	t.Skip("skipping: requires GitSource mocking to verify context cancellation")
-}
-
 func TestNewAnalysisService_WithAnalysisTimeout(t *testing.T) {
 	mockRepo := &mocks.MockAnalysisRepository{}
 
@@ -257,10 +242,3 @@ func TestAnalysisService_Analyze_Timeout(t *testing.T) {
 	}
 }
 
-func TestAnalysisService_Analyze_TimeoutRecordsFailure(t *testing.T) {
-	// TODO: This test requires injecting GitSourceFactory to control clone timing.
-	// Current implementation uses real git clone which has unpredictable duration,
-	// making it impossible to reliably test timeout behavior after CreateAnalysisRecord.
-	// Consider refactoring to inject GitSourceFactory for testability.
-	t.Skip("skipping: requires GitSourceFactory injection to verify timeout+RecordFailure behavior")
-}
