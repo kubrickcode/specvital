@@ -1,5 +1,69 @@
 ## 🎯 Highlights
 
+### ✨ Features
+
+- add all package for bulk parser strategy registration ([96ffbe688e750a18df1556b9e41157f4a0d4306e](/commit/96ffbe688e750a18df1556b9e41157f4a0d4306e))
+- add C# language and xUnit test framework support ([3b3c685c6fb0f26cbf4b6865a0dd64f2231fac55](/commit/3b3c685c6fb0f26cbf4b6865a0dd64f2231fac55))
+- add GitSource implementation for remote repository access ([c8743a5872ea641f2916c035c57f88960122da77](/commit/c8743a5872ea641f2916c035c57f88960122da77))
+- add Java language and JUnit 5 test framework support ([cc1a6ba153bc5e9ea4c5af9e5c2672a2cd9020a7](/commit/cc1a6ba153bc5e9ea4c5af9e5c2672a2cd9020a7))
+- add NUnit test framework support for C# ([b62c4208777cbc43f8e63af370ef0c9c01636f39](/commit/b62c4208777cbc43f8e63af370ef0c9c01636f39))
+- add Python pytest framework support ([b153129a6dc81e3c56f90c33a03731d45cee5b1c](/commit/b153129a6dc81e3c56f90c33a03731d45cee5b1c))
+- add Python unittest framework support ([bcac628e882152a610c2d898c93ac9e5824c642e](/commit/bcac628e882152a610c2d898c93ac9e5824c642e))
+- add Ruby language and RSpec test framework support ([3e28c476c8f338b8ab25e08774feed4ca272fd5e](/commit/3e28c476c8f338b8ab25e08774feed4ca272fd5e))
+- add Source interface and LocalSource implementation ([af0e2ed2e49c51bfc5d788f7e96397a862a8850a](/commit/af0e2ed2e49c51bfc5d788f7e96397a862a8850a))
+- **domain:** add Modifier field to Test/TestSuite ([a1b93633275941ddd3b4fee7db46327a656eab21](/commit/a1b93633275941ddd3b4fee7db46327a656eab21))
+- **parser:** add Rust cargo test framework support ([30feca749a0d9c64b4eccb7ea6ed5a66c3ab4516](/commit/30feca749a0d9c64b4eccb7ea6ed5a66c3ab4516))
+- **source:** add Branch method to GitSource ([8d6f10d556506732d3b00750352889f992e9520e](/commit/8d6f10d556506732d3b00750352889f992e9520e))
+- **source:** add CommitSHA method to GitSource ([97256ec27766fdba1fb67942fc1d58fe4252f36f](/commit/97256ec27766fdba1fb67942fc1d58fe4252f36f))
+- **vitest:** add VitestContentMatcher for vi.\* pattern detection ([9d2c72e8fdf71bfca654e7835be902c05e698862](/commit/9d2c72e8fdf71bfca654e7835be902c05e698862))
+
+### 🐛 Bug Fixes
+
+- **detection:** fix Go test files not being detected ([8487f71642be502c3a6ba66ba29398bae273d42b](/commit/8487f71642be502c3a6ba66ba29398bae273d42b))
+- **detection:** fix scope-based framework detection bugs ([35899280fbf45a7ec8dae2987a51fb48143adef2](/commit/35899280fbf45a7ec8dae2987a51fb48143adef2))
+- **parser:** prevent slice bounds panic in tree-sitter node text extraction ([465e9bc0d0aeee688c29ab786ddeafbb88d76d87](/commit/465e9bc0d0aeee688c29ab786ddeafbb88d76d87))
+- **tspool:** fix flaky tests caused by tree-sitter parser reuse ([256c9aa1780471334ee0d28ede877b050a5cc2d6](/commit/256c9aa1780471334ee0d28ede877b050a5cc2d6))
+
+## 🔧 Maintenance
+
+### 🔧 Internal Fixes
+
+- fix nondeterministic integration test results ([41e3d3831892ca52c59e621d75172651ca0ecbdc](/commit/41e3d3831892ca52c59e621d75172651ca0ecbdc))
+
+### 💄 Styles
+
+- format code ([71d8f66631e6fb29e55e9d3ea934806e1a1b806f](/commit/71d8f66631e6fb29e55e9d3ea934806e1a1b806f))
+
+### ♻️ Refactoring
+
+- change Scanner to read files through Source interface ([11507accf9d0a9f34e18cb8bdaf80e62f6333c5e](/commit/11507accf9d0a9f34e18cb8bdaf80e62f6333c5e))
+- **detection:** redesign with unified framework definition system ([9ba32af300f73bf08746ac24e3fcb4ea48d5291b](/commit/9ba32af300f73bf08746ac24e3fcb4ea48d5291b))
+- **detection:** replace score accumulation with early-return approach ([ab30e72e4d2a2bcb4d45baed9eac8cc422286ba5](/commit/ab30e72e4d2a2bcb4d45baed9eac8cc422286ba5))
+- **domain:** align TestStatus constants with DB schema ([babec3602a02ece88b8a22b8729f335a96163555](/commit/babec3602a02ece88b8a22b8729f335a96163555))
+
+### ✅ Tests
+
+- add 8 complex case repositories for edge case coverage ([619f361801a76059e7e4f7e8206a1486e67de420](/commit/619f361801a76059e7e4f7e8206a1486e67de420))
+- add golden snapshot comparison to integration tests ([1cffd019a34302a9f4d253cda11d6868d6fe61f9](/commit/1cffd019a34302a9f4d253cda11d6868d6fe61f9))
+- add integration test infrastructure with real GitHub repos ([476b3eb16953add6a64023f64bb68aa4de8e841f](/commit/476b3eb16953add6a64023f64bb68aa4de8e841f))
+- add unittest integration test repositories ([7d31dcfa256d9106bf831e595831e35722b5e72e](/commit/7d31dcfa256d9106bf831e595831e35722b5e72e))
+
+### 🔧 CI/CD
+
+- add integration test CI workflow and documentation ([d9368e181da2745c02b007652c00694dc88b0d7d](/commit/d9368e181da2745c02b007652c00694dc88b0d7d))
+
+### 🔨 Chore
+
+- add snapshot-update command and refresh golden snapshots ([c3e47e8bf274eef00f0088a4a13d7a66a24c072b](/commit/c3e47e8bf274eef00f0088a4a13d7a66a24c072b))
+- add useful action buttons ([ef1a60cd9f88ca7457e366bc1978c03750019316](/commit/ef1a60cd9f88ca7457e366bc1978c03750019316))
+- ai-config-toolkit sync ([e631a30fde776b9ba023ec00989cf2a8605e39d6](/commit/e631a30fde776b9ba023ec00989cf2a8605e39d6))
+- ai-config-toolkit sync ([42eeba3426c41231ebefa9fc431fd3884f954b2d](/commit/42eeba3426c41231ebefa9fc431fd3884f954b2d))
+- snapshot update ([f4c171dbf86a02cfa471806d1da98f014899c161](/commit/f4c171dbf86a02cfa471806d1da98f014899c161))
+- sync integration repos ([02c6a8d4311bcae40bca218e8a2081b8392a4755](/commit/02c6a8d4311bcae40bca218e8a2081b8392a4755))
+- sync snapshot ([6c086e9c4297b074b7184678c3fde40a5bbdc00f](/commit/6c086e9c4297b074b7184678c3fde40a5bbdc00f))
+
+## 🎯 Highlights
+
 ### 🐛 Bug Fixes
 
 - **detection:** fix glob patterns being incorrectly treated as comments ([85fd875d706cd1330fd0b8a27f3d1514f36e4013](/commit/85fd875d706cd1330fd0b8a27f3d1514f36e4013))
