@@ -632,6 +632,8 @@ func isTestFileCandidate(path string) bool {
 		return isRubyTestFile(path)
 	case ".rs":
 		return isRustTestFile(path)
+	case ".cc", ".cpp", ".cxx":
+		return isCppTestFile(path)
 	default:
 		return false
 	}
@@ -778,6 +780,39 @@ func isRustTestFile(path string) bool {
 	// src/ directory: Rust places unit tests inline with #[cfg(test)] modules
 	if strings.Contains(normalizedPath, "/src/") || strings.HasPrefix(normalizedPath, "src/") {
 		return strings.HasSuffix(base, ".rs")
+	}
+
+	return false
+}
+
+func isCppTestFile(path string) bool {
+	base := filepath.Base(path)
+	baseLower := strings.ToLower(base)
+
+	// Strip extension to check name patterns
+	ext := filepath.Ext(baseLower)
+	name := strings.TrimSuffix(baseLower, ext)
+
+	// Google Test conventions: *_test, *_unittest
+	if strings.HasSuffix(name, "_test") || strings.HasSuffix(name, "_unittest") {
+		return true
+	}
+
+	// *Test pattern (e.g., DatabaseTest.cc) - uppercase T avoids false positives like "contest.cc"
+	baseOriginal := filepath.Base(path)
+	nameOriginal := strings.TrimSuffix(baseOriginal, filepath.Ext(baseOriginal))
+	if strings.HasSuffix(nameOriginal, "Test") && len(nameOriginal) > 4 {
+		return true
+	}
+
+	normalizedPath := filepath.ToSlash(path)
+
+	// test/ or tests/ directory
+	if strings.Contains(normalizedPath, "/test/") || strings.Contains(normalizedPath, "/tests/") {
+		return true
+	}
+	if strings.HasPrefix(normalizedPath, "test/") || strings.HasPrefix(normalizedPath, "tests/") {
+		return true
 	}
 
 	return false

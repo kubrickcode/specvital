@@ -237,6 +237,8 @@ func detectLanguage(filePath string) domain.Language {
 		return domain.LanguageRuby
 	case ".rs":
 		return domain.LanguageRust
+	case ".cc", ".cpp", ".cxx":
+		return domain.LanguageCpp
 	default:
 		return ""
 	}

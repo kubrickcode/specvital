@@ -91,7 +91,6 @@ func TestGetLanguage_ReturnsCorrectLanguages(t *testing.T) {
 	}
 }
 
-
 func TestParse_ValidOutput(t *testing.T) {
 	t.Parallel()
 

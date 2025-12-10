@@ -15,6 +15,7 @@ import (
 	"github.com/specvital/core/pkg/source"
 
 	// Import frameworks to register them via init()
+	_ "github.com/specvital/core/pkg/parser/strategies/gtest"
 	_ "github.com/specvital/core/pkg/parser/strategies/jest"
 )
 
@@ -369,6 +370,205 @@ func TestScanError(t *testing.T) {
 		expected := "[detection] permission denied"
 		if err.Error() != expected {
 			t.Errorf("expected %q, got %q", expected, err.Error())
+		}
+	})
+}
+
+func TestScan_GoogleTest(t *testing.T) {
+	t.Run("should scan C++ gtest files", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		testContent := []byte(`
+#include <gtest/gtest.h>
+
+TEST(MathTest, Addition) {
+    EXPECT_EQ(2 + 2, 4);
+}
+
+TEST(MathTest, Subtraction) {
+    EXPECT_EQ(5 - 3, 2);
+}
+`)
+		testFile := filepath.Join(tmpDir, "math_test.cc")
+		if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Fatalf("expected 1 file, got %d", len(result.Inventory.Files))
+		}
+
+		file := result.Inventory.Files[0]
+		if file.Framework != "gtest" {
+			t.Errorf("expected framework 'gtest', got %q", file.Framework)
+		}
+		if file.Language != "cpp" {
+			t.Errorf("expected language 'cpp', got %q", file.Language)
+		}
+		if len(file.Suites) != 1 {
+			t.Fatalf("expected 1 suite, got %d", len(file.Suites))
+		}
+		if file.Suites[0].Name != "MathTest" {
+			t.Errorf("expected suite name 'MathTest', got %q", file.Suites[0].Name)
+		}
+		if len(file.Suites[0].Tests) != 2 {
+			t.Errorf("expected 2 tests, got %d", len(file.Suites[0].Tests))
+		}
+	})
+
+	t.Run("should handle TEST_F with fixtures", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		testContent := []byte(`
+#include <gtest/gtest.h>
+
+class DatabaseTest : public ::testing::Test {
+protected:
+    void SetUp() override {}
+    void TearDown() override {}
+};
+
+TEST_F(DatabaseTest, Connect) {
+    EXPECT_TRUE(true);
+}
+
+TEST_F(DatabaseTest, Query) {
+    EXPECT_TRUE(true);
+}
+`)
+		testFile := filepath.Join(tmpDir, "database_test.cpp")
+		if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Fatalf("expected 1 file, got %d", len(result.Inventory.Files))
+		}
+
+		file := result.Inventory.Files[0]
+		if len(file.Suites) != 1 {
+			t.Fatalf("expected 1 suite, got %d", len(file.Suites))
+		}
+		if file.Suites[0].Name != "DatabaseTest" {
+			t.Errorf("expected suite name 'DatabaseTest', got %q", file.Suites[0].Name)
+		}
+		if len(file.Suites[0].Tests) != 2 {
+			t.Errorf("expected 2 tests, got %d", len(file.Suites[0].Tests))
+		}
+	})
+
+	t.Run("should detect DISABLED_ tests as skipped", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		testContent := []byte(`
+#include <gtest/gtest.h>
+
+TEST(Suite, DISABLED_SkippedTest) {
+    FAIL() << "Should not run";
+}
+
+TEST(Suite, ActiveTest) {
+    EXPECT_TRUE(true);
+}
+`)
+		testFile := filepath.Join(tmpDir, "skip_test.cc")
+		if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Fatalf("expected 1 file, got %d", len(result.Inventory.Files))
+		}
+
+		file := result.Inventory.Files[0]
+		if len(file.Suites[0].Tests) != 2 {
+			t.Fatalf("expected 2 tests, got %d", len(file.Suites[0].Tests))
+		}
+
+		// Find tests by status
+		var skippedCount, activeCount int
+		for _, test := range file.Suites[0].Tests {
+			if test.Status == "skipped" {
+				skippedCount++
+			} else if test.Status == "active" {
+				activeCount++
+			}
+		}
+
+		if skippedCount != 1 {
+			t.Errorf("expected 1 skipped test, got %d", skippedCount)
+		}
+		if activeCount != 1 {
+			t.Errorf("expected 1 active test, got %d", activeCount)
+		}
+	})
+
+	t.Run("should scan .cxx files", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		testContent := []byte(`
+#include <gtest/gtest.h>
+
+TEST(CxxTest, Works) {
+    EXPECT_TRUE(true);
+}
+`)
+		testFile := filepath.Join(tmpDir, "cxx_test.cxx")
+		if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Fatalf("expected 1 file, got %d", len(result.Inventory.Files))
+		}
+
+		file := result.Inventory.Files[0]
+		if file.Framework != "gtest" {
+			t.Errorf("expected framework 'gtest', got %q", file.Framework)
 		}
 	})
 }

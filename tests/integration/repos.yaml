@@ -127,3 +127,8 @@ repositories:
     url: https://github.com/BurntSushi/ripgrep
     ref: 14.1.1
     framework: cargo-test
+
+  - name: googletest
+    url: https://github.com/google/googletest
+    ref: v1.15.2
+    framework: gtest

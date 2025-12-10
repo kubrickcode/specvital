@@ -19,6 +19,7 @@ import (
 	"sync"
 
 	sitter "github.com/smacker/go-tree-sitter"
+	"github.com/smacker/go-tree-sitter/cpp"
 	"github.com/smacker/go-tree-sitter/csharp"
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"
@@ -35,6 +36,7 @@ import (
 const MaxTreeDepth = 1000
 
 var (
+	cppLang  *sitter.Language
 	csLang   *sitter.Language
 	goLang   *sitter.Language
 	javaLang *sitter.Language
@@ -49,6 +51,7 @@ var (
 
 func initLanguages() {
 	langOnce.Do(func() {
+		cppLang = cpp.GetLanguage()
 		csLang = csharp.GetLanguage()
 		goLang = golang.GetLanguage()
 		javaLang = java.GetLanguage()
@@ -64,6 +67,8 @@ func initLanguages() {
 func GetLanguage(lang domain.Language) *sitter.Language {
 	initLanguages()
 	switch lang {
+	case domain.LanguageCpp:
+		return cppLang
 	case domain.LanguageCSharp:
 		return csLang
 	case domain.LanguageGo:
