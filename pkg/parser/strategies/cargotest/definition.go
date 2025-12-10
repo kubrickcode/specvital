@@ -219,9 +219,9 @@ func buildTest(name string, attrs testAttributes, node *sitter.Node, filename st
 }
 
 type testAttributes struct {
-	isTest       bool
-	isIgnore     bool
-	shouldPanic  string // Full attribute text (e.g., "#[should_panic(expected = \"...\")]")
+	isTest      bool
+	isIgnore    bool
+	shouldPanic string // Full attribute text (e.g., "#[should_panic(expected = \"...\")]")
 }
 
 // getPrecedingAttributes returns attribute_item nodes immediately preceding the given node.
