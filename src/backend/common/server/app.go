@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/specvital/web/src/backend/common/docs"
 	"github.com/specvital/web/src/backend/common/health"
 	"github.com/specvital/web/src/backend/internal/api"
 	"github.com/specvital/web/src/backend/internal/db"
@@ -13,6 +14,7 @@ import (
 
 type Handlers struct {
 	API    api.StrictServerInterface
+	Docs   *docs.Handler
 	Health *health.Handler
 }
 
@@ -46,6 +48,7 @@ func initHandlers(infra *infra.Container) *Handlers {
 
 	return &Handlers{
 		API:    analyzerHandler,
+		Docs:   docs.NewHandler(),
 		Health: health.NewHandler(),
 	}
 }
@@ -56,6 +59,7 @@ func (a *App) APIHandler() api.StrictServerInterface {
 
 func (a *App) RouteRegistrars() []RouteRegistrar {
 	return []RouteRegistrar{
+		a.Handlers.Docs,
 		a.Handlers.Health,
 	}
 }
