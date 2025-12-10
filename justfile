@@ -78,12 +78,22 @@ lint target="all":
         ;;
     esac
 
-run target:
+migrate-local:
+    PGPASSWORD=postgres psql -h local-postgres -U postgres -d specvital -f src/backend/internal/db/schema.sql
+
+run target *args:
     #!/usr/bin/env bash
     set -euox pipefail
     case "{{ target }}" in
       backend)
-        cd src/backend && air
+        cd src/backend
+        if [[ " {{ args }} " =~ " --integration " ]]; then
+          air
+        else
+          DATABASE_URL="$LOCAL_DATABASE_URL" \
+          REDIS_URL="$LOCAL_REDIS_URL" \
+          air
+        fi
         ;;
       frontend)
         cd src/frontend && pnpm dev
