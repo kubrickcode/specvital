@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/specvital/core/pkg/domain"
 	"github.com/specvital/core/pkg/parser"
@@ -433,6 +434,126 @@ func TestPostgresAnalysisRepository_TransactionRollback(t *testing.T) {
 	})
 }
 
+func TestCreateAnalysisRecordParams_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		params  CreateAnalysisRecordParams
+		wantErr bool
+	}{
+		{
+			name: "valid params",
+			params: CreateAnalysisRecordParams{
+				Owner:     "owner",
+				Repo:      "repo",
+				CommitSHA: "abc123",
+				Branch:    "main",
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid params without branch",
+			params: CreateAnalysisRecordParams{
+				Owner:     "owner",
+				Repo:      "repo",
+				CommitSHA: "abc123",
+			},
+			wantErr: false,
+		},
+		{
+			name: "missing owner",
+			params: CreateAnalysisRecordParams{
+				Repo:      "repo",
+				CommitSHA: "abc123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing repo",
+			params: CreateAnalysisRecordParams{
+				Owner:     "owner",
+				CommitSHA: "abc123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing commit SHA",
+			params: CreateAnalysisRecordParams{
+				Owner: "owner",
+				Repo:  "repo",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.params.Validate()
+			if tt.wantErr {
+				if err == nil {
+					t.Error("expected error, got nil")
+				}
+				if !errors.Is(err, ErrInvalidParams) {
+					t.Errorf("expected ErrInvalidParams, got %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+			}
+		})
+	}
+}
+
+func TestSaveAnalysisInventoryParams_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		params  SaveAnalysisInventoryParams
+		wantErr bool
+	}{
+		{
+			name: "valid params",
+			params: SaveAnalysisInventoryParams{
+				AnalysisID: pgtype.UUID{Valid: true},
+				Result:     &parser.ScanResult{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid analysis ID",
+			params: SaveAnalysisInventoryParams{
+				AnalysisID: pgtype.UUID{Valid: false},
+				Result:     &parser.ScanResult{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing result",
+			params: SaveAnalysisInventoryParams{
+				AnalysisID: pgtype.UUID{Valid: true},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.params.Validate()
+			if tt.wantErr {
+				if err == nil {
+					t.Error("expected error, got nil")
+				}
+				if !errors.Is(err, ErrInvalidParams) {
+					t.Errorf("expected ErrInvalidParams, got %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+			}
+		})
+	}
+}
+
 func TestSaveAnalysisResultParams_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -490,6 +611,187 @@ func TestSaveAnalysisResultParams_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.params.Validate()
+			if tt.wantErr {
+				if err == nil {
+					t.Error("expected error, got nil")
+				}
+				if !errors.Is(err, ErrInvalidParams) {
+					t.Errorf("expected ErrInvalidParams, got %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+			}
+		})
+	}
+}
+
+func TestPostgresAnalysisRepository_RecordFailure(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	repo := NewPostgresAnalysisRepository(pool)
+	ctx := context.Background()
+
+	t.Run("should record failure with error message", func(t *testing.T) {
+		analysisID, err := repo.CreateAnalysisRecord(ctx, CreateAnalysisRecordParams{
+			Owner:     "test-owner",
+			Repo:      "test-repo",
+			CommitSHA: "abc123",
+			Branch:    "main",
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		errMessage := "scan failed: parser error"
+		err = repo.RecordFailure(ctx, analysisID, errMessage)
+		if err != nil {
+			t.Fatalf("RecordFailure failed: %v", err)
+		}
+
+		var status, savedErrMsg string
+		err = pool.QueryRow(ctx, "SELECT status, error_message FROM analyses WHERE id = $1", analysisID).Scan(&status, &savedErrMsg)
+		if err != nil {
+			t.Fatalf("failed to query analysis: %v", err)
+		}
+
+		if status != "failed" {
+			t.Errorf("expected status 'failed', got '%s'", status)
+		}
+		if savedErrMsg != errMessage {
+			t.Errorf("expected error message '%s', got '%s'", errMessage, savedErrMsg)
+		}
+	})
+
+	t.Run("should fail with invalid analysis ID", func(t *testing.T) {
+		err := repo.RecordFailure(ctx, pgtype.UUID{Valid: false}, "some error")
+		if !errors.Is(err, ErrInvalidParams) {
+			t.Errorf("expected ErrInvalidParams, got %v", err)
+		}
+	})
+}
+
+func TestPostgresAnalysisRepository_CreateAnalysisRecord(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	repo := NewPostgresAnalysisRepository(pool)
+	ctx := context.Background()
+
+	t.Run("should create analysis record", func(t *testing.T) {
+		analysisID, err := repo.CreateAnalysisRecord(ctx, CreateAnalysisRecordParams{
+			Owner:     "create-owner",
+			Repo:      "create-repo",
+			CommitSHA: "def456",
+			Branch:    "develop",
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		if !analysisID.Valid {
+			t.Error("expected valid UUID, got invalid")
+		}
+
+		var status string
+		err = pool.QueryRow(ctx, "SELECT status FROM analyses WHERE id = $1", analysisID).Scan(&status)
+		if err != nil {
+			t.Fatalf("failed to query analysis: %v", err)
+		}
+
+		if status != "running" {
+			t.Errorf("expected status 'running', got '%s'", status)
+		}
+	})
+}
+
+func Test_truncateErrorMessage(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "short message unchanged",
+			input:    "short error",
+			expected: "short error",
+		},
+		{
+			name:     "exact limit unchanged",
+			input:    string(make([]byte, maxErrorMessageLength)),
+			expected: string(make([]byte, maxErrorMessageLength)),
+		},
+		{
+			name:     "long message truncated",
+			input:    string(make([]byte, maxErrorMessageLength+100)),
+			expected: string(make([]byte, maxErrorMessageLength-15)) + "... (truncated)",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := truncateErrorMessage(tt.input)
+			if result != tt.expected {
+				t.Errorf("expected length %d, got %d", len(tt.expected), len(result))
+			}
+			if len(result) > maxErrorMessageLength {
+				t.Errorf("result exceeds max length: %d > %d", len(result), maxErrorMessageLength)
+			}
+		})
+	}
+}
+
+func Test_validateRepositoryInfo(t *testing.T) {
+	tests := []struct {
+		name      string
+		owner     string
+		repo      string
+		commitSHA string
+		wantErr   bool
+	}{
+		{
+			name:      "valid",
+			owner:     "owner",
+			repo:      "repo",
+			commitSHA: "abc123",
+			wantErr:   false,
+		},
+		{
+			name:      "missing owner",
+			owner:     "",
+			repo:      "repo",
+			commitSHA: "abc123",
+			wantErr:   true,
+		},
+		{
+			name:      "missing repo",
+			owner:     "owner",
+			repo:      "",
+			commitSHA: "abc123",
+			wantErr:   true,
+		},
+		{
+			name:      "missing commit SHA",
+			owner:     "owner",
+			repo:      "repo",
+			commitSHA: "",
+			wantErr:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateRepositoryInfo(tt.owner, tt.repo, tt.commitSHA)
 			if tt.wantErr {
 				if err == nil {
 					t.Error("expected error, got nil")

@@ -67,8 +67,25 @@ func (s *analysisService) Analyze(ctx context.Context, req AnalyzeRequest) error
 	}
 	defer gitSrc.Close()
 
+	analysisID, err := s.analysisRepo.CreateAnalysisRecord(ctx, repository.CreateAnalysisRecordParams{
+		Branch:    gitSrc.Branch(),
+		CommitSHA: gitSrc.CommitSHA(),
+		Owner:     req.Owner,
+		Repo:      req.Repo,
+	})
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrSaveFailed, err)
+	}
+
 	result, err := parser.Scan(ctx, gitSrc)
 	if err != nil {
+		if recordErr := s.analysisRepo.RecordFailure(ctx, analysisID, err.Error()); recordErr != nil {
+			slog.ErrorContext(ctx, "failed to record scan failure",
+				"error", recordErr,
+				"analysis_id", analysisID,
+				"original_error", err,
+			)
+		}
 		return fmt.Errorf("%w: %w", ErrScanFailed, err)
 	}
 
@@ -80,13 +97,17 @@ func (s *analysisService) Analyze(ctx context.Context, req AnalyzeRequest) error
 		)
 	}
 
-	if err := s.analysisRepo.SaveAnalysisResult(ctx, repository.SaveAnalysisResultParams{
-		Branch:    gitSrc.Branch(),
-		CommitSHA: gitSrc.CommitSHA(),
-		Owner:     req.Owner,
-		Repo:      req.Repo,
-		Result:    result,
+	if err := s.analysisRepo.SaveAnalysisInventory(ctx, repository.SaveAnalysisInventoryParams{
+		AnalysisID: analysisID,
+		Result:     result,
 	}); err != nil {
+		if recordErr := s.analysisRepo.RecordFailure(ctx, analysisID, err.Error()); recordErr != nil {
+			slog.ErrorContext(ctx, "failed to record save failure",
+				"error", recordErr,
+				"analysis_id", analysisID,
+				"original_error", err,
+			)
+		}
 		return fmt.Errorf("%w: %w", ErrSaveFailed, err)
 	}
 

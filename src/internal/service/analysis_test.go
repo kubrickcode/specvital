@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/specvital/collector/internal/repository"
 	"github.com/specvital/collector/internal/repository/mocks"
 )
@@ -148,10 +149,18 @@ func TestAnalysisService_Analyze_SaveFailure(t *testing.T) {
 		t.Skip("skipping network-dependent test in short mode")
 	}
 
+	recordFailureCalled := false
 	saveErr := errors.New("db error")
 	mockRepo := &mocks.MockAnalysisRepository{
-		SaveAnalysisResultFunc: func(ctx context.Context, params repository.SaveAnalysisResultParams) error {
+		SaveAnalysisInventoryFunc: func(ctx context.Context, params repository.SaveAnalysisInventoryParams) error {
 			return saveErr
+		},
+		RecordFailureFunc: func(ctx context.Context, analysisID pgtype.UUID, errMessage string) error {
+			recordFailureCalled = true
+			if errMessage != saveErr.Error() {
+				t.Errorf("expected error message %q, got %q", saveErr.Error(), errMessage)
+			}
+			return nil
 		},
 	}
 	svc := NewAnalysisService(mockRepo)
@@ -163,5 +172,9 @@ func TestAnalysisService_Analyze_SaveFailure(t *testing.T) {
 
 	if !errors.Is(err, ErrSaveFailed) {
 		t.Errorf("expected ErrSaveFailed, got %v", err)
+	}
+
+	if !recordFailureCalled {
+		t.Error("expected RecordFailure to be called on save failure")
 	}
 }

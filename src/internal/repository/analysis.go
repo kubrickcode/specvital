@@ -16,6 +16,53 @@ import (
 )
 
 const defaultHost = "github.com"
+const maxErrorMessageLength = 1000
+
+func validateRepositoryInfo(owner, repo, commitSHA string) error {
+	if owner == "" {
+		return fmt.Errorf("%w: owner is required", ErrInvalidParams)
+	}
+	if repo == "" {
+		return fmt.Errorf("%w: repo is required", ErrInvalidParams)
+	}
+	if commitSHA == "" {
+		return fmt.Errorf("%w: commit SHA is required", ErrInvalidParams)
+	}
+	return nil
+}
+
+func truncateErrorMessage(msg string) string {
+	if len(msg) <= maxErrorMessageLength {
+		return msg
+	}
+	return msg[:maxErrorMessageLength-15] + "... (truncated)"
+}
+
+type CreateAnalysisRecordParams struct {
+	Branch    string
+	CommitSHA string
+	Owner     string
+	Repo      string
+}
+
+func (p CreateAnalysisRecordParams) Validate() error {
+	return validateRepositoryInfo(p.Owner, p.Repo, p.CommitSHA)
+}
+
+type SaveAnalysisInventoryParams struct {
+	AnalysisID pgtype.UUID
+	Result     *parser.ScanResult
+}
+
+func (p SaveAnalysisInventoryParams) Validate() error {
+	if !p.AnalysisID.Valid {
+		return fmt.Errorf("%w: analysis ID is required", ErrInvalidParams)
+	}
+	if p.Result == nil {
+		return fmt.Errorf("%w: result is required", ErrInvalidParams)
+	}
+	return nil
+}
 
 type SaveAnalysisResultParams struct {
 	Branch    string
@@ -26,14 +73,8 @@ type SaveAnalysisResultParams struct {
 }
 
 func (p SaveAnalysisResultParams) Validate() error {
-	if p.Owner == "" {
-		return fmt.Errorf("%w: owner is required", ErrInvalidParams)
-	}
-	if p.Repo == "" {
-		return fmt.Errorf("%w: repo is required", ErrInvalidParams)
-	}
-	if p.CommitSHA == "" {
-		return fmt.Errorf("%w: commit SHA is required", ErrInvalidParams)
+	if err := validateRepositoryInfo(p.Owner, p.Repo, p.CommitSHA); err != nil {
+		return err
 	}
 	if p.Result == nil {
 		return fmt.Errorf("%w: result is required", ErrInvalidParams)
@@ -42,6 +83,9 @@ func (p SaveAnalysisResultParams) Validate() error {
 }
 
 type AnalysisRepository interface {
+	CreateAnalysisRecord(ctx context.Context, params CreateAnalysisRecordParams) (pgtype.UUID, error)
+	RecordFailure(ctx context.Context, analysisID pgtype.UUID, errMessage string) error
+	SaveAnalysisInventory(ctx context.Context, params SaveAnalysisInventoryParams) error
 	SaveAnalysisResult(ctx context.Context, params SaveAnalysisResultParams) error
 }
 
@@ -53,14 +97,14 @@ func NewPostgresAnalysisRepository(pool *pgxpool.Pool) *PostgresAnalysisReposito
 	return &PostgresAnalysisRepository{pool: pool}
 }
 
-func (r *PostgresAnalysisRepository) SaveAnalysisResult(ctx context.Context, params SaveAnalysisResultParams) error {
+func (r *PostgresAnalysisRepository) CreateAnalysisRecord(ctx context.Context, params CreateAnalysisRecordParams) (pgtype.UUID, error) {
 	if err := params.Validate(); err != nil {
-		return err
+		return pgtype.UUID{}, err
 	}
 
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("begin transaction: %w", err)
+		return pgtype.UUID{}, fmt.Errorf("begin transaction: %w", err)
 	}
 	defer func() {
 		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
@@ -82,7 +126,7 @@ func (r *PostgresAnalysisRepository) SaveAnalysisResult(ctx context.Context, par
 		DefaultBranch: pgtype.Text{String: params.Branch, Valid: params.Branch != ""},
 	})
 	if err != nil {
-		return fmt.Errorf("upsert codebase: %w", err)
+		return pgtype.UUID{}, fmt.Errorf("upsert codebase: %w", err)
 	}
 
 	analysis, err := queries.CreateAnalysis(ctx, db.CreateAnalysisParams{
@@ -93,16 +137,78 @@ func (r *PostgresAnalysisRepository) SaveAnalysisResult(ctx context.Context, par
 		StartedAt:  pgtype.Timestamptz{Time: startedAt, Valid: true},
 	})
 	if err != nil {
-		return fmt.Errorf("create analysis: %w", err)
+		return pgtype.UUID{}, fmt.Errorf("create analysis: %w", err)
 	}
 
-	totalSuites, totalTests, err := r.saveInventory(ctx, queries, analysis.ID, params.Result.Inventory)
+	if err := tx.Commit(ctx); err != nil {
+		return pgtype.UUID{}, fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return analysis.ID, nil
+}
+
+func (r *PostgresAnalysisRepository) RecordFailure(ctx context.Context, analysisID pgtype.UUID, errMessage string) error {
+	if !analysisID.Valid {
+		return fmt.Errorf("%w: analysis ID is required", ErrInvalidParams)
+	}
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			slog.ErrorContext(ctx, "failed to rollback transaction",
+				"error", err,
+				"analysis_id", analysisID,
+			)
+		}
+	}()
+
+	queries := db.New(tx)
+	truncatedMsg := truncateErrorMessage(errMessage)
+	if err := queries.UpdateAnalysisFailed(ctx, db.UpdateAnalysisFailedParams{
+		ID:           analysisID,
+		ErrorMessage: pgtype.Text{String: truncatedMsg, Valid: true},
+		CompletedAt:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
+	}); err != nil {
+		return fmt.Errorf("update analysis failed: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (r *PostgresAnalysisRepository) SaveAnalysisInventory(ctx context.Context, params SaveAnalysisInventoryParams) error {
+	if err := params.Validate(); err != nil {
+		return err
+	}
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			slog.ErrorContext(ctx, "failed to rollback transaction",
+				"error", err,
+				"analysis_id", params.AnalysisID,
+			)
+		}
+	}()
+
+	queries := db.New(tx)
+
+	totalSuites, totalTests, err := r.saveInventory(ctx, queries, params.AnalysisID, params.Result.Inventory)
 	if err != nil {
 		return fmt.Errorf("save inventory: %w", err)
 	}
 
 	if err := queries.UpdateAnalysisCompleted(ctx, db.UpdateAnalysisCompletedParams{
-		ID:          analysis.ID,
+		ID:          params.AnalysisID,
 		TotalSuites: int32(totalSuites),
 		TotalTests:  int32(totalTests),
 		CompletedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
@@ -112,6 +218,31 @@ func (r *PostgresAnalysisRepository) SaveAnalysisResult(ctx context.Context, par
 
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (r *PostgresAnalysisRepository) SaveAnalysisResult(ctx context.Context, params SaveAnalysisResultParams) error {
+	if err := params.Validate(); err != nil {
+		return err
+	}
+
+	analysisID, err := r.CreateAnalysisRecord(ctx, CreateAnalysisRecordParams{
+		Branch:    params.Branch,
+		CommitSHA: params.CommitSHA,
+		Owner:     params.Owner,
+		Repo:      params.Repo,
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := r.SaveAnalysisInventory(ctx, SaveAnalysisInventoryParams{
+		AnalysisID: analysisID,
+		Result:     params.Result,
+	}); err != nil {
+		return err
 	}
 
 	return nil
