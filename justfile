@@ -43,6 +43,17 @@ install-sqlc:
 install-oapi-codegen:
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 
+kill-port port:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    pid=$(ss -tlnp | grep ":{{ port }} " | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -1)
+    if [ -n "$pid" ]; then
+        echo "Killing process $pid on port {{ port }}"
+        kill -9 $pid
+    else
+        echo "No process found on port {{ port }}"
+    fi
+
 lint target="all":
     #!/usr/bin/env bash
     set -euox pipefail
