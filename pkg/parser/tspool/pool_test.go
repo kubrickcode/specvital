@@ -40,22 +40,14 @@ func TestParse_RaceFree(t *testing.T) {
 	}
 }
 
-func TestGetPut_ReusesParser(t *testing.T) {
+func TestGet_ReturnsParser(t *testing.T) {
 	t.Parallel()
 
-	parser1 := tspool.Get(domain.LanguageGo)
-	if parser1 == nil {
+	parser := tspool.Get(domain.LanguageGo)
+	if parser == nil {
 		t.Fatal("Get returned nil parser")
 	}
-
-	tspool.Put(domain.LanguageGo, parser1)
-
-	parser2 := tspool.Get(domain.LanguageGo)
-	if parser2 == nil {
-		t.Fatal("Get returned nil parser after Put")
-	}
-
-	tspool.Put(domain.LanguageGo, parser2)
+	defer parser.Close()
 }
 
 func TestParse_ContextCancellation(t *testing.T) {
@@ -99,12 +91,6 @@ func TestGetLanguage_ReturnsCorrectLanguages(t *testing.T) {
 	}
 }
 
-func TestPut_NilParser(t *testing.T) {
-	t.Parallel()
-
-	// Should not panic
-	tspool.Put(domain.LanguageGo, nil)
-}
 
 func TestParse_ValidOutput(t *testing.T) {
 	t.Parallel()

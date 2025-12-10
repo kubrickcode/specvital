@@ -196,7 +196,7 @@ func TestQueryCache_SameQueryReused(t *testing.T) {
 	}
 }
 
-func TestGetPooledParser_ReturnsValidParser(t *testing.T) {
+func TestGetParser_ReturnsValidParser(t *testing.T) {
 	tests := []struct {
 		name string
 		lang domain.Language
@@ -212,6 +212,7 @@ func TestGetPooledParser_ReturnsValidParser(t *testing.T) {
 			if parser == nil {
 				t.Fatal("parser is nil")
 			}
+			defer parser.Close()
 
 			// Verify parser can be used
 			ctx := context.Background()
@@ -225,16 +226,6 @@ func TestGetPooledParser_ReturnsValidParser(t *testing.T) {
 				t.Fatalf("parse failed: %v", err)
 			}
 			defer tree.Close()
-
-			// Return to pool
-			tspool.Put(tt.lang, parser)
-
-			// Get again - should get same or different parser (both valid)
-			parser2 := tspool.Get(tt.lang)
-			if parser2 == nil {
-				t.Fatal("second parser is nil")
-			}
-			tspool.Put(tt.lang, parser2)
 		})
 	}
 }

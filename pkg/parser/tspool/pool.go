@@ -1,12 +1,13 @@
-// Package tspool provides pooled tree-sitter parsers for concurrent parsing.
+// Package tspool provides tree-sitter parsers for concurrent parsing.
 //
-// This package centralizes parser pooling logic to:
-//   - Enable reuse across different parser components
-//   - Reduce parser allocation overhead via sync.Pool
-//   - Ensure thread-safe parser sharing
+// This package centralizes parser management to:
+//   - Provide consistent parser creation across components
+//   - Ensure thread-safe language initialization
 //
-// Separate pools are maintained per language (Go, JavaScript, TypeScript)
-// to avoid language switching overhead.
+// Note: Parser pooling is disabled due to tree-sitter cancellation flag issues.
+// When a context is cancelled during ParseCtx, the parser's internal cancel flag
+// is set but not properly reset, causing subsequent parses to fail with
+// "operation limit was hit". Creating fresh parsers avoids this issue.
 //
 // Thread-safety: Parsers returned by Get are NOT safe for concurrent use.
 // Each goroutine must Get its own parser or use the Parse helper.
@@ -82,71 +83,21 @@ func GetLanguage(lang domain.Language) *sitter.Language {
 	}
 }
 
-var (
-	csParserPool   sync.Pool
-	goParserPool   sync.Pool
-	javaParserPool sync.Pool
-	jsParserPool   sync.Pool
-	pyParserPool   sync.Pool
-	rbParserPool   sync.Pool
-	rsParserPool   sync.Pool
-	tsParserPool   sync.Pool
-)
-
-func getParserPool(lang domain.Language) *sync.Pool {
-	switch lang {
-	case domain.LanguageCSharp:
-		return &csParserPool
-	case domain.LanguageGo:
-		return &goParserPool
-	case domain.LanguageJava:
-		return &javaParserPool
-	case domain.LanguageJavaScript:
-		return &jsParserPool
-	case domain.LanguagePython:
-		return &pyParserPool
-	case domain.LanguageRuby:
-		return &rbParserPool
-	case domain.LanguageRust:
-		return &rsParserPool
-	default:
-		return &tsParserPool
-	}
-}
-
-// Get returns a pooled parser for the given language.
+// Get returns a parser for the given language.
 // The returned parser is NOT safe for concurrent use.
-// Use Put to return the parser after use.
+// Caller MUST call parser.Close() when done to free resources.
 func Get(lang domain.Language) *sitter.Parser {
-	pool := getParserPool(lang)
-
-	if p := pool.Get(); p != nil {
-		if parser, ok := p.(*sitter.Parser); ok {
-			return parser
-		}
-	}
-
 	initLanguages()
 	parser := sitter.NewParser()
 	parser.SetLanguage(GetLanguage(lang))
 	return parser
 }
 
-// Put returns a parser to the pool.
-func Put(lang domain.Language, parser *sitter.Parser) {
-	if parser == nil {
-		return
-	}
-	pool := getParserPool(lang)
-	pool.Put(parser)
-}
-
-// Parse parses source using a pooled parser.
+// Parse parses source using a fresh parser.
 // Caller MUST call tree.Close() to free resources.
-// The parser is automatically returned to the pool after parsing.
 func Parse(ctx context.Context, lang domain.Language, source []byte) (*sitter.Tree, error) {
 	parser := Get(lang)
-	defer Put(lang, parser)
+	defer parser.Close()
 
 	tree, err := parser.ParseCtx(ctx, nil, source)
 	if err != nil {
