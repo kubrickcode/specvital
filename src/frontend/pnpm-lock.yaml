@@ -54,8 +54,8 @@ importers:
         specifier: 4.1.17
         version: 4.1.17
       zod:
-        specifier: 3.25.28
-        version: 3.25.28
+        specifier: 4.1.13
+        version: 4.1.13
     devDependencies:
       '@testing-library/dom':
         specifier: 10.4.1
@@ -2091,8 +2091,8 @@ packages:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
 
-  zod@3.25.28:
-    resolution: {integrity: sha512-/nt/67WYKnr5by3YS7LroZJbtcCBurDKKPBPWWzaxvVCGuG/NOsiKkrjoOhI8mJ+SQUXEbUzeB3S+6XDUEEj7Q==}
+  zod@4.1.13:
+    resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
 
 snapshots:
 
@@ -3867,4 +3867,4 @@ snapshots:
 
   yargs-parser@21.1.1: {}
 
-  zod@3.25.28: {}
+  zod@4.1.13: {}

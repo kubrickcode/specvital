@@ -68,7 +68,7 @@ export const parseGitHubUrl = (url: string): ParseGitHubUrlResult => {
   if (!result.success) {
     return {
       success: false,
-      error: result.error.errors[0]?.message ?? "Invalid URL",
+      error: result.error.issues[0]?.message ?? "Invalid URL",
     };
   }
 
