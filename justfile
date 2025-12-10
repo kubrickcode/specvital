@@ -12,11 +12,22 @@ deps-root:
 dump-schema:
     PGPASSWORD=postgres pg_dump -h specvital-postgres -U postgres -d specvital --schema-only --no-owner --no-privileges -n public | grep -v '^\\\|^SET \|^SELECT ' > src/internal/db/schema.sql
 
-enqueue *args:
+enqueue mode="local" *args:
     #!/usr/bin/env bash
     set -euo pipefail
-    echo "enqueue command will be implemented in Commit 3"
-    echo "Args: {{ args }}"
+    cd src
+    case "{{ mode }}" in
+      local)
+        go run ./cmd/enqueue -redis="$LOCAL_REDIS_URL" {{ args }}
+        ;;
+      integration)
+        go run ./cmd/enqueue {{ args }}
+        ;;
+      *)
+        echo "Unknown mode: {{ mode }}. Use: local, integration"
+        exit 1
+        ;;
+    esac
 
 gen-sqlc:
     cd src && sqlc generate
