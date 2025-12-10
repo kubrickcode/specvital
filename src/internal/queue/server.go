@@ -2,17 +2,20 @@ package queue
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hibiken/asynq"
 )
 
 const (
-	DefaultConcurrency = 5
+	DefaultConcurrency      = 5
+	DefaultShutdownTimeout  = 30 * time.Second
 )
 
 type ServerConfig struct {
-	Concurrency int
-	RedisURL    string
+	Concurrency     int
+	RedisURL        string
+	ShutdownTimeout time.Duration
 }
 
 func NewServer(cfg ServerConfig) (*asynq.Server, error) {
@@ -21,13 +24,19 @@ func NewServer(cfg ServerConfig) (*asynq.Server, error) {
 		concurrency = DefaultConcurrency
 	}
 
+	shutdownTimeout := cfg.ShutdownTimeout
+	if shutdownTimeout <= 0 {
+		shutdownTimeout = DefaultShutdownTimeout
+	}
+
 	opt, err := asynq.ParseRedisURI(cfg.RedisURL)
 	if err != nil {
 		return nil, fmt.Errorf("parse redis URI: %w", err)
 	}
 
 	return asynq.NewServer(opt, asynq.Config{
-		Concurrency: concurrency,
+		Concurrency:     concurrency,
+		ShutdownTimeout: shutdownTimeout,
 	}), nil
 }
 

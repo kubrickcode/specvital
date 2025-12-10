@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	workerConcurrency = 5
-	shutdownTimeout   = 30 * time.Second
+	workerConcurrency       = 5
+	gracefulShutdownTimeout = 60 * time.Second
 )
 
 func main() {
@@ -49,8 +49,9 @@ func main() {
 	slog.Info("postgres connected")
 
 	srv, err := queue.NewServer(queue.ServerConfig{
-		RedisURL:    cfg.RedisURL,
-		Concurrency: workerConcurrency,
+		RedisURL:        cfg.RedisURL,
+		Concurrency:     workerConcurrency,
+		ShutdownTimeout: gracefulShutdownTimeout,
 	})
 	if err != nil {
 		slog.Error("failed to create queue server", "error", err)
@@ -65,29 +66,22 @@ func main() {
 	analyzeHandler := jobs.NewAnalyzeHandler(analysisSvc)
 	mux.HandleFunc(jobs.TypeAnalyze, analyzeHandler.ProcessTask)
 
+	slog.Info("worker starting", "concurrency", workerConcurrency)
+	if err := srv.Start(mux); err != nil {
+		slog.Error("failed to start worker", "error", err)
+		pool.Close()
+		os.Exit(1)
+	}
+	slog.Info("worker ready", "concurrency", workerConcurrency)
+
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
 
-	errChan := make(chan error, 1)
-	go func() {
-		slog.Info("worker ready", "concurrency", workerConcurrency)
-		if err := srv.Run(mux); err != nil {
-			errChan <- err
-		}
-	}()
-
-	select {
-	case sig := <-shutdown:
-		slog.Info("shutdown signal received", "signal", sig.String())
-	case err := <-errChan:
-		slog.Error("worker failed", "error", err)
-	}
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancel()
+	sig := <-shutdown
+	slog.Info("shutdown signal received, waiting for in-flight jobs...", "signal", sig.String())
 
 	srv.Shutdown()
-	<-shutdownCtx.Done()
+	slog.Info("worker shutdown complete")
 
 	pool.Close()
 	slog.Info("collector shutdown complete")
