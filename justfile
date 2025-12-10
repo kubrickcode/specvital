@@ -124,6 +124,22 @@ build target="all":
         ;;
     esac
 
+run-collector:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -d "/tmp/collector" ]; then
+        echo "Cloning collector repository..."
+        git clone https://github.com/specvital/collector.git /tmp/collector
+    else
+        echo "Updating collector repository..."
+        cd /tmp/collector && git pull
+    fi
+    cd /tmp/collector/src && \
+    DATABASE_URL="$LOCAL_DATABASE_URL" \
+    REDIS_URL="$LOCAL_REDIS_URL" \
+    GITHUB_TOKEN="$GH_TOKEN" \
+    go run ./cmd/collector
+
 test target="all":
     #!/usr/bin/env bash
     set -euox pipefail
