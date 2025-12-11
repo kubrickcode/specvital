@@ -133,8 +133,10 @@ table "analyses" {
     on_delete   = CASCADE
   }
 
-  unique "uq_analyses_commit" {
+  index "uq_analyses_completed_commit" {
     columns = [column.codebase_id, column.commit_sha]
+    unique  = true
+    where   = "status = 'completed'"
   }
 
   index "idx_analyses_codebase_status" {
