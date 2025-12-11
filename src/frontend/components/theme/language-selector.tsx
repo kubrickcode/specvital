@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useTransition } from "react";
+import { useId, useTransition } from "react";
 import { Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 
 export const LanguageSelector = () => {
+  const id = useId();
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams();
@@ -36,7 +37,7 @@ export const LanguageSelector = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild id={id}>
         <Button variant="ghost" size="sm" disabled={isPending} aria-label={t("selectLanguage")}>
           <Globe className="h-4 w-4" />
           <span className="sr-only">{t("selectLanguage")}</span>
