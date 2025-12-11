@@ -29,6 +29,7 @@ import (
 	"github.com/smacker/go-tree-sitter/python"
 	"github.com/smacker/go-tree-sitter/ruby"
 	"github.com/smacker/go-tree-sitter/rust"
+	"github.com/smacker/go-tree-sitter/swift"
 	"github.com/smacker/go-tree-sitter/typescript/typescript"
 
 	"github.com/specvital/core/pkg/domain"
@@ -38,17 +39,18 @@ import (
 const MaxTreeDepth = 1000
 
 var (
-	cppLang  *sitter.Language
-	csLang   *sitter.Language
-	goLang   *sitter.Language
-	javaLang *sitter.Language
-	jsLang   *sitter.Language
-	ktLang   *sitter.Language
-	phpLang  *sitter.Language
-	pyLang   *sitter.Language
-	rbLang   *sitter.Language
-	rsLang   *sitter.Language
-	tsLang   *sitter.Language
+	cppLang   *sitter.Language
+	csLang    *sitter.Language
+	goLang    *sitter.Language
+	javaLang  *sitter.Language
+	jsLang    *sitter.Language
+	ktLang    *sitter.Language
+	phpLang   *sitter.Language
+	pyLang    *sitter.Language
+	rbLang    *sitter.Language
+	rsLang    *sitter.Language
+	swiftLang *sitter.Language
+	tsLang    *sitter.Language
 
 	langOnce sync.Once
 )
@@ -65,6 +67,7 @@ func initLanguages() {
 		pyLang = python.GetLanguage()
 		rbLang = ruby.GetLanguage()
 		rsLang = rust.GetLanguage()
+		swiftLang = swift.GetLanguage()
 		tsLang = typescript.GetLanguage()
 	})
 }
@@ -93,6 +96,8 @@ func GetLanguage(lang domain.Language) *sitter.Language {
 		return rbLang
 	case domain.LanguageRust:
 		return rsLang
+	case domain.LanguageSwift:
+		return swiftLang
 	default:
 		return tsLang
 	}

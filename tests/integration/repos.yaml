@@ -173,3 +173,8 @@ repositories:
     ref: v4.0.2
     framework: mstest
     complex: true
+
+  - name: alamofire
+    url: https://github.com/Alamofire/Alamofire
+    ref: 5.10.2
+    framework: xctest

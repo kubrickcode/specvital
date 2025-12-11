@@ -98,6 +98,8 @@ func (d *Detector) detectFromImport(ctx context.Context, lang domain.Language, c
 		return ""
 	case domain.LanguagePHP:
 		imports = extraction.ExtractPHPUses(ctx, content)
+	case domain.LanguageSwift:
+		imports = extraction.ExtractSwiftImports(ctx, content)
 	}
 
 	if len(imports) == 0 {
@@ -245,6 +247,8 @@ func detectLanguage(filePath string) domain.Language {
 		return domain.LanguageCpp
 	case ".php":
 		return domain.LanguagePHP
+	case ".swift":
+		return domain.LanguageSwift
 	default:
 		return ""
 	}

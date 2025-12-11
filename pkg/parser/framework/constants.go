@@ -41,5 +41,6 @@ const (
 	FrameworkTestNG     = "testng"
 	FrameworkUnittest   = "unittest"
 	FrameworkVitest     = "vitest"
+	FrameworkXCTest     = "xctest"
 	FrameworkXUnit      = "xunit"
 )

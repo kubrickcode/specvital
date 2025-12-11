@@ -21,5 +21,6 @@ import (
 	_ "github.com/specvital/core/pkg/parser/strategies/testng"
 	_ "github.com/specvital/core/pkg/parser/strategies/unittest"
 	_ "github.com/specvital/core/pkg/parser/strategies/vitest"
+	_ "github.com/specvital/core/pkg/parser/strategies/xctest"
 	_ "github.com/specvital/core/pkg/parser/strategies/xunit"
 )

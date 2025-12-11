@@ -19,6 +19,7 @@ import (
 	"github.com/specvital/core/pkg/parser/framework"
 	"github.com/specvital/core/pkg/parser/strategies/shared/dotnetast"
 	"github.com/specvital/core/pkg/parser/strategies/shared/kotlinast"
+	"github.com/specvital/core/pkg/parser/strategies/shared/swiftast"
 	"github.com/specvital/core/pkg/source"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
@@ -655,6 +656,8 @@ func isTestFileCandidate(path string) bool {
 		return isCppTestFile(path)
 	case ".php":
 		return isPHPTestFile(path)
+	case ".swift":
+		return isSwiftTestFile(path)
 	default:
 		return false
 	}
@@ -874,6 +877,10 @@ func isPHPTestFile(path string) bool {
 	}
 
 	return false
+}
+
+func isSwiftTestFile(path string) bool {
+	return swiftast.IsSwiftTestFile(path)
 }
 
 func matchesAnyPattern(path, rootPath string, patterns []string) bool {
