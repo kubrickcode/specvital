@@ -233,7 +233,7 @@ table "test_cases" {
   }
 
   column "name" {
-    type = varchar(500)
+    type = varchar(2000)
   }
 
   column "line_number" {
