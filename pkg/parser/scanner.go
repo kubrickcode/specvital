@@ -18,6 +18,7 @@ import (
 	"github.com/specvital/core/pkg/parser/detection"
 	"github.com/specvital/core/pkg/parser/framework"
 	"github.com/specvital/core/pkg/parser/strategies/shared/dotnetast"
+	"github.com/specvital/core/pkg/parser/strategies/shared/kotlinast"
 	"github.com/specvital/core/pkg/source"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
@@ -640,6 +641,8 @@ func isTestFileCandidate(path string) bool {
 		return isGoTestFile(path)
 	case ".java":
 		return isJavaTestFile(path)
+	case ".kt", ".kts":
+		return isKotlinTestFile(path)
 	case ".py":
 		return isPythonTestFile(path)
 	case ".cs":
@@ -684,6 +687,10 @@ func isJavaTestFile(path string) bool {
 	}
 
 	return false
+}
+
+func isKotlinTestFile(path string) bool {
+	return kotlinast.IsKotlinTestFile(path)
 }
 
 func isJSTestFile(path string) bool {

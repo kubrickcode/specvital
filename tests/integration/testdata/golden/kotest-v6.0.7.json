@@ -1,0 +1,136 @@
+{
+  "repository": "kotest",
+  "ref": "v6.0.7",
+  "expectedFramework": "kotest",
+  "fileCount": 1721,
+  "testCount": 1805,
+  "frameworkCounts": {
+    "kotest": 1721
+  },
+  "sampleFiles": [
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonMain/kotlin/io/kotest/assertions/arrow/fx/coroutines/ExitCase.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonMain/kotlin/io/kotest/assertions/arrow/fx/coroutines/ProjectResource.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonMain/kotlin/io/kotest/assertions/arrow/fx/coroutines/Resource.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonMain/kotlin/io/kotest/assertions/arrow/fx/coroutines/ResourceExtension.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonMain/kotlin/io/kotest/assertions/arrow/fx/coroutines/shouldBe.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonTest/kotlin/io/kotest/assertions/arrow/fx/coroutines/ExitCaseTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonTest/kotlin/io/kotest/assertions/arrow/fx/coroutines/ResourceExtensionLeafTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonTest/kotlin/io/kotest/assertions/arrow/fx/coroutines/ResourceExtensionRootTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonTest/kotlin/io/kotest/assertions/arrow/fx/coroutines/ResourceExtensionSpecTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonMain/kotlin/io/kotest/assertions/arrow/Utils.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonMain/kotlin/io/kotest/assertions/arrow/core/Either.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonMain/kotlin/io/kotest/assertions/arrow/core/Ior.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonMain/kotlin/io/kotest/assertions/arrow/core/Nel.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonMain/kotlin/io/kotest/assertions/arrow/core/Nelnspectors.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonMain/kotlin/io/kotest/assertions/arrow/core/Option.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonMain/kotlin/io/kotest/assertions/arrow/core/Raise.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonTest/kotlin/io/kotest/assertions/arrow/core/EitherMatchers.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonTest/kotlin/io/kotest/assertions/arrow/core/IorMatchers.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonTest/kotlin/io/kotest/assertions/arrow/core/NelMatchers.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow/src/commonTest/kotlin/io/kotest/assertions/arrow/core/OptionMatchers.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 6
+    }
+  ],
+  "stats": {
+    "filesMatched": 1721,
+    "filesScanned": 2060
+  }
+}

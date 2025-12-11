@@ -150,3 +150,9 @@ repositories:
     ref: v11.7.5
     framework: mocha
     complex: true
+
+  - name: kotest
+    url: https://github.com/kotest/kotest
+    ref: v6.0.7
+    framework: kotest
+    complex: true

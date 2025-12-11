@@ -29,6 +29,7 @@ const (
 	FrameworkGTest      = "gtest"
 	FrameworkJest       = "jest"
 	FrameworkJUnit5     = "junit5"
+	FrameworkKotest     = "kotest"
 	FrameworkMocha      = "mocha"
 	FrameworkNUnit      = "nunit"
 	FrameworkPHPUnit    = "phpunit"

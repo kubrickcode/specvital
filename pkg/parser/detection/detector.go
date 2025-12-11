@@ -231,6 +231,8 @@ func detectLanguage(filePath string) domain.Language {
 		return domain.LanguageGo
 	case ".java":
 		return domain.LanguageJava
+	case ".kt", ".kts":
+		return domain.LanguageKotlin
 	case ".py":
 		return domain.LanguagePython
 	case ".cs":
