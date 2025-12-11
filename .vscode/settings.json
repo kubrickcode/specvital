@@ -211,6 +211,38 @@
           "shortcut": "c",
           "terminalName": "run-collector",
           "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "executeAll": true,
+          "name": "All Integration",
+          "shortcut": "i",
+          "group": [
+            {
+              "color": "",
+              "command": "just run backend --integration",
+              "name": "backend",
+              "shortcut": "b",
+              "terminalName": "backend-integration",
+              "useVsCodeApi": false
+            },
+            {
+              "color": "",
+              "command": "just run frontend",
+              "name": "frontend",
+              "shortcut": "f",
+              "terminalName": "frontend",
+              "useVsCodeApi": false
+            }
+          ]
+        },
+        {
+          "color": "",
+          "command": "just run backend --integration",
+          "name": "Backend Integration",
+          "shortcut": "n",
+          "terminalName": "backend-integration",
+          "useVsCodeApi": false
         }
       ]
     },
