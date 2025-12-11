@@ -33,6 +33,23 @@ makemigration name="changes":
 migrate:
     cd db && atlas migrate apply --env local --allow-dirty
 
-reset:
-    psql "$DATABASE_URL" -c "DROP SCHEMA IF EXISTS atlas_schema_revisions CASCADE; DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-    cd db && atlas migrate apply --env local --allow-dirty
+reset target="all":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ target }}" in
+      all)
+        just reset db
+        just reset redis
+        ;;
+      db)
+        psql "$DATABASE_URL" -c "DROP SCHEMA IF EXISTS atlas_schema_revisions CASCADE; DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+        cd db && atlas migrate apply --env local --allow-dirty
+        ;;
+      redis)
+        redis-cli -u "$REDIS_URL" FLUSHALL
+        ;;
+      *)
+        echo "Unknown target: {{ target }}"
+        exit 1
+        ;;
+    esac
