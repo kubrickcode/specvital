@@ -82,7 +82,7 @@ CREATE TABLE public.codebases (
 CREATE TABLE public.test_cases (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     suite_id uuid NOT NULL,
-    name character varying(500) NOT NULL,
+    name character varying(2000) NOT NULL,
     line_number integer,
     status public.test_status DEFAULT 'active'::public.test_status NOT NULL,
     tags jsonb DEFAULT '[]'::jsonb NOT NULL,

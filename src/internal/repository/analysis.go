@@ -313,17 +313,20 @@ func (r *PostgresAnalysisRepository) createImplicitSuite(ctx context.Context, qu
 }
 
 func (r *PostgresAnalysisRepository) saveSuite(ctx context.Context, queries *db.Queries, analysisID, parentID pgtype.UUID, file domain.TestFile, suite domain.TestSuite, depth int) (int, int, error) {
+	name := truncateString(suite.Name, maxTestSuiteNameLength)
+
 	created, err := queries.CreateTestSuite(ctx, db.CreateTestSuiteParams{
 		AnalysisID: analysisID,
 		ParentID:   parentID,
-		Name:       suite.Name,
+		Name:       name,
 		FilePath:   file.Path,
 		LineNumber: pgtype.Int4{Int32: int32(suite.Location.StartLine), Valid: true},
 		Framework:  pgtype.Text{String: file.Framework, Valid: file.Framework != ""},
 		Depth:      int32(depth),
 	})
 	if err != nil {
-		return 0, 0, fmt.Errorf("create suite: %w", err)
+		return 0, 0, fmt.Errorf("create suite (name=%q, file=%s, line=%d): %w",
+			truncateString(suite.Name, 100), file.Path, suite.Location.StartLine, err)
 	}
 
 	totalSuites := 1
@@ -348,19 +351,34 @@ func (r *PostgresAnalysisRepository) saveSuite(ctx context.Context, queries *db.
 	return totalSuites, totalTests, nil
 }
 
+const (
+	maxTestCaseNameLength = 2000
+	maxTestSuiteNameLength = 500
+)
+
 func (r *PostgresAnalysisRepository) saveTest(ctx context.Context, queries *db.Queries, suiteID pgtype.UUID, test domain.Test) error {
 	status := mapTestStatus(test.Status)
+	name := truncateString(test.Name, maxTestCaseNameLength)
+
 	_, err := queries.CreateTestCase(ctx, db.CreateTestCaseParams{
 		SuiteID:    suiteID,
-		Name:       test.Name,
+		Name:       name,
 		LineNumber: pgtype.Int4{Int32: int32(test.Location.StartLine), Valid: true},
 		Status:     status,
 		Tags:       []byte("[]"),
 	})
 	if err != nil {
-		return fmt.Errorf("create test case: %w", err)
+		return fmt.Errorf("create test case (name=%q, line=%d): %w",
+			truncateString(test.Name, 100), test.Location.StartLine, err)
 	}
 	return nil
+}
+
+func truncateString(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	return s[:maxLen-3] + "..."
 }
 
 func mapTestStatus(status domain.TestStatus) db.TestStatus {

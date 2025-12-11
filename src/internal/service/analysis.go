@@ -129,17 +129,23 @@ func (s *analysisService) Analyze(ctx context.Context, req AnalyzeRequest) error
 		return fmt.Errorf("%w: %w", ErrSaveFailed, err)
 	}
 
+	var analyzeErr error
+	defer func() {
+		if analyzeErr != nil {
+			if recordErr := s.analysisRepo.RecordFailure(ctx, analysisID, analyzeErr.Error()); recordErr != nil {
+				slog.ErrorContext(ctx, "failed to record analysis failure",
+					"error", recordErr,
+					"analysis_id", analysisID,
+					"original_error", analyzeErr,
+				)
+			}
+		}
+	}()
+
 	result, err := parser.Scan(timeoutCtx, gitSrc)
 	if err != nil {
-		// Use parent ctx for RecordFailure to ensure DB write succeeds even if timeout fired
-		if recordErr := s.analysisRepo.RecordFailure(ctx, analysisID, err.Error()); recordErr != nil {
-			slog.ErrorContext(ctx, "failed to record scan failure",
-				"error", recordErr,
-				"analysis_id", analysisID,
-				"original_error", err,
-			)
-		}
-		return fmt.Errorf("%w: %w", ErrScanFailed, err)
+		analyzeErr = fmt.Errorf("%w: %w", ErrScanFailed, err)
+		return analyzeErr
 	}
 
 	if result.Inventory == nil {
@@ -154,15 +160,8 @@ func (s *analysisService) Analyze(ctx context.Context, req AnalyzeRequest) error
 		AnalysisID: analysisID,
 		Result:     result,
 	}); err != nil {
-		// Use parent ctx for RecordFailure to ensure DB write succeeds even if timeout fired
-		if recordErr := s.analysisRepo.RecordFailure(ctx, analysisID, err.Error()); recordErr != nil {
-			slog.ErrorContext(ctx, "failed to record save failure",
-				"error", recordErr,
-				"analysis_id", analysisID,
-				"original_error", err,
-			)
-		}
-		return fmt.Errorf("%w: %w", ErrSaveFailed, err)
+		analyzeErr = fmt.Errorf("%w: %w", ErrSaveFailed, err)
+		return analyzeErr
 	}
 
 	return nil

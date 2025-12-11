@@ -751,6 +751,52 @@ func Test_truncateErrorMessage(t *testing.T) {
 	}
 }
 
+func Test_truncateString(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		maxLen   int
+		expected string
+	}{
+		{
+			name:     "short string unchanged",
+			input:    "hello",
+			maxLen:   10,
+			expected: "hello",
+		},
+		{
+			name:     "exact length unchanged",
+			input:    "hello",
+			maxLen:   5,
+			expected: "hello",
+		},
+		{
+			name:     "long string truncated",
+			input:    "hello world",
+			maxLen:   8,
+			expected: "hello...",
+		},
+		{
+			name:     "empty string",
+			input:    "",
+			maxLen:   10,
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := truncateString(tt.input, tt.maxLen)
+			if result != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, result)
+			}
+			if len(result) > tt.maxLen {
+				t.Errorf("result exceeds max length: %d > %d", len(result), tt.maxLen)
+			}
+		})
+	}
+}
+
 func Test_validateRepositoryInfo(t *testing.T) {
 	tests := []struct {
 		name      string

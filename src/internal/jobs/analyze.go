@@ -44,6 +44,11 @@ func (h *AnalyzeHandler) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		Owner: payload.Owner,
 		Repo:  payload.Repo,
 	}); err != nil {
+		slog.ErrorContext(ctx, "analyze task failed",
+			"owner", payload.Owner,
+			"repo", payload.Repo,
+			"error", err,
+		)
 		return err
 	}
 
