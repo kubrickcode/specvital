@@ -138,3 +138,9 @@ repositories:
     ref: v11.37.0
     framework: phpunit
     complex: true
+
+  - name: cypress
+    url: https://github.com/cypress-io/cypress
+    ref: v13.17.0
+    framework: cypress
+    complex: true

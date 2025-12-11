@@ -4,6 +4,7 @@ package all
 
 import (
 	_ "github.com/specvital/core/pkg/parser/strategies/cargotest"
+	_ "github.com/specvital/core/pkg/parser/strategies/cypress"
 	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
 	_ "github.com/specvital/core/pkg/parser/strategies/gtest"
 	_ "github.com/specvital/core/pkg/parser/strategies/jest"

@@ -23,8 +23,9 @@ const (
 
 // Common framework names as constants to ensure consistency.
 const (
-	FrameworkJest       = "jest"
-	FrameworkVitest     = "vitest"
-	FrameworkPlaywright = "playwright"
+	FrameworkCypress    = "cypress"
 	FrameworkGoTesting  = "go-testing"
+	FrameworkJest       = "jest"
+	FrameworkPlaywright = "playwright"
+	FrameworkVitest     = "vitest"
 )

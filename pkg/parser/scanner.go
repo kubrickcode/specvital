@@ -280,6 +280,11 @@ func (s *Scanner) discoverConfigFiles(ctx context.Context, src source.Source) []
 		"vitest.config.cjs",
 		"playwright.config.js",
 		"playwright.config.ts",
+		"cypress.config.cjs",
+		"cypress.config.js",
+		"cypress.config.mjs",
+		"cypress.config.mts",
+		"cypress.config.ts",
 		"pytest.ini",
 		"pyproject.toml",
 		"conftest.py",
@@ -681,8 +686,18 @@ func isJSTestFile(path string) bool {
 		return true
 	}
 
+	// Cypress E2E test files: *.cy.{js,ts,jsx,tsx}
+	if strings.Contains(lowerBase, ".cy.") {
+		return true
+	}
+
 	normalizedPath := filepath.ToSlash(path)
 	if strings.Contains(normalizedPath, "/__tests__/") || strings.HasPrefix(normalizedPath, "__tests__/") {
+		return true
+	}
+
+	// Cypress e2e/ and component/ directories
+	if strings.Contains(normalizedPath, "/cypress/e2e/") || strings.Contains(normalizedPath, "/cypress/component/") {
 		return true
 	}
 
