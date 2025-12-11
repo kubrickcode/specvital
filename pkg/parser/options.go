@@ -116,15 +116,3 @@ func WithScanMaxFileSize(size int64) ScanOption {
 		}
 	}
 }
-
-// Deprecated: MinConfidence is no longer used with early-return detection.
-// Kept for backward compatibility.
-func WithMinConfidence(_ int) ScanOption {
-	return func(_ *ScanOptions) {}
-}
-
-// Deprecated: LogLowConfidence is no longer used with early-return detection.
-// Kept for backward compatibility.
-func WithLogLowConfidence(_ bool) ScanOption {
-	return func(_ *ScanOptions) {}
-}

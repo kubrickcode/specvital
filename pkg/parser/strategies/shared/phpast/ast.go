@@ -95,41 +95,12 @@ func GetAttributeName(attr *sitter.Node, source []byte) string {
 	return ""
 }
 
-// GetPrecedingComment returns the comment node immediately before a method declaration.
-func GetPrecedingComment(parent *sitter.Node, methodIndex int) *sitter.Node {
-	if methodIndex <= 0 {
-		return nil
-	}
-	prev := parent.Child(methodIndex - 1)
-	if prev != nil && prev.Type() == NodeComment {
-		return prev
-	}
-	return nil
-}
-
-// DocBlock annotation patterns.
-var (
-	testAnnotationPattern         = regexp.MustCompile(`@test\b`)
-	dataProviderAnnotationPattern = regexp.MustCompile(`@dataProvider\s+(\w+)`)
-)
+// testAnnotationPattern matches @test annotation in docblocks.
+var testAnnotationPattern = regexp.MustCompile(`@test\b`)
 
 // HasTestAnnotation checks if a docblock contains @test annotation.
 func HasTestAnnotation(comment string) bool {
 	return testAnnotationPattern.MatchString(comment)
-}
-
-// HasDataProviderAnnotation checks if a docblock contains @dataProvider annotation.
-func HasDataProviderAnnotation(comment string) bool {
-	return dataProviderAnnotationPattern.MatchString(comment)
-}
-
-// GetDataProviderName extracts the data provider method name from a docblock.
-func GetDataProviderName(comment string) string {
-	matches := dataProviderAnnotationPattern.FindStringSubmatch(comment)
-	if len(matches) >= 2 {
-		return matches[1]
-	}
-	return ""
 }
 
 // HasTestAttribute checks if a method has #[Test] attribute (PHP 8+).
