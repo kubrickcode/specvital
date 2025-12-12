@@ -7,11 +7,13 @@ import (
 
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/specvital/web/src/backend/internal/client"
 )
 
 type Container struct {
-	DB    *pgxpool.Pool
-	Queue *asynq.Client
+	DB        *pgxpool.Pool
+	Queue     *asynq.Client
+	GitClient client.GitClient
 }
 
 type Config struct {
@@ -47,9 +49,12 @@ func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 		return nil, fmt.Errorf("asynq: %w", err)
 	}
 
+	gitClient := client.NewGitClient()
+
 	return &Container{
-		DB:    pool,
-		Queue: queueClient,
+		DB:        pool,
+		Queue:     queueClient,
+		GitClient: gitClient,
 	}, nil
 }
 

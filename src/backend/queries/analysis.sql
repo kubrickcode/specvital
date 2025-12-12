@@ -35,7 +35,7 @@ RETURNING id;
 
 -- name: CreatePendingAnalysis :one
 INSERT INTO analyses (codebase_id, commit_sha, status)
-VALUES ($1, '', 'pending')
+VALUES ($1, $2, 'pending')
 RETURNING id;
 
 -- name: MarkAnalysisFailed :exec

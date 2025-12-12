@@ -9,6 +9,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/specvital/web/src/backend/internal/api"
+	"github.com/specvital/web/src/backend/internal/client"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
 	"github.com/specvital/web/src/backend/modules/analyzer/mapper"
 )
@@ -36,6 +37,17 @@ func (h *AnalyzerHandler) AnalyzeRepository(ctx context.Context, request api.Ana
 
 	result, err := h.service.AnalyzeRepository(ctx, owner, repo)
 	if err != nil {
+		if errors.Is(err, client.ErrRepoNotFound) {
+			return api.AnalyzeRepository400ApplicationProblemPlusJSONResponse{
+				BadRequestApplicationProblemPlusJSONResponse: api.NewBadRequest("repository not found"),
+			}, nil
+		}
+		if errors.Is(err, client.ErrForbidden) {
+			return api.AnalyzeRepository400ApplicationProblemPlusJSONResponse{
+				BadRequestApplicationProblemPlusJSONResponse: api.NewBadRequest("repository access forbidden"),
+			}, nil
+		}
+
 		slog.Error("service error in AnalyzeRepository", "owner", owner, "repo", repo, "error", err)
 		return api.AnalyzeRepository500ApplicationProblemPlusJSONResponse{
 			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to process analysis request"),

@@ -13,12 +13,17 @@ import (
 
 const createPendingAnalysis = `-- name: CreatePendingAnalysis :one
 INSERT INTO analyses (codebase_id, commit_sha, status)
-VALUES ($1, '', 'pending')
+VALUES ($1, $2, 'pending')
 RETURNING id
 `
 
-func (q *Queries) CreatePendingAnalysis(ctx context.Context, codebaseID pgtype.UUID) (pgtype.UUID, error) {
-	row := q.db.QueryRow(ctx, createPendingAnalysis, codebaseID)
+type CreatePendingAnalysisParams struct {
+	CodebaseID pgtype.UUID `json:"codebase_id"`
+	CommitSha  string      `json:"commit_sha"`
+}
+
+func (q *Queries) CreatePendingAnalysis(ctx context.Context, arg CreatePendingAnalysisParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createPendingAnalysis, arg.CodebaseID, arg.CommitSha)
 	var id pgtype.UUID
 	err := row.Scan(&id)
 	return id, err

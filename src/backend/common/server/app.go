@@ -43,7 +43,7 @@ func initHandlers(infra *infra.Container) *Handlers {
 	repo := analyzer.NewRepository(queries)
 	queueSvc := analyzer.NewQueueService(infra.Queue)
 
-	analyzerService := analyzer.NewAnalyzerService(repo, queueSvc)
+	analyzerService := analyzer.NewAnalyzerService(repo, queueSvc, infra.GitClient)
 	analyzerHandler := analyzer.NewAnalyzerHandler(analyzerService)
 
 	return &Handlers{

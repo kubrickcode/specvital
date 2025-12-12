@@ -43,7 +43,8 @@ func TestAnalyzeRepository(t *testing.T) {
 	t.Run("returns 202 and queues analysis when no record exists", func(t *testing.T) {
 		queue := &mockQueueService{}
 		repo := &mockRepository{}
-		_, r := setupTestHandlerWithMocks(repo, queue)
+		gitClient := &mockGitClient{}
+		_, r := setupTestHandlerWithMocks(repo, queue, gitClient)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/repo", nil)
 		rec := httptest.NewRecorder()
@@ -81,7 +82,8 @@ func TestAnalyzeRepository(t *testing.T) {
 				TotalTests:  10,
 			},
 		}
-		_, r := setupTestHandlerWithMocks(repo, queue)
+		gitClient := &mockGitClient{commitSHA: "abc123"}
+		_, r := setupTestHandlerWithMocks(repo, queue, gitClient)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/repo", nil)
 		rec := httptest.NewRecorder()
@@ -111,7 +113,8 @@ func TestGetAnalysisStatus(t *testing.T) {
 	t.Run("returns 404 when no record exists", func(t *testing.T) {
 		queue := &mockQueueService{}
 		repo := &mockRepository{}
-		_, r := setupTestHandlerWithMocks(repo, queue)
+		gitClient := &mockGitClient{}
+		_, r := setupTestHandlerWithMocks(repo, queue, gitClient)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/repo/status", nil)
 		rec := httptest.NewRecorder()
@@ -132,7 +135,8 @@ func TestGetAnalysisStatus(t *testing.T) {
 				CreatedAt: time.Now(),
 			},
 		}
-		_, r := setupTestHandlerWithMocks(repo, queue)
+		gitClient := &mockGitClient{}
+		_, r := setupTestHandlerWithMocks(repo, queue, gitClient)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/repo/status", nil)
 		rec := httptest.NewRecorder()

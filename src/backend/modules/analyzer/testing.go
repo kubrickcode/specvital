@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/specvital/web/src/backend/internal/api"
+	"github.com/specvital/web/src/backend/internal/client"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
 )
 
@@ -18,7 +19,7 @@ type mockRepository struct {
 	suitesWithCases   []TestSuiteWithCases
 }
 
-func (m *mockRepository) CreatePendingAnalysis(ctx context.Context, owner, repo string) (string, error) {
+func (m *mockRepository) CreatePendingAnalysis(ctx context.Context, owner, repo, commitSHA string) (string, error) {
 	if m.createErr != nil {
 		return "", m.createErr
 	}
@@ -80,16 +81,36 @@ func (m *mockQueueService) Close() error {
 	return nil
 }
 
+// mockGitClient is a test double for client.GitClient.
+type mockGitClient struct {
+	commitSHA string
+	err       error
+}
+
+func (m *mockGitClient) GetLatestCommitSHA(ctx context.Context, owner, repo string) (string, error) {
+	if m.err != nil {
+		return "", m.err
+	}
+	if m.commitSHA == "" {
+		return "test-commit-sha", nil
+	}
+	return m.commitSHA, nil
+}
+
+// Ensure mockGitClient implements client.GitClient.
+var _ client.GitClient = (*mockGitClient)(nil)
+
 // setupTestHandler creates a new AnalyzerHandler with mock dependencies and chi router.
 func setupTestHandler() (*AnalyzerHandler, *chi.Mux) {
 	repo := &mockRepository{}
 	queue := &mockQueueService{}
-	return setupTestHandlerWithMocks(repo, queue)
+	gitClient := &mockGitClient{}
+	return setupTestHandlerWithMocks(repo, queue, gitClient)
 }
 
 // setupTestHandlerWithMocks creates an AnalyzerHandler with provided mocks for more control in tests.
-func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService) (*AnalyzerHandler, *chi.Mux) {
-	service := NewAnalyzerService(repo, queue)
+func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gitClient *mockGitClient) (*AnalyzerHandler, *chi.Mux) {
+	service := NewAnalyzerService(repo, queue, gitClient)
 	handler := NewAnalyzerHandler(service)
 
 	r := chi.NewRouter()

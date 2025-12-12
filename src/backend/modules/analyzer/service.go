@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/specvital/web/src/backend/internal/client"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
 )
 
@@ -23,32 +24,47 @@ type AnalyzerService interface {
 }
 
 type analyzerService struct {
-	queue QueueService
-	repo  Repository
+	queue     QueueService
+	repo      Repository
+	gitClient client.GitClient
 }
 
-func NewAnalyzerService(repo Repository, queue QueueService) AnalyzerService {
+func NewAnalyzerService(repo Repository, queue QueueService, gitClient client.GitClient) AnalyzerService {
 	return &analyzerService{
-		queue: queue,
-		repo:  repo,
+		queue:     queue,
+		repo:      repo,
+		gitClient: gitClient,
 	}
 }
 
 func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo string) (*AnalyzeResult, error) {
+	latestSHA, err := s.gitClient.GetLatestCommitSHA(ctx, owner, repo)
+	if err != nil {
+		slog.Error("failed to get latest commit", "owner", owner, "repo", repo, "error", err)
+		return nil, fmt.Errorf("get latest commit: %w", err)
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
 
 	completed, err := s.repo.GetLatestCompletedAnalysis(ctx, owner, repo)
 	if err == nil {
-		analysis, buildErr := s.buildAnalysisFromCompleted(ctx, completed)
-		if buildErr != nil {
-			slog.Error("failed to build analysis", "owner", owner, "repo", repo, "error", buildErr)
-			return nil, fmt.Errorf("build analysis: %w", buildErr)
+		if completed.CommitSHA == latestSHA {
+			analysis, buildErr := s.buildAnalysisFromCompleted(ctx, completed)
+			if buildErr != nil {
+				slog.Error("failed to build analysis", "owner", owner, "repo", repo, "error", buildErr)
+				return nil, fmt.Errorf("build analysis: %w", buildErr)
+			}
+			slog.Info("cache hit", "owner", owner, "repo", repo, "commitSHA", latestSHA)
+			return &AnalyzeResult{Analysis: analysis}, nil
 		}
-		return &AnalyzeResult{Analysis: analysis}, nil
+		slog.Info("cache miss - commit changed",
+			"owner", owner, "repo", repo,
+			"cachedSHA", completed.CommitSHA,
+			"latestSHA", latestSHA)
 	}
 
-	if !errors.Is(err, domain.ErrNotFound) {
+	if err != nil && !errors.Is(err, domain.ErrNotFound) {
 		slog.Error("failed to get analysis", "owner", owner, "repo", repo, "error", err)
 		return nil, fmt.Errorf("get analysis: %w", err)
 	}
@@ -64,7 +80,7 @@ func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo str
 		return nil, fmt.Errorf("get status: %w", err)
 	}
 
-	analysisID, err := s.repo.CreatePendingAnalysis(ctx, owner, repo)
+	analysisID, err := s.repo.CreatePendingAnalysis(ctx, owner, repo, latestSHA)
 	if err != nil {
 		slog.Error("failed to create analysis", "owner", owner, "repo", repo, "error", err)
 		return nil, fmt.Errorf("create analysis: %w", err)

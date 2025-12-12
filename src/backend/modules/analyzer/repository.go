@@ -17,7 +17,7 @@ const (
 )
 
 type Repository interface {
-	CreatePendingAnalysis(ctx context.Context, owner, repo string) (string, error)
+	CreatePendingAnalysis(ctx context.Context, owner, repo, commitSHA string) (string, error)
 	GetAnalysisStatus(ctx context.Context, owner, repo string) (*AnalysisStatus, error)
 	GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error)
 	GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error)
@@ -63,7 +63,7 @@ func NewRepository(queries *db.Queries) Repository {
 	return &repositoryImpl{queries: queries}
 }
 
-func (r *repositoryImpl) CreatePendingAnalysis(ctx context.Context, owner, repo string) (string, error) {
+func (r *repositoryImpl) CreatePendingAnalysis(ctx context.Context, owner, repo, commitSHA string) (string, error) {
 	codebaseID, err := r.queries.UpsertCodebase(ctx, db.UpsertCodebaseParams{
 		Host:  HostGitHub,
 		Owner: owner,
@@ -73,7 +73,10 @@ func (r *repositoryImpl) CreatePendingAnalysis(ctx context.Context, owner, repo 
 		return "", fmt.Errorf("upsert codebase for %s/%s: %w", owner, repo, err)
 	}
 
-	analysisID, err := r.queries.CreatePendingAnalysis(ctx, codebaseID)
+	analysisID, err := r.queries.CreatePendingAnalysis(ctx, db.CreatePendingAnalysisParams{
+		CodebaseID: codebaseID,
+		CommitSha:  commitSHA,
+	})
 	if err != nil {
 		return "", fmt.Errorf("create pending analysis for %s/%s: %w", owner, repo, err)
 	}
