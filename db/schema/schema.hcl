@@ -14,6 +14,11 @@ enum "test_status" {
   values = ["active", "skipped", "todo", "focused", "xfail"]
 }
 
+enum "oauth_provider" {
+  schema = schema.public
+  values = ["github"]
+}
+
 // ==============================================================================
 // Tables
 // ==============================================================================
@@ -274,5 +279,130 @@ table "test_cases" {
 
   index "idx_test_cases_status" {
     columns = [column.suite_id, column.status]
+  }
+}
+
+// ==============================================================================
+// Auth Tables
+// ==============================================================================
+
+table "users" {
+  schema = schema.public
+
+  column "id" {
+    type    = uuid
+    default = sql("gen_random_uuid()")
+  }
+
+  column "email" {
+    type = varchar(255)
+    null = true
+  }
+
+  column "username" {
+    type = varchar(255)
+  }
+
+  column "avatar_url" {
+    type = text
+    null = true
+  }
+
+  column "last_login_at" {
+    type = timestamptz
+    null = true
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  column "updated_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  index "idx_users_email" {
+    columns = [column.email]
+    unique  = true
+    where   = "email IS NOT NULL"
+  }
+
+  index "idx_users_username" {
+    columns = [column.username]
+  }
+}
+
+table "oauth_accounts" {
+  schema = schema.public
+
+  column "id" {
+    type    = uuid
+    default = sql("gen_random_uuid()")
+  }
+
+  column "user_id" {
+    type = uuid
+  }
+
+  column "provider" {
+    type = enum.oauth_provider
+  }
+
+  column "provider_user_id" {
+    type = varchar(255)
+  }
+
+  column "provider_username" {
+    type = varchar(255)
+    null = true
+  }
+
+  // Note: Encrypted at application level (AES-256-GCM)
+  column "access_token" {
+    type = text
+    null = true
+  }
+
+  column "scope" {
+    type = varchar(500)
+    null = true
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  column "updated_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  foreign_key "fk_oauth_accounts_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete   = CASCADE
+  }
+
+  unique "uq_oauth_provider_user" {
+    columns = [column.provider, column.provider_user_id]
+  }
+
+  index "idx_oauth_accounts_user_id" {
+    columns = [column.user_id]
+  }
+
+  index "idx_oauth_accounts_user_provider" {
+    columns = [column.user_id, column.provider]
   }
 }
