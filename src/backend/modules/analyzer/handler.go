@@ -3,11 +3,12 @@ package analyzer
 import (
 	"context"
 	"encoding/json"
-	"log/slog"
 	"net/http"
 	"regexp"
 
 	"github.com/cockroachdb/errors"
+
+	"github.com/specvital/web/src/backend/common/logger"
 	"github.com/specvital/web/src/backend/internal/api"
 	"github.com/specvital/web/src/backend/internal/client"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
@@ -17,17 +18,19 @@ import (
 var validNamePattern = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
 
 type AnalyzerHandler struct {
+	logger  *logger.Logger
 	service AnalyzerService
 }
 
 var _ api.StrictServerInterface = (*AnalyzerHandler)(nil)
 
-func NewAnalyzerHandler(service AnalyzerService) *AnalyzerHandler {
-	return &AnalyzerHandler{service: service}
+func NewAnalyzerHandler(logger *logger.Logger, service AnalyzerService) *AnalyzerHandler {
+	return &AnalyzerHandler{logger: logger, service: service}
 }
 
 func (h *AnalyzerHandler) AnalyzeRepository(ctx context.Context, request api.AnalyzeRepositoryRequestObject) (api.AnalyzeRepositoryResponseObject, error) {
 	owner, repo := request.Owner, request.Repo
+	log := h.logger.With("owner", owner, "repo", repo)
 
 	if err := validateOwnerRepo(owner, repo); err != nil {
 		return api.AnalyzeRepository400ApplicationProblemPlusJSONResponse{
@@ -48,14 +51,14 @@ func (h *AnalyzerHandler) AnalyzeRepository(ctx context.Context, request api.Ana
 			}, nil
 		}
 
-		slog.Error("service error in AnalyzeRepository", "owner", owner, "repo", repo, "error", err)
+		log.Error(ctx, "service error in AnalyzeRepository", "error", err)
 		return api.AnalyzeRepository500ApplicationProblemPlusJSONResponse{
 			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to process analysis request"),
 		}, nil
 	}
 
 	if result.Analysis == nil && result.Progress == nil {
-		slog.Error("invalid result: neither analysis nor progress is set", "owner", owner, "repo", repo)
+		log.Error(ctx, "invalid result: neither analysis nor progress is set")
 		return api.AnalyzeRepository500ApplicationProblemPlusJSONResponse{
 			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("internal error"),
 		}, nil
@@ -64,14 +67,14 @@ func (h *AnalyzerHandler) AnalyzeRepository(ctx context.Context, request api.Ana
 	if result.Analysis != nil {
 		response, mapErr := mapper.ToCompletedResponse(result.Analysis)
 		if mapErr != nil {
-			slog.Error("failed to map completed response", "owner", owner, "repo", repo, "error", mapErr)
+			log.Error(ctx, "failed to map completed response", "error", mapErr)
 			return api.AnalyzeRepository500ApplicationProblemPlusJSONResponse{
 				InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to process response"),
 			}, nil
 		}
 		completed, err := response.AsCompletedResponse()
 		if err != nil {
-			slog.Error("failed to unmarshal completed response", "owner", owner, "repo", repo, "error", err)
+			log.Error(ctx, "failed to unmarshal completed response", "error", err)
 			return api.AnalyzeRepository500ApplicationProblemPlusJSONResponse{
 				InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to process response"),
 			}, nil
@@ -81,7 +84,7 @@ func (h *AnalyzerHandler) AnalyzeRepository(ctx context.Context, request api.Ana
 
 	response, mapErr := mapper.ToStatusResponse(result.Progress)
 	if mapErr != nil {
-		slog.Error("failed to map status response", "owner", owner, "repo", repo, "error", mapErr)
+		log.Error(ctx, "failed to map status response", "error", mapErr)
 		return api.AnalyzeRepository500ApplicationProblemPlusJSONResponse{
 			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to process response"),
 		}, nil
@@ -91,6 +94,7 @@ func (h *AnalyzerHandler) AnalyzeRepository(ctx context.Context, request api.Ana
 
 func (h *AnalyzerHandler) GetAnalysisStatus(ctx context.Context, request api.GetAnalysisStatusRequestObject) (api.GetAnalysisStatusResponseObject, error) {
 	owner, repo := request.Owner, request.Repo
+	log := h.logger.With("owner", owner, "repo", repo)
 
 	if err := validateOwnerRepo(owner, repo); err != nil {
 		return api.GetAnalysisStatus400ApplicationProblemPlusJSONResponse{
@@ -105,14 +109,14 @@ func (h *AnalyzerHandler) GetAnalysisStatus(ctx context.Context, request api.Get
 				NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("analysis not found"),
 			}, nil
 		}
-		slog.Error("service error in GetAnalysisStatus", "owner", owner, "repo", repo, "error", err)
+		log.Error(ctx, "service error in GetAnalysisStatus", "error", err)
 		return api.GetAnalysisStatus500ApplicationProblemPlusJSONResponse{
 			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to get analysis status"),
 		}, nil
 	}
 
 	if result.Analysis == nil && result.Progress == nil {
-		slog.Error("invalid result: neither analysis nor progress is set", "owner", owner, "repo", repo)
+		log.Error(ctx, "invalid result: neither analysis nor progress is set")
 		return api.GetAnalysisStatus500ApplicationProblemPlusJSONResponse{
 			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("internal error"),
 		}, nil
@@ -121,7 +125,7 @@ func (h *AnalyzerHandler) GetAnalysisStatus(ctx context.Context, request api.Get
 	if result.Analysis != nil {
 		response, mapErr := mapper.ToCompletedResponse(result.Analysis)
 		if mapErr != nil {
-			slog.Error("failed to map completed response", "owner", owner, "repo", repo, "error", mapErr)
+			log.Error(ctx, "failed to map completed response", "error", mapErr)
 			return api.GetAnalysisStatus500ApplicationProblemPlusJSONResponse{
 				InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to process response"),
 			}, nil
@@ -131,7 +135,7 @@ func (h *AnalyzerHandler) GetAnalysisStatus(ctx context.Context, request api.Get
 
 	response, mapErr := mapper.ToStatusResponse(result.Progress)
 	if mapErr != nil {
-		slog.Error("failed to map status response", "owner", owner, "repo", repo, "error", mapErr)
+		log.Error(ctx, "failed to map status response", "error", mapErr)
 		return api.GetAnalysisStatus500ApplicationProblemPlusJSONResponse{
 			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to process response"),
 		}, nil

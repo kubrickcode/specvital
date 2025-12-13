@@ -7,10 +7,12 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/specvital/web/src/backend/common/logger"
 )
 
 func TestHandleHealth(t *testing.T) {
-	handler := NewHandler()
+	handler := NewHandler(logger.New())
 	r := chi.NewRouter()
 	handler.RegisterRoutes(r)
 

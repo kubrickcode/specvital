@@ -3,10 +3,11 @@ package analyzer
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/cockroachdb/errors"
+
+	"github.com/specvital/web/src/backend/common/logger"
 	"github.com/specvital/web/src/backend/internal/client"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
 )
@@ -24,23 +25,27 @@ type AnalyzerService interface {
 }
 
 type analyzerService struct {
+	gitClient client.GitClient
+	logger    *logger.Logger
 	queue     QueueService
 	repo      Repository
-	gitClient client.GitClient
 }
 
-func NewAnalyzerService(repo Repository, queue QueueService, gitClient client.GitClient) AnalyzerService {
+func NewAnalyzerService(logger *logger.Logger, repo Repository, queue QueueService, gitClient client.GitClient) AnalyzerService {
 	return &analyzerService{
+		gitClient: gitClient,
+		logger:    logger,
 		queue:     queue,
 		repo:      repo,
-		gitClient: gitClient,
 	}
 }
 
 func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo string) (*AnalyzeResult, error) {
+	log := s.logger.With("owner", owner, "repo", repo)
+
 	latestSHA, err := s.gitClient.GetLatestCommitSHA(ctx, owner, repo)
 	if err != nil {
-		slog.Error("failed to get latest commit", "owner", owner, "repo", repo, "error", err)
+		log.Error(ctx, "failed to get latest commit", "error", err)
 		return nil, fmt.Errorf("get latest commit: %w", err)
 	}
 
@@ -52,44 +57,43 @@ func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo str
 		if completed.CommitSHA == latestSHA {
 			analysis, buildErr := s.buildAnalysisFromCompleted(ctx, completed)
 			if buildErr != nil {
-				slog.Error("failed to build analysis", "owner", owner, "repo", repo, "error", buildErr)
+				log.Error(ctx, "failed to build analysis", "error", buildErr)
 				return nil, fmt.Errorf("build analysis: %w", buildErr)
 			}
-			slog.Info("cache hit", "owner", owner, "repo", repo, "commitSHA", latestSHA)
+			log.Info(ctx, "cache hit", "commitSHA", latestSHA)
 			return &AnalyzeResult{Analysis: analysis}, nil
 		}
-		slog.Info("cache miss - commit changed",
-			"owner", owner, "repo", repo,
+		log.Info(ctx, "cache miss - commit changed",
 			"cachedSHA", completed.CommitSHA,
 			"latestSHA", latestSHA)
 	}
 
 	if err != nil && !errors.Is(err, domain.ErrNotFound) {
-		slog.Error("failed to get analysis", "owner", owner, "repo", repo, "error", err)
+		log.Error(ctx, "failed to get analysis", "error", err)
 		return nil, fmt.Errorf("get analysis: %w", err)
 	}
 
 	status, err := s.repo.GetAnalysisStatus(ctx, owner, repo)
 	if err == nil {
-		progress := s.buildProgressFromStatus(status)
+		progress := s.buildProgressFromStatus(ctx, log, status)
 		return &AnalyzeResult{Progress: progress}, nil
 	}
 
 	if !errors.Is(err, domain.ErrNotFound) {
-		slog.Error("failed to get status", "owner", owner, "repo", repo, "error", err)
+		log.Error(ctx, "failed to get status", "error", err)
 		return nil, fmt.Errorf("get status: %w", err)
 	}
 
 	analysisID, err := s.repo.CreatePendingAnalysis(ctx, owner, repo, latestSHA)
 	if err != nil {
-		slog.Error("failed to create analysis", "owner", owner, "repo", repo, "error", err)
+		log.Error(ctx, "failed to create analysis", "error", err)
 		return nil, fmt.Errorf("create analysis: %w", err)
 	}
 
 	if err := s.queue.Enqueue(ctx, analysisID, owner, repo); err != nil {
-		slog.Error("failed to enqueue", "owner", owner, "repo", repo, "analysisId", analysisID, "error", err)
+		log.Error(ctx, "failed to enqueue", "analysisId", analysisID, "error", err)
 		if cleanupErr := s.repo.MarkAnalysisFailed(ctx, analysisID, "queue registration failed"); cleanupErr != nil {
-			slog.Error("failed to cleanup after enqueue error", "analysisId", analysisID, "error", cleanupErr)
+			log.Error(ctx, "failed to cleanup after enqueue error", "analysisId", analysisID, "error", cleanupErr)
 		}
 		return nil, fmt.Errorf("queue analysis: %w", err)
 	}
@@ -104,6 +108,8 @@ func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo str
 }
 
 func (s *analyzerService) GetAnalysisStatus(ctx context.Context, owner, repo string) (*AnalyzeResult, error) {
+	log := s.logger.With("owner", owner, "repo", repo)
+
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
 
@@ -111,20 +117,20 @@ func (s *analyzerService) GetAnalysisStatus(ctx context.Context, owner, repo str
 	if err == nil {
 		analysis, buildErr := s.buildAnalysisFromCompleted(ctx, completed)
 		if buildErr != nil {
-			slog.Error("failed to build analysis", "owner", owner, "repo", repo, "error", buildErr)
+			log.Error(ctx, "failed to build analysis", "error", buildErr)
 			return nil, fmt.Errorf("build analysis: %w", buildErr)
 		}
 		return &AnalyzeResult{Analysis: analysis}, nil
 	}
 
 	if !errors.Is(err, domain.ErrNotFound) {
-		slog.Error("failed to get analysis", "owner", owner, "repo", repo, "error", err)
+		log.Error(ctx, "failed to get analysis", "error", err)
 		return nil, fmt.Errorf("get analysis: %w", err)
 	}
 
 	status, err := s.repo.GetAnalysisStatus(ctx, owner, repo)
 	if err == nil {
-		progress := s.buildProgressFromStatus(status)
+		progress := s.buildProgressFromStatus(ctx, log, status)
 		return &AnalyzeResult{Progress: progress}, nil
 	}
 
@@ -132,7 +138,7 @@ func (s *analyzerService) GetAnalysisStatus(ctx context.Context, owner, repo str
 		return nil, domain.ErrNotFound
 	}
 
-	slog.Error("failed to get status", "owner", owner, "repo", repo, "error", err)
+	log.Error(ctx, "failed to get status", "error", err)
 	return nil, fmt.Errorf("get status: %w", err)
 }
 
@@ -173,7 +179,7 @@ func (s *analyzerService) buildAnalysisFromCompleted(ctx context.Context, comple
 	}, nil
 }
 
-func (s *analyzerService) buildProgressFromStatus(status *AnalysisStatus) *domain.AnalysisProgress {
+func (s *analyzerService) buildProgressFromStatus(ctx context.Context, log *logger.Logger, status *AnalysisStatus) *domain.AnalysisProgress {
 	var domainStatus domain.Status
 	switch status.Status {
 	case "completed":
@@ -185,7 +191,7 @@ func (s *analyzerService) buildProgressFromStatus(status *AnalysisStatus) *domai
 	case "failed":
 		domainStatus = domain.StatusFailed
 	default:
-		slog.Warn("unknown analysis status, treating as failed", "status", status.Status)
+		log.Warn(ctx, "unknown analysis status, treating as failed", "status", status.Status)
 		domainStatus = domain.StatusFailed
 	}
 

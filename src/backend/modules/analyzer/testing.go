@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/specvital/web/src/backend/common/logger"
 	"github.com/specvital/web/src/backend/internal/api"
 	"github.com/specvital/web/src/backend/internal/client"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
@@ -110,8 +112,9 @@ func setupTestHandler() (*AnalyzerHandler, *chi.Mux) {
 
 // setupTestHandlerWithMocks creates an AnalyzerHandler with provided mocks for more control in tests.
 func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gitClient *mockGitClient) (*AnalyzerHandler, *chi.Mux) {
-	service := NewAnalyzerService(repo, queue, gitClient)
-	handler := NewAnalyzerHandler(service)
+	log := logger.New()
+	service := NewAnalyzerService(log, repo, queue, gitClient)
+	handler := NewAnalyzerHandler(log, service)
 
 	r := chi.NewRouter()
 	strictHandler := api.NewStrictHandler(handler, nil)
