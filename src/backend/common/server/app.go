@@ -11,6 +11,7 @@ import (
 	"github.com/specvital/web/src/backend/internal/db"
 	"github.com/specvital/web/src/backend/internal/infra"
 	"github.com/specvital/web/src/backend/modules/analyzer"
+	"github.com/specvital/web/src/backend/modules/auth"
 )
 
 type Handlers struct {
@@ -48,8 +49,9 @@ func initHandlers(infra *infra.Container) *Handlers {
 
 	analyzerService := analyzer.NewAnalyzerService(log, repo, queueSvc, infra.GitClient)
 	analyzerHandler := analyzer.NewAnalyzerHandler(log, analyzerService)
+	authHandler := auth.NewStubHandler()
 
-	apiHandlers := api.NewAPIHandlers(analyzerHandler)
+	apiHandlers := api.NewAPIHandlers(analyzerHandler, authHandler)
 
 	return &Handlers{
 		API:    apiHandlers,

@@ -25,3 +25,11 @@ func NewInternalError(detail string) InternalErrorApplicationProblemPlusJSONResp
 		Title:  "Internal Server Error",
 	}
 }
+
+func NewUnauthorized(detail string) UnauthorizedApplicationProblemPlusJSONResponse {
+	return UnauthorizedApplicationProblemPlusJSONResponse{
+		Detail: detail,
+		Status: http.StatusUnauthorized,
+		Title:  "Unauthorized",
+	}
+}

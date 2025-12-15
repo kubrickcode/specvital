@@ -16,6 +16,10 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
+const (
+	CookieAuthScopes = "cookieAuth.Scopes"
+)
+
 // Defines values for TestStatus.
 const (
 	Active  TestStatus = "active"
@@ -79,6 +83,18 @@ type FrameworkSummary struct {
 	Todo      int       `json:"todo"`
 	Total     int       `json:"total"`
 	Xfail     int       `json:"xfail"`
+}
+
+// LoginResponse defines model for LoginResponse.
+type LoginResponse struct {
+	// AuthURL GitHub OAuth authorization URL to redirect user
+	AuthURL string `json:"authUrl"`
+}
+
+// LogoutResponse defines model for LogoutResponse.
+type LogoutResponse struct {
+	// Success Logout operation result
+	Success bool `json:"success"`
 }
 
 // ProblemDetail defines model for ProblemDetail.
@@ -183,6 +199,21 @@ type TestSuite struct {
 	Tests     []TestCase `json:"tests"`
 }
 
+// UserInfo defines model for UserInfo.
+type UserInfo struct {
+	// AvatarURL GitHub avatar URL
+	AvatarURL string `json:"avatarUrl"`
+
+	// ID Internal user ID
+	ID string `json:"id"`
+
+	// Login GitHub username
+	Login string `json:"login"`
+
+	// Name GitHub display name (optional)
+	Name *string `json:"name,omitempty"`
+}
+
 // Owner defines model for Owner.
 type Owner = string
 
@@ -197,6 +228,18 @@ type InternalError = ProblemDetail
 
 // NotFound defines model for NotFound.
 type NotFound = ProblemDetail
+
+// Unauthorized defines model for Unauthorized.
+type Unauthorized = ProblemDetail
+
+// AuthCallbackParams defines parameters for AuthCallback.
+type AuthCallbackParams struct {
+	// Code OAuth authorization code from GitHub
+	Code string `form:"code" json:"code"`
+
+	// State OAuth state for CSRF protection
+	State string `form:"state" json:"state"`
+}
 
 // AsCompletedResponse returns the union data inside the AnalysisResponse as a CompletedResponse
 func (t AnalysisResponse) AsCompletedResponse() (CompletedResponse, error) {
@@ -355,6 +398,18 @@ type ServerInterface interface {
 	// Get analysis status
 	// (GET /api/analyze/{owner}/{repo}/status)
 	GetAnalysisStatus(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo)
+	// GitHub OAuth callback
+	// (GET /api/auth/callback)
+	AuthCallback(w http.ResponseWriter, r *http.Request, params AuthCallbackParams)
+	// Initiate GitHub OAuth login
+	// (GET /api/auth/login)
+	AuthLogin(w http.ResponseWriter, r *http.Request)
+	// Logout and clear authentication
+	// (POST /api/auth/logout)
+	AuthLogout(w http.ResponseWriter, r *http.Request)
+	// Get current user info
+	// (GET /api/auth/me)
+	AuthMe(w http.ResponseWriter, r *http.Request)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -370,6 +425,30 @@ func (_ Unimplemented) AnalyzeRepository(w http.ResponseWriter, r *http.Request,
 // Get analysis status
 // (GET /api/analyze/{owner}/{repo}/status)
 func (_ Unimplemented) GetAnalysisStatus(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// GitHub OAuth callback
+// (GET /api/auth/callback)
+func (_ Unimplemented) AuthCallback(w http.ResponseWriter, r *http.Request, params AuthCallbackParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Initiate GitHub OAuth login
+// (GET /api/auth/login)
+func (_ Unimplemented) AuthLogin(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Logout and clear authentication
+// (POST /api/auth/logout)
+func (_ Unimplemented) AuthLogout(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get current user info
+// (GET /api/auth/me)
+func (_ Unimplemented) AuthMe(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -441,6 +520,109 @@ func (siw *ServerInterfaceWrapper) GetAnalysisStatus(w http.ResponseWriter, r *h
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetAnalysisStatus(w, r, owner, repo)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AuthCallback operation middleware
+func (siw *ServerInterfaceWrapper) AuthCallback(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AuthCallbackParams
+
+	// ------------- Required query parameter "code" -------------
+
+	if paramValue := r.URL.Query().Get("code"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "code"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "code", r.URL.Query(), &params.Code)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "code", Err: err})
+		return
+	}
+
+	// ------------- Required query parameter "state" -------------
+
+	if paramValue := r.URL.Query().Get("state"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "state"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "state", r.URL.Query(), &params.State)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "state", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AuthCallback(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AuthLogin operation middleware
+func (siw *ServerInterfaceWrapper) AuthLogin(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AuthLogin(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AuthLogout operation middleware
+func (siw *ServerInterfaceWrapper) AuthLogout(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AuthLogout(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AuthMe operation middleware
+func (siw *ServerInterfaceWrapper) AuthMe(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AuthMe(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -569,6 +751,18 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/analyze/{owner}/{repo}/status", wrapper.GetAnalysisStatus)
 	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/auth/callback", wrapper.AuthCallback)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/auth/login", wrapper.AuthLogin)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/auth/logout", wrapper.AuthLogout)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/auth/me", wrapper.AuthMe)
+	})
 
 	return r
 }
@@ -578,6 +772,8 @@ type BadRequestApplicationProblemPlusJSONResponse ProblemDetail
 type InternalErrorApplicationProblemPlusJSONResponse ProblemDetail
 
 type NotFoundApplicationProblemPlusJSONResponse ProblemDetail
+
+type UnauthorizedApplicationProblemPlusJSONResponse ProblemDetail
 
 type AnalyzeRepositoryRequestObject struct {
 	Owner Owner `json:"owner"`
@@ -681,6 +877,145 @@ func (response GetAnalysisStatus500ApplicationProblemPlusJSONResponse) VisitGetA
 	return json.NewEncoder(w).Encode(response)
 }
 
+type AuthCallbackRequestObject struct {
+	Params AuthCallbackParams
+}
+
+type AuthCallbackResponseObject interface {
+	VisitAuthCallbackResponse(w http.ResponseWriter) error
+}
+
+type AuthCallback200ResponseHeaders struct {
+	SetCookie string
+}
+
+type AuthCallback200JSONResponse struct {
+	Body    UserInfo
+	Headers AuthCallback200ResponseHeaders
+}
+
+func (response AuthCallback200JSONResponse) VisitAuthCallbackResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Set-Cookie", fmt.Sprint(response.Headers.SetCookie))
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type AuthCallback400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response AuthCallback400ApplicationProblemPlusJSONResponse) VisitAuthCallbackResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type AuthCallback500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response AuthCallback500ApplicationProblemPlusJSONResponse) VisitAuthCallbackResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type AuthLoginRequestObject struct {
+}
+
+type AuthLoginResponseObject interface {
+	VisitAuthLoginResponse(w http.ResponseWriter) error
+}
+
+type AuthLogin200JSONResponse LoginResponse
+
+func (response AuthLogin200JSONResponse) VisitAuthLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type AuthLogin500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response AuthLogin500ApplicationProblemPlusJSONResponse) VisitAuthLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type AuthLogoutRequestObject struct {
+}
+
+type AuthLogoutResponseObject interface {
+	VisitAuthLogoutResponse(w http.ResponseWriter) error
+}
+
+type AuthLogout200JSONResponse LogoutResponse
+
+func (response AuthLogout200JSONResponse) VisitAuthLogoutResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type AuthLogout500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response AuthLogout500ApplicationProblemPlusJSONResponse) VisitAuthLogoutResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type AuthMeRequestObject struct {
+}
+
+type AuthMeResponseObject interface {
+	VisitAuthMeResponse(w http.ResponseWriter) error
+}
+
+type AuthMe200JSONResponse UserInfo
+
+func (response AuthMe200JSONResponse) VisitAuthMeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type AuthMe401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response AuthMe401ApplicationProblemPlusJSONResponse) VisitAuthMeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type AuthMe500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response AuthMe500ApplicationProblemPlusJSONResponse) VisitAuthMeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Analyze repository test specifications
@@ -689,6 +1024,18 @@ type StrictServerInterface interface {
 	// Get analysis status
 	// (GET /api/analyze/{owner}/{repo}/status)
 	GetAnalysisStatus(ctx context.Context, request GetAnalysisStatusRequestObject) (GetAnalysisStatusResponseObject, error)
+	// GitHub OAuth callback
+	// (GET /api/auth/callback)
+	AuthCallback(ctx context.Context, request AuthCallbackRequestObject) (AuthCallbackResponseObject, error)
+	// Initiate GitHub OAuth login
+	// (GET /api/auth/login)
+	AuthLogin(ctx context.Context, request AuthLoginRequestObject) (AuthLoginResponseObject, error)
+	// Logout and clear authentication
+	// (POST /api/auth/logout)
+	AuthLogout(ctx context.Context, request AuthLogoutRequestObject) (AuthLogoutResponseObject, error)
+	// Get current user info
+	// (GET /api/auth/me)
+	AuthMe(ctx context.Context, request AuthMeRequestObject) (AuthMeResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -767,6 +1114,104 @@ func (sh *strictHandler) GetAnalysisStatus(w http.ResponseWriter, r *http.Reques
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetAnalysisStatusResponseObject); ok {
 		if err := validResponse.VisitGetAnalysisStatusResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// AuthCallback operation middleware
+func (sh *strictHandler) AuthCallback(w http.ResponseWriter, r *http.Request, params AuthCallbackParams) {
+	var request AuthCallbackRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.AuthCallback(ctx, request.(AuthCallbackRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "AuthCallback")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(AuthCallbackResponseObject); ok {
+		if err := validResponse.VisitAuthCallbackResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// AuthLogin operation middleware
+func (sh *strictHandler) AuthLogin(w http.ResponseWriter, r *http.Request) {
+	var request AuthLoginRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.AuthLogin(ctx, request.(AuthLoginRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "AuthLogin")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(AuthLoginResponseObject); ok {
+		if err := validResponse.VisitAuthLoginResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// AuthLogout operation middleware
+func (sh *strictHandler) AuthLogout(w http.ResponseWriter, r *http.Request) {
+	var request AuthLogoutRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.AuthLogout(ctx, request.(AuthLogoutRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "AuthLogout")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(AuthLogoutResponseObject); ok {
+		if err := validResponse.VisitAuthLogoutResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// AuthMe operation middleware
+func (sh *strictHandler) AuthMe(w http.ResponseWriter, r *http.Request) {
+	var request AuthMeRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.AuthMe(ctx, request.(AuthMeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "AuthMe")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(AuthMeResponseObject); ok {
+		if err := validResponse.VisitAuthMeResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

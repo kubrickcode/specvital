@@ -8,22 +8,26 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/specvital/web/src/backend/internal/client"
+	"github.com/specvital/web/src/backend/modules/auth/jwt"
 )
 
 type Container struct {
-	DB        *pgxpool.Pool
-	Queue     *asynq.Client
-	GitClient client.GitClient
+	DB         *pgxpool.Pool
+	GitClient  client.GitClient
+	JWTManager *jwt.Manager
+	Queue      *asynq.Client
 }
 
 type Config struct {
 	DatabaseURL string
+	JWTSecret   string
 	RedisURL    string
 }
 
 func ConfigFromEnv() Config {
 	return Config{
 		DatabaseURL: os.Getenv("DATABASE_URL"),
+		JWTSecret:   os.Getenv("JWT_SECRET"),
 		RedisURL:    os.Getenv("REDIS_URL"),
 	}
 }
@@ -31,6 +35,9 @@ func ConfigFromEnv() Config {
 func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 	if cfg.DatabaseURL == "" {
 		return nil, fmt.Errorf("DATABASE_URL is required")
+	}
+	if cfg.JWTSecret == "" {
+		return nil, fmt.Errorf("JWT_SECRET is required")
 	}
 	if cfg.RedisURL == "" {
 		return nil, fmt.Errorf("REDIS_URL is required")
@@ -43,6 +50,12 @@ func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 		return nil, fmt.Errorf("postgres: %w", err)
 	}
 
+	jwtManager, err := jwt.NewManager(cfg.JWTSecret)
+	if err != nil {
+		pool.Close()
+		return nil, fmt.Errorf("jwt: %w", err)
+	}
+
 	queueClient, err := NewAsynqClient(cfg.RedisURL)
 	if err != nil {
 		pool.Close()
@@ -52,9 +65,10 @@ func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 	gitClient := client.NewGitClient()
 
 	return &Container{
-		DB:        pool,
-		Queue:     queueClient,
-		GitClient: gitClient,
+		DB:         pool,
+		GitClient:  gitClient,
+		JWTManager: jwtManager,
+		Queue:      queueClient,
 	}, nil
 }
 

@@ -63,7 +63,100 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+  /api/auth/login:
+    get:
+      operationId: authLogin
+      summary: Initiate GitHub OAuth login
+      description: Redirects to GitHub OAuth authorization page
+      responses:
+        "200":
+          description: OAuth authorization URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/callback:
+    get:
+      operationId: authCallback
+      summary: GitHub OAuth callback
+      description: Handles OAuth callback from GitHub and sets authentication cookie
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: OAuth authorization code from GitHub
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: OAuth state for CSRF protection
+      responses:
+        "200":
+          description: Authentication successful
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: HTTP-only authentication cookie
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInfo"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/logout:
+    post:
+      operationId: authLogout
+      summary: Logout and clear authentication
+      description: Clears the authentication cookie
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/me:
+    get:
+      operationId: authMe
+      summary: Get current user info
+      description: Returns the currently authenticated user's information
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: User information retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInfo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+      description: JWT token stored in HTTP-only cookie
+
   parameters:
     Owner:
       name: owner
@@ -102,6 +195,13 @@ components:
 
     InternalError:
       description: Internal server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+
+    Unauthorized:
+      description: Authentication required
       content:
         application/problem+json:
           schema:
@@ -391,3 +491,44 @@ components:
           type: integer
           format: int64
           description: Unix timestamp when the rate limit resets
+
+    # Auth Schemas
+    LoginResponse:
+      type: object
+      required:
+        - authUrl
+      properties:
+        authUrl:
+          type: string
+          format: uri
+          description: GitHub OAuth authorization URL to redirect user
+
+    UserInfo:
+      type: object
+      required:
+        - id
+        - login
+        - avatarUrl
+      properties:
+        id:
+          type: string
+          description: Internal user ID
+        login:
+          type: string
+          description: GitHub username
+        avatarUrl:
+          type: string
+          format: uri
+          description: GitHub avatar URL
+        name:
+          type: string
+          description: GitHub display name (optional)
+
+    LogoutResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Logout operation result
