@@ -33,3 +33,11 @@ func NewUnauthorized(detail string) UnauthorizedApplicationProblemPlusJSONRespon
 		Title:  "Unauthorized",
 	}
 }
+
+func NewTooManyRequests(detail string) ProblemDetail {
+	return ProblemDetail{
+		Detail: detail,
+		Status: http.StatusTooManyRequests,
+		Title:  "Too Many Requests",
+	}
+}

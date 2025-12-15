@@ -8,11 +8,17 @@ import (
 	"github.com/cockroachdb/errors"
 
 	"github.com/specvital/web/src/backend/common/logger"
+	"github.com/specvital/web/src/backend/common/middleware"
 	"github.com/specvital/web/src/backend/internal/client"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
+	authdomain "github.com/specvital/web/src/backend/modules/auth/domain"
 )
 
 const dbTimeout = 5 * time.Second
+
+type TokenProvider interface {
+	GetUserGitHubToken(ctx context.Context, userID string) (string, error)
+}
 
 type AnalyzeResult struct {
 	Analysis *domain.Analysis
@@ -25,25 +31,27 @@ type AnalyzerService interface {
 }
 
 type analyzerService struct {
-	gitClient client.GitClient
-	logger    *logger.Logger
-	queue     QueueService
-	repo      Repository
+	gitClient     client.GitClient
+	logger        *logger.Logger
+	queue         QueueService
+	repo          Repository
+	tokenProvider TokenProvider
 }
 
-func NewAnalyzerService(logger *logger.Logger, repo Repository, queue QueueService, gitClient client.GitClient) AnalyzerService {
+func NewAnalyzerService(logger *logger.Logger, repo Repository, queue QueueService, gitClient client.GitClient, tokenProvider TokenProvider) AnalyzerService {
 	return &analyzerService{
-		gitClient: gitClient,
-		logger:    logger,
-		queue:     queue,
-		repo:      repo,
+		gitClient:     gitClient,
+		logger:        logger,
+		queue:         queue,
+		repo:          repo,
+		tokenProvider: tokenProvider,
 	}
 }
 
 func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo string) (*AnalyzeResult, error) {
 	log := s.logger.With("owner", owner, "repo", repo)
 
-	latestSHA, err := s.gitClient.GetLatestCommitSHA(ctx, owner, repo)
+	latestSHA, err := s.getLatestCommitWithAuth(ctx, owner, repo)
 	if err != nil {
 		log.Error(ctx, "failed to get latest commit", "error", err)
 		return nil, fmt.Errorf("get latest commit: %w", err)
@@ -219,4 +227,40 @@ func mapToDomainTestStatus(status string) domain.TestStatus {
 	default:
 		return domain.TestStatusActive
 	}
+}
+
+func (s *analyzerService) getLatestCommitWithAuth(ctx context.Context, owner, repo string) (string, error) {
+	token, err := s.getUserToken(ctx)
+	if err != nil && !errors.Is(err, authdomain.ErrNoGitHubToken) {
+		return "", fmt.Errorf("get user token: %w", err)
+	}
+
+	if token != "" {
+		sha, err := s.gitClient.GetLatestCommitSHAWithToken(ctx, owner, repo, token)
+		if err == nil {
+			return sha, nil
+		}
+
+		if errors.Is(err, client.ErrForbidden) || errors.Is(err, client.ErrRepoNotFound) {
+			return "", err
+		}
+
+		s.logger.Warn(ctx, "authenticated GitHub API call failed, falling back to public access",
+			"error", err, "owner", owner, "repo", repo)
+	}
+
+	return s.gitClient.GetLatestCommitSHA(ctx, owner, repo)
+}
+
+func (s *analyzerService) getUserToken(ctx context.Context) (string, error) {
+	if s.tokenProvider == nil {
+		return "", authdomain.ErrNoGitHubToken
+	}
+
+	userID := middleware.GetUserID(ctx)
+	if userID == "" {
+		return "", authdomain.ErrNoGitHubToken
+	}
+
+	return s.tokenProvider.GetUserGitHubToken(ctx, userID)
 }

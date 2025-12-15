@@ -86,8 +86,10 @@ func (m *mockQueueService) Close() error {
 
 // mockGitClient is a test double for client.GitClient.
 type mockGitClient struct {
-	commitSHA string
-	err       error
+	commitSHA      string
+	commitSHAToken string
+	err            error
+	errToken       error
 }
 
 func (m *mockGitClient) GetLatestCommitSHA(ctx context.Context, owner, repo string) (string, error) {
@@ -100,21 +102,45 @@ func (m *mockGitClient) GetLatestCommitSHA(ctx context.Context, owner, repo stri
 	return m.commitSHA, nil
 }
 
+func (m *mockGitClient) GetLatestCommitSHAWithToken(ctx context.Context, owner, repo, token string) (string, error) {
+	if m.errToken != nil {
+		return "", m.errToken
+	}
+	if m.commitSHAToken == "" {
+		return "test-commit-sha-with-token", nil
+	}
+	return m.commitSHAToken, nil
+}
+
 // Ensure mockGitClient implements client.GitClient.
 var _ client.GitClient = (*mockGitClient)(nil)
+
+// mockTokenProvider is a test double for TokenProvider.
+type mockTokenProvider struct {
+	token string
+	err   error
+}
+
+func (m *mockTokenProvider) GetUserGitHubToken(ctx context.Context, userID string) (string, error) {
+	if m.err != nil {
+		return "", m.err
+	}
+	return m.token, nil
+}
 
 // setupTestHandler creates a new AnalyzerHandler with mock dependencies and chi router.
 func setupTestHandler() (*AnalyzerHandler, *chi.Mux) {
 	repo := &mockRepository{}
 	queue := &mockQueueService{}
 	gitClient := &mockGitClient{}
-	return setupTestHandlerWithMocks(repo, queue, gitClient)
+	tokenProvider := &mockTokenProvider{}
+	return setupTestHandlerWithMocks(repo, queue, gitClient, tokenProvider)
 }
 
 // setupTestHandlerWithMocks creates an AnalyzerHandler with provided mocks for more control in tests.
-func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gitClient *mockGitClient) (*AnalyzerHandler, *chi.Mux) {
+func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gitClient *mockGitClient, tokenProvider TokenProvider) (*AnalyzerHandler, *chi.Mux) {
 	log := logger.New()
-	service := NewAnalyzerService(log, repo, queue, gitClient)
+	service := NewAnalyzerService(log, repo, queue, gitClient, tokenProvider)
 	handler := NewAnalyzerHandler(log, service)
 
 	r := chi.NewRouter()

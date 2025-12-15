@@ -22,6 +22,7 @@ import (
 
 const (
 	apiTimeout      = 10 * time.Minute
+	authRateLimit   = 5 // requests per minute for auth endpoints
 	shutdownTimeout = 10 * time.Second
 )
 
@@ -71,10 +72,16 @@ func newRouter(origins []string, registrars []server.RouteRegistrar, apiHandler 
 	r.Use(chimiddleware.RealIP)
 	r.Use(middleware.Logger())
 	r.Use(chimiddleware.Recoverer)
+	r.Use(middleware.SecurityHeaders())
 	r.Use(middleware.CORS(origins))
 	r.Use(chimiddleware.Timeout(apiTimeout))
 	r.Use(middleware.Compress())
 	r.Use(authMiddleware.OptionalAuth)
+
+	authLimiter := middleware.NewIPRateLimiter(authRateLimit)
+	r.Route("/api/auth", func(authRouter chi.Router) {
+		authRouter.Use(middleware.RateLimit(authLimiter))
+	})
 
 	for _, reg := range registrars {
 		reg.RegisterRoutes(r)

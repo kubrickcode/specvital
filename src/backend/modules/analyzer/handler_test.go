@@ -44,7 +44,8 @@ func TestAnalyzeRepository(t *testing.T) {
 		queue := &mockQueueService{}
 		repo := &mockRepository{}
 		gitClient := &mockGitClient{}
-		_, r := setupTestHandlerWithMocks(repo, queue, gitClient)
+		tokenProvider := &mockTokenProvider{}
+		_, r := setupTestHandlerWithMocks(repo, queue, gitClient, tokenProvider)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/repo", nil)
 		rec := httptest.NewRecorder()
@@ -83,7 +84,8 @@ func TestAnalyzeRepository(t *testing.T) {
 			},
 		}
 		gitClient := &mockGitClient{commitSHA: "abc123"}
-		_, r := setupTestHandlerWithMocks(repo, queue, gitClient)
+		tokenProvider := &mockTokenProvider{}
+		_, r := setupTestHandlerWithMocks(repo, queue, gitClient, tokenProvider)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/repo", nil)
 		rec := httptest.NewRecorder()
@@ -114,7 +116,8 @@ func TestGetAnalysisStatus(t *testing.T) {
 		queue := &mockQueueService{}
 		repo := &mockRepository{}
 		gitClient := &mockGitClient{}
-		_, r := setupTestHandlerWithMocks(repo, queue, gitClient)
+		tokenProvider := &mockTokenProvider{}
+		_, r := setupTestHandlerWithMocks(repo, queue, gitClient, tokenProvider)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/repo/status", nil)
 		rec := httptest.NewRecorder()
@@ -136,7 +139,8 @@ func TestGetAnalysisStatus(t *testing.T) {
 			},
 		}
 		gitClient := &mockGitClient{}
-		_, r := setupTestHandlerWithMocks(repo, queue, gitClient)
+		tokenProvider := &mockTokenProvider{}
+		_, r := setupTestHandlerWithMocks(repo, queue, gitClient, tokenProvider)
 
 		req := httptest.NewRequest(http.MethodGet, "/api/analyze/owner/repo/status", nil)
 		rec := httptest.NewRecorder()

@@ -51,11 +51,6 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 	log := logger.New()
 
 	queries := db.New(container.DB)
-	analyzerRepo := analyzer.NewRepository(queries)
-	queueSvc := analyzer.NewQueueService(container.Queue)
-
-	analyzerService := analyzer.NewAnalyzerService(log, analyzerRepo, queueSvc, container.GitClient)
-	analyzerHandler := analyzer.NewAnalyzerHandler(log, analyzerService)
 
 	authRepo := auth.NewRepository(queries)
 	stateStore := auth.NewStateStore()
@@ -75,6 +70,11 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 	if err != nil {
 		return nil, fmt.Errorf("create auth handler: %w", err)
 	}
+
+	analyzerRepo := analyzer.NewRepository(queries)
+	queueSvc := analyzer.NewQueueService(container.Queue)
+	analyzerService := analyzer.NewAnalyzerService(log, analyzerRepo, queueSvc, container.GitClient, authService)
+	analyzerHandler := analyzer.NewAnalyzerHandler(log, analyzerService)
 
 	apiHandlers := api.NewAPIHandlers(analyzerHandler, authHandler)
 
