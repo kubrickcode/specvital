@@ -49,8 +49,10 @@ func initHandlers(infra *infra.Container) *Handlers {
 	analyzerService := analyzer.NewAnalyzerService(log, repo, queueSvc, infra.GitClient)
 	analyzerHandler := analyzer.NewAnalyzerHandler(log, analyzerService)
 
+	apiHandlers := api.NewAPIHandlers(analyzerHandler)
+
 	return &Handlers{
-		API:    analyzerHandler,
+		API:    apiHandlers,
 		Docs:   docs.NewHandler(),
 		Health: health.NewHandler(log),
 	}

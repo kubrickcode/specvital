@@ -22,7 +22,7 @@ type AnalyzerHandler struct {
 	service AnalyzerService
 }
 
-var _ api.StrictServerInterface = (*AnalyzerHandler)(nil)
+var _ api.AnalyzerHandlers = (*AnalyzerHandler)(nil)
 
 func NewAnalyzerHandler(logger *logger.Logger, service AnalyzerService) *AnalyzerHandler {
 	return &AnalyzerHandler{logger: logger, service: service}
