@@ -126,6 +126,25 @@ run mode="local":
         ;;
     esac
 
+run-scheduler mode="local":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd src
+    case "{{ mode }}" in
+      local)
+        DATABASE_URL="$LOCAL_DATABASE_URL" \
+        REDIS_URL="$LOCAL_REDIS_URL" \
+        go run ./cmd/scheduler
+        ;;
+      integration)
+        go run ./cmd/scheduler
+        ;;
+      *)
+        echo "Unknown mode: {{ mode }}. Use: local, integration"
+        exit 1
+        ;;
+    esac
+
 test target="all":
     #!/usr/bin/env bash
     set -euo pipefail

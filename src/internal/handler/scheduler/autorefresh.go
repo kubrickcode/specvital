@@ -28,9 +28,12 @@ func NewAutoRefreshHandler(
 	}
 }
 
-// Uses context.Background() because robfig/cron does not provide parent context.
 func (h *AutoRefreshHandler) Run() {
-	ctx, cancel := context.WithTimeout(context.Background(), defaultJobTimeout)
+	h.RunWithContext(context.Background())
+}
+
+func (h *AutoRefreshHandler) RunWithContext(parentCtx context.Context) {
+	ctx, cancel := context.WithTimeout(parentCtx, defaultJobTimeout)
 	defer cancel()
 
 	start := time.Now()

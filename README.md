@@ -8,8 +8,8 @@ Clean Architecture with separate entry points for Railway deployment:
 
 ```
 src/cmd/
-├── worker/      # Asynq worker (Railway service #1)
-├── scheduler/   # Cron scheduler (Railway service #2) - placeholder
+├── worker/      # Asynq worker - queue processing (Railway service #1)
+├── scheduler/   # Cron scheduler - periodic jobs (Railway service #2)
 ├── enqueue/     # CLI tool for manual task enqueue
 └── collector/   # Legacy entry point (deprecated, use worker)
 ```
@@ -31,8 +31,11 @@ just build enqueue
 ## Development
 
 ```bash
-# Run locally with hot reload
+# Run worker locally with hot reload
 just run local
+
+# Run scheduler locally
+just run-scheduler local
 
 # Run tests
 just test unit
@@ -48,5 +51,6 @@ just test all
 ## Railway Deployment
 
 Deploy as two separate services:
-- **Worker**: `bin/worker` - processes analysis tasks from queue
-- **Scheduler**: `bin/scheduler` - schedules periodic tasks (future)
+
+- **Worker**: `bin/worker` - processes analysis tasks from queue (scalable)
+- **Scheduler**: `bin/scheduler` - runs periodic cron jobs (single instance)

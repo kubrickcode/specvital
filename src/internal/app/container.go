@@ -18,7 +18,6 @@ import (
 
 const (
 	schedulerLockKey = "scheduler:auto-refresh:lock"
-	// Should be longer than max job duration (5 min) to prevent premature expiration.
 	schedulerLockTTL = 10 * time.Minute
 )
 
@@ -37,15 +36,12 @@ func (c ContainerConfig) Validate() error {
 	return nil
 }
 
-type Container struct {
-	AnalyzeHandler       *queue.AnalyzeHandler
-	AutoRefreshHandler   *handlerscheduler.AutoRefreshHandler
-	QueueClient          *infraqueue.Client
-	Scheduler            *infrascheduler.Scheduler
-	schedulerLock        *infrascheduler.DistributedLock
+type WorkerContainer struct {
+	AnalyzeHandler *queue.AnalyzeHandler
+	QueueClient    *infraqueue.Client
 }
 
-func NewContainer(cfg ContainerConfig) (*Container, error) {
+func NewWorkerContainer(cfg ContainerConfig) (*WorkerContainer, error) {
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid container config: %w", err)
 	}
@@ -56,6 +52,40 @@ func NewContainer(cfg ContainerConfig) (*Container, error) {
 	coreParser := parser.NewCoreParser()
 	analyzeUC := uc.NewAnalyzeUseCase(analysisRepo, gitVCS, coreParser, userRepo)
 	analyzeHandler := queue.NewAnalyzeHandler(analyzeUC)
+
+	queueClient, err := infraqueue.NewClient(cfg.RedisURL)
+	if err != nil {
+		return nil, fmt.Errorf("create queue client: %w", err)
+	}
+
+	return &WorkerContainer{
+		AnalyzeHandler: analyzeHandler,
+		QueueClient:    queueClient,
+	}, nil
+}
+
+func (c *WorkerContainer) Close() error {
+	if c.QueueClient != nil {
+		if err := c.QueueClient.Close(); err != nil {
+			return fmt.Errorf("close queue client: %w", err)
+		}
+	}
+	return nil
+}
+
+type SchedulerContainer struct {
+	AutoRefreshHandler *handlerscheduler.AutoRefreshHandler
+	Scheduler          *infrascheduler.Scheduler
+	queueClient        *infraqueue.Client
+	schedulerLock      *infrascheduler.DistributedLock
+}
+
+func NewSchedulerContainer(cfg ContainerConfig) (*SchedulerContainer, error) {
+	if err := cfg.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid container config: %w", err)
+	}
+
+	analysisRepo := postgres.NewAnalysisRepository(cfg.Pool)
 
 	queueClient, err := infraqueue.NewClient(cfg.RedisURL)
 	if err != nil {
@@ -73,16 +103,15 @@ func NewContainer(cfg ContainerConfig) (*Container, error) {
 
 	scheduler := infrascheduler.New()
 
-	return &Container{
-		AnalyzeHandler:       analyzeHandler,
-		AutoRefreshHandler:   autoRefreshHandler,
-		QueueClient:          queueClient,
-		Scheduler:            scheduler,
-		schedulerLock:        schedulerLock,
+	return &SchedulerContainer{
+		AutoRefreshHandler: autoRefreshHandler,
+		Scheduler:          scheduler,
+		queueClient:        queueClient,
+		schedulerLock:      schedulerLock,
 	}, nil
 }
 
-func (c *Container) Close() error {
+func (c *SchedulerContainer) Close() error {
 	var errs []error
 
 	if c.schedulerLock != nil {
@@ -91,14 +120,14 @@ func (c *Container) Close() error {
 		}
 	}
 
-	if c.QueueClient != nil {
-		if err := c.QueueClient.Close(); err != nil {
+	if c.queueClient != nil {
+		if err := c.queueClient.Close(); err != nil {
 			errs = append(errs, fmt.Errorf("close queue client: %w", err))
 		}
 	}
 
 	if len(errs) > 0 {
-		return fmt.Errorf("close container: %v", errs)
+		return fmt.Errorf("close scheduler container: %v", errs)
 	}
 	return nil
 }
