@@ -86,11 +86,14 @@ func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo str
 
 	status, err := s.repo.GetAnalysisStatus(ctx, owner, repo)
 	if err == nil {
-		progress := s.buildProgressFromStatus(ctx, log, status)
-		return &AnalyzeResult{Progress: progress}, nil
+		if status.Status != string(domain.StatusFailed) {
+			progress := s.buildProgressFromStatus(ctx, log, status)
+			return &AnalyzeResult{Progress: progress}, nil
+		}
+		log.Info(ctx, "previous analysis failed, creating new analysis")
 	}
 
-	if !errors.Is(err, domain.ErrNotFound) {
+	if err != nil && !errors.Is(err, domain.ErrNotFound) {
 		log.Error(ctx, "failed to get status", "error", err)
 		return nil, fmt.Errorf("get status: %w", err)
 	}

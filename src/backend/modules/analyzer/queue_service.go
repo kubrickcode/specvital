@@ -15,7 +15,6 @@ const (
 	queueName      = "default"
 	maxRetries     = 3
 	taskTimeout    = 10 * time.Minute
-	uniqueDuration = 1 * time.Hour
 	enqueueTimeout = 5 * time.Second
 )
 
@@ -53,12 +52,11 @@ func (s *queueService) Enqueue(ctx context.Context, analysisID, owner, repo stri
 		return fmt.Errorf("marshal payload: %w", err)
 	}
 
-	taskID := fmt.Sprintf("analyze:%s:%s", owner, repo)
+	taskID := fmt.Sprintf("analyze:%s", analysisID)
 	task := asynq.NewTask(TypeAnalyze, payload)
 
 	_, err = s.client.EnqueueContext(ctx, task,
 		asynq.TaskID(taskID),
-		asynq.Unique(uniqueDuration),
 		asynq.MaxRetry(maxRetries),
 		asynq.Timeout(taskTimeout),
 		asynq.Queue(queueName),
