@@ -20,13 +20,14 @@ const (
 )
 
 type AnalyzePayload struct {
-	AnalysisID string `json:"analysisId"`
-	Owner      string `json:"owner"`
-	Repo       string `json:"repo"`
+	AnalysisID string  `json:"analysisId"`
+	Owner      string  `json:"owner"`
+	Repo       string  `json:"repo"`
+	UserID     *string `json:"user_id"`
 }
 
 type QueueService interface {
-	Enqueue(ctx context.Context, analysisID, owner, repo string) error
+	Enqueue(ctx context.Context, analysisID, owner, repo string, userID *string) error
 	Close() error
 }
 
@@ -38,7 +39,7 @@ func NewQueueService(client *asynq.Client) QueueService {
 	return &queueService{client: client}
 }
 
-func (s *queueService) Enqueue(ctx context.Context, analysisID, owner, repo string) error {
+func (s *queueService) Enqueue(ctx context.Context, analysisID, owner, repo string, userID *string) error {
 	ctx, cancel := context.WithTimeout(ctx, enqueueTimeout)
 	defer cancel()
 
@@ -46,6 +47,7 @@ func (s *queueService) Enqueue(ctx context.Context, analysisID, owner, repo stri
 		AnalysisID: analysisID,
 		Owner:      owner,
 		Repo:       repo,
+		UserID:     userID,
 	})
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)

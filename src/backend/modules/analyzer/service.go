@@ -98,7 +98,13 @@ func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo str
 		return nil, fmt.Errorf("create analysis: %w", err)
 	}
 
-	if err := s.queue.Enqueue(ctx, analysisID, owner, repo); err != nil {
+	userID := middleware.GetUserID(ctx)
+	var userIDPtr *string
+	if userID != "" {
+		userIDPtr = &userID
+	}
+
+	if err := s.queue.Enqueue(ctx, analysisID, owner, repo, userIDPtr); err != nil {
 		log.Error(ctx, "failed to enqueue", "analysisId", analysisID, "error", err)
 		if cleanupErr := s.repo.MarkAnalysisFailed(ctx, analysisID, "queue registration failed"); cleanupErr != nil {
 			log.Error(ctx, "failed to cleanup after enqueue error", "analysisId", analysisID, "error", cleanupErr)

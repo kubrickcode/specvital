@@ -69,14 +69,16 @@ type mockQueueService struct {
 	enqueuedAnalysisID string
 	enqueuedOwner      string
 	enqueuedRepo       string
+	enqueuedUserID     *string
 	err                error
 }
 
-func (m *mockQueueService) Enqueue(ctx context.Context, analysisID, owner, repo string) error {
+func (m *mockQueueService) Enqueue(ctx context.Context, analysisID, owner, repo string, userID *string) error {
 	m.enqueueCalled = true
 	m.enqueuedAnalysisID = analysisID
 	m.enqueuedOwner = owner
 	m.enqueuedRepo = repo
+	m.enqueuedUserID = userID
 	return m.err
 }
 
