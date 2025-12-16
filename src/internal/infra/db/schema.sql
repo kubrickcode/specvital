@@ -80,7 +80,8 @@ CREATE TABLE public.codebases (
     name character varying(255) NOT NULL,
     default_branch character varying(100),
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    last_viewed_at timestamp with time zone
 );
 
 
@@ -224,6 +225,13 @@ CREATE INDEX idx_analyses_codebase_status ON public.analyses USING btree (codeba
 --
 
 CREATE INDEX idx_analyses_created ON public.analyses USING btree (codebase_id, created_at);
+
+
+--
+-- Name: idx_codebases_last_viewed; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_codebases_last_viewed ON public.codebases USING btree (last_viewed_at) WHERE (last_viewed_at IS NOT NULL);
 
 
 --
