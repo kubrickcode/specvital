@@ -172,6 +172,12 @@ func VerifyRepository(ctx context.Context, repoURL string, creds *GitCredentials
 	}
 
 	cmd := exec.CommandContext(ctx, "git", "ls-remote", "--exit-code", checkURL)
+	cmd.Env = append(os.Environ(),
+		"GIT_TERMINAL_PROMPT=0",
+		"GIT_ASKPASS=",
+		"GIT_CONFIG_NOSYSTEM=1",
+		"GIT_CONFIG_GLOBAL=/dev/null",
+	)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
@@ -215,6 +221,12 @@ func cloneRepository(ctx context.Context, cloneURL, destDir string, opts *GitOpt
 	args = append(args, cloneURL, destDir)
 
 	cmd := exec.CommandContext(ctx, "git", args...)
+	cmd.Env = append(os.Environ(),
+		"GIT_TERMINAL_PROMPT=0",
+		"GIT_ASKPASS=",
+		"GIT_CONFIG_NOSYSTEM=1",
+		"GIT_CONFIG_GLOBAL=/dev/null",
+	)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
