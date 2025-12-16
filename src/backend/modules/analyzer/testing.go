@@ -14,35 +14,12 @@ import (
 
 // mockRepository is a test double for Repository.
 type mockRepository struct {
-	analysisStatus    *AnalysisStatus
 	completedAnalysis *CompletedAnalysis
-	createErr         error
-	createdAnalysisID string
 	err               error
 	lastViewedCalled  bool
 	lastViewedOwner   string
 	lastViewedRepo    string
 	suitesWithCases   []TestSuiteWithCases
-}
-
-func (m *mockRepository) CreatePendingAnalysis(ctx context.Context, owner, repo, commitSHA string) (string, error) {
-	if m.createErr != nil {
-		return "", m.createErr
-	}
-	if m.createdAnalysisID == "" {
-		return "test-analysis-id", nil
-	}
-	return m.createdAnalysisID, nil
-}
-
-func (m *mockRepository) GetAnalysisStatus(ctx context.Context, owner, repo string) (*AnalysisStatus, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	if m.analysisStatus == nil {
-		return nil, domain.ErrNotFound
-	}
-	return m.analysisStatus, nil
 }
 
 func (m *mockRepository) GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error) {
@@ -62,10 +39,6 @@ func (m *mockRepository) GetTestSuitesWithCases(ctx context.Context, analysisID 
 	return m.suitesWithCases, nil
 }
 
-func (m *mockRepository) MarkAnalysisFailed(ctx context.Context, analysisID, errorMsg string) error {
-	return nil
-}
-
 func (m *mockRepository) UpdateLastViewed(ctx context.Context, owner, repo string) error {
 	m.lastViewedCalled = true
 	m.lastViewedOwner = owner
@@ -79,17 +52,29 @@ type mockQueueService struct {
 	enqueuedAnalysisID string
 	enqueuedOwner      string
 	enqueuedRepo       string
+	enqueuedCommitSHA  string
 	enqueuedUserID     *string
 	err                error
+	taskInfo           *TaskInfo
+	findTaskInfo       *TaskInfo
 }
 
-func (m *mockQueueService) Enqueue(ctx context.Context, analysisID, owner, repo string, userID *string) error {
+func (m *mockQueueService) Enqueue(ctx context.Context, analysisID, owner, repo, commitSHA string, userID *string) error {
 	m.enqueueCalled = true
 	m.enqueuedAnalysisID = analysisID
 	m.enqueuedOwner = owner
 	m.enqueuedRepo = repo
+	m.enqueuedCommitSHA = commitSHA
 	m.enqueuedUserID = userID
 	return m.err
+}
+
+func (m *mockQueueService) GetTaskInfo(ctx context.Context, analysisID string) (*TaskInfo, error) {
+	return m.taskInfo, nil
+}
+
+func (m *mockQueueService) FindTaskByRepo(ctx context.Context, owner, repo string) (*TaskInfo, error) {
+	return m.findTaskInfo, nil
 }
 
 func (m *mockQueueService) Close() error {

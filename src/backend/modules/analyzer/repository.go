@@ -17,11 +17,8 @@ const (
 )
 
 type Repository interface {
-	CreatePendingAnalysis(ctx context.Context, owner, repo, commitSHA string) (string, error)
-	GetAnalysisStatus(ctx context.Context, owner, repo string) (*AnalysisStatus, error)
 	GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error)
 	GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error)
-	MarkAnalysisFailed(ctx context.Context, analysisID, errorMsg string) error
 	UpdateLastViewed(ctx context.Context, owner, repo string) error
 }
 
@@ -48,41 +45,12 @@ type TestCaseRow struct {
 	Status string
 }
 
-type AnalysisStatus struct {
-	ID           string
-	Status       string
-	ErrorMessage *string
-	CreatedAt    time.Time
-	CompletedAt  *time.Time
-}
-
 type repositoryImpl struct {
 	queries *db.Queries
 }
 
 func NewRepository(queries *db.Queries) Repository {
 	return &repositoryImpl{queries: queries}
-}
-
-func (r *repositoryImpl) CreatePendingAnalysis(ctx context.Context, owner, repo, commitSHA string) (string, error) {
-	codebaseID, err := r.queries.UpsertCodebase(ctx, db.UpsertCodebaseParams{
-		Host:  HostGitHub,
-		Owner: owner,
-		Name:  repo,
-	})
-	if err != nil {
-		return "", fmt.Errorf("upsert codebase for %s/%s: %w", owner, repo, err)
-	}
-
-	analysisID, err := r.queries.CreatePendingAnalysis(ctx, db.CreatePendingAnalysisParams{
-		CodebaseID: codebaseID,
-		CommitSha:  commitSHA,
-	})
-	if err != nil {
-		return "", fmt.Errorf("create pending analysis for %s/%s: %w", owner, repo, err)
-	}
-
-	return uuidToString(analysisID), nil
 }
 
 func (r *repositoryImpl) GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error) {
@@ -107,51 +75,6 @@ func (r *repositoryImpl) GetLatestCompletedAnalysis(ctx context.Context, owner, 
 		TotalSuites: int(row.TotalSuites),
 		TotalTests:  int(row.TotalTests),
 	}, nil
-}
-
-func (r *repositoryImpl) GetAnalysisStatus(ctx context.Context, owner, repo string) (*AnalysisStatus, error) {
-	row, err := r.queries.GetAnalysisStatus(ctx, db.GetAnalysisStatusParams{
-		Host:  HostGitHub,
-		Owner: owner,
-		Name:  repo,
-	})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.WrapNotFound(owner, repo)
-		}
-		return nil, fmt.Errorf("get analysis status for %s/%s: %w", owner, repo, err)
-	}
-
-	status := &AnalysisStatus{
-		ID:        uuidToString(row.ID),
-		Status:    string(row.Status),
-		CreatedAt: row.CreatedAt.Time,
-	}
-
-	if row.ErrorMessage.Valid {
-		status.ErrorMessage = &row.ErrorMessage.String
-	}
-	if row.CompletedAt.Valid {
-		status.CompletedAt = &row.CompletedAt.Time
-	}
-
-	return status, nil
-}
-
-func (r *repositoryImpl) MarkAnalysisFailed(ctx context.Context, analysisID, errorMsg string) error {
-	uuid, err := stringToUUID(analysisID)
-	if err != nil {
-		return fmt.Errorf("parse analysis ID: %w", err)
-	}
-
-	err = r.queries.MarkAnalysisFailed(ctx, db.MarkAnalysisFailedParams{
-		ID:           uuid,
-		ErrorMessage: pgtype.Text{String: errorMsg, Valid: true},
-	})
-	if err != nil {
-		return fmt.Errorf("mark analysis failed: %w", err)
-	}
-	return nil
 }
 
 func (r *repositoryImpl) GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error) {

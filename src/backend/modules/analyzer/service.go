@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/google/uuid"
 
 	"github.com/specvital/web/src/backend/common/logger"
 	"github.com/specvital/web/src/backend/common/middleware"
@@ -84,25 +85,21 @@ func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo str
 		return nil, fmt.Errorf("get analysis: %w", err)
 	}
 
-	status, err := s.repo.GetAnalysisStatus(ctx, owner, repo)
-	if err == nil {
-		if status.Status != string(domain.StatusFailed) {
-			progress := s.buildProgressFromStatus(ctx, log, status)
-			return &AnalyzeResult{Progress: progress}, nil
-		}
-		log.Info(ctx, "previous analysis failed, creating new analysis")
-	}
-
-	if err != nil && !errors.Is(err, domain.ErrNotFound) {
-		log.Error(ctx, "failed to get status", "error", err)
-		return nil, fmt.Errorf("get status: %w", err)
-	}
-
-	analysisID, err := s.repo.CreatePendingAnalysis(ctx, owner, repo, latestSHA)
+	taskInfo, err := s.queue.FindTaskByRepo(ctx, owner, repo)
 	if err != nil {
-		log.Error(ctx, "failed to create analysis", "error", err)
-		return nil, fmt.Errorf("create analysis: %w", err)
+		log.Warn(ctx, "failed to search queue", "error", err)
 	}
+	if taskInfo != nil {
+		now := time.Now()
+		progress := &domain.AnalysisProgress{
+			CreatedAt: now,
+			ID:        taskInfo.AnalysisID,
+			Status:    s.mapQueueState(taskInfo.State),
+		}
+		return &AnalyzeResult{Progress: progress}, nil
+	}
+
+	analysisID := uuid.New().String()
 
 	userID := middleware.GetUserID(ctx)
 	var userIDPtr *string
@@ -110,11 +107,8 @@ func (s *analyzerService) AnalyzeRepository(ctx context.Context, owner, repo str
 		userIDPtr = &userID
 	}
 
-	if err := s.queue.Enqueue(ctx, analysisID, owner, repo, userIDPtr); err != nil {
+	if err := s.queue.Enqueue(ctx, analysisID, owner, repo, latestSHA, userIDPtr); err != nil {
 		log.Error(ctx, "failed to enqueue", "analysisId", analysisID, "error", err)
-		if cleanupErr := s.repo.MarkAnalysisFailed(ctx, analysisID, "queue registration failed"); cleanupErr != nil {
-			log.Error(ctx, "failed to cleanup after enqueue error", "analysisId", analysisID, "error", cleanupErr)
-		}
 		return nil, fmt.Errorf("queue analysis: %w", err)
 	}
 
@@ -151,18 +145,32 @@ func (s *analyzerService) GetAnalysisStatus(ctx context.Context, owner, repo str
 		return nil, fmt.Errorf("get analysis: %w", err)
 	}
 
-	status, err := s.repo.GetAnalysisStatus(ctx, owner, repo)
-	if err == nil {
-		progress := s.buildProgressFromStatus(ctx, log, status)
+	taskInfo, err := s.queue.FindTaskByRepo(ctx, owner, repo)
+	if err != nil {
+		log.Warn(ctx, "failed to search queue", "error", err)
+	}
+	if taskInfo != nil {
+		now := time.Now()
+		progress := &domain.AnalysisProgress{
+			CreatedAt: now,
+			ID:        taskInfo.AnalysisID,
+			Status:    s.mapQueueState(taskInfo.State),
+		}
 		return &AnalyzeResult{Progress: progress}, nil
 	}
 
-	if errors.Is(err, domain.ErrNotFound) {
-		return nil, domain.ErrNotFound
-	}
+	return nil, domain.ErrNotFound
+}
 
-	log.Error(ctx, "failed to get status", "error", err)
-	return nil, fmt.Errorf("get status: %w", err)
+func (s *analyzerService) mapQueueState(state string) domain.Status {
+	switch state {
+	case "pending", "retry":
+		return domain.StatusPending
+	case "active":
+		return domain.StatusRunning
+	default:
+		return domain.StatusPending
+	}
 }
 
 func (s *analyzerService) buildAnalysisFromCompleted(ctx context.Context, completed *CompletedAnalysis) (*domain.Analysis, error) {
@@ -200,31 +208,6 @@ func (s *analyzerService) buildAnalysisFromCompleted(ctx context.Context, comple
 		TotalSuites: completed.TotalSuites,
 		TotalTests:  completed.TotalTests,
 	}, nil
-}
-
-func (s *analyzerService) buildProgressFromStatus(ctx context.Context, log *logger.Logger, status *AnalysisStatus) *domain.AnalysisProgress {
-	var domainStatus domain.Status
-	switch status.Status {
-	case "completed":
-		domainStatus = domain.StatusCompleted
-	case "running":
-		domainStatus = domain.StatusRunning
-	case "pending":
-		domainStatus = domain.StatusPending
-	case "failed":
-		domainStatus = domain.StatusFailed
-	default:
-		log.Warn(ctx, "unknown analysis status, treating as failed", "status", status.Status)
-		domainStatus = domain.StatusFailed
-	}
-
-	return &domain.AnalysisProgress{
-		CompletedAt:  status.CompletedAt,
-		CreatedAt:    status.CreatedAt,
-		ErrorMessage: status.ErrorMessage,
-		ID:           status.ID,
-		Status:       domainStatus,
-	}
 }
 
 func mapToDomainTestStatus(status string) domain.TestStatus {

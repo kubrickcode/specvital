@@ -72,7 +72,7 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 	}
 
 	analyzerRepo := analyzer.NewRepository(queries)
-	queueSvc := analyzer.NewQueueService(container.Queue)
+	queueSvc := analyzer.NewQueueService(container.Asynq.Client, container.Asynq.Inspector)
 	analyzerService := analyzer.NewAnalyzerService(log, analyzerRepo, queueSvc, container.GitClient, authService)
 	analyzerHandler := analyzer.NewAnalyzerHandler(log, analyzerService)
 

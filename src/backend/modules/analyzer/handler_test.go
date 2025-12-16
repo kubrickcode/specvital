@@ -137,14 +137,13 @@ func TestGetAnalysisStatus(t *testing.T) {
 	})
 
 	t.Run("returns 200 with analyzing status when in progress", func(t *testing.T) {
-		queue := &mockQueueService{}
-		repo := &mockRepository{
-			analysisStatus: &AnalysisStatus{
-				ID:        "test-id",
-				Status:    "running",
-				CreatedAt: time.Now(),
+		queue := &mockQueueService{
+			findTaskInfo: &TaskInfo{
+				AnalysisID: "test-id",
+				State:      "active",
 			},
 		}
+		repo := &mockRepository{}
 		gitClient := &mockGitClient{}
 		tokenProvider := &mockTokenProvider{}
 		_, r := setupTestHandlerWithMocks(repo, queue, gitClient, tokenProvider)

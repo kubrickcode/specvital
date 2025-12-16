@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/specvital/web/src/backend/common/crypto"
@@ -15,13 +14,13 @@ import (
 )
 
 type Container struct {
+	Asynq        *AsynqComponents
 	DB           *pgxpool.Pool
 	Encryptor    crypto.Encryptor
 	FrontendURL  string
 	GitClient    client.GitClient
 	GitHubOAuth  github.Client
 	JWTManager   *jwt.Manager
-	Queue        *asynq.Client
 	SecureCookie bool
 }
 
@@ -83,12 +82,12 @@ func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 		return nil, fmt.Errorf("jwt: %w", err)
 	}
 
-	queueClient, err := NewAsynqClient(cfg.RedisURL)
+	asynqComponents, err := NewAsynqComponents(cfg.RedisURL)
 	if err != nil {
 		cleanup()
 		return nil, fmt.Errorf("asynq: %w", err)
 	}
-	cleanups = append(cleanups, func() { _ = queueClient.Close() })
+	cleanups = append(cleanups, func() { _ = asynqComponents.Close() })
 
 	encryptor, err := crypto.NewEncryptorFromBase64(cfg.EncryptionKey)
 	if err != nil {
@@ -109,13 +108,13 @@ func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 	gitClient := client.NewGitClient()
 
 	return &Container{
+		Asynq:        asynqComponents,
 		DB:           pool,
 		Encryptor:    encryptor,
 		FrontendURL:  cfg.FrontendURL,
 		GitClient:    gitClient,
 		GitHubOAuth:  githubClient,
 		JWTManager:   jwtManager,
-		Queue:        queueClient,
 		SecureCookie: cfg.SecureCookie,
 	}, nil
 }
@@ -151,9 +150,9 @@ func validateConfig(cfg Config) error {
 func (c *Container) Close() error {
 	var errs []error
 
-	if c.Queue != nil {
-		if err := c.Queue.Close(); err != nil {
-			errs = append(errs, fmt.Errorf("close queue: %w", err))
+	if c.Asynq != nil {
+		if err := c.Asynq.Close(); err != nil {
+			errs = append(errs, fmt.Errorf("close asynq: %w", err))
 		}
 	}
 	if c.DB != nil {
