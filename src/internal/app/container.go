@@ -1,31 +1,48 @@
-// Package app provides the application container for dependency injection.
-// It serves as the composition root, wiring all dependencies together.
 package app
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/specvital/collector/internal/adapter/parser"
 	"github.com/specvital/collector/internal/adapter/repository/postgres"
 	"github.com/specvital/collector/internal/adapter/vcs"
 	"github.com/specvital/collector/internal/handler/queue"
+	handlerscheduler "github.com/specvital/collector/internal/handler/scheduler"
+	infraqueue "github.com/specvital/collector/internal/infra/queue"
+	infrascheduler "github.com/specvital/collector/internal/infra/scheduler"
 	uc "github.com/specvital/collector/internal/usecase/analysis"
+	"github.com/specvital/collector/internal/usecase/autorefresh"
+)
+
+const (
+	schedulerLockKey = "scheduler:auto-refresh:lock"
+	// Should be longer than max job duration (5 min) to prevent premature expiration.
+	schedulerLockTTL = 10 * time.Minute
 )
 
 type ContainerConfig struct {
-	Pool *pgxpool.Pool
+	Pool     *pgxpool.Pool
+	RedisURL string
 }
 
 func (c ContainerConfig) Validate() error {
 	if c.Pool == nil {
 		return fmt.Errorf("pool is required")
 	}
+	if c.RedisURL == "" {
+		return fmt.Errorf("redis URL is required")
+	}
 	return nil
 }
 
 type Container struct {
-	AnalyzeHandler *queue.AnalyzeHandler
+	AnalyzeHandler       *queue.AnalyzeHandler
+	AutoRefreshHandler   *handlerscheduler.AutoRefreshHandler
+	QueueClient          *infraqueue.Client
+	Scheduler            *infrascheduler.Scheduler
+	schedulerLock        *infrascheduler.DistributedLock
 }
 
 func NewContainer(cfg ContainerConfig) (*Container, error) {
@@ -40,7 +57,48 @@ func NewContainer(cfg ContainerConfig) (*Container, error) {
 	analyzeUC := uc.NewAnalyzeUseCase(analysisRepo, gitVCS, coreParser, userRepo)
 	analyzeHandler := queue.NewAnalyzeHandler(analyzeUC)
 
+	queueClient, err := infraqueue.NewClient(cfg.RedisURL)
+	if err != nil {
+		return nil, fmt.Errorf("create queue client: %w", err)
+	}
+
+	schedulerLock, err := infrascheduler.NewDistributedLock(cfg.RedisURL, schedulerLockKey, schedulerLockTTL)
+	if err != nil {
+		queueClient.Close()
+		return nil, fmt.Errorf("create scheduler lock: %w", err)
+	}
+
+	autoRefreshUC := autorefresh.NewAutoRefreshUseCase(analysisRepo, queueClient)
+	autoRefreshHandler := handlerscheduler.NewAutoRefreshHandler(autoRefreshUC, schedulerLock)
+
+	scheduler := infrascheduler.New()
+
 	return &Container{
-		AnalyzeHandler: analyzeHandler,
+		AnalyzeHandler:       analyzeHandler,
+		AutoRefreshHandler:   autoRefreshHandler,
+		QueueClient:          queueClient,
+		Scheduler:            scheduler,
+		schedulerLock:        schedulerLock,
 	}, nil
+}
+
+func (c *Container) Close() error {
+	var errs []error
+
+	if c.schedulerLock != nil {
+		if err := c.schedulerLock.Close(); err != nil {
+			errs = append(errs, fmt.Errorf("close scheduler lock: %w", err))
+		}
+	}
+
+	if c.QueueClient != nil {
+		if err := c.QueueClient.Close(); err != nil {
+			errs = append(errs, fmt.Errorf("close queue client: %w", err))
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("close container: %v", errs)
+	}
+	return nil
 }

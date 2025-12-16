@@ -15,6 +15,8 @@ import (
 	"github.com/specvital/core/pkg/parser"
 )
 
+var _ analysis.AutoRefreshRepository = (*AnalysisRepository)(nil)
+
 const defaultHost = "github.com"
 const maxErrorMessageLength = 1000
 
@@ -51,18 +53,14 @@ func (p SaveAnalysisResultParams) Validate() error {
 	return nil
 }
 
-// AnalysisRepository implements the domain's analysis.Repository interface
-// using PostgreSQL as the persistence layer.
 type AnalysisRepository struct {
 	pool *pgxpool.Pool
 }
 
-// NewAnalysisRepository creates a new PostgreSQL-backed analysis repository.
 func NewAnalysisRepository(pool *pgxpool.Pool) *AnalysisRepository {
 	return &AnalysisRepository{pool: pool}
 }
 
-// CreateAnalysisRecord implements analysis.Repository.
 func (r *AnalysisRepository) CreateAnalysisRecord(ctx context.Context, params analysis.CreateAnalysisRecordParams) (analysis.UUID, error) {
 	if err := params.Validate(); err != nil {
 		return analysis.NilUUID, err
@@ -114,7 +112,6 @@ func (r *AnalysisRepository) CreateAnalysisRecord(ctx context.Context, params an
 	return fromPgUUID(dbAnalysis.ID), nil
 }
 
-// RecordFailure implements analysis.Repository.
 func (r *AnalysisRepository) RecordFailure(ctx context.Context, analysisID analysis.UUID, errMessage string) error {
 	if analysisID == analysis.NilUUID {
 		return fmt.Errorf("%w: analysis ID is required", analysis.ErrInvalidInput)
@@ -156,7 +153,6 @@ func (r *AnalysisRepository) RecordFailure(ctx context.Context, analysisID analy
 	return nil
 }
 
-// SaveAnalysisInventory implements analysis.Repository.
 func (r *AnalysisRepository) SaveAnalysisInventory(ctx context.Context, params analysis.SaveAnalysisInventoryParams) error {
 	if err := params.Validate(); err != nil {
 		return err
@@ -372,4 +368,34 @@ func mapTestStatus(status analysis.TestStatus) db.TestStatus {
 	default:
 		return db.TestStatusActive
 	}
+}
+
+func (r *AnalysisRepository) GetCodebasesForAutoRefresh(ctx context.Context) ([]analysis.CodebaseRefreshInfo, error) {
+	queries := db.New(r.pool)
+
+	rows, err := queries.GetCodebasesForAutoRefresh(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("query codebases for auto-refresh: %w", err)
+	}
+
+	result := make([]analysis.CodebaseRefreshInfo, 0, len(rows))
+	for _, row := range rows {
+		info := analysis.CodebaseRefreshInfo{
+			ConsecutiveFailures: int(row.ConsecutiveFailures),
+			Host:                row.Host,
+			ID:                  fromPgUUID(row.ID),
+			LastViewedAt:        row.LastViewedAt.Time,
+			Name:                row.Name,
+			Owner:               row.Owner,
+		}
+
+		if row.LastCompletedAt.Valid {
+			t := row.LastCompletedAt.Time
+			info.LastCompletedAt = &t
+		}
+
+		result = append(result, info)
+	}
+
+	return result, nil
 }

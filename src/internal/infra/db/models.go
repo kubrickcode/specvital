@@ -163,6 +163,7 @@ type Codebasis struct {
 	DefaultBranch pgtype.Text        `json:"default_branch"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	LastViewedAt  pgtype.Timestamptz `json:"last_viewed_at"`
 }
 
 type OauthAccount struct {

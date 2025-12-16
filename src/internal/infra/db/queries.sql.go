@@ -128,7 +128,7 @@ func (q *Queries) CreateTestSuite(ctx context.Context, arg CreateTestSuiteParams
 }
 
 const getCodebaseByID = `-- name: GetCodebaseByID :one
-SELECT id, host, owner, name, default_branch, created_at, updated_at FROM codebases WHERE id = $1
+SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at FROM codebases WHERE id = $1
 `
 
 func (q *Queries) GetCodebaseByID(ctx context.Context, id pgtype.UUID) (Codebasis, error) {
@@ -142,8 +142,77 @@ func (q *Queries) GetCodebaseByID(ctx context.Context, id pgtype.UUID) (Codebasi
 		&i.DefaultBranch,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastViewedAt,
 	)
 	return i, err
+}
+
+const getCodebasesForAutoRefresh = `-- name: GetCodebasesForAutoRefresh :many
+WITH latest_completions AS (
+    SELECT DISTINCT ON (codebase_id)
+        codebase_id,
+        completed_at
+    FROM analyses
+    WHERE status = 'completed'
+    ORDER BY codebase_id, completed_at DESC
+),
+failure_counts AS (
+    SELECT
+        a.codebase_id,
+        COUNT(*)::int as failure_count
+    FROM analyses a
+    LEFT JOIN latest_completions lc ON a.codebase_id = lc.codebase_id
+    WHERE a.status = 'failed'
+      AND a.created_at > COALESCE(lc.completed_at, '1970-01-01'::timestamptz)
+    GROUP BY a.codebase_id
+)
+SELECT
+    c.id, c.host, c.owner, c.name, c.last_viewed_at,
+    lc.completed_at as last_completed_at,
+    COALESCE(fc.failure_count, 0)::int as consecutive_failures
+FROM codebases c
+LEFT JOIN latest_completions lc ON c.id = lc.codebase_id
+LEFT JOIN failure_counts fc ON c.id = fc.codebase_id
+WHERE c.last_viewed_at IS NOT NULL
+  AND c.last_viewed_at > now() - interval '90 days'
+`
+
+type GetCodebasesForAutoRefreshRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	Host                string             `json:"host"`
+	Owner               string             `json:"owner"`
+	Name                string             `json:"name"`
+	LastViewedAt        pgtype.Timestamptz `json:"last_viewed_at"`
+	LastCompletedAt     pgtype.Timestamptz `json:"last_completed_at"`
+	ConsecutiveFailures int32              `json:"consecutive_failures"`
+}
+
+func (q *Queries) GetCodebasesForAutoRefresh(ctx context.Context) ([]GetCodebasesForAutoRefreshRow, error) {
+	rows, err := q.db.Query(ctx, getCodebasesForAutoRefresh)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetCodebasesForAutoRefreshRow{}
+	for rows.Next() {
+		var i GetCodebasesForAutoRefreshRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Host,
+			&i.Owner,
+			&i.Name,
+			&i.LastViewedAt,
+			&i.LastCompletedAt,
+			&i.ConsecutiveFailures,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getOAuthAccountByUserAndProvider = `-- name: GetOAuthAccountByUserAndProvider :one
@@ -284,7 +353,7 @@ ON CONFLICT (host, owner, name)
 DO UPDATE SET
     default_branch = COALESCE(EXCLUDED.default_branch, codebases.default_branch),
     updated_at = now()
-RETURNING id, host, owner, name, default_branch, created_at, updated_at
+RETURNING id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at
 `
 
 type UpsertCodebaseParams struct {
@@ -310,6 +379,7 @@ func (q *Queries) UpsertCodebase(ctx context.Context, arg UpsertCodebaseParams) 
 		&i.DefaultBranch,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastViewedAt,
 	)
 	return i, err
 }

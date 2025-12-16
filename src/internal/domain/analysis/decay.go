@@ -22,13 +22,11 @@ const (
 
 const maxConsecutiveFailures = 5
 
-// CalculateRefreshInterval returns refresh interval based on idle period.
 // Returns 0 if lastViewedAt is future or idle exceeds 90 days.
 func CalculateRefreshInterval(lastViewedAt time.Time) time.Duration {
 	return CalculateRefreshIntervalAt(lastViewedAt, time.Now())
 }
 
-// CalculateRefreshIntervalAt is testable version with explicit now parameter.
 func CalculateRefreshIntervalAt(lastViewedAt, now time.Time) time.Duration {
 	duration := now.Sub(lastViewedAt)
 	if duration < 0 {
@@ -53,12 +51,10 @@ func CalculateRefreshIntervalAt(lastViewedAt, now time.Time) time.Duration {
 	}
 }
 
-// ShouldRefresh determines if auto-refresh is needed.
 func ShouldRefresh(lastViewedAt time.Time, lastCompletedAt *time.Time, consecutiveFailures int) bool {
 	return ShouldRefreshAt(lastViewedAt, lastCompletedAt, consecutiveFailures, time.Now())
 }
 
-// ShouldRefreshAt is testable version with explicit now parameter.
 func ShouldRefreshAt(lastViewedAt time.Time, lastCompletedAt *time.Time, consecutiveFailures int, now time.Time) bool {
 	if consecutiveFailures >= maxConsecutiveFailures {
 		return false
