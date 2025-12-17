@@ -2,12 +2,25 @@
   "repository": "cypress",
   "ref": "v13.17.0",
   "expectedFramework": "cypress",
-  "fileCount": 1271,
-  "testCount": 3699,
+  "fileCount": 1339,
+  "testCount": 4029,
   "frameworkCounts": {
-    "cypress": 1271
+    "cypress": 1251,
+    "mocha": 88
   },
   "sampleFiles": [
+    {
+      "path": "npm/cypress-schematic/src/ct.spec.ts",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "npm/cypress-schematic/src/e2e.spec.ts",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 1
+    },
     {
       "path": "npm/grep/cypress/e2e/before-spec.js",
       "framework": "cypress",
@@ -115,22 +128,10 @@
       "framework": "cypress",
       "suiteCount": 1,
       "testCount": 3
-    },
-    {
-      "path": "npm/grep/cypress/e2e/unit.js",
-      "framework": "cypress",
-      "suiteCount": 2,
-      "testCount": 0
-    },
-    {
-      "path": "npm/puppeteer/cypress/e2e/multi-tab.cy.ts",
-      "framework": "cypress",
-      "suiteCount": 1,
-      "testCount": 2
     }
   ],
   "stats": {
-    "filesMatched": 1271,
+    "filesMatched": 1339,
     "filesScanned": 1513
   }
 }

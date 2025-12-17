@@ -2,11 +2,13 @@
   "repository": "next.js",
   "ref": "v15.0.3",
   "expectedFramework": "jest",
-  "fileCount": 1258,
-  "testCount": 6661,
+  "fileCount": 1262,
+  "testCount": 6665,
   "frameworkCounts": {
     "cargo-test": 56,
+    "cypress": 3,
     "jest": 1194,
+    "mocha": 1,
     "playwright": 3,
     "vitest": 5
   },
@@ -96,6 +98,24 @@
       "testCount": 1
     },
     {
+      "path": "examples/with-cypress/components/about-component.cy.tsx",
+      "framework": "cypress",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "examples/with-cypress/cypress/e2e/app.cy.ts",
+      "framework": "cypress",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "examples/with-cypress/cypress/e2e/pages.cy.ts",
+      "framework": "cypress",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
       "path": "examples/with-jest-babel/__tests__/index.test.tsx",
       "framework": "jest",
       "suiteCount": 1,
@@ -112,28 +132,10 @@
       "framework": "jest",
       "suiteCount": 1,
       "testCount": 1
-    },
-    {
-      "path": "examples/with-jest/__tests__/snapshot.tsx",
-      "framework": "jest",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-jest/app/blog/[slug]/page.test.tsx",
-      "framework": "jest",
-      "suiteCount": 0,
-      "testCount": 1
-    },
-    {
-      "path": "examples/with-jest/app/counter.test.tsx",
-      "framework": "jest",
-      "suiteCount": 0,
-      "testCount": 1
     }
   ],
   "stats": {
-    "filesMatched": 1258,
-    "filesScanned": 2182
+    "filesMatched": 1262,
+    "filesScanned": 2185
   }
 }

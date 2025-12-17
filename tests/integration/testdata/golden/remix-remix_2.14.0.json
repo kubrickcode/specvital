@@ -2,10 +2,10 @@
   "repository": "remix",
   "ref": "remix@2.14.0",
   "expectedFramework": "jest",
-  "fileCount": 86,
-  "testCount": 355,
+  "fileCount": 87,
+  "testCount": 356,
   "frameworkCounts": {
-    "jest": 86
+    "jest": 87
   },
   "sampleFiles": [
     {
@@ -130,7 +130,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 86,
-    "filesScanned": 86
+    "filesMatched": 87,
+    "filesScanned": 87
   }
 }

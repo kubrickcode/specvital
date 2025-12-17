@@ -3,130 +3,131 @@
   "ref": "v3.13.2",
   "expectedFramework": "rspec",
   "fileCount": 80,
-  "testCount": 1620,
+  "testCount": 848,
   "frameworkCounts": {
-    "rspec": 80
+    "minitest": 79,
+    "rspec": 1
   },
   "sampleFiles": [
     {
       "path": "spec/integration/bisect_runners_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 2,
-      "testCount": 1
+      "testCount": 0
     },
     {
       "path": "spec/integration/bisect_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 5
+      "testCount": 0
     },
     {
       "path": "spec/integration/fail_if_no_examples_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 7
+      "testCount": 0
     },
     {
       "path": "spec/integration/failed_line_detection_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
       "testCount": 5
     },
     {
       "path": "spec/integration/filtering_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 11
+      "testCount": 1
     },
     {
       "path": "spec/integration/order_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 7
+      "testCount": 6
     },
     {
       "path": "spec/integration/output_stream_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 3
+      "testCount": 0
     },
     {
       "path": "spec/integration/persistence_failures_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 2
+      "testCount": 0
     },
     {
       "path": "spec/integration/spec_file_load_errors_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
       "testCount": 8
     },
     {
       "path": "spec/integration/suite_hooks_errors_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
       "testCount": 3
     },
     {
       "path": "spec/rspec/core/aggregate_failures_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
+      "suiteCount": 1,
+      "testCount": 0
+    },
+    {
+      "path": "spec/rspec/core/backtrace_formatter_spec.rb",
+      "framework": "minitest",
+      "suiteCount": 1,
+      "testCount": 19
+    },
+    {
+      "path": "spec/rspec/core/bisect/coordinator_spec.rb",
+      "framework": "minitest",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "spec/rspec/core/bisect/example_minimizer_spec.rb",
+      "framework": "minitest",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "spec/rspec/core/bisect/server_spec.rb",
+      "framework": "minitest",
       "suiteCount": 1,
       "testCount": 1
     },
     {
-      "path": "spec/rspec/core/backtrace_formatter_spec.rb",
-      "framework": "rspec",
-      "suiteCount": 1,
-      "testCount": 35
-    },
-    {
-      "path": "spec/rspec/core/bisect/coordinator_spec.rb",
-      "framework": "rspec",
-      "suiteCount": 1,
-      "testCount": 6
-    },
-    {
-      "path": "spec/rspec/core/bisect/example_minimizer_spec.rb",
-      "framework": "rspec",
-      "suiteCount": 1,
-      "testCount": 9
-    },
-    {
-      "path": "spec/rspec/core/bisect/server_spec.rb",
-      "framework": "rspec",
-      "suiteCount": 1,
-      "testCount": 6
-    },
-    {
       "path": "spec/rspec/core/bisect/shell_command_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 29
+      "testCount": 25
     },
     {
       "path": "spec/rspec/core/bisect/shell_runner_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 7
+      "testCount": 5
     },
     {
       "path": "spec/rspec/core/bisect/utilities_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 2,
       "testCount": 5
     },
     {
       "path": "spec/rspec/core/configuration/only_failures_support_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 17
+      "testCount": 4
     },
     {
       "path": "spec/rspec/core/configuration_options_spec.rb",
-      "framework": "rspec",
+      "framework": "minitest",
       "suiteCount": 1,
-      "testCount": 74
+      "testCount": 63
     }
   ],
   "stats": {

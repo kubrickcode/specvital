@@ -5,8 +5,9 @@
   "fileCount": 2549,
   "testCount": 17347,
   "frameworkCounts": {
+    "cypress": 1,
     "go-testing": 972,
-    "jest": 1577
+    "jest": 1576
   },
   "sampleFiles": [
     {
@@ -17,7 +18,7 @@
     },
     {
       "path": "e2e/cloud-plugins-suite/azure-monitor.spec.ts",
-      "framework": "jest",
+      "framework": "cypress",
       "suiteCount": 1,
       "testCount": 3
     },
