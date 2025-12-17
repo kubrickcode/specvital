@@ -64,6 +64,9 @@ snapshot-update repo="all":
     fi
     just lint config
 
+sync-docs:
+    baedal specvital/.github/docs docs && baedal specvital/.github/docs.kr docs.kr
+
 release:
     #!/usr/bin/env bash
     set -euo pipefail

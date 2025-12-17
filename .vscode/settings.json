@@ -87,6 +87,14 @@
           "shortcut": "s",
           "terminalName": "snapshot-update",
           "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just sync-docs",
+          "name": "sync-docs",
+          "shortcut": "y",
+          "terminalName": "sync-docs",
+          "useVsCodeApi": false
         }
       ]
     },
