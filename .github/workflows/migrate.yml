@@ -29,17 +29,11 @@ jobs:
         working-directory: db
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: |
-          atlas migrate apply \
-            --env production \
-            --revisions-schema atlas_schema_revisions
+        run: atlas migrate apply --env production
 
       - name: Verify Migration Status
         if: success()
         working-directory: db
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: |
-          atlas migrate status \
-            --env production \
-            --revisions-schema atlas_schema_revisions
+        run: atlas migrate status --env production
