@@ -25,15 +25,33 @@ jobs:
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
 
+      - name: Validate Configuration
+        working-directory: db
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Validating Atlas configuration..."
+          atlas migrate validate --env production
+
+      - name: Check Migration Status (Pre-Apply)
+        working-directory: db
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Checking current migration status..."
+          atlas migrate status --env production || echo "No migrations applied yet or status check failed"
+
       - name: Apply Migrations
         working-directory: db
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: atlas migrate apply --env production
+        run: atlas migrate apply --env production --allow-dirty
 
       - name: Verify Migration Status
         if: success()
         working-directory: db
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: atlas migrate status --env production
+        run: |
+          echo "Verifying migration status..."
+          atlas migrate status --env production

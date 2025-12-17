@@ -5,6 +5,7 @@ env "local" {
 
   migration {
     dir = "file://schema/migrations"
+    revisions_schema = "public"
   }
 }
 
@@ -15,6 +16,7 @@ env "ci" {
 
   migration {
     dir = "file://schema/migrations"
+    revisions_schema = "public"
   }
 }
 
@@ -24,6 +26,8 @@ env "production" {
 
   migration {
     dir = "file://schema/migrations"
+    # Explicitly configure revision table in public schema
+    revisions_schema = "public"
   }
 
   # Enable migration versioning and safety checks
