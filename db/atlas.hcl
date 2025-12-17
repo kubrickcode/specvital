@@ -17,3 +17,21 @@ env "ci" {
     dir = "file://schema/migrations"
   }
 }
+
+env "production" {
+  src = "file://schema/schema.hcl"
+  url = getenv("DATABASE_URL")
+
+  migration {
+    dir = "file://schema/migrations"
+  }
+
+  # Enable migration versioning and safety checks
+  diff {
+    # Skip destructive changes detection for production
+    skip {
+      drop_schema = false
+      drop_table  = false
+    }
+  }
+}
