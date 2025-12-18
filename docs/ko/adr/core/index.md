@@ -1,0 +1,20 @@
+---
+title: Core ADR
+---
+
+# Core 리포지토리 ADR
+
+> 🇺🇸 [English Version](/en/adr/core/)
+
+[specvital/core](https://github.com/specvital/core) 리포지토리의 아키텍처 의사결정 기록.
+
+## ADR 목록
+
+| #   | 제목                                                    | 날짜       |
+| --- | ------------------------------------------------------- | ---------- |
+| 01  | [코어 라이브러리 분리](./01-core-library-separation.md) | 2024-12-17 |
+
+## 관련 문서
+
+- [전체 ADR](/ko/adr/)
+- [Core PRD](/ko/prd/02-core-engine.md)

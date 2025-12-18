@@ -26,15 +26,28 @@ Specvital 플랫폼의 제품 사양 및 요구사항 문서입니다.
 
 Specvital 개발 중 내린 아키텍처 결정에 대한 문서입니다.
 
+**공통**
+
 - [ADR 개요](./adr/) - 아키텍처 결정 기록 소개
 - [정적 분석 접근법](./adr/01-static-analysis-approach.md)
 - [경쟁 차별화](./adr/02-competitive-differentiation.md)
-- [파서 라이브러리 분리](./adr/03-parser-library-separation.md)
 - [API 워커 서비스 분리](./adr/04-api-worker-service-separation.md)
 - [큐 기반 비동기 처리](./adr/05-queue-based-async-processing.md)
 - [리포지토리 전략](./adr/06-repository-strategy.md)
 - [PaaS 우선 인프라](./adr/07-paas-first-infrastructure.md)
 - [공유 인프라](./adr/08-shared-infrastructure.md)
+
+**[Core](./adr/core/)**
+
+- [코어 라이브러리 분리](./adr/core/01-core-library-separation.md)
+
+**[Collector](./adr/collector/)**
+
+- [스케줄 기반 재수집](./adr/collector/01-scheduled-recollection.md)
+
+**[Web](./adr/web/)**
+
+- [백엔드 언어로 Go 선택](./adr/web/01-go-backend-language.md)
 
 ### [아키텍처 개요](./architecture.md)
 

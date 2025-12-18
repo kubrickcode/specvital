@@ -52,16 +52,35 @@ XX-brief-decision-title.md
 
 ## ADR 목록
 
+### 공통 (전체 리포지토리)
+
 | #   | 제목                                                              | 영역           | 날짜       |
 | --- | ----------------------------------------------------------------- | -------------- | ---------- |
 | 01  | [정적 분석 기반 즉시 분석](./01-static-analysis-approach.md)      | Cross-cutting  | 2024-12-17 |
 | 02  | [경쟁 차별화 전략](./02-competitive-differentiation.md)           | Cross-cutting  | 2024-12-17 |
-| 03  | [파서 라이브러리 분리](./03-parser-library-separation.md)         | Parser         | 2024-12-17 |
-| 04  | [API와 Worker 서비스 분리](./04-api-worker-service-separation.md) | Architecture   | 2024-12-17 |
-| 05  | [큐 기반 비동기 처리](./05-queue-based-async-processing.md)       | Architecture   | 2024-12-17 |
-| 06  | [Polyrepo 리포지토리 전략](./06-repository-strategy.md)           | Architecture   | 2024-12-17 |
-| 07  | [PaaS 우선 인프라 전략](./07-paas-first-infrastructure.md)        | Infrastructure | 2024-12-17 |
-| 08  | [공유 인프라 전략](./08-shared-infrastructure.md)                 | Infrastructure | 2024-12-17 |
+| 03  | [API와 Worker 서비스 분리](./04-api-worker-service-separation.md) | Architecture   | 2024-12-17 |
+| 04  | [큐 기반 비동기 처리](./05-queue-based-async-processing.md)       | Architecture   | 2024-12-17 |
+| 05  | [Polyrepo 리포지토리 전략](./06-repository-strategy.md)           | Architecture   | 2024-12-17 |
+| 06  | [PaaS 우선 인프라 전략](./07-paas-first-infrastructure.md)        | Infrastructure | 2024-12-17 |
+| 07  | [공유 인프라 전략](./08-shared-infrastructure.md)                 | Infrastructure | 2024-12-17 |
+
+### Core 리포지토리
+
+| #   | 제목                                                         | 영역 | 날짜       |
+| --- | ------------------------------------------------------------ | ---- | ---------- |
+| 01  | [코어 라이브러리 분리](./core/01-core-library-separation.md) | Core | 2024-12-17 |
+
+### Collector 리포지토리
+
+| #   | 제목                                                                    | 영역         | 날짜       |
+| --- | ----------------------------------------------------------------------- | ------------ | ---------- |
+| 01  | [스케줄 기반 재수집 아키텍처](./collector/01-scheduled-recollection.md) | Architecture | 2024-12-18 |
+
+### Web 리포지토리
+
+| #   | 제목                                                     | 영역       | 날짜       |
+| --- | -------------------------------------------------------- | ---------- | ---------- |
+| 01  | [백엔드 언어로 Go 선택](./web/01-go-backend-language.md) | Tech Stack | 2024-12-18 |
 
 ## 프로세스
 

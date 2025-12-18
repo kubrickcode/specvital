@@ -1,0 +1,20 @@
+---
+title: Core ADR
+---
+
+# Core Repository ADR
+
+> 🇰🇷 [한국어 버전](/ko/adr/core/)
+
+Architecture Decision Records for the [specvital/core](https://github.com/specvital/core) repository.
+
+## ADR Index
+
+| #   | Title                                                      | Date       |
+| --- | ---------------------------------------------------------- | ---------- |
+| 01  | [Core Library Separation](./01-core-library-separation.md) | 2024-12-17 |
+
+## Related
+
+- [All ADRs](/en/adr/)
+- [Core PRD](/en/prd/02-core-engine.md)
