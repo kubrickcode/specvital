@@ -2,6 +2,12 @@
 
 ### 🐛 Bug Fixes
 
+- cookie not being set after GitHub login ([f4fccee](https://github.com/specvital/web/commit/f4fccee642db5089681837f66af66ee3b92a8e68))
+
+## 🎯 Highlights
+
+### 🐛 Bug Fixes
+
 - "failed to get latest commit" error during repository analysis ([0de5c39](https://github.com/specvital/web/commit/0de5c399abe3d02435c81640c50d43d1a5bfa37f))
 
 ## 🎯 Highlights
