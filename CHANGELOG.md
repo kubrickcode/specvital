@@ -1,3 +1,19 @@
+## 🎯 Highlights
+
+### 🐛 Bug Fixes
+
+- fix git clone failure in runtime container ([f11dfa3](https://github.com/specvital/collector/commit/f11dfa3e4090a6412af71b58a7eca6f081e49d4d))
+
+## 🔧 Maintenance
+
+### ♻️ Refactoring
+
+- remove unused dead code ([95cee17](https://github.com/specvital/collector/commit/95cee17e1307fe3e0cc23ba7d549292b05c19744))
+
+### 🔨 Chore
+
+- sync docs ([9007e97](https://github.com/specvital/collector/commit/9007e97bbff365afcae69cfcba2f501732a20c8b))
+
 ## 🔧 Maintenance
 
 ### 🔧 Internal Fixes
