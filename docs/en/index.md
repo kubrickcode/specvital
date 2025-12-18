@@ -26,16 +26,24 @@ Product specifications and requirements documentation for the Specvital platform
 
 Documentation of architectural decisions made during the development of Specvital.
 
+**Cross-cutting**
+
 - [ADR Overview](./adr/) - Introduction to architecture decision records
 - [Static Analysis Approach](./adr/01-static-analysis-approach.md)
 - [Competitive Differentiation](./adr/02-competitive-differentiation.md)
-- [Parser Library Separation](./adr/03-parser-library-separation.md)
 - [API Worker Service Separation](./adr/04-api-worker-service-separation.md)
 - [Queue-Based Async Processing](./adr/05-queue-based-async-processing.md)
 - [Repository Strategy](./adr/06-repository-strategy.md)
 - [PaaS-First Infrastructure](./adr/07-paas-first-infrastructure.md)
 - [Shared Infrastructure](./adr/08-shared-infrastructure.md)
-- [Scheduled Re-collection](./adr/09-scheduled-recollection.md)
+
+**[Core](./adr/core/)**
+
+- [Core Library Separation](./adr/core/01-core-library-separation.md)
+
+**[Collector](./adr/collector/)**
+
+- [Scheduled Re-collection](./adr/collector/01-scheduled-recollection.md)
 
 ### [Architecture Overview](./architecture.md)
 

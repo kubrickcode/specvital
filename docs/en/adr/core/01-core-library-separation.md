@@ -1,10 +1,10 @@
 ---
-title: Parser Library
+title: Core Library
 ---
 
-# ADR-03: Parser Engine as Independent Library
+# ADR-01: Core Library as Independent Repository
 
-> 🇰🇷 [한국어 버전](/ko/adr/03-parser-library-separation.md)
+> 🇰🇷 [한국어 버전](/ko/adr/core/01-core-library-separation.md)
 
 | Date       | Author       | Repos |
 | ---------- | ------------ | ----- |
@@ -14,22 +14,22 @@ title: Parser Library
 
 ### Problem Statement
 
-The test parser engine is a core capability that multiple services need to consume:
+The core library is a shared capability that multiple services need to consume:
 
 1. **Worker Service (collector)**: Processes analysis jobs from queue
-2. **API Service (web)**: May need direct parsing for sync operations
-3. **CLI Tool**: Developers want to run parser locally
+2. **API Service (web)**: May need direct access for sync operations
+3. **CLI Tool**: Developers want to run locally
 4. **Docker Image**: CI/CD pipelines need containerized execution
 
 ### Strategic Question
 
-Should the parser engine be embedded within a service or extracted as an independent, reusable library?
+Should the core library be embedded within a service or extracted as an independent, reusable library?
 
 ## Decision
 
-**Extract the parser engine as an independent Go library in a separate repository.**
+**Extract the core library as an independent Go library in a separate repository.**
 
-The parser is published as a Go module that can be:
+The core is published as a Go module that can be:
 
 - Imported by any Go service (`go get`)
 - Distributed as a CLI binary
@@ -39,14 +39,14 @@ The parser is published as a Go module that can be:
 
 ### Option A: Independent Library (Selected)
 
-Separate repository with the parser as a reusable Go module.
+Separate repository with the core as a reusable Go module.
 
 **Pros:**
 
 - **Multiple Deployment Modes**: Single codebase serves library, CLI, and Docker use cases
-- **Independent Release Cycle**: Parser fixes don't require service redeployment
-- **Open Source Enablement**: Community can use and contribute to the parser
-- **Clear API Contract**: Forces well-defined boundaries between parser and consumers
+- **Independent Release Cycle**: Core fixes don't require service redeployment
+- **Open Source Enablement**: Community can use and contribute to the core
+- **Clear API Contract**: Forces well-defined boundaries between core and consumers
 - **Ecosystem Value**: Provides standalone value beyond the platform
 
 **Cons:**
@@ -57,7 +57,7 @@ Separate repository with the parser as a reusable Go module.
 
 ### Option B: Service-Internal Module
 
-Parser code lives inside a consuming service (e.g., collector).
+Core code lives inside a consuming service (e.g., collector).
 
 **Pros:**
 
@@ -67,14 +67,14 @@ Parser code lives inside a consuming service (e.g., collector).
 
 **Cons:**
 
-- **Code Duplication**: Other services needing parsing must duplicate code
+- **Code Duplication**: Other services needing core must duplicate code
 - **No Standalone Use**: Cannot offer CLI or Docker without additional work
-- **Tight Coupling**: Parser changes tied to service release cycle
-- **Limited Reuse**: External parties cannot consume the parser
+- **Tight Coupling**: Core changes tied to service release cycle
+- **Limited Reuse**: External parties cannot consume the core
 
 ### Option C: Shared Source (Git Submodule)
 
-Share parser code via Git submodule across repositories.
+Share core code via Git submodule across repositories.
 
 **Pros:**
 
@@ -92,7 +92,7 @@ Share parser code via Git submodule across repositories.
 ### Positive
 
 1. **Open Source Strategy**
-   - Parser can be MIT licensed separately
+   - Core can be MIT licensed separately
    - Builds trust through transparency
    - Enables community contributions for new frameworks
 
@@ -103,7 +103,7 @@ Share parser code via Git submodule across repositories.
    - All from single source
 
 3. **Independent Evolution**
-   - Parser team can release bug fixes immediately
+   - Core team can release bug fixes immediately
    - Consumers upgrade at their own pace
    - Breaking changes communicated via semver
 
@@ -114,7 +114,7 @@ Share parser code via Git submodule across repositories.
 ### Negative
 
 1. **Coordination Overhead**
-   - Must track which service uses which parser version
+   - Must track which service uses which core version
    - **Mitigation**: Automated dependency updates (Dependabot)
 
 2. **API Stability Burden**
@@ -127,8 +127,8 @@ Share parser code via Git submodule across repositories.
 
 ### Affected Repositories
 
-| Repository    | Role           | Impact                         |
-| ------------- | -------------- | ------------------------------ |
-| **core**      | Parser library | Primary - defines public API   |
-| **collector** | Consumer       | Imports parser as dependency   |
-| **web**       | Consumer       | May import for sync operations |
+| Repository    | Role         | Impact                         |
+| ------------- | ------------ | ------------------------------ |
+| **core**      | Core library | Primary - defines public API   |
+| **collector** | Consumer     | Imports core as dependency     |
+| **web**       | Consumer     | May import for sync operations |

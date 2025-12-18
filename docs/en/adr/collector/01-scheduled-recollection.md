@@ -2,9 +2,9 @@
 title: Scheduled Re-collection
 ---
 
-# ADR-09: Scheduled Re-collection Architecture
+# ADR-01: Scheduled Re-collection Architecture
 
-> :kr: [한국어 버전](/ko/adr/09-scheduled-recollection.md)
+> :kr: [한국어 버전](/ko/adr/collector/01-scheduled-recollection.md)
 
 | Date       | Author       | Repos     |
 | ---------- | ------------ | --------- |
@@ -20,12 +20,12 @@ ADR-05 established queue-based asynchronous processing for initial analysis requ
 
 ### User Experience Impact
 
-| Scenario | On-Demand Only | With Pre-collection |
-| --- | --- | --- |
-| First visit | Queue wait (expected) | Queue wait (expected) |
-| Return visit (fresh) | Instant from cache | Instant from cache |
-| Return visit (stale) | Queue wait again | Instant (pre-refreshed) |
-| Popular repository | Queue wait | Instant (likely pre-cached) |
+| Scenario             | On-Demand Only        | With Pre-collection         |
+| -------------------- | --------------------- | --------------------------- |
+| First visit          | Queue wait (expected) | Queue wait (expected)       |
+| Return visit (fresh) | Instant from cache    | Instant from cache          |
+| Return visit (stale) | Queue wait again      | Instant (pre-refreshed)     |
+| Popular repository   | Queue wait            | Instant (likely pre-cached) |
 
 The key insight: **most user requests are for previously analyzed repositories**. Pre-collection eliminates queue wait time for the majority of requests.
 
@@ -96,9 +96,9 @@ Core principles:
 
 ### Service Architecture
 
-| Component | Scaling Strategy |
-| --- | --- |
-| Worker | Horizontal scaling based on queue depth |
+| Component | Scaling Strategy                        |
+| --------- | --------------------------------------- |
+| Worker    | Horizontal scaling based on queue depth |
 | Scheduler | Single active instance (lock-protected) |
 
 **Separation Rationale:**
@@ -115,12 +115,12 @@ Repository visibility is not stored in the database because it can change at any
 
 **Why This Approach:**
 
-| Concern | Solution |
-| --- | --- |
-| Token management | Scheduler operates without user tokens |
-| Visibility changes | No stale visibility flag to maintain |
-| Security | No background access to private code without consent |
-| Simplicity | No additional schema or sync logic |
+| Concern            | Solution                                             |
+| ------------------ | ---------------------------------------------------- |
+| Token management   | Scheduler operates without user tokens               |
+| Visibility changes | No stale visibility flag to maintain                 |
+| Security           | No background access to private code without consent |
+| Simplicity         | No additional schema or sync logic                   |
 
 **Behavior:**
 
