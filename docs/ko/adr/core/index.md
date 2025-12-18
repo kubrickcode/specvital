@@ -1,8 +1,8 @@
 ---
-title: Core ADR
+title: 코어 ADR
 ---
 
-# Core 리포지토리 ADR
+# 코어 리포지토리 ADR
 
 > 🇺🇸 [English Version](/en/adr/core/)
 

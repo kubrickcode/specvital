@@ -1,8 +1,8 @@
 ---
-title: Worker-Scheduler 분리
+title: 워커-스케줄러 분리
 ---
 
-# ADR-07: Worker-Scheduler 프로세스 분리
+# ADR-07: 워커-스케줄러 프로세스 분리
 
 > 🇺🇸 [English Version](/en/adr/collector/07-worker-scheduler-separation.md)
 

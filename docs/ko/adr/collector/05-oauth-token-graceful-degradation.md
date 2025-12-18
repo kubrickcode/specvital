@@ -1,5 +1,5 @@
 ---
-title: OAuth Token Graceful Degradation
+title: OAuth 토큰 Graceful Degradation
 ---
 
 # ADR-05: OAuth 토큰 Graceful Degradation

@@ -1,8 +1,8 @@
 ---
-title: Web ADR
+title: 웹 ADR
 ---
 
-# Web 리포지토리 ADR
+# 웹 리포지토리 ADR
 
 > 🇺🇸 [English Version](/en/adr/web/)
 

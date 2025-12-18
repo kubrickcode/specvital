@@ -1,8 +1,8 @@
 ---
-title: Clean Architecture 레이어
+title: 클린 아키텍처 레이어
 ---
 
-# ADR-02: Clean Architecture 레이어 도입
+# ADR-02: 클린 아키텍처 레이어 도입
 
 > 🇺🇸 [English Version](/en/adr/collector/02-clean-architecture-layers.md)
 

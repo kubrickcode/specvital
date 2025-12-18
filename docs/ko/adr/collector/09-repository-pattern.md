@@ -1,8 +1,8 @@
 ---
-title: Repository 패턴
+title: 리포지토리 패턴
 ---
 
-# ADR-09: Repository 패턴 데이터 접근 추상화
+# ADR-09: 리포지토리 패턴 데이터 접근 추상화
 
 > 🇺🇸 [English Version](/en/adr/collector/09-repository-pattern.md)
 

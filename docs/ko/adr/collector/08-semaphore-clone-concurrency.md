@@ -1,8 +1,8 @@
 ---
-title: Semaphore 기반 Clone 동시성 제어
+title: 세마포어 기반 클론 동시성 제어
 ---
 
-# ADR-08: Semaphore 기반 Clone 동시성 제어
+# ADR-08: 세마포어 기반 클론 동시성 제어
 
 > 🇺🇸 [English Version](/en/adr/collector/08-semaphore-clone-concurrency.md)
 

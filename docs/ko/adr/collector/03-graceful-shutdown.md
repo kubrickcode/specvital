@@ -2,7 +2,7 @@
 title: Graceful Shutdown
 ---
 
-# ADR-03: Graceful Shutdown 및 Context 기반 생명주기 관리
+# ADR-03: Graceful Shutdown 및 컨텍스트 기반 생명주기 관리
 
 > 🇺🇸 [English Version](/en/adr/collector/03-graceful-shutdown.md)
 
