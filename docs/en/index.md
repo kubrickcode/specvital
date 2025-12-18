@@ -65,6 +65,10 @@ Technology adoption status and evaluation criteria across the platform.
 
 Release history for all services (Core, Collector, Web, Infra).
 
+### [Glossary](./glossary.md)
+
+Domain terminology used across the platform.
+
 ### [Architecture Overview](./architecture.md)
 
 High-level system architecture documentation.

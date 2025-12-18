@@ -65,6 +65,10 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 
 전체 서비스 릴리즈 히스토리 (Core, Collector, Web, Infra).
 
+### [용어집](./glossary.md)
+
+플랫폼 전반에서 사용되는 도메인 용어.
+
 ### [아키텍처 개요](./architecture.md)
 
 상위 수준의 시스템 아키텍처 문서.

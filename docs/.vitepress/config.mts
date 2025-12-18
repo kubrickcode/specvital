@@ -31,6 +31,7 @@ export default defineConfig({
                 { text: "Architecture", link: "/en/architecture" },
                 { text: "Tech Radar", link: "/en/tech-radar" },
                 { text: "Releases", link: "/en/releases" },
+                { text: "Glossary", link: "/en/glossary" },
               ],
             },
             {
@@ -116,6 +117,7 @@ export default defineConfig({
                 { text: "아키텍처", link: "/ko/architecture" },
                 { text: "기술 레이더", link: "/ko/tech-radar" },
                 { text: "릴리즈 노트", link: "/ko/releases" },
+                { text: "용어집", link: "/ko/glossary" },
               ],
             },
             {
