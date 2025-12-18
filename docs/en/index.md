@@ -61,6 +61,10 @@ Documentation of architectural decisions made during the development of Specvita
 
 Technology adoption status and evaluation criteria across the platform.
 
+### [Release Notes](./releases.md)
+
+Release history for all services (Core, Collector, Web, Infra).
+
 ### [Architecture Overview](./architecture.md)
 
 High-level system architecture documentation.

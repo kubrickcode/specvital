@@ -61,6 +61,10 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 
 플랫폼 전반의 기술 채택 현황 및 평가 기준.
 
+### [릴리즈 노트](./releases.md)
+
+전체 서비스 릴리즈 히스토리 (Core, Collector, Web, Infra).
+
 ### [아키텍처 개요](./architecture.md)
 
 상위 수준의 시스템 아키텍처 문서.
