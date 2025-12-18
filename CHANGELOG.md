@@ -1,5 +1,11 @@
 ## 🎯 Highlights
 
+### 🐛 Bug Fixes
+
+- page not working in production environment ([21a60f7](https://github.com/specvital/web/commit/21a60f7700180cbe01faef41458cc5b73be645d0))
+
+## 🎯 Highlights
+
 ### ✨ Features
 
 - add asynq queue client and DB repository infrastructure ([9b3136f](https://github.com/specvital/web/commit/9b3136f51a682aecccb13886542f023574fe8e7e))
