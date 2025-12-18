@@ -35,6 +35,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [Repository Strategy](./adr/06-repository-strategy.md)
 - [PaaS-First Infrastructure](./adr/07-paas-first-infrastructure.md)
 - [Shared Infrastructure](./adr/08-shared-infrastructure.md)
+- [Scheduled Re-collection](./adr/09-scheduled-recollection.md)
 
 ### [Architecture Overview](./architecture.md)
 

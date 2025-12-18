@@ -62,6 +62,7 @@ XX-brief-decision-title.md
 | 06  | [Polyrepo Repository Strategy](./06-repository-strategy.md)                 | Architecture   | 2024-12-17 |
 | 07  | [PaaS-First Infrastructure Strategy](./07-paas-first-infrastructure.md)     | Infrastructure | 2024-12-17 |
 | 08  | [Shared Infrastructure Strategy](./08-shared-infrastructure.md)             | Infrastructure | 2024-12-17 |
+| 09  | [Scheduled Re-collection Architecture](./09-scheduled-recollection.md)      | Architecture   | 2024-12-18 |
 
 ## Process
 

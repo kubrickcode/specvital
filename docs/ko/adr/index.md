@@ -62,6 +62,7 @@ XX-brief-decision-title.md
 | 06  | [Polyrepo 리포지토리 전략](./06-repository-strategy.md)           | Architecture   | 2024-12-17 |
 | 07  | [PaaS 우선 인프라 전략](./07-paas-first-infrastructure.md)        | Infrastructure | 2024-12-17 |
 | 08  | [공유 인프라 전략](./08-shared-infrastructure.md)                 | Infrastructure | 2024-12-17 |
+| 09  | [스케줄 기반 재수집 아키텍처](./09-scheduled-recollection.md)     | Architecture   | 2024-12-18 |
 
 ## 프로세스
 

@@ -35,6 +35,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서입니다.
 - [리포지토리 전략](./adr/06-repository-strategy.md)
 - [PaaS 우선 인프라](./adr/07-paas-first-infrastructure.md)
 - [공유 인프라](./adr/08-shared-infrastructure.md)
+- [스케줄 기반 재수집](./adr/09-scheduled-recollection.md)
 
 ### [아키텍처 개요](./architecture.md)
 
