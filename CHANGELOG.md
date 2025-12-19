@@ -1,3 +1,9 @@
+## 🔧 Maintenance
+
+### ♻️ Refactoring
+
+- migrate job queue from asynq to river ([72fce89](https://github.com/specvital/web/commit/72fce895b4cff07bef68244d7be08be59348b660))
+
 ## 🎯 Highlights
 
 ### 🐛 Bug Fixes
