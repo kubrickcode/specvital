@@ -140,7 +140,7 @@ func TestGetAnalysisStatus(t *testing.T) {
 		queue := &mockQueueService{
 			findTaskInfo: &TaskInfo{
 				AnalysisID: "test-id",
-				State:      "active",
+				State:      "running",
 			},
 		}
 		repo := &mockRepository{}

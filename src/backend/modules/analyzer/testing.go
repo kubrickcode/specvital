@@ -46,6 +46,14 @@ func (m *mockRepository) UpdateLastViewed(ctx context.Context, owner, repo strin
 	return nil
 }
 
+func (m *mockRepository) GetRiverJobByAnalysisID(ctx context.Context, kind, analysisID string) (*RiverJobInfo, error) {
+	return nil, nil
+}
+
+func (m *mockRepository) FindActiveRiverJobByRepo(ctx context.Context, kind, owner, repo string) (*RiverJobInfo, error) {
+	return nil, nil
+}
+
 // mockQueueService is a test double for QueueService.
 type mockQueueService struct {
 	enqueueCalled      bool

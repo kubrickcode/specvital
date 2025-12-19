@@ -7,6 +7,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
+	"github.com/riverqueue/river/rivertype"
 
 	"github.com/specvital/web/src/backend/common/logger"
 	"github.com/specvital/web/src/backend/common/middleware"
@@ -163,10 +164,13 @@ func (s *analyzerService) GetAnalysisStatus(ctx context.Context, owner, repo str
 }
 
 func (s *analyzerService) mapQueueState(state string) domain.Status {
-	switch state {
-	case "pending", "retry":
+	switch rivertype.JobState(state) {
+	case rivertype.JobStateAvailable,
+		rivertype.JobStatePending,
+		rivertype.JobStateRetryable,
+		rivertype.JobStateScheduled:
 		return domain.StatusPending
-	case "active":
+	case rivertype.JobStateRunning:
 		return domain.StatusRunning
 	default:
 		return domain.StatusPending

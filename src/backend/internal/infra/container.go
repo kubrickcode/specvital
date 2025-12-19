@@ -14,7 +14,7 @@ import (
 )
 
 type Container struct {
-	Asynq        *AsynqComponents
+	River        *RiverClient
 	CookieDomain string
 	DB           *pgxpool.Pool
 	Encryptor    crypto.Encryptor
@@ -35,7 +35,6 @@ type Config struct {
 	GitHubOAuthClientSecret string
 	GitHubOAuthRedirectURL  string
 	JWTSecret               string
-	RedisURL                string
 	SecureCookie            bool
 }
 
@@ -54,7 +53,6 @@ func ConfigFromEnv() Config {
 		GitHubOAuthClientSecret: os.Getenv("GITHUB_OAUTH_CLIENT_SECRET"),
 		GitHubOAuthRedirectURL:  os.Getenv("GITHUB_OAUTH_REDIRECT_URL"),
 		JWTSecret:               os.Getenv("JWT_SECRET"),
-		RedisURL:                os.Getenv("REDIS_URL"),
 		SecureCookie:            os.Getenv("SECURE_COOKIE") == "true",
 	}
 }
@@ -85,12 +83,11 @@ func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 		return nil, fmt.Errorf("jwt: %w", err)
 	}
 
-	asynqComponents, err := NewAsynqComponents(cfg.RedisURL)
+	riverClient, err := NewRiverClient(pool)
 	if err != nil {
 		cleanup()
-		return nil, fmt.Errorf("asynq: %w", err)
+		return nil, fmt.Errorf("river: %w", err)
 	}
-	cleanups = append(cleanups, func() { _ = asynqComponents.Close() })
 
 	encryptor, err := crypto.NewEncryptorFromBase64(cfg.EncryptionKey)
 	if err != nil {
@@ -112,7 +109,7 @@ func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 	gitClient := client.NewGitClient()
 
 	return &Container{
-		Asynq:        asynqComponents,
+		River:        riverClient,
 		CookieDomain: cfg.CookieDomain,
 		DB:           pool,
 		Encryptor:    encryptor,
@@ -143,9 +140,6 @@ func validateConfig(cfg Config) error {
 	if cfg.JWTSecret == "" {
 		return fmt.Errorf("JWT_SECRET is required")
 	}
-	if cfg.RedisURL == "" {
-		return fmt.Errorf("REDIS_URL is required")
-	}
 	if cfg.Environment == "production" && !cfg.SecureCookie {
 		return fmt.Errorf("SECURE_COOKIE=true is required when ENV=production")
 	}
@@ -155,11 +149,6 @@ func validateConfig(cfg Config) error {
 func (c *Container) Close() error {
 	var errs []error
 
-	if c.Asynq != nil {
-		if err := c.Asynq.Close(); err != nil {
-			errs = append(errs, fmt.Errorf("close asynq: %w", err))
-		}
-	}
 	if c.DB != nil {
 		c.DB.Close()
 	}

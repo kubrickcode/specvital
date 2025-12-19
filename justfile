@@ -91,7 +91,6 @@ run target *args:
           air
         else
           DATABASE_URL="$LOCAL_DATABASE_URL" \
-          REDIS_URL="$LOCAL_REDIS_URL" \
           air
         fi
         ;;
@@ -163,7 +162,6 @@ run-collector:
     fi
     cd /tmp/collector/src && \
     DATABASE_URL="$LOCAL_DATABASE_URL" \
-    REDIS_URL="$LOCAL_REDIS_URL" \
     GITHUB_TOKEN="$GH_TOKEN" \
     go run ./cmd/collector
 

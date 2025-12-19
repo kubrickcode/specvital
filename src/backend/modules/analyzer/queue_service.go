@@ -2,11 +2,12 @@ package analyzer
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
-	"github.com/hibiken/asynq"
+	"github.com/jackc/pgx/v5"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 )
 
 const (
@@ -14,17 +15,18 @@ const (
 
 	queueName      = "default"
 	maxRetries     = 3
-	taskTimeout    = 10 * time.Minute
 	enqueueTimeout = 5 * time.Second
 )
 
-type AnalyzePayload struct {
-	AnalysisID string  `json:"analysisId"`
+type AnalyzeArgs struct {
+	AnalysisID string  `json:"analysis_id"`
 	Owner      string  `json:"owner"`
 	Repo       string  `json:"repo"`
-	CommitSHA  string  `json:"commitSha"`
-	UserID     *string `json:"user_id"`
+	CommitSHA  string  `json:"commit_sha"`
+	UserID     *string `json:"user_id,omitempty"`
 }
+
+func (AnalyzeArgs) Kind() string { return TypeAnalyze }
 
 type QueueService interface {
 	Enqueue(ctx context.Context, analysisID, owner, repo, commitSHA string, userID *string) error
@@ -38,39 +40,41 @@ type TaskInfo struct {
 	State      string
 }
 
-type queueService struct {
-	client    *asynq.Client
-	inspector *asynq.Inspector
+type riverQueueService struct {
+	client *river.Client[pgx.Tx]
+	repo   Repository
 }
 
-func NewQueueService(client *asynq.Client, inspector *asynq.Inspector) QueueService {
-	return &queueService{client: client, inspector: inspector}
+func NewQueueService(client *river.Client[pgx.Tx], repo Repository) QueueService {
+	return &riverQueueService{client: client, repo: repo}
 }
 
-func (s *queueService) Enqueue(ctx context.Context, analysisID, owner, repo, commitSHA string, userID *string) error {
+func (s *riverQueueService) Enqueue(ctx context.Context, analysisID, owner, repo, commitSHA string, userID *string) error {
 	ctx, cancel := context.WithTimeout(ctx, enqueueTimeout)
 	defer cancel()
 
-	payload, err := json.Marshal(AnalyzePayload{
+	args := AnalyzeArgs{
 		AnalysisID: analysisID,
 		Owner:      owner,
 		Repo:       repo,
 		CommitSHA:  commitSHA,
 		UserID:     userID,
-	})
-	if err != nil {
-		return fmt.Errorf("marshal payload: %w", err)
 	}
 
-	taskID := fmt.Sprintf("analyze:%s", analysisID)
-	task := asynq.NewTask(TypeAnalyze, payload)
-
-	_, err = s.client.EnqueueContext(ctx, task,
-		asynq.TaskID(taskID),
-		asynq.MaxRetry(maxRetries),
-		asynq.Timeout(taskTimeout),
-		asynq.Queue(queueName),
-	)
+	_, err := s.client.Insert(ctx, args, &river.InsertOpts{
+		MaxAttempts: maxRetries,
+		Queue:       queueName,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs: true,
+			ByState: []rivertype.JobState{
+				rivertype.JobStateAvailable,
+				rivertype.JobStatePending,
+				rivertype.JobStateRunning,
+				rivertype.JobStateRetryable,
+				rivertype.JobStateScheduled,
+			},
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("enqueue task for %s/%s: %w", owner, repo, err)
 	}
@@ -78,82 +82,36 @@ func (s *queueService) Enqueue(ctx context.Context, analysisID, owner, repo, com
 	return nil
 }
 
-func (s *queueService) GetTaskInfo(ctx context.Context, analysisID string) (*TaskInfo, error) {
-	taskID := fmt.Sprintf("analyze:%s", analysisID)
-
-	info, err := s.inspector.GetTaskInfo(queueName, taskID)
+func (s *riverQueueService) GetTaskInfo(ctx context.Context, analysisID string) (*TaskInfo, error) {
+	info, err := s.repo.GetRiverJobByAnalysisID(ctx, TypeAnalyze, analysisID)
 	if err != nil {
 		return nil, err
+	}
+	if info == nil {
+		return nil, nil
 	}
 
 	return &TaskInfo{
-		AnalysisID: analysisID,
-		State:      info.State.String(),
+		AnalysisID: info.AnalysisID,
+		State:      info.State,
 	}, nil
 }
 
-func (s *queueService) FindTaskByRepo(ctx context.Context, owner, repo string) (*TaskInfo, error) {
-	info, err := s.findInTasks(s.inspector.ListPendingTasks, owner, repo)
-	if err != nil {
-		return nil, fmt.Errorf("search pending tasks: %w", err)
-	}
-	if info != nil {
-		return info, nil
-	}
-
-	info, err = s.findInTasks(s.inspector.ListActiveTasks, owner, repo)
-	if err != nil {
-		return nil, fmt.Errorf("search active tasks: %w", err)
-	}
-	if info != nil {
-		return info, nil
-	}
-
-	info, err = s.findInTasks(s.inspector.ListRetryTasks, owner, repo)
-	if err != nil {
-		return nil, fmt.Errorf("search retry tasks: %w", err)
-	}
-	if info != nil {
-		return info, nil
-	}
-
-	return nil, nil
-}
-
-type taskLister func(queue string, opts ...asynq.ListOption) ([]*asynq.TaskInfo, error)
-
-func (s *queueService) findInTasks(lister taskLister, owner, repo string) (*TaskInfo, error) {
-	tasks, err := lister(queueName)
+func (s *riverQueueService) FindTaskByRepo(ctx context.Context, owner, repo string) (*TaskInfo, error) {
+	info, err := s.repo.FindActiveRiverJobByRepo(ctx, TypeAnalyze, owner, repo)
 	if err != nil {
 		return nil, err
 	}
-
-	for _, task := range tasks {
-		var payload AnalyzePayload
-		if err := json.Unmarshal(task.Payload, &payload); err != nil {
-			continue
-		}
-		if payload.Owner == owner && payload.Repo == repo {
-			return &TaskInfo{
-				AnalysisID: payload.AnalysisID,
-				State:      task.State.String(),
-			}, nil
-		}
+	if info == nil {
+		return nil, nil
 	}
 
-	return nil, nil
+	return &TaskInfo{
+		AnalysisID: info.AnalysisID,
+		State:      info.State,
+	}, nil
 }
 
-func (s *queueService) Close() error {
-	var errs []error
-	if err := s.client.Close(); err != nil {
-		errs = append(errs, fmt.Errorf("client: %w", err))
-	}
-	if err := s.inspector.Close(); err != nil {
-		errs = append(errs, fmt.Errorf("inspector: %w", err))
-	}
-	if len(errs) > 0 {
-		return fmt.Errorf("close queue service: %v", errs)
-	}
+func (s *riverQueueService) Close() error {
 	return nil
 }
