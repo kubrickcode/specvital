@@ -1,3 +1,13 @@
+## 🔧 Maintenance
+
+### ♻️ Refactoring
+
+- migrate queue system from asynq(Redis) to river(PostgreSQL) ([9664002](https://github.com/specvital/collector/commit/9664002057ef1f801dd8313e9f081760c3e0af21))
+
+### 🔨 Chore
+
+- missing changes ([de9c0ec](https://github.com/specvital/collector/commit/de9c0ecaa7e136fe71d70a4a231dbd194ed7a33d))
+
 ## 🎯 Highlights
 
 ### 🐛 Bug Fixes
