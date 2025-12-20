@@ -1,118 +1,85 @@
-# SpecVital Web
+# SpecVital
 
-A web application that analyzes test files from public GitHub repositories and visualizes test status.
+> Automated Test Inventory Generation via Static Code Analysis
 
-## Features
+**[specvital.com](https://specvital.com)** | [한국어](README.ko.md)
 
-- **GitHub Repository Analysis**: Automatic detection and analysis of test files in public repositories
-- **Multi-Framework Support**: Jest, Vitest, Playwright, Go test support
-- **Test Dashboard**: Test statistics and tree view visualization
-- **Filter & Search**: Framework-based filtering, test name search
+## What is SpecVital?
 
-## Quick Start
+SpecVital is a platform that automatically generates test inventories from GitHub repositories using AST-based static analysis. Simply enter a repository URL and instantly see the complete test landscape—no CI/CD integration required.
 
-### Prerequisites
+### Core Value Proposition
 
-- Node.js 20+
-- Go 1.24+
-- pnpm
-- [just](https://github.com/casey/just) (task runner)
-- [air](https://github.com/air-verse/air) (Go hot reload)
+| Feature            | Description                                        |
+| ------------------ | -------------------------------------------------- |
+| **Instant**        | Results in seconds, not hours of setup             |
+| **Accurate**       | Tree-sitter AST parsing, deterministic (not AI)    |
+| **Multi-Language** | Support for major test frameworks across languages |
 
-### Installation
-
-```bash
-# Install dependencies
-just deps
-```
-
-### Environment Setup
-
-**Backend** (`src/backend/.env`):
-
-```env
-GITHUB_TOKEN=your_github_token  # Optional: increases rate limit
-PORT=8000                       # Optional: default 8000
-ALLOWED_ORIGINS=http://localhost:5173  # Optional: CORS origins
-```
-
-**Frontend** (`src/frontend/.env`):
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-### Development
-
-```bash
-# Run backend (port 8000)
-just run backend
-
-# Run frontend (port 5173) - in another terminal
-just run frontend
-```
-
-Open http://localhost:5173
-
-### Build & Test
-
-```bash
-# Build all
-just build
-
-# Run all tests
-just test
-
-# Individual targets
-just build backend
-just test frontend
-```
-
-### API Type Generation
-
-This project uses OpenAPI-first approach. API types are auto-generated from `src/backend/api/openapi.yaml`.
-
-```bash
-# Generate Go and TypeScript types
-just gen-api
-```
-
-**Important**: Run `just gen-api` after modifying `openapi.yaml`. CI will fail if generated types are out of sync.
-
-## Project Structure
+## How It Works
 
 ```
-src/
-├── backend/                 # Go API Server
-│   ├── cmd/server/         # Entry point
-│   ├── analyzer/           # Analysis module
-│   ├── github/             # GitHub API client
-│   ├── health/             # Health check
-│   └── common/             # Shared utilities
-└── frontend/               # Next.js 15 App
-    ├── app/                # Pages (App Router)
-    ├── components/         # UI components
-    └── lib/                # API client, utilities
+GitHub URL → AST Parsing (Tree-sitter) → Test Inventory
 ```
 
-## API Documentation
+1. Enter a public GitHub repository URL
+2. SpecVital clones and parses test files using [specvital/core](https://github.com/specvital/core)
+3. View test suites, cases, and structure in a visual dashboard
 
-See [docs/api.md](docs/api.md) for detailed API documentation.
+**Note**: This is static analysis—we parse test definitions, not execution results. You'll see what tests exist and their structure, not pass/fail status.
 
-## Tech Stack
+## Supported Frameworks
 
-**Backend**:
+20+ test frameworks across multiple languages:
 
-- Go 1.24
-- Chi Router
-- [specvital/core](https://github.com/specvital/core) - Test parser
+| Language              | Frameworks                               |
+| --------------------- | ---------------------------------------- |
+| JavaScript/TypeScript | Jest, Vitest, Playwright, Cypress, Mocha |
+| Go                    | testing                                  |
+| Python                | pytest, unittest                         |
+| Java                  | JUnit 5, TestNG                          |
+| Kotlin                | Kotest                                   |
+| C#                    | NUnit, xUnit, MSTest                     |
+| Ruby                  | RSpec, Minitest                          |
+| PHP                   | PHPUnit                                  |
+| Rust                  | cargo test                               |
+| C++                   | Google Test                              |
+| Swift                 | XCTest                                   |
 
-**Frontend**:
+See [specvital/core](https://github.com/specvital/core) for details.
 
-- Next.js 16 (App Router, Turbopack)
-- React 19
-- TailwindCSS 4
-- shadcn/ui
+## Current Status
+
+SpecVital is in active development. Currently available:
+
+- ✅ GitHub OAuth authentication
+- ✅ Repository analysis via URL input
+- ✅ Test tree visualization with statistics
+- ✅ Multi-framework detection
+- ✅ Filter and search capabilities
+- ✅ Internationalization (English, Korean)
+
+## Architecture
+
+This repository contains the web application (Frontend + Backend API). The full system consists of:
+
+| Repository                                                    | Role                                |
+| ------------------------------------------------------------- | ----------------------------------- |
+| [specvital/web](https://github.com/specvital/specvital-web)   | Web dashboard + REST API            |
+| [specvital/core](https://github.com/specvital/core)           | Parser library (Tree-sitter based)  |
+| [specvital/collector](https://github.com/specvital/collector) | Background worker for analysis jobs |
+| [specvital/infra](https://github.com/specvital/infra)         | Database schema and infrastructure  |
+
+## Use Cases
+
+- **Engineering Managers**: Understand team's test coverage landscape
+- **QA Leads**: Manage automated test inventory across projects
+- **Staff Engineers**: Map existing tests before legacy refactoring
+
+## Feedback
+
+- Questions & Ideas: [GitHub Discussions](https://github.com/specvital/specvital-web/discussions)
+- Bug Reports: [GitHub Issues](https://github.com/specvital/specvital-web/issues)
 
 ## License
 
