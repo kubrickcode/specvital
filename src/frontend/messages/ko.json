@@ -31,8 +31,14 @@
     "retry": "다시 시도",
     "status": {
       "loading": "로딩 중...",
+      "loadingTitle": "준비 중",
+      "loadingDescription": "분석을 준비하고 있습니다",
       "queued": "대기열에서 대기 중...",
+      "queuedTitle": "대기 중",
+      "queuedDescription": "곧 분석이 시작됩니다",
       "analyzing": "저장소 분석 중...",
+      "analyzingTitle": "분석 중",
+      "analyzingDescription": "테스트 파일을 스캔하고 있습니다",
       "error": "분석 실패",
       "failed": "분석을 완료할 수 없습니다. 다시 시도해 주세요."
     }

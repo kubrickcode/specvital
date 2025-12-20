@@ -31,8 +31,14 @@
     "retry": "Try Again",
     "status": {
       "loading": "Loading...",
+      "loadingTitle": "Preparing",
+      "loadingDescription": "Getting ready to analyze",
       "queued": "Waiting in queue...",
+      "queuedTitle": "Queued",
+      "queuedDescription": "Analysis will start shortly",
       "analyzing": "Analyzing repository...",
+      "analyzingTitle": "Analyzing",
+      "analyzingDescription": "Scanning test files and patterns",
       "error": "Analysis Failed",
       "failed": "Analysis could not be completed. Please try again."
     }

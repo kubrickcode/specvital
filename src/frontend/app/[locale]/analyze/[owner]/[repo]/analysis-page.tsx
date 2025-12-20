@@ -2,26 +2,40 @@
 
 import { RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { AnalysisContent, useAnalysis } from "@/features/analysis";
+import { AnalysisContent, AnalysisSkeleton, useAnalysis } from "@/features/analysis";
 import { Button } from "@/components/ui/button";
-import { ErrorFallback, LoadingFallback } from "@/components/feedback";
+import { ErrorFallback } from "@/components/feedback";
 
 type AnalysisPageProps = {
   owner: string;
   repo: string;
 };
 
-const getStatusMessage = (
+type SkeletonStatus = "loading" | "queued" | "analyzing";
+
+const getSkeletonProps = (
   status: string,
   t: ReturnType<typeof useTranslations<"analyze">>
-): string => {
+): { description: string; status: SkeletonStatus; title: string } => {
   switch (status) {
     case "queued":
-      return t("status.queued");
+      return {
+        description: t("status.queuedDescription"),
+        status: "queued",
+        title: t("status.queuedTitle"),
+      };
     case "analyzing":
-      return t("status.analyzing");
+      return {
+        description: t("status.analyzingDescription"),
+        status: "analyzing",
+        title: t("status.analyzingTitle"),
+      };
     default:
-      return t("status.loading");
+      return {
+        description: t("status.loadingDescription"),
+        status: "loading",
+        title: t("status.loadingTitle"),
+      };
   }
 };
 
@@ -44,7 +58,7 @@ export const AnalysisPage = ({ owner, repo }: AnalysisPageProps) => {
   const { data, error, isLoading, refetch, status } = useAnalysis(owner, repo);
 
   if (isLoading) {
-    return <LoadingFallback message={getStatusMessage(status, t)} />;
+    return <AnalysisSkeleton {...getSkeletonProps(status, t)} />;
   }
 
   if (status === "error" || status === "failed") {
