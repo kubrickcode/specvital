@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2](https://github.com/specvital/web/compare/v1.1.1...v1.1.2) (2025-12-20)
+
+### 🔧 Maintenance
+
+#### 🔧 Internal Fixes
+
+- fix semantic-release CHANGELOG version header not rendering ([372a8ef](https://github.com/specvital/web/commit/372a8efc305de5267f727dfda02a3b285cbab22b))
+
 ## [1.1.1](https://github.com/specvital/web/compare/v1.1.0...v1.1.1) (2025-12-20)
 
 ### 🔧 Maintenance
