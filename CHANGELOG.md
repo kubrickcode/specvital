@@ -1,5 +1,58 @@
 # Changelog
 
+## [1.4.0](https://github.com/specvital/core/compare/v1.3.0...v1.4.0) (2025-12-20)
+
+### 🎯 Highlights
+
+#### ✨ Features
+
+- **crypto:** add NaCl SecretBox encryption package ([2bab1b3](https://github.com/specvital/core/commit/2bab1b313d720e7dcea1a148db6516202b25c035))
+- **gotesting:** add Benchmark/Example/Fuzz function support ([76296d5](https://github.com/specvital/core/commit/76296d5d019cd91ee0cdd23f838d5a6a20c86494))
+- **jstest:** add Jest/Vitest concurrent modifier support ([704b25c](https://github.com/specvital/core/commit/704b25c5e11972d86a6502aab918d873b8b7ec03))
+- **mocha:** add Mocha TDD interface support ([2348b66](https://github.com/specvital/core/commit/2348b66975275675f88be5e96938ee73007774fc))
+- **vitest:** add bench() function support ([b1f8949](https://github.com/specvital/core/commit/b1f89495c596f5ea6ae176200622a4678506ac0a))
+
+#### 🐛 Bug Fixes
+
+- disable implicit credential helper in git operations ([08f42b2](https://github.com/specvital/core/commit/08f42b24ef3fa0a889025f9ee08364f1d1eaa380))
+
+### 🔧 Maintenance
+
+#### 📚 Documentation
+
+- add missing version headers and improve CHANGELOG hierarchy ([f38e681](https://github.com/specvital/core/commit/f38e6815e707bc2e0f91813cc5e29496c1349a3d))
+- edit CLAUDE.md ([9ab5494](https://github.com/specvital/core/commit/9ab54945ab2d368e1f3a28b178152757728200ed))
+- update README.md ([e76202e](https://github.com/specvital/core/commit/e76202ea4ecfae71cc2d077a85b88841b58e5f34))
+
+#### 💄 Styles
+
+- sort justfile ([78bacfd](https://github.com/specvital/core/commit/78bacfdc08f5b94ec6d1e5ef2aa253b7e52f2d6c))
+
+#### 🔨 Chore
+
+- ai-config-toolkit sync ([7d219c3](https://github.com/specvital/core/commit/7d219c3f04439b04609740456ac3e329c023e41c))
+- changing the environment variable name for accessing GitHub MCP ([2079973](https://github.com/specvital/core/commit/20799738fab4dff39e53cd8b333b41d576afc465))
+- delete unused mcp ([c3d1551](https://github.com/specvital/core/commit/c3d15516e01d0ef63770a0ef76eb55d641ab02af))
+- **deps-dev:** bump @semantic-release/commit-analyzer ([9595ec8](https://github.com/specvital/core/commit/9595ec87709f40f1773cd1f90615295bde5b6baf))
+- **deps-dev:** bump @semantic-release/github from 11.0.1 to 12.0.2 ([e05ee45](https://github.com/specvital/core/commit/e05ee45879c7d73ab619fe91bb7f064629aacfca))
+- **deps-dev:** bump conventional-changelog-conventionalcommits ([9a13ed8](https://github.com/specvital/core/commit/9a13ed8541d955d77774762daab4d9834c1e863c))
+- **deps:** bump actions/cache from 4 to 5 ([51d8d2b](https://github.com/specvital/core/commit/51d8d2b6c2ab69154f3ed645851bb7bb758d7465))
+- **deps:** bump actions/checkout from 4 to 6 ([9bd5b6c](https://github.com/specvital/core/commit/9bd5b6c1feeadd1f81031f90457b0e8395053fea))
+- **deps:** bump actions/setup-go from 5 to 6 ([12a3121](https://github.com/specvital/core/commit/12a31213d48b800004d9ec8d461c552a912eb94b))
+- **deps:** bump actions/setup-node from 4 to 6 ([361f566](https://github.com/specvital/core/commit/361f5662b355e37b7e1be264ccf1c3059a13e0a5))
+- **deps:** bump extractions/setup-just from 2 to 3 ([0fedea4](https://github.com/specvital/core/commit/0fedea40fa85390bc1c5a38873084dfa431a4790))
+- **deps:** bump github.com/bmatcuk/doublestar/v4 from 4.8.1 to 4.9.1 ([d9f058f](https://github.com/specvital/core/commit/d9f058f8fef22cdb71de3db0e7d8191ef631834a))
+- **deps:** bump github.com/stretchr/testify from 1.9.0 to 1.11.1 ([ab0bc83](https://github.com/specvital/core/commit/ab0bc8337c549d1e6fb44cbb98339947b0d99511))
+- **deps:** bump golang.org/x/sync from 0.18.0 to 0.19.0 ([2b0070b](https://github.com/specvital/core/commit/2b0070bad52dfdf97102ef125c68eb0cdbf43417))
+- Global document synchronization ([06c079c](https://github.com/specvital/core/commit/06c079c1487222eff2d771fc6db4d259a5bf273d))
+- improved the claude code status line to display the correct context window size. ([365a13e](https://github.com/specvital/core/commit/365a13e86cd78593f63c51caea6f9df97dbbb200))
+- modified container structure to support codespaces ([9e02cd4](https://github.com/specvital/core/commit/9e02cd44033a17317ef40f7e438eac1f0f013dcd))
+- snapshot update ([78579ac](https://github.com/specvital/core/commit/78579accc74ec0596c3e1fae971fe33cb1da3e1e))
+- snapshot update ([053ce8a](https://github.com/specvital/core/commit/053ce8a74203585873f6b578706cc7593e16511f))
+- snapshot-update ([7c2fb1c](https://github.com/specvital/core/commit/7c2fb1c052e0af70880bde453622f25af0fb2410))
+- sync ai-config-toolkit ([b7b852a](https://github.com/specvital/core/commit/b7b852ae34a6c46f0eb24471cb47fad528f13c77))
+- sync ai-config-toolkit ([0b95b2d](https://github.com/specvital/core/commit/0b95b2d2bbc600fb23db92e7ddaabf41fbcb2957))
+
 ## [1.3.0](https://github.com/specvital/core/compare/v1.2.2...v1.3.0) (2025-12-11)
 
 ### 🎯 Highlights
