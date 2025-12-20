@@ -150,7 +150,7 @@ release:
     git checkout main
     echo "✅ Release triggered! Check GitHub Actions for progress."
 
-run-collector:
+run-worker:
     #!/usr/bin/env bash
     set -euo pipefail
     if [ ! -d "/tmp/collector" ]; then
@@ -163,7 +163,7 @@ run-collector:
     cd /tmp/collector/src && \
     DATABASE_URL="$LOCAL_DATABASE_URL" \
     GITHUB_TOKEN="$GH_TOKEN" \
-    go run ./cmd/collector
+    go run ./cmd/worker
 
 test target="all":
     #!/usr/bin/env bash

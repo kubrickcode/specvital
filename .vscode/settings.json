@@ -214,10 +214,10 @@
         },
         {
           "color": "",
-          "command": "just run-collector",
-          "name": "run-collector",
-          "shortcut": "c",
-          "terminalName": "run-collector",
+          "command": "just run-worker",
+          "name": "run-worker",
+          "shortcut": "w",
+          "terminalName": "run-worker",
           "useVsCodeApi": false
         },
         {
