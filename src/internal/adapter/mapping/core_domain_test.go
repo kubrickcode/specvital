@@ -41,6 +41,11 @@ func TestConvertCoreTestStatus(t *testing.T) {
 			expected:   analysis.TestStatusActive,
 		},
 		{
+			name:       "focused",
+			coreStatus: domain.TestStatusFocused,
+			expected:   analysis.TestStatusFocused,
+		},
+		{
 			name:       "skipped",
 			coreStatus: domain.TestStatusSkipped,
 			expected:   analysis.TestStatusSkipped,
@@ -51,9 +56,9 @@ func TestConvertCoreTestStatus(t *testing.T) {
 			expected:   analysis.TestStatusTodo,
 		},
 		{
-			name:       "xfail maps to todo",
+			name:       "xfail",
 			coreStatus: domain.TestStatusXfail,
-			expected:   analysis.TestStatusTodo,
+			expected:   analysis.TestStatusXfail,
 		},
 	}
 

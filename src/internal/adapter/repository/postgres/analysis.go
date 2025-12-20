@@ -261,10 +261,14 @@ func truncateString(s string, maxLen int) string {
 
 func mapTestStatus(status analysis.TestStatus) db.TestStatus {
 	switch status {
+	case analysis.TestStatusFocused:
+		return db.TestStatusFocused
 	case analysis.TestStatusSkipped:
 		return db.TestStatusSkipped
 	case analysis.TestStatusTodo:
 		return db.TestStatusTodo
+	case analysis.TestStatusXfail:
+		return db.TestStatusXfail
 	default:
 		return db.TestStatusActive
 	}

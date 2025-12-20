@@ -75,10 +75,14 @@ func convertCoreTest(coreTest domain.Test) analysis.Test {
 
 func convertCoreTestStatus(coreStatus domain.TestStatus) analysis.TestStatus {
 	switch coreStatus {
+	case domain.TestStatusFocused:
+		return analysis.TestStatusFocused
 	case domain.TestStatusSkipped:
 		return analysis.TestStatusSkipped
-	case domain.TestStatusTodo, domain.TestStatusXfail:
+	case domain.TestStatusTodo:
 		return analysis.TestStatusTodo
+	case domain.TestStatusXfail:
+		return analysis.TestStatusXfail
 	default:
 		return analysis.TestStatusActive
 	}

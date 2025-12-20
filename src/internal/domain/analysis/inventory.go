@@ -33,6 +33,8 @@ type TestStatus string
 
 const (
 	TestStatusActive  TestStatus = "active"
+	TestStatusFocused TestStatus = "focused"
 	TestStatusSkipped TestStatus = "skipped"
 	TestStatusTodo    TestStatus = "todo"
+	TestStatusXfail   TestStatus = "xfail"
 )
