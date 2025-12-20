@@ -1,3 +1,38 @@
+### 🎯 Highlights
+
+#### ✨ Features
+
+- add favicon and migrate to Next.js 16 proxy ([63ef413](https://github.com/specvital/web/commit/63ef413dc6d3a577e6a9a55447374ec7c86b181c))
+- **ui:** apply Cloud Dancer theme color palette ([ac9039f](https://github.com/specvital/web/commit/ac9039fe8e5e3b221e918dffe9b28001daa67714))
+- **ui:** enhance Stats Card visual hierarchy and unify CSS variables ([8690aa0](https://github.com/specvital/web/commit/8690aa0faffcc71ad394f226b17b0c88b4b7cf13))
+- **ui:** improve accordion expand/collapse visual feedback ([beb2a1e](https://github.com/specvital/web/commit/beb2a1e977ff200a7a881aac6769fd474341ef76))
+- **ui:** improve analysis page loading UX with skeleton and status banner ([ff30530](https://github.com/specvital/web/commit/ff305309f78632ff3775c809932a1d3ba856c11a))
+
+#### 🐛 Bug Fixes
+
+- fixed an error that occurred when a user was deleted and the user was not found. ([b73c723](https://github.com/specvital/web/commit/b73c7235326bed4d2d902d140c68c70af68df51b))
+- **queue:** prevent duplicate analysis requests for same repository ([6acf9c3](https://github.com/specvital/web/commit/6acf9c350e7816efa739b7032c1f04ff9ee7c408))
+- **ui:** input field indistinguishable from background color ([54cf29b](https://github.com/specvital/web/commit/54cf29b2e7d10cc88de6614ba24240d15538af61))
+
+### 🔧 Maintenance
+
+#### 🔧 Internal Fixes
+
+- claude settings workspace name fix ([21a8af8](https://github.com/specvital/web/commit/21a8af8b5ec13c4d0a57db10136ec1db6794cc26))
+
+#### 📚 Documentation
+
+- add missing version headers and improve CHANGELOG hierarchy ([4bb4427](https://github.com/specvital/web/commit/4bb44278b69753e72b01871e3be93fe7b2d546c3))
+
+#### 🔨 Chore
+
+- changing the environment variable name for accessing GitHub MCP ([e224631](https://github.com/specvital/web/commit/e224631e290786c81c7b9559d6d29a4f796acff0))
+- collector -> worker structure and command changes ([2149fd8](https://github.com/specvital/web/commit/2149fd86bf7403e477e39f0ccc0f60ecc5bfd4ea))
+- delete unused mcp ([c6b6124](https://github.com/specvital/web/commit/c6b6124899ae13ebeece23b89389426232ae2941))
+- modified container structure to support codespaces ([ddca957](https://github.com/specvital/web/commit/ddca957df7a2619403fdde48699a08c0ec95c655))
+- modify local db migration to always initialize the database ([e0de29d](https://github.com/specvital/web/commit/e0de29d329e177d85a090f99711f4f0d130b329c))
+- sync ai-config-toolkit ([012bf02](https://github.com/specvital/web/commit/012bf02dc67f2fc37a3c4c168d8030ea04dabe94))
+
 # Changelog
 
 ## [1.0.4](https://github.com/specvital/web/compare/v1.0.3...v1.0.4) (2025-12-19)
