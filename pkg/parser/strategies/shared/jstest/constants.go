@@ -11,6 +11,11 @@ const (
 	FuncIt       = "it"
 	FuncTest     = "test"
 
+	// Mocha TDD interface functions
+	FuncContext = "context"
+	FuncSpecify = "specify"
+	FuncSuite   = "suite"
+
 	ModifierSkip = "skip"
 	ModifierOnly = "only"
 	ModifierEach = "each"
@@ -23,11 +28,15 @@ var SkippedFunctionAliases = map[string]string{
 	"xdescribe": FuncDescribe,
 	"xit":       FuncIt,
 	"xtest":     FuncTest,
+	"xcontext":  FuncContext,
+	"xspecify":  FuncSpecify,
 }
 
 var FocusedFunctionAliases = map[string]string{
 	"fdescribe": FuncDescribe,
 	"fit":       FuncIt,
+	"fcontext":  FuncContext,
+	"fspecify":  FuncSpecify,
 }
 
 var JestPlaceholderPattern = regexp.MustCompile(`%[sdpji#%]`)

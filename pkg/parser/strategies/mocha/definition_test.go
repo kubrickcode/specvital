@@ -134,6 +134,65 @@ mocha.run();
 			expectedConfidence: 40,
 		},
 		{
+			name: "suite() TDD pattern",
+			content: `
+suite('Calculator', function() {
+  test('adds numbers', function() {
+    expect(1 + 1).toBe(2);
+  });
+});
+`,
+			expectedConfidence: 40,
+		},
+		{
+			name: "suiteSetup() TDD pattern",
+			content: `
+suite('Database', function() {
+  suiteSetup(function() {
+    return db.connect();
+  });
+  test('queries', function() {});
+});
+`,
+			expectedConfidence: 40,
+		},
+		{
+			name: "suiteTeardown() TDD pattern",
+			content: `
+suite('Resources', function() {
+  suiteTeardown(function() {
+    return cleanup();
+  });
+  test('allocates', function() {});
+});
+`,
+			expectedConfidence: 40,
+		},
+		{
+			name: "setup() TDD pattern",
+			content: `
+suite('Component', function() {
+  setup(function() {
+    this.component = new Component();
+  });
+  test('renders', function() {});
+});
+`,
+			expectedConfidence: 40,
+		},
+		{
+			name: "teardown() TDD pattern",
+			content: `
+suite('Resources', function() {
+  teardown(function() {
+    this.component.destroy();
+  });
+  test('works', function() {});
+});
+`,
+			expectedConfidence: 40,
+		},
+		{
 			name: "no Mocha patterns (plain Jest)",
 			content: `
 import { describe, test, expect } from '@jest/globals';
@@ -465,6 +524,85 @@ describe('API Client', () => {
 
 	if testFile.Language != domain.LanguageTypeScript {
 		t.Errorf("expected Language TypeScript, got %v", testFile.Language)
+	}
+}
+
+func TestMochaParser_ParseTDDStyle(t *testing.T) {
+	testSource := `
+suite('Calculator', function() {
+  suiteSetup(function() {
+    // setup
+  });
+
+  test('adds numbers', function() {
+    expect(1 + 1).toBe(2);
+  });
+
+  suite('Subtraction', function() {
+    test('subtracts numbers', function() {
+      expect(2 - 1).toBe(1);
+    });
+  });
+});
+
+context('User validation', function() {
+  specify('validates email', function() {
+    // test
+  });
+
+  specify.skip('validates phone', function() {
+    // skipped
+  });
+});
+`
+
+	parser := &MochaParser{}
+	ctx := context.Background()
+
+	testFile, err := parser.Parse(ctx, []byte(testSource), "calc.test.js")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(testFile.Suites) != 2 {
+		t.Fatalf("expected 2 suites, got %d", len(testFile.Suites))
+	}
+
+	// Verify Calculator suite
+	calcSuite := testFile.Suites[0]
+	if calcSuite.Name != "Calculator" {
+		t.Errorf("expected suite name 'Calculator', got %q", calcSuite.Name)
+	}
+	if len(calcSuite.Tests) != 1 {
+		t.Errorf("expected 1 test in Calculator suite, got %d", len(calcSuite.Tests))
+	}
+	if len(calcSuite.Suites) != 1 {
+		t.Errorf("expected 1 nested suite in Calculator, got %d", len(calcSuite.Suites))
+	}
+
+	// Verify context suite
+	userSuite := testFile.Suites[1]
+	if userSuite.Name != "User validation" {
+		t.Errorf("expected suite name 'User validation', got %q", userSuite.Name)
+	}
+	if len(userSuite.Tests) != 2 {
+		t.Errorf("expected 2 tests in User validation suite, got %d", len(userSuite.Tests))
+	}
+
+	// Verify specify
+	if userSuite.Tests[0].Name != "validates email" {
+		t.Errorf("expected test name 'validates email', got %q", userSuite.Tests[0].Name)
+	}
+	if userSuite.Tests[0].Status != domain.TestStatusActive {
+		t.Errorf("expected first test status Active, got %v", userSuite.Tests[0].Status)
+	}
+
+	// Verify specify.skip
+	if userSuite.Tests[1].Name != "validates phone" {
+		t.Errorf("expected test name 'validates phone', got %q", userSuite.Tests[1].Name)
+	}
+	if userSuite.Tests[1].Status != domain.TestStatusSkipped {
+		t.Errorf("expected second test status Skipped, got %v", userSuite.Tests[1].Status)
 	}
 }
 

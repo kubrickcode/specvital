@@ -157,9 +157,9 @@ func ProcessEachCall(outerCall, innerCall, outerArgs *sitter.Node, source []byte
 	callback := FindCallback(outerArgs)
 
 	switch funcName {
-	case FuncDescribe + "." + ModifierEach:
+	case FuncDescribe + "." + ModifierEach, FuncContext + "." + ModifierEach, FuncSuite + "." + ModifierEach:
 		ProcessEachSuites(outerCall, testCases, nameTemplate, callback, source, filename, file, currentSuite, status, modifier)
-	case FuncIt + "." + ModifierEach, FuncTest + "." + ModifierEach:
+	case FuncIt + "." + ModifierEach, FuncTest + "." + ModifierEach, FuncSpecify + "." + ModifierEach:
 		ProcessEachTests(outerCall, testCases, nameTemplate, filename, file, currentSuite, status, modifier)
 	}
 }
@@ -187,9 +187,9 @@ func ProcessCallExpression(node *sitter.Node, source []byte, filename string, fi
 	}
 
 	switch funcName {
-	case FuncDescribe:
+	case FuncDescribe, FuncContext, FuncSuite:
 		ProcessSuite(node, args, source, filename, file, currentSuite, status, modifier)
-	case FuncIt, FuncTest:
+	case FuncIt, FuncTest, FuncSpecify:
 		ProcessTest(node, args, source, filename, file, currentSuite, status, modifier)
 	}
 }

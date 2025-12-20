@@ -367,6 +367,181 @@ func TestParse_Location(t *testing.T) {
 	}
 }
 
+func TestParse_MochaTDDStyle(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		source     string
+		wantSuites int
+		wantTests  int
+	}{
+		{
+			name: "should parse suite with test",
+			source: `suite('Calculator', () => {
+				test('adds numbers', () => {});
+			});`,
+			wantSuites: 1,
+			wantTests:  0,
+		},
+		{
+			name: "should parse context with specify",
+			source: `context('User', () => {
+				specify('validates input', () => {});
+			});`,
+			wantSuites: 1,
+			wantTests:  0,
+		},
+		{
+			name:       "should parse top-level specify",
+			source:     `specify('validates', () => {});`,
+			wantSuites: 0,
+			wantTests:  1,
+		},
+		{
+			name: "should parse nested TDD style",
+			source: `suite('Outer', () => {
+				suite('Inner', () => {
+					test('case', () => {});
+				});
+			});`,
+			wantSuites: 1,
+			wantTests:  0,
+		},
+		{
+			name: "should parse mixed BDD and TDD",
+			source: `describe('BDD', () => {
+				context('with TDD context', () => {
+					specify('test case', () => {});
+				});
+			});`,
+			wantSuites: 1,
+			wantTests:  0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := Parse(context.Background(), []byte(tt.source), "test.ts", "mocha")
+
+			if err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			if len(file.Suites) != tt.wantSuites {
+				t.Errorf("len(Suites) = %d, want %d", len(file.Suites), tt.wantSuites)
+			}
+
+			if len(file.Tests) != tt.wantTests {
+				t.Errorf("len(Tests) = %d, want %d", len(file.Tests), tt.wantTests)
+			}
+		})
+	}
+}
+
+func TestParse_TDDModifiers(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		source     string
+		wantStatus domain.TestStatus
+		isSuite    bool
+	}{
+		{
+			name:       "should parse suite.skip",
+			source:     `suite.skip('Suite', () => {});`,
+			wantStatus: domain.TestStatusSkipped,
+			isSuite:    true,
+		},
+		{
+			name:       "should parse suite.only",
+			source:     `suite.only('Suite', () => {});`,
+			wantStatus: domain.TestStatusFocused,
+			isSuite:    true,
+		},
+		{
+			name:       "should parse context.skip",
+			source:     `context.skip('Context', () => {});`,
+			wantStatus: domain.TestStatusSkipped,
+			isSuite:    true,
+		},
+		{
+			name:       "should parse context.only",
+			source:     `context.only('Context', () => {});`,
+			wantStatus: domain.TestStatusFocused,
+			isSuite:    true,
+		},
+		{
+			name:       "should parse specify.skip",
+			source:     `specify.skip('test', () => {});`,
+			wantStatus: domain.TestStatusSkipped,
+			isSuite:    false,
+		},
+		{
+			name:       "should parse specify.only",
+			source:     `specify.only('test', () => {});`,
+			wantStatus: domain.TestStatusFocused,
+			isSuite:    false,
+		},
+		{
+			name:       "should parse xcontext",
+			source:     `xcontext('Context', () => {});`,
+			wantStatus: domain.TestStatusSkipped,
+			isSuite:    true,
+		},
+		{
+			name:       "should parse xspecify",
+			source:     `xspecify('test', () => {});`,
+			wantStatus: domain.TestStatusSkipped,
+			isSuite:    false,
+		},
+		{
+			name:       "should parse fcontext",
+			source:     `fcontext('Context', () => {});`,
+			wantStatus: domain.TestStatusFocused,
+			isSuite:    true,
+		},
+		{
+			name:       "should parse fspecify",
+			source:     `fspecify('test', () => {});`,
+			wantStatus: domain.TestStatusFocused,
+			isSuite:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := Parse(context.Background(), []byte(tt.source), "test.ts", "mocha")
+
+			if err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			var status domain.TestStatus
+			if tt.isSuite {
+				if len(file.Suites) != 1 {
+					t.Fatalf("len(Suites) = %d, want 1", len(file.Suites))
+				}
+				status = file.Suites[0].Status
+			} else {
+				if len(file.Tests) != 1 {
+					t.Fatalf("len(Tests) = %d, want 1", len(file.Tests))
+				}
+				status = file.Tests[0].Status
+			}
+
+			if status != tt.wantStatus {
+				t.Errorf("Status = %q, want %q", status, tt.wantStatus)
+			}
+		})
+	}
+}
+
 func TestResolveEachNames(t *testing.T) {
 	t.Parallel()
 

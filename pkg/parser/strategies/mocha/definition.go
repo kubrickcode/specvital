@@ -55,6 +55,12 @@ var mochaPatterns = []struct {
 	{regexp.MustCompile(`\bthis\.currentTest\b`), "this.currentTest"},
 	{regexp.MustCompile(`\bmocha\.setup\s*\(`), "mocha.setup()"},
 	{regexp.MustCompile(`\bmocha\.run\s*\(`), "mocha.run()"},
+	// TDD interface patterns
+	{regexp.MustCompile(`\bsuite\s*\(\s*["'\x60]`), "suite()"},
+	{regexp.MustCompile(`\bsuiteSetup\s*\(`), "suiteSetup()"},
+	{regexp.MustCompile(`\bsuiteTeardown\s*\(`), "suiteTeardown()"},
+	{regexp.MustCompile(`\bsetup\s*\(`), "setup()"},
+	{regexp.MustCompile(`\bteardown\s*\(`), "teardown()"},
 }
 
 func (m *MochaContentMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
