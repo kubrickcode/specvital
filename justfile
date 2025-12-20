@@ -31,42 +31,6 @@ lint target="all":
         ;;
     esac
 
-test target="all":
-    #!/usr/bin/env bash
-    set -euox pipefail
-    cd {{ root_dir }}
-    case "{{ target }}" in
-      all)
-        just test unit
-        just test integration
-        ;;
-      unit)
-        go test ./...
-        ;;
-      integration)
-        go test -tags integration ./tests/integration/... -v -timeout 15m
-        ;;
-      *)
-        echo "Unknown target: {{ target }}"
-        echo "Available: unit, integration, all"
-        exit 1
-        ;;
-    esac
-
-snapshot-update repo="all":
-    #!/usr/bin/env bash
-    set -euox pipefail
-    cd {{ root_dir }}
-    if [ "{{ repo }}" = "all" ]; then
-        go test -tags integration ./tests/integration/... -v -timeout 15m -update
-    else
-        go test -tags integration ./tests/integration/... -v -timeout 15m -update -run "TestSingleFramework/{{ repo }}"
-    fi
-    just lint config
-
-sync-docs:
-    baedal specvital/.github/docs docs && baedal specvital/.github/docs.kr docs.kr
-
 release:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -90,3 +54,39 @@ release:
     git push origin release
     git checkout main
     echo "✅ Release triggered! Check GitHub Actions for progress."
+
+snapshot-update repo="all":
+    #!/usr/bin/env bash
+    set -euox pipefail
+    cd {{ root_dir }}
+    if [ "{{ repo }}" = "all" ]; then
+        go test -tags integration ./tests/integration/... -v -timeout 15m -update
+    else
+        go test -tags integration ./tests/integration/... -v -timeout 15m -update -run "TestSingleFramework/{{ repo }}"
+    fi
+    just lint config
+
+sync-docs:
+    baedal specvital/.github/docs docs && baedal specvital/.github/docs.kr docs.kr
+
+test target="all":
+    #!/usr/bin/env bash
+    set -euox pipefail
+    cd {{ root_dir }}
+    case "{{ target }}" in
+      all)
+        just test unit
+        just test integration
+        ;;
+      unit)
+        go test ./...
+        ;;
+      integration)
+        go test -tags integration ./tests/integration/... -v -timeout 15m
+        ;;
+      *)
+        echo "Unknown target: {{ target }}"
+        echo "Available: unit, integration, all"
+        exit 1
+        ;;
+    esac
