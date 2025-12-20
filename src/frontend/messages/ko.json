@@ -22,7 +22,12 @@
     "inputPlaceholder": "https://github.com/owner/repo",
     "analyzeButton": "분석",
     "helperText": "테스트 파일을 분석할 공개 GitHub 저장소 URL을 입력하세요",
-    "inputLabel": "GitHub 저장소 URL"
+    "inputLabel": "GitHub 저장소 URL",
+    "trustBadges": {
+      "free": "100% 무료",
+      "multiFramework": "다양한 프레임워크 지원",
+      "zeroSetup": "설정 없이 바로 시작"
+    }
   },
   "analyze": {
     "viewOnGitHub": "GitHub에서 보기",

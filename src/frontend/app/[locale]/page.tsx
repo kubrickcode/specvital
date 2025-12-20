@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OAuthErrorHandler } from "@/features/auth";
-import { UrlInputForm } from "@/features/home";
+import { TrustBadges, UrlInputForm } from "@/features/home";
 
 export const dynamic = "force-static";
 
@@ -30,9 +31,19 @@ export const HomePage = async ({ params }: HomePageProps) => {
           <p className="mx-auto max-w-xl text-base text-muted-foreground">{t("subtitle")}</p>
         </div>
 
-        <UrlInputForm />
+        <Card className="mx-auto w-full max-w-xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-lg">{t("inputLabel")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <UrlInputForm />
+            <p className="text-center text-sm text-muted-foreground">{t("helperText")}</p>
+          </CardContent>
+        </Card>
 
-        <p className="text-sm text-muted-foreground">{t("helperText")}</p>
+        <div className="mx-auto w-full max-w-xl">
+          <TrustBadges />
+        </div>
       </div>
     </main>
   );

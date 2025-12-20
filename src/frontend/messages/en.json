@@ -22,7 +22,12 @@
     "inputPlaceholder": "https://github.com/owner/repo",
     "analyzeButton": "Analyze",
     "helperText": "Enter a public GitHub repository URL to analyze its test files",
-    "inputLabel": "GitHub Repository URL"
+    "inputLabel": "GitHub Repository URL",
+    "trustBadges": {
+      "free": "100% Free",
+      "multiFramework": "Multi-framework support",
+      "zeroSetup": "Zero setup required"
+    }
   },
   "analyze": {
     "viewOnGitHub": "View on GitHub",
