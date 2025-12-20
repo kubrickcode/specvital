@@ -21,12 +21,18 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
   const testCount = suite.tests.length;
 
   return (
-    <div className="rounded-lg border bg-card shadow-sm">
+    <div
+      className={cn(
+        "rounded-lg border bg-card transition-shadow duration-200",
+        isExpanded ? "shadow-md" : "shadow-sm"
+      )}
+    >
       <button
         className={cn(
-          "flex w-full items-center gap-3 px-4 py-3",
-          "hover:bg-muted/50 transition-colors",
-          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          "flex w-full items-center gap-3 px-4 py-3 rounded-t-lg",
+          "transition-all duration-200 ease-in-out",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          isExpanded ? "bg-accent/40 hover:bg-accent/60" : "hover:bg-muted/70"
         )}
         onClick={toggleExpanded}
         aria-expanded={isExpanded}
@@ -37,14 +43,12 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
         }
       >
         {isExpanded ? (
-          <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform duration-200" />
         ) : (
-          <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform duration-200" />
         )}
         <FileText className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-        <span className="flex-1 text-left text-sm font-medium truncate">
-          {suite.filePath}
-        </span>
+        <span className="flex-1 text-left text-sm font-medium truncate">{suite.filePath}</span>
         <FrameworkBadge framework={suite.framework} />
         <span className="text-xs text-muted-foreground flex-shrink-0">
           {testCount} {testCount === 1 ? "test" : "tests"}
@@ -52,14 +56,12 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
       </button>
 
       {isExpanded && (
-        <div className="border-t bg-muted/20 px-4 py-2">
+        <div className="border-t border-accent/20 bg-accent/10 px-4 py-2">
           <div className="space-y-1 pl-6">
             {suite.tests.length === 0 ? (
               <div className="py-2 text-sm text-muted-foreground">No tests in this suite.</div>
             ) : (
-              suite.tests.map((test) => (
-                <TestItem key={`${test.line}-${test.name}`} test={test} />
-              ))
+              suite.tests.map((test) => <TestItem key={`${test.line}-${test.name}`} test={test} />)
             )}
           </div>
         </div>
