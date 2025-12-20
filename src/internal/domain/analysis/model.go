@@ -6,10 +6,10 @@ import (
 )
 
 type AnalyzeRequest struct {
-	AnalysisID *string
-	Owner      string
-	Repo       string
-	UserID     *string
+	Owner     string
+	Repo      string
+	CommitSHA string
+	UserID    *string
 }
 
 func (r AnalyzeRequest) Validate() error {
@@ -19,16 +19,14 @@ func (r AnalyzeRequest) Validate() error {
 	if r.Repo == "" {
 		return fmt.Errorf("%w: repo is required", ErrInvalidInput)
 	}
+	if r.CommitSHA == "" {
+		return fmt.Errorf("%w: commit SHA is required", ErrInvalidInput)
+	}
 	if len(r.Owner) > 39 || len(r.Repo) > 100 {
 		return fmt.Errorf("%w: owner/repo exceeds length limit", ErrInvalidInput)
 	}
 	if !isValidGitHubName(r.Owner) || !isValidGitHubName(r.Repo) {
 		return fmt.Errorf("%w: invalid characters in owner/repo", ErrInvalidInput)
-	}
-	if r.AnalysisID != nil {
-		if _, err := ParseUUID(*r.AnalysisID); err != nil {
-			return fmt.Errorf("%w: invalid analysis ID format", ErrInvalidInput)
-		}
 	}
 	return nil
 }

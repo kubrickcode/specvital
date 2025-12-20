@@ -1,8 +1,11 @@
 package vcs
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"os/exec"
+	"strings"
 
 	"github.com/specvital/collector/internal/domain/analysis"
 	"github.com/specvital/core/pkg/source"
@@ -40,6 +43,42 @@ func (v *GitVCS) Clone(ctx context.Context, url string, token *string) (analysis
 	}
 
 	return &gitSourceAdapter{gitSrc: gitSrc}, nil
+}
+
+// GetHeadCommit returns the HEAD commit SHA of the default branch using git ls-remote.
+func (v *GitVCS) GetHeadCommit(ctx context.Context, url string, token *string) (string, error) {
+	if url == "" {
+		return "", fmt.Errorf("get head commit: URL is required")
+	}
+
+	args := []string{"ls-remote", url, "HEAD"}
+
+	cmd := exec.CommandContext(ctx, "git", args...)
+	if token != nil {
+		authURL := strings.Replace(url, "https://", fmt.Sprintf("https://x-access-token:%s@", *token), 1)
+		cmd.Args = []string{"git", "ls-remote", authURL, "HEAD"}
+	}
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("git ls-remote %q: %s: %w", url, stderr.String(), err)
+	}
+
+	// Output format: "<sha>\tHEAD\n"
+	output := strings.TrimSpace(stdout.String())
+	if output == "" {
+		return "", fmt.Errorf("git ls-remote %q: empty response", url)
+	}
+
+	parts := strings.Fields(output)
+	if len(parts) < 1 {
+		return "", fmt.Errorf("git ls-remote %q: unexpected output format: %s", url, output)
+	}
+
+	return parts[0], nil
 }
 
 // gitSourceAdapter adapts source.GitSource to implement analysis.Source.

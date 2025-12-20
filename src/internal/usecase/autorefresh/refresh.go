@@ -21,15 +21,18 @@ var ErrCircuitBreakerOpen = errors.New("circuit breaker: too many consecutive en
 type AutoRefreshUseCase struct {
 	repository analysis.AutoRefreshRepository
 	taskQueue  analysis.TaskQueue
+	vcs        analysis.VCS
 }
 
 func NewAutoRefreshUseCase(
 	repository analysis.AutoRefreshRepository,
 	taskQueue analysis.TaskQueue,
+	vcs analysis.VCS,
 ) *AutoRefreshUseCase {
 	return &AutoRefreshUseCase{
 		repository: repository,
 		taskQueue:  taskQueue,
+		vcs:        vcs,
 	}
 }
 
@@ -67,7 +70,29 @@ func (uc *AutoRefreshUseCase) Execute(ctx context.Context) error {
 			continue
 		}
 
-		if err := uc.taskQueue.EnqueueAnalysis(ctx, codebase.Owner, codebase.Name); err != nil {
+		repoURL := fmt.Sprintf("https://%s/%s/%s", codebase.Host, codebase.Owner, codebase.Name)
+		commitSHA, err := uc.vcs.GetHeadCommit(ctx, repoURL, nil)
+		if err != nil {
+			consecutiveFailures++
+			slog.ErrorContext(ctx, "failed to get head commit for auto-refresh",
+				"owner", codebase.Owner,
+				"repo", codebase.Name,
+				"consecutive_failures", consecutiveFailures,
+				"error", err,
+			)
+			continue
+		}
+
+		if codebase.LastCommitSHA == commitSHA {
+			slog.DebugContext(ctx, "skipping auto-refresh: no new commits",
+				"owner", codebase.Owner,
+				"repo", codebase.Name,
+				"commit", commitSHA,
+			)
+			continue
+		}
+
+		if err := uc.taskQueue.EnqueueAnalysis(ctx, codebase.Owner, codebase.Name, commitSHA); err != nil {
 			consecutiveFailures++
 			slog.ErrorContext(ctx, "failed to enqueue auto-refresh task",
 				"owner", codebase.Owner,

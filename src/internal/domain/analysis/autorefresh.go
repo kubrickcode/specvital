@@ -13,6 +13,7 @@ type CodebaseRefreshInfo struct {
 	ConsecutiveFailures int
 	Host                string
 	ID                  UUID
+	LastCommitSHA       string
 	LastCompletedAt     *time.Time
 	LastViewedAt        time.Time
 	Name                string
@@ -20,5 +21,5 @@ type CodebaseRefreshInfo struct {
 }
 
 type TaskQueue interface {
-	EnqueueAnalysis(ctx context.Context, owner, repo string) error
+	EnqueueAnalysis(ctx context.Context, owner, repo, commitSHA string) error
 }

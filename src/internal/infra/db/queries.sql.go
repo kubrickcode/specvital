@@ -153,7 +153,8 @@ const getCodebasesForAutoRefresh = `-- name: GetCodebasesForAutoRefresh :many
 WITH latest_completions AS (
     SELECT DISTINCT ON (codebase_id)
         codebase_id,
-        completed_at
+        completed_at,
+        commit_sha
     FROM analyses
     WHERE status = 'completed'
     ORDER BY codebase_id, completed_at DESC
@@ -171,6 +172,7 @@ failure_counts AS (
 SELECT
     c.id, c.host, c.owner, c.name, c.last_viewed_at,
     lc.completed_at as last_completed_at,
+    lc.commit_sha as last_commit_sha,
     COALESCE(fc.failure_count, 0)::int as consecutive_failures
 FROM codebases c
 LEFT JOIN latest_completions lc ON c.id = lc.codebase_id
@@ -186,6 +188,7 @@ type GetCodebasesForAutoRefreshRow struct {
 	Name                string             `json:"name"`
 	LastViewedAt        pgtype.Timestamptz `json:"last_viewed_at"`
 	LastCompletedAt     pgtype.Timestamptz `json:"last_completed_at"`
+	LastCommitSha       pgtype.Text        `json:"last_commit_sha"`
 	ConsecutiveFailures int32              `json:"consecutive_failures"`
 }
 
@@ -205,6 +208,7 @@ func (q *Queries) GetCodebasesForAutoRefresh(ctx context.Context) ([]GetCodebase
 			&i.Name,
 			&i.LastViewedAt,
 			&i.LastCompletedAt,
+			&i.LastCommitSha,
 			&i.ConsecutiveFailures,
 		); err != nil {
 			return nil, err

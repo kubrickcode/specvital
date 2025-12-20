@@ -20,27 +20,46 @@ func (m *mockAutoRefreshRepository) GetCodebasesForAutoRefresh(ctx context.Conte
 
 type mockTaskQueue struct {
 	enqueuedTasks []struct {
-		owner string
-		repo  string
+		owner     string
+		repo      string
+		commitSHA string
 	}
 	err error
 }
 
-func (m *mockTaskQueue) EnqueueAnalysis(ctx context.Context, owner, repo string) error {
+func (m *mockTaskQueue) EnqueueAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
 	if m.err != nil {
 		return m.err
 	}
 	m.enqueuedTasks = append(m.enqueuedTasks, struct {
-		owner string
-		repo  string
-	}{owner, repo})
+		owner     string
+		repo      string
+		commitSHA string
+	}{owner, repo, commitSHA})
 	return nil
+}
+
+type mockVCS struct {
+	commitSHA string
+	err       error
+}
+
+func (m *mockVCS) Clone(ctx context.Context, url string, token *string) (analysis.Source, error) {
+	return nil, nil
+}
+
+func (m *mockVCS) GetHeadCommit(ctx context.Context, url string, token *string) (string, error) {
+	if m.err != nil {
+		return "", m.err
+	}
+	return m.commitSHA, nil
 }
 
 func TestAutoRefreshUseCase_Execute_NoCodebases(t *testing.T) {
 	repo := &mockAutoRefreshRepository{codebases: nil}
 	queue := &mockTaskQueue{}
-	uc := NewAutoRefreshUseCase(repo, queue)
+	vcs := &mockVCS{commitSHA: "abc123"}
+	uc := NewAutoRefreshUseCase(repo, queue, vcs)
 
 	err := uc.Execute(context.Background())
 
@@ -56,7 +75,8 @@ func TestAutoRefreshUseCase_Execute_RepositoryError(t *testing.T) {
 	expectedErr := errors.New("database error")
 	repo := &mockAutoRefreshRepository{err: expectedErr}
 	queue := &mockTaskQueue{}
-	uc := NewAutoRefreshUseCase(repo, queue)
+	vcs := &mockVCS{commitSHA: "abc123"}
+	uc := NewAutoRefreshUseCase(repo, queue, vcs)
 
 	err := uc.Execute(context.Background())
 
@@ -92,7 +112,8 @@ func TestAutoRefreshUseCase_Execute_EnqueuesEligibleCodebases(t *testing.T) {
 		},
 	}
 	queue := &mockTaskQueue{}
-	uc := NewAutoRefreshUseCase(repo, queue)
+	vcs := &mockVCS{commitSHA: "abc123"}
+	uc := NewAutoRefreshUseCase(repo, queue, vcs)
 
 	err := uc.Execute(context.Background())
 
@@ -122,7 +143,8 @@ func TestAutoRefreshUseCase_Execute_SkipsRecentlyCompleted(t *testing.T) {
 		},
 	}
 	queue := &mockTaskQueue{}
-	uc := NewAutoRefreshUseCase(repo, queue)
+	vcs := &mockVCS{commitSHA: "abc123"}
+	uc := NewAutoRefreshUseCase(repo, queue, vcs)
 
 	err := uc.Execute(context.Background())
 
@@ -152,7 +174,8 @@ func TestAutoRefreshUseCase_Execute_SkipsExcessiveFailures(t *testing.T) {
 		},
 	}
 	queue := &mockTaskQueue{}
-	uc := NewAutoRefreshUseCase(repo, queue)
+	vcs := &mockVCS{commitSHA: "abc123"}
+	uc := NewAutoRefreshUseCase(repo, queue, vcs)
 
 	err := uc.Execute(context.Background())
 
@@ -164,23 +187,92 @@ func TestAutoRefreshUseCase_Execute_SkipsExcessiveFailures(t *testing.T) {
 	}
 }
 
-type errorOnFirstTaskQueue struct {
-	callCount     int
-	enqueuedTasks []struct {
-		owner string
-		repo  string
+func TestAutoRefreshUseCase_Execute_SkipsSameCommit(t *testing.T) {
+	now := time.Now()
+	completedAt := now.Add(-7 * time.Hour)
+
+	repo := &mockAutoRefreshRepository{
+		codebases: []analysis.CodebaseRefreshInfo{
+			{
+				ID:                  analysis.UUID{},
+				Host:                "github.com",
+				Owner:               "owner1",
+				Name:                "repo1",
+				LastViewedAt:        now.Add(-1 * 24 * time.Hour),
+				LastCompletedAt:     &completedAt,
+				LastCommitSHA:       "abc123",
+				ConsecutiveFailures: 0,
+			},
+		},
+	}
+	queue := &mockTaskQueue{}
+	vcs := &mockVCS{commitSHA: "abc123"}
+	uc := NewAutoRefreshUseCase(repo, queue, vcs)
+
+	err := uc.Execute(context.Background())
+
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if len(queue.enqueuedTasks) != 0 {
+		t.Errorf("expected 0 tasks enqueued (same commit), got %d", len(queue.enqueuedTasks))
 	}
 }
 
-func (m *errorOnFirstTaskQueue) EnqueueAnalysis(ctx context.Context, owner, repo string) error {
+func TestAutoRefreshUseCase_Execute_EnqueuesWhenCommitDiffers(t *testing.T) {
+	now := time.Now()
+	completedAt := now.Add(-7 * time.Hour)
+
+	repo := &mockAutoRefreshRepository{
+		codebases: []analysis.CodebaseRefreshInfo{
+			{
+				ID:                  analysis.UUID{},
+				Host:                "github.com",
+				Owner:               "owner1",
+				Name:                "repo1",
+				LastViewedAt:        now.Add(-1 * 24 * time.Hour),
+				LastCompletedAt:     &completedAt,
+				LastCommitSHA:       "old-commit",
+				ConsecutiveFailures: 0,
+			},
+		},
+	}
+	queue := &mockTaskQueue{}
+	vcs := &mockVCS{commitSHA: "new-commit"}
+	uc := NewAutoRefreshUseCase(repo, queue, vcs)
+
+	err := uc.Execute(context.Background())
+
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if len(queue.enqueuedTasks) != 1 {
+		t.Errorf("expected 1 task enqueued, got %d", len(queue.enqueuedTasks))
+	}
+	if queue.enqueuedTasks[0].commitSHA != "new-commit" {
+		t.Errorf("expected commit SHA 'new-commit', got %s", queue.enqueuedTasks[0].commitSHA)
+	}
+}
+
+type errorOnFirstTaskQueue struct {
+	callCount     int
+	enqueuedTasks []struct {
+		owner     string
+		repo      string
+		commitSHA string
+	}
+}
+
+func (m *errorOnFirstTaskQueue) EnqueueAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
 	m.callCount++
 	if m.callCount == 1 {
 		return errors.New("enqueue error")
 	}
 	m.enqueuedTasks = append(m.enqueuedTasks, struct {
-		owner string
-		repo  string
-	}{owner, repo})
+		owner     string
+		repo      string
+		commitSHA string
+	}{owner, repo, commitSHA})
 	return nil
 }
 
@@ -212,7 +304,8 @@ func TestAutoRefreshUseCase_Execute_ContinuesOnEnqueueError(t *testing.T) {
 	}
 
 	queue := &errorOnFirstTaskQueue{}
-	uc := NewAutoRefreshUseCase(repo, queue)
+	vcs := &mockVCS{commitSHA: "abc123"}
+	uc := NewAutoRefreshUseCase(repo, queue, vcs)
 	err := uc.Execute(context.Background())
 
 	if err != nil {
@@ -227,7 +320,7 @@ type alwaysFailingTaskQueue struct {
 	callCount int
 }
 
-func (m *alwaysFailingTaskQueue) EnqueueAnalysis(ctx context.Context, owner, repo string) error {
+func (m *alwaysFailingTaskQueue) EnqueueAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
 	m.callCount++
 	return errors.New("enqueue error")
 }
@@ -247,7 +340,8 @@ func TestAutoRefreshUseCase_Execute_CircuitBreakerTriggered(t *testing.T) {
 	}
 
 	queue := &alwaysFailingTaskQueue{}
-	uc := NewAutoRefreshUseCase(repo, queue)
+	vcs := &mockVCS{commitSHA: "abc123"}
+	uc := NewAutoRefreshUseCase(repo, queue, vcs)
 	err := uc.Execute(context.Background())
 
 	if err == nil {

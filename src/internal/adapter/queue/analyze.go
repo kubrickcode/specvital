@@ -13,10 +13,10 @@ import (
 const maxRetryAttempts = 3
 
 type AnalyzeArgs struct {
-	AnalysisID *string `json:"analysis_id,omitempty"`
-	Owner      string  `json:"owner"`
-	Repo       string  `json:"repo"`
-	UserID     *string `json:"user_id,omitempty"`
+	CommitSHA string  `json:"commit_sha" river:"unique"`
+	Owner     string  `json:"owner" river:"unique"`
+	Repo      string  `json:"repo" river:"unique"`
+	UserID    *string `json:"user_id,omitempty"`
 }
 
 func (AnalyzeArgs) Kind() string { return "analysis:analyze" }
@@ -24,6 +24,9 @@ func (AnalyzeArgs) Kind() string { return "analysis:analyze" }
 func (AnalyzeArgs) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{
 		MaxAttempts: maxRetryAttempts,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs: true,
+		},
 	}
 }
 
@@ -54,13 +57,14 @@ func (w *AnalyzeWorker) Work(ctx context.Context, job *river.Job[AnalyzeArgs]) e
 		"job_id", job.ID,
 		"owner", args.Owner,
 		"repo", args.Repo,
+		"commit", args.CommitSHA,
 	)
 
 	req := analysis.AnalyzeRequest{
-		AnalysisID: args.AnalysisID,
-		Owner:      args.Owner,
-		Repo:       args.Repo,
-		UserID:     args.UserID,
+		Owner:     args.Owner,
+		Repo:      args.Repo,
+		CommitSHA: args.CommitSHA,
+		UserID:    args.UserID,
 	}
 
 	if err := w.analyzeUC.Execute(ctx, req); err != nil {
@@ -68,6 +72,7 @@ func (w *AnalyzeWorker) Work(ctx context.Context, job *river.Job[AnalyzeArgs]) e
 			"job_id", job.ID,
 			"owner", args.Owner,
 			"repo", args.Repo,
+			"commit", args.CommitSHA,
 			"error", err,
 		)
 		return err
@@ -77,6 +82,7 @@ func (w *AnalyzeWorker) Work(ctx context.Context, job *river.Job[AnalyzeArgs]) e
 		"job_id", job.ID,
 		"owner", args.Owner,
 		"repo", args.Repo,
+		"commit", args.CommitSHA,
 	)
 
 	return nil

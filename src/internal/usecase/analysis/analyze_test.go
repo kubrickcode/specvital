@@ -22,6 +22,10 @@ func (m *mockVCS) Clone(ctx context.Context, url string, token *string) (analysi
 	return nil, nil
 }
 
+func (m *mockVCS) GetHeadCommit(ctx context.Context, url string, token *string) (string, error) {
+	return "test-commit-sha", nil
+}
+
 type mockSource struct {
 	branchFn    func() string
 	commitSHAFn func() string
@@ -137,8 +141,9 @@ func newSuccessfulParser() *mockParser {
 
 func newValidRequest() analysis.AnalyzeRequest {
 	return analysis.AnalyzeRequest{
-		Owner: "testowner",
-		Repo:  "testrepo",
+		Owner:     "testowner",
+		Repo:      "testrepo",
+		CommitSHA: "abc123",
 	}
 }
 
@@ -174,8 +179,9 @@ func TestAnalyzeUseCase_Execute(t *testing.T) {
 		{
 			name: "invalid input - empty owner",
 			request: analysis.AnalyzeRequest{
-				Owner: "",
-				Repo:  "testrepo",
+				Owner:     "",
+				Repo:      "testrepo",
+				CommitSHA: "abc123",
 			},
 			setupMocks: func() (*mockVCS, *mockParser, *mockRepository) {
 				return &mockVCS{}, &mockParser{}, &mockRepository{}
@@ -186,8 +192,9 @@ func TestAnalyzeUseCase_Execute(t *testing.T) {
 		{
 			name: "invalid input - empty repo",
 			request: analysis.AnalyzeRequest{
-				Owner: "testowner",
-				Repo:  "",
+				Owner:     "testowner",
+				Repo:      "",
+				CommitSHA: "abc123",
 			},
 			setupMocks: func() (*mockVCS, *mockParser, *mockRepository) {
 				return &mockVCS{}, &mockParser{}, &mockRepository{}
@@ -612,9 +619,10 @@ func TestAnalyzeUseCase_TokenLookup(t *testing.T) {
 
 		userID := "user-123"
 		req := analysis.AnalyzeRequest{
-			Owner:  "testowner",
-			Repo:   "testrepo",
-			UserID: &userID,
+			Owner:     "testowner",
+			Repo:      "testrepo",
+			CommitSHA: "abc123",
+			UserID:    &userID,
 		}
 
 		err := uc.Execute(context.Background(), req)
@@ -653,9 +661,10 @@ func TestAnalyzeUseCase_TokenLookup(t *testing.T) {
 		uc := NewAnalyzeUseCase(repo, vcs, parser, tokenLookup)
 
 		req := analysis.AnalyzeRequest{
-			Owner:  "testowner",
-			Repo:   "testrepo",
-			UserID: nil,
+			Owner:     "testowner",
+			Repo:      "testrepo",
+			CommitSHA: "abc123",
+			UserID:    nil,
 		}
 
 		err := uc.Execute(context.Background(), req)
@@ -694,9 +703,10 @@ func TestAnalyzeUseCase_TokenLookup(t *testing.T) {
 
 		userID := "user-123"
 		req := analysis.AnalyzeRequest{
-			Owner:  "testowner",
-			Repo:   "testrepo",
-			UserID: &userID,
+			Owner:     "testowner",
+			Repo:      "testrepo",
+			CommitSHA: "abc123",
+			UserID:    &userID,
 		}
 
 		err := uc.Execute(context.Background(), req)
@@ -730,9 +740,10 @@ func TestAnalyzeUseCase_TokenLookup(t *testing.T) {
 
 		userID := "user-123"
 		req := analysis.AnalyzeRequest{
-			Owner:  "testowner",
-			Repo:   "testrepo",
-			UserID: &userID,
+			Owner:     "testowner",
+			Repo:      "testrepo",
+			CommitSHA: "abc123",
+			UserID:    &userID,
 		}
 
 		err := uc.Execute(context.Background(), req)
@@ -768,9 +779,10 @@ func TestAnalyzeUseCase_TokenLookup(t *testing.T) {
 
 		userID := "user-123"
 		req := analysis.AnalyzeRequest{
-			Owner:  "testowner",
-			Repo:   "testrepo",
-			UserID: &userID,
+			Owner:     "testowner",
+			Repo:      "testrepo",
+			CommitSHA: "abc123",
+			UserID:    &userID,
 		}
 
 		err := uc.Execute(context.Background(), req)
@@ -800,9 +812,10 @@ func TestAnalyzeUseCase_TokenLookup(t *testing.T) {
 
 		userID := "user-123"
 		req := analysis.AnalyzeRequest{
-			Owner:  "testowner",
-			Repo:   "testrepo",
-			UserID: &userID,
+			Owner:     "testowner",
+			Repo:      "testrepo",
+			CommitSHA: "abc123",
+			UserID:    &userID,
 		}
 
 		err := uc.Execute(context.Background(), req)

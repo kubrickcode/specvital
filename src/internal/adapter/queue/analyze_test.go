@@ -24,6 +24,10 @@ func (m *mockVCS) Clone(ctx context.Context, url string, token *string) (analysi
 	return nil, nil
 }
 
+func (m *mockVCS) GetHeadCommit(ctx context.Context, url string, token *string) (string, error) {
+	return "test-commit-sha", nil
+}
+
 type mockSource struct {
 	branchFn    func() string
 	commitSHAFn func() string
@@ -158,8 +162,9 @@ func TestAnalyzeWorker_Work(t *testing.T) {
 		{
 			name: "success case - valid args and use case succeeds",
 			args: AnalyzeArgs{
-				Owner: "octocat",
-				Repo:  "Hello-World",
+				Owner:     "octocat",
+				Repo:      "Hello-World",
+				CommitSHA: "abc123",
 			},
 			setupMocks: func() (*mockRepository, *mockVCS, *mockParser) {
 				return newSuccessfulMocks()
@@ -169,8 +174,9 @@ func TestAnalyzeWorker_Work(t *testing.T) {
 		{
 			name: "clone failed - VCS clone returns error",
 			args: AnalyzeArgs{
-				Owner: "testowner",
-				Repo:  "testrepo",
+				Owner:     "testowner",
+				Repo:      "testrepo",
+				CommitSHA: "abc123",
 			},
 			setupMocks: func() (*mockRepository, *mockVCS, *mockParser) {
 				repo, _, parser := newSuccessfulMocks()
@@ -186,8 +192,9 @@ func TestAnalyzeWorker_Work(t *testing.T) {
 		{
 			name: "scan failed - parser returns error",
 			args: AnalyzeArgs{
-				Owner: "testowner",
-				Repo:  "testrepo",
+				Owner:     "testowner",
+				Repo:      "testrepo",
+				CommitSHA: "abc123",
 			},
 			setupMocks: func() (*mockRepository, *mockVCS, *mockParser) {
 				repo, vcs, _ := newSuccessfulMocks()
@@ -213,8 +220,9 @@ func TestAnalyzeWorker_Work(t *testing.T) {
 		{
 			name: "save failed - repository save returns error",
 			args: AnalyzeArgs{
-				Owner: "testowner",
-				Repo:  "testrepo",
+				Owner:     "testowner",
+				Repo:      "testrepo",
+				CommitSHA: "abc123",
 			},
 			setupMocks: func() (*mockRepository, *mockVCS, *mockParser) {
 				repo, vcs, parser := newSuccessfulMocks()
@@ -237,8 +245,9 @@ func TestAnalyzeWorker_Work(t *testing.T) {
 		{
 			name: "invalid input - empty owner",
 			args: AnalyzeArgs{
-				Owner: "",
-				Repo:  "testrepo",
+				Owner:     "",
+				Repo:      "testrepo",
+				CommitSHA: "abc123",
 			},
 			setupMocks: func() (*mockRepository, *mockVCS, *mockParser) {
 				return newSuccessfulMocks()
@@ -248,8 +257,9 @@ func TestAnalyzeWorker_Work(t *testing.T) {
 		{
 			name: "invalid input - empty repo",
 			args: AnalyzeArgs{
-				Owner: "testowner",
-				Repo:  "",
+				Owner:     "testowner",
+				Repo:      "",
+				CommitSHA: "abc123",
 			},
 			setupMocks: func() (*mockRepository, *mockVCS, *mockParser) {
 				return newSuccessfulMocks()
@@ -305,7 +315,7 @@ func TestAnalyzeWorker_Work_ContextPropagation(t *testing.T) {
 		analyzeUC := uc.NewAnalyzeUseCase(repo, vcs, parser, nil)
 		worker := NewAnalyzeWorker(analyzeUC)
 
-		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo"})
+		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"})
 		ctx := context.WithValue(context.Background(), testKey, testValue)
 
 		err := worker.Work(ctx, job)
@@ -332,7 +342,7 @@ func TestAnalyzeWorker_Work_ContextPropagation(t *testing.T) {
 		analyzeUC := uc.NewAnalyzeUseCase(repo, vcs, parser, nil)
 		worker := NewAnalyzeWorker(analyzeUC)
 
-		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo"})
+		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"})
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 
@@ -365,7 +375,7 @@ func TestAnalyzeWorker_Work_ErrorPropagation(t *testing.T) {
 				}
 				return repo, vcs, parser
 			},
-			args:      AnalyzeArgs{Owner: "owner", Repo: "repo"},
+			args:      AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"},
 			wantError: uc.ErrCloneFailed,
 		},
 		{
@@ -389,7 +399,7 @@ func TestAnalyzeWorker_Work_ErrorPropagation(t *testing.T) {
 
 				return repo, vcs, parser
 			},
-			args:      AnalyzeArgs{Owner: "owner", Repo: "repo"},
+			args:      AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"},
 			wantError: uc.ErrScanFailed,
 		},
 		{
@@ -410,7 +420,7 @@ func TestAnalyzeWorker_Work_ErrorPropagation(t *testing.T) {
 
 				return repo, vcs, parser
 			},
-			args:      AnalyzeArgs{Owner: "owner", Repo: "repo"},
+			args:      AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"},
 			wantError: uc.ErrSaveFailed,
 		},
 		{
@@ -418,7 +428,7 @@ func TestAnalyzeWorker_Work_ErrorPropagation(t *testing.T) {
 			setupMock: func() (*mockRepository, *mockVCS, *mockParser) {
 				return newSuccessfulMocks()
 			},
-			args:      AnalyzeArgs{Owner: "", Repo: "repo"},
+			args:      AnalyzeArgs{Owner: "", Repo: "repo", CommitSHA: "abc123"},
 			wantError: analysis.ErrInvalidInput,
 		},
 	}

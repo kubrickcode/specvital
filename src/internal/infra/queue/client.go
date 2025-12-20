@@ -2,7 +2,6 @@ package queue
 
 import (
 	"context"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -10,9 +9,6 @@ import (
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	adapterqueue "github.com/specvital/collector/internal/adapter/queue"
 )
-
-// 2 hours > 1h cron interval, prevents duplicate tasks from cron jitter.
-const deduplicationWindow = 2 * time.Hour
 
 // Client is insert-only (no worker).
 type Client struct {
@@ -35,29 +31,28 @@ func (c *Client) Close() error {
 	return nil
 }
 
-func (c *Client) EnqueueAnalysis(ctx context.Context, owner, repo string) error {
+func (c *Client) EnqueueAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
 	_, err := c.client.Insert(ctx, adapterqueue.AnalyzeArgs{
-		Owner: owner,
-		Repo:  repo,
+		Owner:     owner,
+		Repo:      repo,
+		CommitSHA: commitSHA,
 	}, &river.InsertOpts{
 		UniqueOpts: river.UniqueOpts{
-			ByArgs:   true,
-			ByPeriod: deduplicationWindow,
+			ByArgs: true,
 		},
 	})
 	return err
 }
 
-func (c *Client) EnqueueAnalysisWithID(ctx context.Context, analysisID, owner, repo string, userID *string) error {
+func (c *Client) EnqueueAnalysisWithUser(ctx context.Context, owner, repo, commitSHA string, userID *string) error {
 	_, err := c.client.Insert(ctx, adapterqueue.AnalyzeArgs{
-		AnalysisID: &analysisID,
-		Owner:      owner,
-		Repo:       repo,
-		UserID:     userID,
+		Owner:     owner,
+		Repo:      repo,
+		CommitSHA: commitSHA,
+		UserID:    userID,
 	}, &river.InsertOpts{
 		UniqueOpts: river.UniqueOpts{
-			ByArgs:   true,
-			ByPeriod: deduplicationWindow,
+			ByArgs: true,
 		},
 	})
 	return err

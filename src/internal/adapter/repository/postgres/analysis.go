@@ -290,6 +290,10 @@ func (r *AnalysisRepository) GetCodebasesForAutoRefresh(ctx context.Context) ([]
 			info.LastCompletedAt = &t
 		}
 
+		if row.LastCommitSha.Valid {
+			info.LastCommitSHA = row.LastCommitSha.String
+		}
+
 		result = append(result, info)
 	}
 

@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/specvital/collector/internal/adapter/vcs"
 	"github.com/specvital/collector/internal/infra/db"
 	"github.com/specvital/collector/internal/infra/queue"
 )
@@ -67,13 +68,21 @@ func enqueue(databaseURL, owner, repo string) error {
 	}
 	defer client.Close()
 
-	if err := client.EnqueueAnalysis(ctx, owner, repo); err != nil {
+	gitVCS := vcs.NewGitVCS()
+	repoURL := fmt.Sprintf("https://github.com/%s/%s", owner, repo)
+	commitSHA, err := gitVCS.GetHeadCommit(ctx, repoURL, nil)
+	if err != nil {
+		return fmt.Errorf("get head commit for %s/%s: %w", owner, repo, err)
+	}
+
+	if err := client.EnqueueAnalysis(ctx, owner, repo, commitSHA); err != nil {
 		return fmt.Errorf("enqueue task: %w", err)
 	}
 
 	slog.Info("task enqueued",
 		"owner", owner,
 		"repo", repo,
+		"commit", commitSHA,
 	)
 	return nil
 }

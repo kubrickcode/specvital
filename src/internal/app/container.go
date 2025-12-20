@@ -110,7 +110,8 @@ func NewSchedulerContainer(ctx context.Context, cfg ContainerConfig) (*Scheduler
 
 	schedulerLock := infrascheduler.NewDistributedLock(cfg.Pool, schedulerLockKey)
 
-	autoRefreshUC := autorefresh.NewAutoRefreshUseCase(analysisRepo, queueClient)
+	gitVCS := vcs.NewGitVCS()
+	autoRefreshUC := autorefresh.NewAutoRefreshUseCase(analysisRepo, queueClient, gitVCS)
 	autoRefreshHandler := handlerscheduler.NewAutoRefreshHandler(autoRefreshUC, schedulerLock)
 
 	scheduler := infrascheduler.New()

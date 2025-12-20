@@ -24,6 +24,36 @@ func TestGitVCS_Clone_EmptyURL(t *testing.T) {
 	}
 }
 
+func TestGitVCS_GetHeadCommit_EmptyURL(t *testing.T) {
+	vcs := NewGitVCS()
+	_, err := vcs.GetHeadCommit(context.Background(), "", nil)
+	if err == nil {
+		t.Fatal("expected error for empty URL")
+	}
+	if !strings.Contains(err.Error(), "URL is required") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestGitVCS_GetHeadCommit_InvalidURL(t *testing.T) {
+	vcs := NewGitVCS()
+	_, err := vcs.GetHeadCommit(context.Background(), "not-a-valid-url", nil)
+	if err == nil {
+		t.Fatal("expected error for invalid URL")
+	}
+}
+
+func TestGitVCS_GetHeadCommit_ContextCancellation(t *testing.T) {
+	vcs := NewGitVCS()
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := vcs.GetHeadCommit(ctx, "https://github.com/octocat/Hello-World", nil)
+	if err == nil {
+		t.Fatal("expected context cancellation error")
+	}
+}
+
 func TestGitSourceAdapter_Interface(t *testing.T) {
 	// This test verifies that gitSourceAdapter implements the expected methods
 	// without needing an actual GitSource (compile-time check)

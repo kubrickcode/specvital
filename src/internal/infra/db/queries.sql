@@ -48,7 +48,8 @@ SELECT * FROM oauth_accounts WHERE user_id = $1 AND provider = $2;
 WITH latest_completions AS (
     SELECT DISTINCT ON (codebase_id)
         codebase_id,
-        completed_at
+        completed_at,
+        commit_sha
     FROM analyses
     WHERE status = 'completed'
     ORDER BY codebase_id, completed_at DESC
@@ -66,6 +67,7 @@ failure_counts AS (
 SELECT
     c.id, c.host, c.owner, c.name, c.last_viewed_at,
     lc.completed_at as last_completed_at,
+    lc.commit_sha as last_commit_sha,
     COALESCE(fc.failure_count, 0)::int as consecutive_failures
 FROM codebases c
 LEFT JOIN latest_completions lc ON c.id = lc.codebase_id
