@@ -47,10 +47,11 @@ WHERE id = $1;
 SELECT
     ts.id,
     ts.file_path,
-    ts.framework
+    ts.framework,
+    ts.name
 FROM test_suites ts
 WHERE ts.analysis_id = $1
-ORDER BY ts.file_path;
+ORDER BY ts.file_path, ts.depth, ts.line_number;
 
 -- name: GetTestCasesBySuiteIDs :many
 SELECT

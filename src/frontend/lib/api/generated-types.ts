@@ -218,6 +218,11 @@ export interface components {
              */
             filePath: string;
             framework: components["schemas"]["Framework"];
+            /**
+             * @description Name of the test suite (describe block name)
+             * @example UserService
+             */
+            suiteName: string;
             tests: components["schemas"]["TestCase"][];
         };
         TestCase: {

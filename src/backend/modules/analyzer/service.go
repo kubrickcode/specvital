@@ -205,6 +205,7 @@ func (s *analyzerService) buildAnalysisFromCompleted(ctx context.Context, comple
 			FilePath:  suite.FilePath,
 			Framework: suite.Framework,
 			ID:        suite.ID,
+			Name:      suite.Name,
 			TestCases: testCases,
 		}
 	}

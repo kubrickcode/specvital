@@ -51,6 +51,7 @@ func ToCompletedResponse(analysis *domain.Analysis) (api.AnalysisResponse, error
 		suites[i] = api.TestSuite{
 			FilePath:  suite.FilePath,
 			Framework: suite.Framework,
+			SuiteName: suite.Name,
 			Tests:     tests,
 		}
 	}

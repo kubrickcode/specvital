@@ -307,6 +307,7 @@ components:
       required:
         - filePath
         - framework
+        - suiteName
         - tests
       properties:
         filePath:
@@ -315,6 +316,10 @@ components:
           example: src/__tests__/App.test.tsx
         framework:
           $ref: "#/components/schemas/Framework"
+        suiteName:
+          type: string
+          description: Name of the test suite (describe block name)
+          example: UserService
         tests:
           type: array
           items:

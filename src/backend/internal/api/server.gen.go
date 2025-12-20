@@ -195,7 +195,10 @@ type TestSuite struct {
 	FilePath string `json:"filePath"`
 
 	// Framework Testing framework identifier
-	Framework Framework  `json:"framework"`
+	Framework Framework `json:"framework"`
+
+	// SuiteName Name of the test suite (describe block name)
+	SuiteName string     `json:"suiteName"`
 	Tests     []TestCase `json:"tests"`
 }
 

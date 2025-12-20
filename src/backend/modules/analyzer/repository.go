@@ -34,9 +34,10 @@ type CompletedAnalysis struct {
 }
 
 type TestSuiteWithCases struct {
-	ID        string
 	FilePath  string
 	Framework string
+	ID        string
+	Name      string
 	Tests     []TestCaseRow
 }
 
@@ -130,9 +131,10 @@ func (r *repositoryImpl) GetTestSuitesWithCases(ctx context.Context, analysisID 
 			framework = s.Framework.String
 		}
 		suites[i] = TestSuiteWithCases{
-			ID:        suiteID,
 			FilePath:  s.FilePath,
 			Framework: framework,
+			ID:        suiteID,
+			Name:      s.Name,
 			Tests:     testsBySuite[suiteID],
 		}
 	}

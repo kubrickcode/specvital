@@ -17,6 +17,7 @@ type TestSuite struct {
 	FilePath  string
 	Framework string
 	ID        string
+	Name      string
 	TestCases []TestCase
 }
 

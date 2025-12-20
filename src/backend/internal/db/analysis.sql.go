@@ -168,16 +168,18 @@ const getTestSuitesByAnalysisID = `-- name: GetTestSuitesByAnalysisID :many
 SELECT
     ts.id,
     ts.file_path,
-    ts.framework
+    ts.framework,
+    ts.name
 FROM test_suites ts
 WHERE ts.analysis_id = $1
-ORDER BY ts.file_path
+ORDER BY ts.file_path, ts.depth, ts.line_number
 `
 
 type GetTestSuitesByAnalysisIDRow struct {
 	ID        pgtype.UUID `json:"id"`
 	FilePath  string      `json:"file_path"`
 	Framework pgtype.Text `json:"framework"`
+	Name      string      `json:"name"`
 }
 
 func (q *Queries) GetTestSuitesByAnalysisID(ctx context.Context, analysisID pgtype.UUID) ([]GetTestSuitesByAnalysisIDRow, error) {
@@ -189,7 +191,12 @@ func (q *Queries) GetTestSuitesByAnalysisID(ctx context.Context, analysisID pgty
 	var items []GetTestSuitesByAnalysisIDRow
 	for rows.Next() {
 		var i GetTestSuitesByAnalysisIDRow
-		if err := rows.Scan(&i.ID, &i.FilePath, &i.Framework); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.FilePath,
+			&i.Framework,
+			&i.Name,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
