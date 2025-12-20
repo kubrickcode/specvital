@@ -1,6 +1,7 @@
 {
   "name": "specvital-github-io",
   "dockerComposeFile": "docker-compose.yml",
+  "initializeCommand": "touch ${HOME}/.env.secrets",
   "service": "workspace",
   "workspaceFolder": "/workspaces/specvital-github-io",
   "features": {

@@ -1,6 +1,7 @@
 .env
 .pnpm-store
 node_modules
+.claude-sessions/
 
 # VitePress
 docs/.vitepress/dist
