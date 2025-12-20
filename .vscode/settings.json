@@ -132,6 +132,14 @@
           "shortcut": "y",
           "terminalName": "sync-docs",
           "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just migrate-local",
+          "name": "migrate-local",
+          "shortcut": "m",
+          "terminalName": "migrate-local",
+          "useVsCodeApi": false
         }
       ]
     },
