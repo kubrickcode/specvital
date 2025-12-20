@@ -240,7 +240,7 @@ func mapToDomainTestStatus(status string) domain.TestStatus {
 
 func (s *analyzerService) getLatestCommitWithAuth(ctx context.Context, owner, repo string) (string, error) {
 	token, err := s.getUserToken(ctx)
-	if err != nil && !errors.Is(err, authdomain.ErrNoGitHubToken) {
+	if err != nil && !errors.Is(err, authdomain.ErrNoGitHubToken) && !errors.Is(err, authdomain.ErrUserNotFound) {
 		return "", fmt.Errorf("get user token: %w", err)
 	}
 
