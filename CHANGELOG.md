@@ -1,3 +1,7 @@
+# Changelog
+
+## [1.1.0](https://github.com/specvital/web/compare/v1.0.4...v1.1.0) (2025-12-20)
+
 ### 🎯 Highlights
 
 #### ✨ Features
@@ -32,8 +36,6 @@
 - modified container structure to support codespaces ([ddca957](https://github.com/specvital/web/commit/ddca957df7a2619403fdde48699a08c0ec95c655))
 - modify local db migration to always initialize the database ([e0de29d](https://github.com/specvital/web/commit/e0de29d329e177d85a090f99711f4f0d130b329c))
 - sync ai-config-toolkit ([012bf02](https://github.com/specvital/web/commit/012bf02dc67f2fc37a3c4c168d8030ea04dabe94))
-
-# Changelog
 
 ## [1.0.4](https://github.com/specvital/web/compare/v1.0.3...v1.0.4) (2025-12-19)
 

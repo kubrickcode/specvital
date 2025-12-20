@@ -1,4 +1,4 @@
-const headerPartial = `## [{{version}}]({{@root.host}}/{{@root.owner}}/{{@root.repository}}/compare/{{previousTag}}...{{currentTag}}) ({{date}})
+const headerPartial = `## [{{version}}](https://github.com/specvital/web/compare/{{previousTag}}...{{currentTag}}) ({{date}})
 `;
 
 const mainTemplate = `{{#if noteGroups}}
@@ -116,6 +116,7 @@ export default {
       "@semantic-release/changelog",
       {
         changelogFile: "CHANGELOG.md",
+        changelogTitle: "# Changelog",
       },
     ],
     [
