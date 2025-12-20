@@ -78,7 +78,11 @@ func setupTestDB(t *testing.T) (*pgxpool.Pool, func()) {
 
 	cleanup := func() {
 		pool.Close()
-		container.Terminate(ctx)
+		terminateCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := container.Terminate(terminateCtx); err != nil {
+			t.Logf("warning: failed to terminate container: %v", err)
+		}
 	}
 
 	return pool, cleanup

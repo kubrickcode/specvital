@@ -2,7 +2,10 @@ set dotenv-load := true
 
 root_dir := justfile_directory()
 
-bootstrap: install-psql install-sqlc
+bootstrap: install-docker install-psql install-sqlc
+
+clean-containers:
+    docker ps -a --filter "label=org.testcontainers=true" -q | xargs -r docker rm -f
 
 deps: deps-root
 
@@ -42,6 +45,13 @@ install-psql:
         echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list && \
         apt-get update && \
         apt-get -y install postgresql-client-16
+    fi
+
+install-docker:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! command -v docker &> /dev/null; then
+      curl -fsSL https://get.docker.com | sh
     fi
 
 install-sqlc:
