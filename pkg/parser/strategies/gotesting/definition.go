@@ -26,7 +26,19 @@ const (
 	nodeInterpretedStringLiteral = "interpreted_string_literal"
 	nodeRawStringLiteral         = "raw_string_literal"
 	methodRun                    = "Run"
+	typeTestingB                 = "testing.B"
+	typeTestingF                 = "testing.F"
 	typeTestingParam             = "testing.T"
+)
+
+type goTestFuncType int
+
+const (
+	funcTypeNone goTestFuncType = iota
+	funcTypeTest
+	funcTypeBenchmark
+	funcTypeExample
+	funcTypeFuzz
 )
 
 func init() {
@@ -144,11 +156,26 @@ func extractTestName(funcDecl *sitter.Node, source []byte) string {
 	return parser.GetNodeText(nameNode, source)
 }
 
-func isTestFunction(name string) bool {
-	if !strings.HasPrefix(name, "Test") || len(name) <= 4 {
-		return false
+func classifyTestFunction(name string) goTestFuncType {
+	switch {
+	case strings.HasPrefix(name, "Benchmark"):
+		if len(name) > 9 && unicode.IsUpper(rune(name[9])) {
+			return funcTypeBenchmark
+		}
+	case strings.HasPrefix(name, "Example"):
+		if len(name) == 7 || unicode.IsUpper(rune(name[7])) || name[7] == '_' {
+			return funcTypeExample
+		}
+	case strings.HasPrefix(name, "Fuzz"):
+		if len(name) > 4 && unicode.IsUpper(rune(name[4])) {
+			return funcTypeFuzz
+		}
+	case strings.HasPrefix(name, "Test"):
+		if len(name) > 4 && unicode.IsUpper(rune(name[4])) {
+			return funcTypeTest
+		}
 	}
-	return unicode.IsUpper(rune(name[4]))
+	return funcTypeNone
 }
 
 func parseTestFunctions(root *sitter.Node, source []byte, filename string) ([]domain.TestSuite, []domain.Test) {
@@ -162,17 +189,18 @@ func parseTestFunctions(root *sitter.Node, source []byte, filename string) ([]do
 		}
 
 		name := extractTestName(child, source)
-		if !isTestFunction(name) {
+		funcType := classifyTestFunction(name)
+		if funcType == funcTypeNone {
 			continue
 		}
 
-		if !validateTestParams(child, source) {
+		if !validateFunctionParams(child, source, funcType) {
 			continue
 		}
 
 		body := child.ChildByFieldName("body")
 		var subtests []domain.Test
-		if body != nil {
+		if body != nil && funcType == funcTypeTest {
 			subtests = extractSubtests(body, source, filename)
 		}
 
@@ -208,10 +236,10 @@ func trimQuotes(s string) string {
 	return s
 }
 
-func validateTestParams(funcDecl *sitter.Node, source []byte) bool {
+func validateFunctionParams(funcDecl *sitter.Node, source []byte, funcType goTestFuncType) bool {
 	params := funcDecl.ChildByFieldName("parameters")
 	if params == nil {
-		return false
+		return funcType == funcTypeExample
 	}
 
 	var paramDecl *sitter.Node
@@ -226,6 +254,10 @@ func validateTestParams(funcDecl *sitter.Node, source []byte) bool {
 		}
 	}
 
+	if funcType == funcTypeExample {
+		return paramCount == 0
+	}
+
 	if paramCount != 1 {
 		return false
 	}
@@ -236,5 +268,19 @@ func validateTestParams(funcDecl *sitter.Node, source []byte) bool {
 	}
 
 	elem := parser.FindChildByType(typeNode, nodeQualifiedType)
-	return elem != nil && parser.GetNodeText(elem, source) == typeTestingParam
+	if elem == nil {
+		return false
+	}
+
+	paramType := parser.GetNodeText(elem, source)
+	switch funcType {
+	case funcTypeTest:
+		return paramType == typeTestingParam
+	case funcTypeBenchmark:
+		return paramType == typeTestingB
+	case funcTypeFuzz:
+		return paramType == typeTestingF
+	default:
+		return false
+	}
 }

@@ -357,3 +357,185 @@ func TestWithNestedSubtests(t *testing.T) {
 	assert.Equal(t, "level 1", suite.Tests[0].Name)
 	assert.Equal(t, "level 2", suite.Tests[1].Name)
 }
+
+func TestGoTestingParser_BenchmarkFunctions(t *testing.T) {
+	testSource := `
+package test
+
+import "testing"
+
+func BenchmarkSort(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		// benchmark code
+	}
+}
+
+func BenchmarkSearch(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		// benchmark code
+	}
+}
+`
+
+	parser := &GoTestingParser{}
+	ctx := context.Background()
+
+	testFile, err := parser.Parse(ctx, []byte(testSource), "bench_test.go")
+
+	require.NoError(t, err)
+	require.Len(t, testFile.Tests, 2)
+	assert.Equal(t, "BenchmarkSort", testFile.Tests[0].Name)
+	assert.Equal(t, "BenchmarkSearch", testFile.Tests[1].Name)
+}
+
+func TestGoTestingParser_ExampleFunctions(t *testing.T) {
+	testSource := `
+package test
+
+func Example() {
+	// Output: hello
+}
+
+func ExampleHello() {
+	// Output: hello
+}
+
+func Example_suffix() {
+	// Output: hello
+}
+`
+
+	parser := &GoTestingParser{}
+	ctx := context.Background()
+
+	testFile, err := parser.Parse(ctx, []byte(testSource), "example_test.go")
+
+	require.NoError(t, err)
+	require.Len(t, testFile.Tests, 3)
+	assert.Equal(t, "Example", testFile.Tests[0].Name)
+	assert.Equal(t, "ExampleHello", testFile.Tests[1].Name)
+	assert.Equal(t, "Example_suffix", testFile.Tests[2].Name)
+}
+
+func TestGoTestingParser_FuzzFunctions(t *testing.T) {
+	testSource := `
+package test
+
+import "testing"
+
+func FuzzReverse(f *testing.F) {
+	f.Add("hello")
+	f.Fuzz(func(t *testing.T, s string) {
+		// fuzz test
+	})
+}
+`
+
+	parser := &GoTestingParser{}
+	ctx := context.Background()
+
+	testFile, err := parser.Parse(ctx, []byte(testSource), "fuzz_test.go")
+
+	require.NoError(t, err)
+	require.Len(t, testFile.Tests, 1)
+	assert.Equal(t, "FuzzReverse", testFile.Tests[0].Name)
+}
+
+func TestGoTestingParser_MixedFunctions(t *testing.T) {
+	testSource := `
+package test
+
+import "testing"
+
+func TestUnit(t *testing.T) {}
+func BenchmarkPerf(b *testing.B) {}
+func ExampleUsage() {}
+func FuzzInput(f *testing.F) {}
+`
+
+	parser := &GoTestingParser{}
+	ctx := context.Background()
+
+	testFile, err := parser.Parse(ctx, []byte(testSource), "mixed_test.go")
+
+	require.NoError(t, err)
+	require.Len(t, testFile.Tests, 4)
+	assert.Equal(t, "TestUnit", testFile.Tests[0].Name)
+	assert.Equal(t, "BenchmarkPerf", testFile.Tests[1].Name)
+	assert.Equal(t, "ExampleUsage", testFile.Tests[2].Name)
+	assert.Equal(t, "FuzzInput", testFile.Tests[3].Name)
+}
+
+func TestClassifyTestFunction(t *testing.T) {
+	tests := []struct {
+		name     string
+		funcName string
+		want     goTestFuncType
+	}{
+		{"valid Test", "TestFoo", funcTypeTest},
+		{"invalid Test lowercase", "Testfoo", funcTypeNone},
+		{"Test only", "Test", funcTypeNone},
+		{"valid Benchmark", "BenchmarkFoo", funcTypeBenchmark},
+		{"invalid Benchmark lowercase", "Benchmarkfoo", funcTypeNone},
+		{"Benchmark only", "Benchmark", funcTypeNone},
+		{"valid Example with name", "ExampleFoo", funcTypeExample},
+		{"Example only", "Example", funcTypeExample},
+		{"Example with underscore", "Example_foo", funcTypeExample},
+		{"invalid Example lowercase", "Examplefoo", funcTypeNone},
+		{"valid Fuzz", "FuzzFoo", funcTypeFuzz},
+		{"invalid Fuzz lowercase", "Fuzzfoo", funcTypeNone},
+		{"Fuzz only", "Fuzz", funcTypeNone},
+		{"random function", "DoSomething", funcTypeNone},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := classifyTestFunction(tt.funcName)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestGoTestingParser_InvalidParams(t *testing.T) {
+	tests := []struct {
+		name   string
+		source string
+	}{
+		{
+			name: "benchmark with wrong param",
+			source: `
+package test
+import "testing"
+func BenchmarkInvalid(t *testing.T) {}
+`,
+		},
+		{
+			name: "fuzz with wrong param",
+			source: `
+package test
+import "testing"
+func FuzzInvalid(t *testing.T) {}
+`,
+		},
+		{
+			name: "example with param",
+			source: `
+package test
+import "testing"
+func ExampleInvalid(t *testing.T) {}
+`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			parser := &GoTestingParser{}
+			ctx := context.Background()
+
+			testFile, err := parser.Parse(ctx, []byte(tt.source), "test.go")
+
+			require.NoError(t, err)
+			assert.Empty(t, testFile.Tests, "Should not detect function with wrong params")
+		})
+	}
+}
