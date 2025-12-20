@@ -1,7 +1,10 @@
+const headerPartial = `## [{{version}}]({{@root.host}}/{{@root.owner}}/{{@root.repository}}/compare/{{previousTag}}...{{currentTag}}) ({{date}})
+`;
+
 const mainTemplate = `{{#if noteGroups}}
 {{#each noteGroups}}
 
-### {{title}}
+#### {{title}}
 
 {{#each notes}}
 * {{text}}
@@ -10,10 +13,10 @@ const mainTemplate = `{{#if noteGroups}}
 {{/if}}
 
 {{#if highlightGroups}}
-## 🎯 Highlights
+### 🎯 Highlights
 {{~#each highlightGroups}}
 
-### {{title}}
+#### {{title}}
 
 {{#each commits}}
 * {{#if scope}}**{{scope}}:** {{/if}}{{subject}}{{#if hash}} ([{{shortHash}}]({{@root.host}}/{{@root.owner}}/{{@root.repository}}/commit/{{hash}})){{/if}}
@@ -22,10 +25,10 @@ const mainTemplate = `{{#if noteGroups}}
 {{/if}}
 
 {{#if maintenanceGroups}}
-## 🔧 Maintenance
+### 🔧 Maintenance
 {{~#each maintenanceGroups}}
 
-### {{title}}
+#### {{title}}
 
 {{#each commits}}
 * {{#if scope}}**{{scope}}:** {{/if}}{{subject}}{{#if hash}} ([{{shortHash}}]({{@root.host}}/{{@root.owner}}/{{@root.repository}}/commit/{{hash}})){{/if}}
@@ -104,6 +107,7 @@ export default {
 
             return context;
           },
+          headerPartial,
           mainTemplate,
         },
       },

@@ -1,30 +1,42 @@
-## 🔧 Maintenance
+# Changelog
 
-### ♻️ Refactoring
+## [1.0.4](https://github.com/specvital/web/compare/v1.0.3...v1.0.4) (2025-12-19)
+
+### 🔧 Maintenance
+
+#### ♻️ Refactoring
 
 - migrate job queue from asynq to river ([72fce89](https://github.com/specvital/web/commit/72fce895b4cff07bef68244d7be08be59348b660))
 
-## 🎯 Highlights
+## [1.0.3](https://github.com/specvital/web/compare/v1.0.2...v1.0.3) (2025-12-18)
 
-### 🐛 Bug Fixes
+### 🎯 Highlights
+
+#### 🐛 Bug Fixes
 
 - cookie not being set after GitHub login ([f4fccee](https://github.com/specvital/web/commit/f4fccee642db5089681837f66af66ee3b92a8e68))
 
-## 🎯 Highlights
+## [1.0.2](https://github.com/specvital/web/compare/v1.0.1...v1.0.2) (2025-12-18)
 
-### 🐛 Bug Fixes
+### 🎯 Highlights
+
+#### 🐛 Bug Fixes
 
 - "failed to get latest commit" error during repository analysis ([0de5c39](https://github.com/specvital/web/commit/0de5c399abe3d02435c81640c50d43d1a5bfa37f))
 
-## 🎯 Highlights
+## [1.0.1](https://github.com/specvital/web/compare/v1.0.0...v1.0.1) (2025-12-18)
 
-### 🐛 Bug Fixes
+### 🎯 Highlights
+
+#### 🐛 Bug Fixes
 
 - page not working in production environment ([21a60f7](https://github.com/specvital/web/commit/21a60f7700180cbe01faef41458cc5b73be645d0))
 
-## 🎯 Highlights
+## [1.0.0](https://github.com/specvital/web/commits/v1.0.0) (2025-12-18)
 
-### ✨ Features
+### 🎯 Highlights
+
+#### ✨ Features
 
 - add asynq queue client and DB repository infrastructure ([9b3136f](https://github.com/specvital/web/commit/9b3136f51a682aecccb13886542f023574fe8e7e))
 - add C# xUnit test framework analysis support ([09878f5](https://github.com/specvital/web/commit/09878f57e339a7d1096de93315bb8409571b607c))
@@ -63,7 +75,7 @@
 - **ui:** add framework breakdown to test statistics card ([eb2bf5d](https://github.com/specvital/web/commit/eb2bf5d8060b21cbd43701b78eb68b1c6eb948cf))
 - **ui:** add global header with navigation ([d080965](https://github.com/specvital/web/commit/d0809655cd4da5fdcabb279fe3e783511d393105))
 
-### 🐛 Bug Fixes
+#### 🐛 Bug Fixes
 
 - **analyzer:** allow retry for failed analysis requests ([4e101fc](https://github.com/specvital/web/commit/4e101fc9194478d2eb74edb7ed4beddf92d2c158))
 - **analyzer:** Jest projects incorrectly detected as Vitest ([04cc006](https://github.com/specvital/web/commit/04cc0066c491e343a3ba85d997c424ccbfcb9b59))
@@ -77,23 +89,23 @@
 - test suites not displaying after analysis completion ([f9aa9b8](https://github.com/specvital/web/commit/f9aa9b848073ce37149c70aafe35cb135edab5c0))
 - **test-list:** migrate from container scroll to page scroll virtualization ([2c45796](https://github.com/specvital/web/commit/2c45796059c80d1bf9a9880e17c743a1af7794b2))
 
-### ⚡ Performance
+#### ⚡ Performance
 
 - **web:** enhance error handling and optimize large test list performance ([7f115c3](https://github.com/specvital/web/commit/7f115c3d58bea9d1724010147e19bd038b14f9b5))
 
-## 🔧 Maintenance
+### 🔧 Maintenance
 
-### 🔧 Internal Fixes
+#### 🔧 Internal Fixes
 
 - **cors:** fix default CORS origin using backend port instead of frontend ([3729fb9](https://github.com/specvital/web/commit/3729fb9ccc7a1d405c03a5bc00248fe4deedb8bc))
 - fix pnpm install failure in devcontainer ([7258e39](https://github.com/specvital/web/commit/7258e39e324900b3daadef56b1af5e24d3372c53))
 
-### 📚 Documentation
+#### 📚 Documentation
 
 - add project documentation (README, API docs, CLAUDE.md) ([c08c730](https://github.com/specvital/web/commit/c08c730659987230e26eefda89083a85bc79a248))
 - update CLAUDE.md ([01c22ea](https://github.com/specvital/web/commit/01c22eacff1da7dd748e6ee6a54a3cbf5dbbc300))
 
-### ♻️ Refactoring
+#### ♻️ Refactoring
 
 - **analyzer:** abstract Service dependency with GitHost interface ([8baa79e](https://github.com/specvital/web/commit/8baa79ec9317fa38f4b3aacb99ae5c5b7baf4370))
 - **analyzer:** delegate analysis record creation to collector-centric architecture ([06a3bf6](https://github.com/specvital/web/commit/06a3bf66a29d96d288ac7f3ad4baf873bb806d2a))
@@ -115,12 +127,12 @@
 - remove httplog dependency and migrate to slog-based logging ([a31aac7](https://github.com/specvital/web/commit/a31aac7181275daad8b00d4e606adb1f9b4691ef))
 - simplify framework imports with unified package ([5b56788](https://github.com/specvital/web/commit/5b56788d71d421fb9bc39c2976589652d63b4a47))
 
-### 🔧 CI/CD
+#### 🔧 CI/CD
 
 - add OpenAPI type sync verification CI and update documentation ([f5a03b2](https://github.com/specvital/web/commit/f5a03b247ec163947123f9b91560aee6b59efc64))
 - add Railway deployment infrastructure and semantic-release setup ([acca511](https://github.com/specvital/web/commit/acca5115ab7cfd33c86936e4df55470e9c4b3c6c))
 
-### 🔨 Chore
+#### 🔨 Chore
 
 - add a port shutdown command ([0206fab](https://github.com/specvital/web/commit/0206fabbfd6dc7380999d335fb17218d20e65ed4))
 - Add an item to gitignore ([6673219](https://github.com/specvital/web/commit/6673219d6a69395709da325424b460d72d3912c0))
