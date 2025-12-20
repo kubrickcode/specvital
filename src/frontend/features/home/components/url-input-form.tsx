@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowRight, Github, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle, Github, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { parseGitHubUrl } from "../lib";
+import { cn } from "@/lib/utils";
+import { useDebouncedValidation } from "../hooks/use-debounced-validation";
+import { isValidGitHubUrl, parseGitHubUrl } from "../lib";
 import { useRouter } from "@/i18n/navigation";
 
 export const UrlInputForm = () => {
@@ -14,6 +17,11 @@ export const UrlInputForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [url, setUrl] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  const validationState = useDebouncedValidation(url, isValidGitHubUrl, {
+    delay: 500,
+    minLength: 10,
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,8 +48,28 @@ export const UrlInputForm = () => {
     }
   };
 
+  const renderValidationIcon = () => {
+    if (validationState === "valid") {
+      return (
+        <CheckCircle
+          className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500"
+          aria-hidden="true"
+        />
+      );
+    }
+    if (validationState === "invalid") {
+      return (
+        <AlertCircle
+          className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500"
+          aria-hidden="true"
+        />
+      );
+    }
+    return null;
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-2">
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
       <label htmlFor="github-url" className="sr-only">
         {t("inputLabel")}
       </label>
@@ -58,11 +86,23 @@ export const UrlInputForm = () => {
             value={url}
             onChange={handleChange}
             disabled={isPending}
-            aria-invalid={!!error}
-            aria-describedby={error ? "url-error" : undefined}
+            aria-invalid={!!error || validationState === "invalid"}
+            aria-describedby={
+              error ? "url-error" : validationState !== "idle" ? "url-validation-status" : undefined
+            }
             aria-label={t("inputLabel")}
-            className="pl-10 h-11 sm:h-10"
+            className={cn(
+              "pl-10 pr-10 h-11 sm:h-10",
+              validationState === "valid" && "border-green-500/50 focus-visible:ring-green-500/20",
+              validationState === "invalid" && "border-amber-500/50 focus-visible:ring-amber-500/20"
+            )}
           />
+          {renderValidationIcon()}
+          {validationState !== "idle" && (
+            <span id="url-validation-status" className="sr-only" aria-live="polite">
+              {validationState === "valid" ? "Valid GitHub URL" : "Invalid GitHub URL format"}
+            </span>
+          )}
         </div>
         <Button
           type="submit"
@@ -85,9 +125,10 @@ export const UrlInputForm = () => {
         </Button>
       </div>
       {error && (
-        <p id="url-error" role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
+        <Alert variant="destructive" id="url-error">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
     </form>
   );
