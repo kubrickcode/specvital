@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "bash /workspaces/specvital-github-io/.claude/statusline.sh"
+    "command": "bash /workspaces/ai-config-toolkit/.claude/statusline.sh"
   },
   "hooks": {
     "Stop": [
@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /workspaces/specvital-github-io/.claude/notify.sh"
+            "command": "bash /workspaces/ai-config-toolkit/.claude/notify.sh"
           }
         ]
       }
