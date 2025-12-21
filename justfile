@@ -67,7 +67,7 @@ snapshot-update repo="all":
     just lint config
 
 sync-docs:
-    baedal specvital/.github/docs docs && baedal specvital/.github/docs.kr docs.kr
+    baedal specvital/specvital.github.io/docs docs --exclude ".vitepress/**"
 
 test target="all":
     #!/usr/bin/env bash
