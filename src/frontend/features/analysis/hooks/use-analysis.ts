@@ -2,8 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
-import { fetchAnalysis } from "../api";
+
 import type { AnalysisResponse, AnalysisResult } from "@/lib/api/types";
+
+import { fetchAnalysis } from "../api";
 
 class AnalysisTimeoutError extends Error {
   constructor() {
@@ -43,13 +45,13 @@ export const useAnalysis = (owner: string, repo: string): UseAnalysisReturn => {
   }, [owner, repo]);
 
   const query = useQuery({
-    queryKey: analysisKeys.detail(owner, repo),
     queryFn: async () => {
       if (Date.now() - startTimeRef.current > MAX_WAIT_MS) {
         throw new AnalysisTimeoutError();
       }
       return fetchAnalysis(owner, repo);
     },
+    queryKey: analysisKeys.detail(owner, repo),
     refetchInterval: (query) => {
       const response = query.state.data;
 

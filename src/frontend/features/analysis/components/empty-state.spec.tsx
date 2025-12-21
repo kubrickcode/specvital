@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
+import { describe, expect, it, vi } from "vitest";
+
 import { EmptyState } from "./empty-state";
 
 const mockPush = vi.fn();
@@ -13,10 +14,10 @@ vi.mock("@/i18n/navigation", () => ({
 
 const messages = {
   emptyState: {
-    title: "No tests found",
+    analyzeAnother: "Analyze Another Repository",
     description: "We couldn't find any test files in this repository.",
     supportedFrameworks: "Supported frameworks:",
-    analyzeAnother: "Analyze Another Repository",
+    title: "No tests found",
   },
 };
 

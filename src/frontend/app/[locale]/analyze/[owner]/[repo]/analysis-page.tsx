@@ -2,9 +2,10 @@
 
 import { RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { AnalysisContent, AnalysisSkeleton, useAnalysis } from "@/features/analysis";
-import { Button } from "@/components/ui/button";
+
 import { ErrorFallback } from "@/components/feedback";
+import { Button } from "@/components/ui/button";
+import { AnalysisContent, AnalysisSkeleton, useAnalysis } from "@/features/analysis";
 
 type AnalysisPageProps = {
   owner: string;
@@ -64,14 +65,14 @@ export const AnalysisPage = ({ owner, repo }: AnalysisPageProps) => {
   if (status === "error" || status === "failed") {
     return (
       <ErrorFallback
-        title={t("status.error")}
-        description={getDisplayErrorMessage(error, status, t)}
         action={
-          <Button onClick={refetch} variant="outline" className="gap-2">
+          <Button className="gap-2" onClick={refetch} variant="outline">
             <RefreshCw className="h-4 w-4" />
             {t("retry")}
           </Button>
         }
+        description={getDisplayErrorMessage(error, status, t)}
+        title={t("status.error")}
       />
     );
   }

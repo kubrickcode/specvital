@@ -3,10 +3,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const StatsCardSkeleton = () => {
   return (
     <div
-      className="rounded-lg border bg-card p-6 shadow-xs"
-      role="status"
       aria-label="Loading statistics"
       aria-live="polite"
+      className="rounded-lg border bg-card p-6 shadow-xs"
+      role="status"
     >
       {/* Header */}
       <Skeleton className="h-5 w-24 mb-4" />
@@ -43,7 +43,7 @@ export const StatsCardSkeleton = () => {
         <Skeleton className="h-4 w-32 mb-4" />
         <div className="space-y-4">
           {[0, 1].map((index) => (
-            <div key={index} className="space-y-2">
+            <div className="space-y-2" key={index}>
               {/* Header row */}
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2">

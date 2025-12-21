@@ -2,9 +2,10 @@
 
 import { Home } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+
 import { AuthErrorBoundary } from "@/components/feedback";
 import { LanguageSelector, ThemeToggle } from "@/components/theme";
+import { Button } from "@/components/ui/button";
 import { AuthStatus, LoginButton } from "@/features/auth";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -19,8 +20,8 @@ export const Header = () => {
       <div className="container mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <Link
-            href="/"
             className="flex items-center space-x-2 text-lg font-semibold hover:opacity-80 transition-opacity"
+            href="/"
           >
             <span>{tCommon("appName")}</span>
           </Link>
@@ -28,8 +29,8 @@ export const Header = () => {
 
         <div className="flex items-center gap-2">
           {!isHomePage && (
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/" className="flex items-center gap-2">
+            <Button asChild size="sm" variant="ghost">
+              <Link className="flex items-center gap-2" href="/">
                 <Home className="h-4 w-4" />
                 <span className="hidden sm:inline">{t("analyzeAnother")}</span>
               </Link>

@@ -2,6 +2,7 @@
 
 import { LogOut, User } from "lucide-react";
 import { useTranslations } from "next-intl";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { useAuth } from "../hooks";
 
 export const UserMenu = () => {
@@ -22,11 +24,7 @@ export const UserMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          className="h-8 w-8 rounded-full p-0"
-          size="sm"
-          variant="ghost"
-        >
+        <Button className="h-8 w-8 rounded-full p-0" size="sm" variant="ghost">
           {user.avatarUrl ? (
             <img
               alt={user.login}
@@ -44,19 +42,12 @@ export const UserMenu = () => {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            {user.name && (
-              <p className="text-sm font-medium leading-none">{user.name}</p>
-            )}
-            <p className="text-xs leading-none text-muted-foreground">
-              @{user.login}
-            </p>
+            {user.name && <p className="text-sm font-medium leading-none">{user.name}</p>}
+            <p className="text-xs leading-none text-muted-foreground">@{user.login}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          disabled={logoutPending}
-          onClick={logout}
-        >
+        <DropdownMenuItem disabled={logoutPending} onClick={logout}>
           <LogOut className="mr-2 h-4 w-4" />
           {t("logout")}
         </DropdownMenuItem>

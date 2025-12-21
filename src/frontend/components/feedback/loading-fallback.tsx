@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 type LoadingFallbackProps = {
@@ -23,7 +24,7 @@ export const LoadingFallback = ({
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         {message && (
-          <p className="text-muted-foreground" aria-live="polite">
+          <p aria-live="polite" className="text-muted-foreground">
             {message}
           </p>
         )}

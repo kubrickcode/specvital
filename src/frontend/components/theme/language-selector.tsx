@@ -1,9 +1,10 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useId, useTransition } from "react";
 import { Globe } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useId, useTransition } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,7 +39,7 @@ export const LanguageSelector = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild id={id}>
-        <Button variant="ghost" size="sm" disabled={isPending} aria-label={t("selectLanguage")}>
+        <Button aria-label={t("selectLanguage")} disabled={isPending} size="sm" variant="ghost">
           <Globe className="h-4 w-4" />
           <span className="sr-only">{t("selectLanguage")}</span>
         </Button>
@@ -46,9 +47,9 @@ export const LanguageSelector = () => {
       <DropdownMenuContent align="end">
         {routing.locales.map((locale) => (
           <DropdownMenuItem
+            disabled={locale === currentLocale}
             key={locale}
             onClick={() => handleLocaleChange(locale)}
-            disabled={locale === currentLocale}
           >
             {LANGUAGE_NAMES[locale]}
           </DropdownMenuItem>

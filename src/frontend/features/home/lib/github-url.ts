@@ -13,8 +13,8 @@ export type ParsedGitHubUrl = {
 };
 
 export type ParseGitHubUrlResult =
-  | { success: true; data: ParsedGitHubUrl }
-  | { success: false; error: string };
+  | { data: ParsedGitHubUrl; success: true }
+  | { error: string; success: false };
 
 const gitHubUrlSchema = z
   .string()
@@ -67,14 +67,14 @@ export const parseGitHubUrl = (url: string): ParseGitHubUrlResult => {
 
   if (!result.success) {
     return {
-      success: false,
       error: result.error.issues[0]?.message ?? "Invalid URL",
+      success: false,
     };
   }
 
   return {
-    success: true,
     data: result.data,
+    success: true,
   };
 };
 

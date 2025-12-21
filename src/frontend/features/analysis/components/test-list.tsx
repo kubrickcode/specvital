@@ -2,7 +2,9 @@
 
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useLayoutEffect, useRef, useState } from "react";
+
 import type { TestSuite } from "@/lib/api";
+
 import { EmptyState } from "./empty-state";
 import { TestSuiteAccordion } from "./test-suite-accordion";
 
@@ -39,8 +41,8 @@ export const TestList = ({ suites }: TestListProps) => {
       ref={listRef}
       style={{
         height: `${virtualizer.getTotalSize()}px`,
-        width: "100%",
         position: "relative",
+        width: "100%",
       }}
     >
       {virtualItems.map((virtualItem) => {
@@ -51,15 +53,15 @@ export const TestList = ({ suites }: TestListProps) => {
 
         return (
           <div
-            key={virtualItem.key}
             data-index={virtualItem.index}
+            key={virtualItem.key}
             ref={virtualizer.measureElement}
             style={{
+              left: 0,
               position: "absolute",
               top: 0,
-              left: 0,
-              width: "100%",
               transform: `translateY(${virtualItem.start - scrollMargin}px)`,
+              width: "100%",
             }}
           >
             <div className="pb-3">

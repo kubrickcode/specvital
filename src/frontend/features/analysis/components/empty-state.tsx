@@ -2,6 +2,7 @@
 
 import { FileSearch } from "lucide-react";
 import { useTranslations } from "next-intl";
+
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/i18n/navigation";
 
@@ -24,7 +25,7 @@ export const EmptyState = () => {
     <div className="rounded-lg border bg-card p-8 md:p-12 shadow-xs">
       <div className="flex flex-col items-center text-center space-y-6">
         <div className="rounded-full bg-muted p-4">
-          <FileSearch className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+          <FileSearch aria-hidden="true" className="h-8 w-8 text-muted-foreground" />
         </div>
 
         <div className="space-y-2">
@@ -38,17 +39,15 @@ export const EmptyState = () => {
           </h4>
           <ul className="space-y-2 text-sm text-left">
             {SUPPORTED_FRAMEWORKS.map((framework) => (
-              <li key={framework.name} className="flex items-start gap-2">
-                <span className="font-medium text-foreground min-w-[80px]">
-                  {framework.name}
-                </span>
+              <li className="flex items-start gap-2" key={framework.name}>
+                <span className="font-medium text-foreground min-w-[80px]">{framework.name}</span>
                 <span className="text-muted-foreground">{framework.patterns.join(", ")}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <Button onClick={handleAnalyzeAnother} size="lg" className="mt-4">
+        <Button className="mt-4" onClick={handleAnalyzeAnother} size="lg">
           {t("analyzeAnother")}
         </Button>
       </div>

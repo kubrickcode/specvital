@@ -1,4 +1,5 @@
 import { Check, Circle, CircleDashed, Crosshair, XCircle } from "lucide-react";
+
 import type { TestCase } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -8,28 +9,28 @@ type TestItemProps = {
 
 const STATUS_CONFIG = {
   active: {
-    icon: Check,
     color: "text-green-600",
+    icon: Check,
     label: "Active test",
   },
   focused: {
-    icon: Crosshair,
     color: "text-purple-500",
+    icon: Crosshair,
     label: "Focused test",
   },
   skipped: {
-    icon: CircleDashed,
     color: "text-amber-500",
+    icon: CircleDashed,
     label: "Skipped test",
   },
   todo: {
-    icon: Circle,
     color: "text-blue-500",
+    icon: Circle,
     label: "Todo test",
   },
   xfail: {
-    icon: XCircle,
     color: "text-red-400",
+    icon: XCircle,
     label: "Expected failure",
   },
 } as const;
@@ -45,14 +46,9 @@ export const TestItem = ({ test }: TestItemProps) => {
         "hover:bg-muted/50 transition-colors"
       )}
     >
-      <Icon
-        className={cn("h-4 w-4 flex-shrink-0", config.color)}
-        aria-label={config.label}
-      />
+      <Icon aria-label={config.label} className={cn("h-4 w-4 flex-shrink-0", config.color)} />
       <span className="flex-1 text-sm truncate">{test.name}</span>
-      <span className="text-xs text-muted-foreground font-mono flex-shrink-0">
-        L:{test.line}
-      </span>
+      <span className="text-xs text-muted-foreground font-mono flex-shrink-0">L:{test.line}</span>
     </div>
   );
 };

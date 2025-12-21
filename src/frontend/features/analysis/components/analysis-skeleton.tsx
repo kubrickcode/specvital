@@ -1,6 +1,8 @@
 import { Loader2 } from "lucide-react";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+
 import { StatsCardSkeleton } from "./stats-card-skeleton";
 import { TestListSkeleton } from "./test-list-skeleton";
 
@@ -14,28 +16,28 @@ type AnalysisSkeletonProps = {
 
 const STATUS_CONFIG: Record<
   AnalysisStatus,
-  { border: string; bg: string; icon: string; defaultTitle: string; defaultDescription: string }
+  { bg: string; border: string; defaultDescription: string; defaultTitle: string; icon: string }
 > = {
+  analyzing: {
+    bg: "bg-chart-1/10",
+    border: "border-l-chart-1",
+    defaultDescription: "Scanning test files...",
+    defaultTitle: "Analyzing",
+    icon: "text-chart-1",
+  },
   loading: {
-    border: "border-l-muted-foreground",
     bg: "bg-accent/30",
-    icon: "text-muted-foreground",
-    defaultTitle: "Loading",
+    border: "border-l-muted-foreground",
     defaultDescription: "Preparing analysis...",
+    defaultTitle: "Loading",
+    icon: "text-muted-foreground",
   },
   queued: {
-    border: "border-l-chart-2",
     bg: "bg-chart-2/10",
-    icon: "text-chart-2",
-    defaultTitle: "Queued",
+    border: "border-l-chart-2",
     defaultDescription: "Analysis will start shortly",
-  },
-  analyzing: {
-    border: "border-l-chart-1",
-    bg: "bg-chart-1/10",
-    icon: "text-chart-1",
-    defaultTitle: "Analyzing",
-    defaultDescription: "Scanning test files...",
+    defaultTitle: "Queued",
+    icon: "text-chart-2",
   },
 };
 
@@ -49,7 +51,7 @@ export const AnalysisSkeleton = ({
   const displayDescription = description ?? config.defaultDescription;
 
   return (
-    <main className="container mx-auto px-4 py-8" aria-busy="true">
+    <main aria-busy="true" className="container mx-auto px-4 py-8">
       <div className="space-y-6">
         {/* Header skeleton */}
         <header className="space-y-2">
@@ -65,13 +67,9 @@ export const AnalysisSkeleton = ({
 
         {/* Status banner */}
         <div
-          className={cn(
-            "rounded-lg border-l-4 px-4 py-3",
-            config.border,
-            config.bg
-          )}
-          role="status"
           aria-live="polite"
+          className={cn("rounded-lg border-l-4 px-4 py-3", config.border, config.bg)}
+          role="status"
         >
           <div className="flex items-center gap-3">
             <Loader2 className={cn("h-5 w-5 animate-spin shrink-0", config.icon)} />

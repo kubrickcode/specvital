@@ -14,23 +14,23 @@ const cspValue = isDev
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
   headers: async () => [
     {
-      source: "/:path*",
       headers: [
         { key: "X-Frame-Options", value: "DENY" },
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         { key: "Content-Security-Policy", value: cspValue },
       ],
+      source: "/:path*",
     },
   ],
+  reactStrictMode: true,
   // Proxy API requests to backend (solves CORS and localhost access issues)
   rewrites: async () => [
     {
-      source: "/api/:path*",
       destination: `${API_URL}/api/:path*`,
+      source: "/api/:path*",
     },
   ],
 };

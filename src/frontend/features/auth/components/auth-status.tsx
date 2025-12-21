@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+
 import { useAuth } from "../hooks";
 import { LoginButton } from "./login-button";
 import { UserMenu } from "./user-menu";

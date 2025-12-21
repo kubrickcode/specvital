@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { apiFetch, parseJsonResponse } from "./client";
 
 describe("apiFetch", () => {
@@ -48,8 +49,8 @@ describe("parseJsonResponse", () => {
   it("returns parsed JSON on success", async () => {
     const data = { foo: "bar" };
     const response = {
-      ok: true,
       json: () => Promise.resolve(data),
+      ok: true,
     } as Response;
 
     const result = await parseJsonResponse(response);
@@ -58,9 +59,9 @@ describe("parseJsonResponse", () => {
 
   it("throws error with detail on failure", async () => {
     const response = {
+      json: () => Promise.resolve({ detail: "Resource not found" }),
       ok: false,
       statusText: "Not Found",
-      json: () => Promise.resolve({ detail: "Resource not found" }),
     } as Response;
 
     await expect(parseJsonResponse(response)).rejects.toThrow("Resource not found");
@@ -68,9 +69,9 @@ describe("parseJsonResponse", () => {
 
   it("throws error with statusText when no detail", async () => {
     const response = {
+      json: () => Promise.reject(new Error("Parse error")),
       ok: false,
       statusText: "Internal Server Error",
-      json: () => Promise.reject(new Error("Parse error")),
     } as Response;
 
     await expect(parseJsonResponse(response)).rejects.toThrow("Internal Server Error");

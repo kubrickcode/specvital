@@ -13,3 +13,6 @@ out
 .git
 .cache
 *.log
+
+# Generated files
+**/generated-types.ts

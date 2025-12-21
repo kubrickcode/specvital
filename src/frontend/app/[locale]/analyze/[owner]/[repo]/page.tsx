@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { locales } from "@/i18n/config";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+
 import { isValidGitHubUrl } from "@/features/home";
+import { locales } from "@/i18n/config";
+
 import { AnalysisPage } from "./analysis-page";
 
 export const dynamic = "force-dynamic";
@@ -34,13 +36,13 @@ export const generateMetadata = async ({ params }: AnalyzePageProps): Promise<Me
   const t = await getTranslations({ locale, namespace: "metadata" });
 
   return {
-    title: t("analyzeTitle", { owner, repo }),
-    description: t("analyzeDescription", { owner, repo }),
     alternates: {
       canonical: `/${locale}/analyze/${owner}/${repo}`,
       languages: Object.fromEntries(
         locales.map((loc) => [loc, `/${loc}/analyze/${owner}/${repo}`])
       ),
     },
+    description: t("analyzeDescription", { owner, repo }),
+    title: t("analyzeTitle", { owner, repo }),
   };
 };

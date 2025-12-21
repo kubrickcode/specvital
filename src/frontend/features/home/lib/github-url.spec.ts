@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { isValidGitHubUrl, parseGitHubUrl } from "./github-url";
 
 describe("parseGitHubUrl", () => {
@@ -6,8 +7,8 @@ describe("parseGitHubUrl", () => {
     it("parses HTTPS URL", () => {
       const result = parseGitHubUrl("https://github.com/facebook/react");
       expect(result).toEqual({
-        success: true,
         data: { owner: "facebook", repo: "react" },
+        success: true,
       });
     });
 
@@ -19,8 +20,8 @@ describe("parseGitHubUrl", () => {
     it("handles trailing slash", () => {
       const result = parseGitHubUrl("https://github.com/owner/repo/");
       expect(result).toEqual({
-        success: true,
         data: { owner: "owner", repo: "repo" },
+        success: true,
       });
     });
 
@@ -49,16 +50,16 @@ describe("parseGitHubUrl", () => {
     it("rejects empty URL", () => {
       const result = parseGitHubUrl("");
       expect(result).toEqual({
-        success: false,
         error: "URL is required",
+        success: false,
       });
     });
 
     it("rejects whitespace only", () => {
       const result = parseGitHubUrl("   ");
       expect(result).toEqual({
-        success: false,
         error: "URL is required",
+        success: false,
       });
     });
 

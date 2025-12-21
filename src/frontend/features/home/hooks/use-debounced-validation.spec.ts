@@ -1,5 +1,6 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { useDebouncedValidation } from "./use-debounced-validation";
 
 describe("useDebouncedValidation", () => {
@@ -21,9 +22,7 @@ describe("useDebouncedValidation", () => {
 
   it("returns idle when value length is below minLength", () => {
     const validate = vi.fn().mockReturnValue(true);
-    const { result } = renderHook(() =>
-      useDebouncedValidation("abc", validate, { minLength: 5 })
-    );
+    const { result } = renderHook(() => useDebouncedValidation("abc", validate, { minLength: 5 }));
 
     expect(result.current).toBe("idle");
     expect(validate).not.toHaveBeenCalled();
@@ -60,7 +59,7 @@ describe("useDebouncedValidation", () => {
 
   it("debounces validation on rapid value changes", () => {
     const validate = vi.fn().mockReturnValue(true);
-    const { result, rerender } = renderHook(
+    const { rerender, result } = renderHook(
       ({ value }) => useDebouncedValidation(value, validate, { delay: 500, minLength: 1 }),
       { initialProps: { value: "a" } }
     );
@@ -88,7 +87,7 @@ describe("useDebouncedValidation", () => {
 
   it("resets to idle when value becomes shorter than minLength", () => {
     const validate = vi.fn().mockReturnValue(true);
-    const { result, rerender } = renderHook(
+    const { rerender, result } = renderHook(
       ({ value }) => useDebouncedValidation(value, validate, { delay: 500, minLength: 5 }),
       { initialProps: { value: "https://github.com" } }
     );

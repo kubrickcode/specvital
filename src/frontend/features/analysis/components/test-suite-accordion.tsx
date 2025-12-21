@@ -2,8 +2,10 @@
 
 import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import { useState } from "react";
+
 import type { TestSuite } from "@/lib/api";
 import { cn } from "@/lib/utils";
+
 import { FrameworkBadge } from "./framework-badge";
 import { TestItem } from "./test-item";
 
@@ -28,6 +30,12 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
       )}
     >
       <button
+        aria-expanded={isExpanded}
+        aria-label={
+          isExpanded
+            ? `Collapse ${suite.filePath} test suite`
+            : `Expand ${suite.filePath} test suite`
+        }
         className={cn(
           "flex w-full items-center gap-3 px-4 py-3 rounded-t-lg",
           "transition-all duration-200 ease-in-out",
@@ -35,12 +43,6 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
           isExpanded ? "bg-accent/40 hover:bg-accent/60" : "hover:bg-muted/70"
         )}
         onClick={toggleExpanded}
-        aria-expanded={isExpanded}
-        aria-label={
-          isExpanded
-            ? `Collapse ${suite.filePath} test suite`
-            : `Expand ${suite.filePath} test suite`
-        }
       >
         {isExpanded ? (
           <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform duration-200" />

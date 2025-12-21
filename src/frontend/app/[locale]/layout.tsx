@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
-import { notFound } from "next/navigation";
+
 import { Header } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
 import { Toaster } from "@/components/ui/sonner";
@@ -66,8 +67,8 @@ export const generateMetadata = async ({
   const t = await getTranslations({ locale, namespace: "metadata" });
 
   return {
-    title: t("defaultTitle"),
     description: t("defaultDescription"),
+    title: t("defaultTitle"),
   };
 };
 

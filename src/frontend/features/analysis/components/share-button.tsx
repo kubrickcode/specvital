@@ -2,7 +2,9 @@
 
 import { Check, Link2, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+
 import { Button } from "@/components/ui/button";
+
 import { useShare } from "../hooks/use-share";
 
 type ShareButtonProps = {
@@ -17,8 +19,7 @@ export const ShareButton = ({
   variant = "outline",
 }: ShareButtonProps) => {
   const t = useTranslations("share");
-  const { copyToClipboard, isNativeShareSupported, shareNative, state } =
-    useShare();
+  const { copyToClipboard, isNativeShareSupported, shareNative, state } = useShare();
 
   const handleClick = isNativeShareSupported ? shareNative : copyToClipboard;
 
@@ -26,11 +27,7 @@ export const ShareButton = ({
     if (state === "success") {
       return <Check className="h-4 w-4" />;
     }
-    return isNativeShareSupported ? (
-      <Share2 className="h-4 w-4" />
-    ) : (
-      <Link2 className="h-4 w-4" />
-    );
+    return isNativeShareSupported ? <Share2 className="h-4 w-4" /> : <Link2 className="h-4 w-4" />;
   };
 
   return (

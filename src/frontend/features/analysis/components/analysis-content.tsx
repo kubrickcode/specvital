@@ -2,8 +2,10 @@
 
 import { ExternalLink, GitCommit } from "lucide-react";
 import { useTranslations } from "next-intl";
+
 import type { AnalysisResult } from "@/lib/api";
 import { formatAnalysisDate, SHORT_SHA_LENGTH } from "@/lib/utils";
+
 import { ShareButton } from "./share-button";
 import { StatsCard } from "./stats-card";
 import { TestList } from "./test-list";
@@ -26,10 +28,10 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
             <div className="flex items-center gap-2">
               <ShareButton />
               <a
-                href={`https://github.com/${result.owner}/${result.repo}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                href={`https://github.com/${result.owner}/${result.repo}`}
+                rel="noopener noreferrer"
+                target="_blank"
               >
                 {t("viewOnGitHub")}
                 <ExternalLink className="h-4 w-4" />

@@ -1,8 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+
 import { shouldUseNativeShare } from "@/lib/utils/device";
 
 const SUCCESS_DISPLAY_DURATION_MS = 2000;

@@ -2,9 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { fetchCurrentUser, fetchLogin, fetchLogout } from "../api";
+
 import { authKeys } from "@/lib/api/error-handler";
 import type { UserInfo } from "@/lib/api/types";
+
+import { fetchCurrentUser, fetchLogin, fetchLogout } from "../api";
 
 type UseAuthReturn = {
   isAuthenticated: boolean;

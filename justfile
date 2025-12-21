@@ -61,7 +61,8 @@ lint target="all":
       all)
         just lint justfile
         just lint config
-        just lint go
+        just lint backend
+        just lint frontend
         ;;
       justfile)
         just --fmt --unstable
@@ -69,8 +70,12 @@ lint target="all":
       config)
         npx prettier --write "**/*.{json,yml,yaml,md}"
         ;;
-      go)
+      backend)
         gofmt -w src/backend
+        ;;
+      frontend)
+        npx prettier --write "src/frontend/**/*.{ts,tsx}"
+        cd src/frontend && pnpm eslint --fix --max-warnings=0 .
         ;;
       *)
         echo "Unknown target: {{ target }}"

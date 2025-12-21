@@ -2,6 +2,7 @@
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+
 import { createQueryClient } from "./client";
 
 type QueryProviderProps = {

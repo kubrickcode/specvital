@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+
 import { ErrorFallback } from "@/components/feedback";
+import { Button } from "@/components/ui/button";
 
 type ErrorProps = {
   error: Error & { digest?: string };
@@ -16,8 +17,6 @@ const Error = ({ error, reset }: ErrorProps) => {
 
   return (
     <ErrorFallback
-      title={t("somethingWentWrong")}
-      description={error.message}
       action={
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button onClick={reset} variant="default">
@@ -28,6 +27,8 @@ const Error = ({ error, reset }: ErrorProps) => {
           </Button>
         </div>
       }
+      description={error.message}
+      title={t("somethingWentWrong")}
     />
   );
 };

@@ -1,4 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
+
 import { handleUnauthorizedError, isAuthQuery, isUnauthorizedError } from "@/lib/api/error-handler";
 
 export const createQueryClient = () => {

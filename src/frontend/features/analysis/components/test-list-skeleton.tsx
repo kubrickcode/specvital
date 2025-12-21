@@ -27,7 +27,7 @@ const TestSuiteAccordionSkeleton = () => {
 
 export const TestListSkeleton = () => {
   return (
-    <div className="space-y-3" role="status" aria-label="Loading test suites" aria-live="polite">
+    <div aria-label="Loading test suites" aria-live="polite" className="space-y-3" role="status">
       {Array.from({ length: SKELETON_ITEMS }).map((_, index) => (
         <TestSuiteAccordionSkeleton key={index} />
       ))}

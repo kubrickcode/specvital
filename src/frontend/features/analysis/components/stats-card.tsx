@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+
 import type { Summary } from "@/lib/api/types";
 import { getFrameworkColor } from "@/lib/styles";
 import { cn } from "@/lib/utils";
@@ -44,7 +45,7 @@ export const StatsCard = ({ summary }: StatsCardProps) => {
             {frameworks.map((fw, index) => {
               const percentage = total > 0 ? Math.round((fw.total / total) * 100) : 0;
               return (
-                <div key={fw.framework} className="space-y-2">
+                <div className="space-y-2" key={fw.framework}>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2 font-medium">
                       <span
@@ -59,17 +60,17 @@ export const StatsCard = ({ summary }: StatsCardProps) => {
                     </span>
                   </div>
                   <div
+                    aria-valuemax={100}
+                    aria-valuemin={0}
+                    aria-valuenow={percentage}
                     className="h-2 w-full rounded-full bg-muted overflow-hidden"
                     role="progressbar"
-                    aria-valuenow={percentage}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
                   >
                     <div
                       className="h-full rounded-full transition-all duration-300"
                       style={{
-                        width: `${percentage}%`,
                         backgroundColor: getFrameworkColor(index, fw.framework),
+                        width: `${percentage}%`,
                       }}
                     />
                   </div>
