@@ -24,6 +24,7 @@ const (
 	ModifierTodo       = "todo"
 
 	DynamicCasesSuffix = " (dynamic cases)"
+	ObjectPlaceholder  = "<object>"
 )
 
 var SkippedFunctionAliases = map[string]string{

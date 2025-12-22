@@ -863,3 +863,182 @@ func TestParse_BenchInSuite(t *testing.T) {
 		}
 	}
 }
+
+func TestParse_ForEachCallback(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		source    string
+		wantCount int
+		wantFirst string
+	}{
+		{
+			name: "should parse forEach with template literal",
+			source: "browsers.forEach((browser) => {\n  it(`supports ${browser}`, () => {});\n});",
+			wantCount: 1,
+			wantFirst: "supports ${browser} (dynamic cases)",
+		},
+		{
+			name: "should parse forEach with multiple tests",
+			source: `testCases.forEach(({ color, status }) => {
+  it('renders full mode', () => {});
+  it('renders compact mode', () => {});
+});`,
+			wantCount: 2,
+			wantFirst: "renders full mode (dynamic cases)",
+		},
+		{
+			name: "should parse map with template literal",
+			source: "items.map((item) => {\n  it(`handles ${item}`, () => {});\n});",
+			wantCount: 1,
+			wantFirst: "handles ${item} (dynamic cases)",
+		},
+		{
+			name: "should parse forEach inside describe",
+			source: `describe('Suite', () => {
+  testCases.forEach((tc) => {
+    it('test case', () => {});
+  });
+});`,
+			wantCount: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := Parse(context.Background(), []byte(tt.source), "test.ts", "jest")
+
+			if err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			if len(file.Tests) != tt.wantCount {
+				t.Fatalf("len(Tests) = %d, want %d", len(file.Tests), tt.wantCount)
+			}
+
+			if tt.wantCount > 0 && file.Tests[0].Name != tt.wantFirst {
+				t.Errorf("Tests[0].Name = %q, want %q", file.Tests[0].Name, tt.wantFirst)
+			}
+		})
+	}
+}
+
+func TestParse_ForEachInsideSuite(t *testing.T) {
+	t.Parallel()
+
+	source := `describe('Badge Renderer', () => {
+  testCases.forEach(({ color, status }) => {
+    it('renders full mode', () => {});
+    it('renders compact mode', () => {});
+  });
+});`
+
+	file, err := Parse(context.Background(), []byte(source), "test.ts", "vitest")
+
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	if len(file.Suites) != 1 {
+		t.Fatalf("len(Suites) = %d, want 1", len(file.Suites))
+	}
+
+	suite := file.Suites[0]
+	if len(suite.Tests) != 2 {
+		t.Fatalf("len(suite.Tests) = %d, want 2", len(suite.Tests))
+	}
+
+	expectedTests := []string{
+		"renders full mode (dynamic cases)",
+		"renders compact mode (dynamic cases)",
+	}
+
+	for i, expected := range expectedTests {
+		if suite.Tests[i].Name != expected {
+			t.Errorf("Tests[%d].Name = %q, want %q", i, suite.Tests[i].Name, expected)
+		}
+	}
+}
+
+func TestParse_EachWithObjectArray(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		source    string
+		wantCount int
+		wantFirst string
+	}{
+		{
+			name: "should parse it.each with object array",
+			source: `it.each([
+  { input: 1, expected: 2 },
+  { input: 2, expected: 4 },
+])('test $input', ({ input, expected }) => {});`,
+			wantCount: 2,
+			wantFirst: "test $input",
+		},
+		{
+			name: "should parse describe.each with object array",
+			source: `describe.each([
+  { name: 'Chrome' },
+  { name: 'Firefox' },
+])('Browser $name', () => {
+  it('works', () => {});
+});`,
+			wantCount: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := Parse(context.Background(), []byte(tt.source), "test.ts", "jest")
+
+			if err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			if len(file.Tests) != tt.wantCount {
+				t.Fatalf("len(Tests) = %d, want %d", len(file.Tests), tt.wantCount)
+			}
+
+			if tt.wantCount > 0 && file.Tests[0].Name != tt.wantFirst {
+				t.Errorf("Tests[0].Name = %q, want %q", file.Tests[0].Name, tt.wantFirst)
+			}
+		})
+	}
+}
+
+func TestParse_MixedStaticAndDynamic(t *testing.T) {
+	t.Parallel()
+
+	source := "describe('Suite', () => {\n  it('static test', () => {});\n\n  [1, 2].forEach((n) => {\n    it(`dynamic ${n}`, () => {});\n  });\n});"
+
+	file, err := Parse(context.Background(), []byte(source), "test.ts", "vitest")
+
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	if len(file.Suites) != 1 {
+		t.Fatalf("len(Suites) = %d, want 1", len(file.Suites))
+	}
+
+	suite := file.Suites[0]
+	if len(suite.Tests) != 2 {
+		t.Fatalf("len(suite.Tests) = %d, want 2", len(suite.Tests))
+	}
+
+	if suite.Tests[0].Name != "static test" {
+		t.Errorf("Tests[0].Name = %q, want %q", suite.Tests[0].Name, "static test")
+	}
+
+	if suite.Tests[1].Name != "dynamic ${n} (dynamic cases)" {
+		t.Errorf("Tests[1].Name = %q, want %q", suite.Tests[1].Name, "dynamic ${n} (dynamic cases)")
+	}
+}

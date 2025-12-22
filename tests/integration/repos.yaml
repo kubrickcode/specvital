@@ -250,3 +250,11 @@ repositories:
       - playwright
       - vitest
     complex: true
+
+  - name: github-project-status-viewer
+    url: https://github.com/KubrickCode/github-project-status-viewer
+    ref: main
+    frameworks:
+      - go-testing
+      - vitest
+    complex: true

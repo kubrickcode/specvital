@@ -1,7 +1,7 @@
 {
   "repository": "playwright",
   "ref": "v1.49.0",
-  "expectedFrameworks": ["junit5", "playwright"],
+  "expectedFrameworks": ["playwright", "junit5"],
   "fileCount": 345,
   "testCount": 2128,
   "frameworkCounts": {

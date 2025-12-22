@@ -87,10 +87,12 @@ func ExtractArrayElements(arrayNode *sitter.Node, source []byte) []string {
 		switch elem.Type() {
 		case "array":
 			elements = append(elements, ExtractArrayContent(elem, source))
-		case "string":
-			elements = append(elements, UnquoteString(parser.GetNodeText(elem, source)))
 		case "number":
 			elements = append(elements, parser.GetNodeText(elem, source))
+		case "object":
+			elements = append(elements, ObjectPlaceholder)
+		case "string":
+			elements = append(elements, UnquoteString(parser.GetNodeText(elem, source)))
 		}
 	}
 

@@ -3,7 +3,7 @@
   "ref": "v13.17.0",
   "expectedFrameworks": ["cypress", "mocha"],
   "fileCount": 1341,
-  "testCount": 8665,
+  "testCount": 8828,
   "frameworkCounts": {
     "cypress": 1251,
     "mocha": 90

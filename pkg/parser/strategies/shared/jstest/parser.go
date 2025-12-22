@@ -166,6 +166,10 @@ func ProcessEachCall(outerCall, innerCall, outerArgs *sitter.Node, source []byte
 
 // ProcessCallExpression processes a call expression node to extract test/suite definitions.
 func ProcessCallExpression(node *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite) {
+	processCallExpressionWithMode(node, source, filename, file, currentSuite, false)
+}
+
+func processCallExpressionWithMode(node *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite, isDynamic bool) {
 	funcNode := node.ChildByFieldName("function")
 	if funcNode == nil {
 		return
@@ -176,8 +180,13 @@ func ProcessCallExpression(node *sitter.Node, source []byte, filename string, fi
 		return
 	}
 
-	if funcNode.Type() == "call_expression" {
+	if !isDynamic && funcNode.Type() == "call_expression" {
 		ProcessEachCall(node, funcNode, args, source, filename, file, currentSuite)
+		return
+	}
+
+	if callback := findArrayIteratorCallback(funcNode, args, source); callback != nil {
+		parseDynamicCallback(callback, source, filename, file, currentSuite)
 		return
 	}
 
@@ -188,12 +197,58 @@ func ProcessCallExpression(node *sitter.Node, source []byte, filename string, fi
 
 	switch funcName {
 	case FuncBench:
-		ProcessTest(node, args, source, filename, file, currentSuite, status, modifier)
+		if !isDynamic {
+			ProcessTest(node, args, source, filename, file, currentSuite, status, modifier)
+		}
 	case FuncDescribe, FuncContext, FuncSuite:
-		ProcessSuite(node, args, source, filename, file, currentSuite, status, modifier)
+		processTestSuite(node, args, source, filename, file, currentSuite, status, modifier, isDynamic)
 	case FuncIt, FuncTest, FuncSpecify:
-		ProcessTest(node, args, source, filename, file, currentSuite, status, modifier)
+		processTestCase(node, args, source, filename, file, currentSuite, status, modifier, isDynamic)
 	}
+}
+
+func processTestCase(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string, isDynamic bool) {
+	name := ExtractTestName(args, source)
+	if name == "" {
+		return
+	}
+
+	if isDynamic {
+		name += DynamicCasesSuffix
+	}
+
+	test := domain.Test{
+		Name:     name,
+		Status:   status,
+		Modifier: modifier,
+		Location: parser.GetLocation(callNode, filename),
+	}
+
+	AddTestToTarget(test, parentSuite, file)
+}
+
+func processTestSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string, isDynamic bool) {
+	name := ExtractTestName(args, source)
+	if name == "" {
+		return
+	}
+
+	if isDynamic {
+		name += DynamicCasesSuffix
+	}
+
+	suite := domain.TestSuite{
+		Name:     name,
+		Status:   status,
+		Modifier: modifier,
+		Location: parser.GetLocation(callNode, filename),
+	}
+
+	if callback := FindCallback(args); callback != nil {
+		ParseCallbackBody(callback, source, filename, file, &suite)
+	}
+
+	AddSuiteToTarget(suite, parentSuite, file)
 }
 
 // ParseNode recursively traverses the AST to find and process test definitions.
@@ -209,6 +264,49 @@ func ParseNode(node *sitter.Node, source []byte, filename string, file *domain.T
 		default:
 			ParseNode(child, source, filename, file, currentSuite)
 		}
+	}
+}
+
+// findArrayIteratorCallback extracts callback from array iterator methods (forEach, map).
+func findArrayIteratorCallback(funcNode, args *sitter.Node, source []byte) *sitter.Node {
+	if funcNode.Type() != "member_expression" {
+		return nil
+	}
+
+	prop := funcNode.ChildByFieldName("property")
+	if prop == nil {
+		return nil
+	}
+
+	propName := parser.GetNodeText(prop, source)
+
+	switch propName {
+	case "forEach", "map":
+		return FindCallback(args)
+	}
+
+	return nil
+}
+
+// parseDynamicCallback parses test definitions inside dynamic contexts (forEach, map).
+func parseDynamicCallback(callback *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite) {
+	body := callback.ChildByFieldName("body")
+	if body == nil {
+		return
+	}
+
+	for i := 0; i < int(body.ChildCount()); i++ {
+		child := body.Child(i)
+		if child.Type() != "expression_statement" {
+			continue
+		}
+
+		expr := parser.FindChildByType(child, "call_expression")
+		if expr == nil {
+			continue
+		}
+
+		processCallExpressionWithMode(expr, source, filename, file, currentSuite, true)
 	}
 }
 

@@ -1,0 +1,137 @@
+{
+  "repository": "github-project-status-viewer",
+  "ref": "main",
+  "expectedFrameworks": ["go-testing", "vitest"],
+  "fileCount": 24,
+  "testCount": 231,
+  "frameworkCounts": {
+    "go-testing": 15,
+    "vitest": 9
+  },
+  "sampleFiles": [
+    {
+      "path": "extension/src/constants/api.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "extension/src/constants/storage.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "extension/src/constants/ui.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "extension/src/content.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "extension/src/services/auth.service.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 21
+    },
+    {
+      "path": "extension/src/services/badge-renderer.service.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 21
+    },
+    {
+      "path": "extension/src/services/dom-parser.service.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 39
+    },
+    {
+      "path": "extension/src/services/github-api.service.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "extension/src/services/status-dropdown.service.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 19
+    },
+    {
+      "path": "server/api/callback/index_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "server/api/issues/status/index_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 7
+    },
+    {
+      "path": "server/api/issues/status/update/index_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 6
+    },
+    {
+      "path": "server/api/refresh/index_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "server/api/verify/index_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "server/pkg/auth/middleware_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 6
+    },
+    {
+      "path": "server/pkg/crypto/random_test.go",
+      "framework": "go-testing",
+      "suiteCount": 2,
+      "testCount": 5
+    },
+    {
+      "path": "server/pkg/errors/types_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 6
+    },
+    {
+      "path": "server/pkg/github/client_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 13
+    },
+    {
+      "path": "server/pkg/httputil/errors_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "server/pkg/httputil/response_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 6
+    }
+  ],
+  "stats": {
+    "filesMatched": 24,
+    "filesScanned": 24
+  }
+}
