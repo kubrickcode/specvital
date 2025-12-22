@@ -1122,3 +1122,159 @@ func TestParse_NestedForEachWithDescribe(t *testing.T) {
 		t.Errorf("len(suite.Tests) = %d, want 1", len(suite.Tests))
 	}
 }
+
+func TestParse_ForLoop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		source    string
+		wantCount int
+		wantFirst string
+	}{
+		{
+			name: "should parse for...of with test",
+			source: `for (const item of items) {
+  test('test item', () => {});
+}`,
+			wantCount: 1,
+			wantFirst: "test item (dynamic cases)",
+		},
+		{
+			name: "should parse for...in with it",
+			source: `for (const key in obj) {
+  it('test key', () => {});
+}`,
+			wantCount: 1,
+			wantFirst: "test key (dynamic cases)",
+		},
+		{
+			name: "should parse classic for loop",
+			source: `for (let i = 0; i < 10; i++) {
+  test('test ' + i, () => {});
+}`,
+			wantCount: 1,
+			wantFirst: "(dynamic) (dynamic cases)",
+		},
+		{
+			name: "should parse nested for loops",
+			source: `for (const x of xs) {
+  for (const y of ys) {
+    test('test', () => {});
+  }
+}`,
+			wantCount: 1,
+			wantFirst: "test (dynamic cases)",
+		},
+		{
+			name: "should parse while loop",
+			source: `while (hasMore()) {
+  test('dynamic test', () => {});
+}`,
+			wantCount: 1,
+			wantFirst: "dynamic test (dynamic cases)",
+		},
+		{
+			name: "should parse do-while loop",
+			source: `do {
+  it('iterative test', () => {});
+} while (condition);`,
+			wantCount: 1,
+			wantFirst: "iterative test (dynamic cases)",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := Parse(context.Background(), []byte(tt.source), "test.ts", "vitest")
+
+			if err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			if len(file.Tests) != tt.wantCount {
+				t.Fatalf("len(Tests) = %d, want %d", len(file.Tests), tt.wantCount)
+			}
+
+			if tt.wantCount > 0 && file.Tests[0].Name != tt.wantFirst {
+				t.Errorf("Tests[0].Name = %q, want %q", file.Tests[0].Name, tt.wantFirst)
+			}
+		})
+	}
+}
+
+func TestParse_ForLoopInsideDescribe(t *testing.T) {
+	t.Parallel()
+
+	// Pattern from vite config.spec.ts
+	source := `describe('loadConfigFromFile', () => {
+  const cases = [
+    { fileName: 'vite.config.js' },
+    { fileName: 'vite.config.ts' },
+  ];
+
+  for (const { fileName } of cases) {
+    for (const typeField of [undefined, 'module']) {
+      test('load ' + fileName, async () => {});
+    }
+  }
+});`
+
+	file, err := Parse(context.Background(), []byte(source), "test.ts", "vitest")
+
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	if len(file.Suites) != 1 {
+		t.Fatalf("len(Suites) = %d, want 1", len(file.Suites))
+	}
+
+	suite := file.Suites[0]
+	// Should detect 1 dynamic test (nested for loops count as 1)
+	if len(suite.Tests) != 1 {
+		t.Fatalf("len(suite.Tests) = %d, want 1", len(suite.Tests))
+	}
+
+	if suite.Tests[0].Name != "(dynamic) (dynamic cases)" {
+		t.Errorf("Tests[0].Name = %q, want %q", suite.Tests[0].Name, "(dynamic) (dynamic cases)")
+	}
+}
+
+func TestParse_ForLoopWithDescribe(t *testing.T) {
+	t.Parallel()
+
+	// Pattern: for loop containing describe
+	source := `for (const version of versions) {
+  describe('ES' + version, () => {
+    test('should parse', () => {});
+  });
+}`
+
+	file, err := Parse(context.Background(), []byte(source), "test.ts", "vitest")
+
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	// Should detect 1 dynamic suite
+	if len(file.Suites) != 1 {
+		t.Fatalf("len(Suites) = %d, want 1", len(file.Suites))
+	}
+
+	suite := file.Suites[0]
+	if suite.Name != "(dynamic) (dynamic cases)" {
+		t.Errorf("Suites[0].Name = %q, want %q", suite.Name, "(dynamic) (dynamic cases)")
+	}
+
+	// Test inside suite should be static (not dynamic)
+	if len(suite.Tests) != 1 {
+		t.Fatalf("len(suite.Tests) = %d, want 1", len(suite.Tests))
+	}
+
+	if suite.Tests[0].Name != "should parse" {
+		t.Errorf("suite.Tests[0].Name = %q, want %q", suite.Tests[0].Name, "should parse")
+	}
+}

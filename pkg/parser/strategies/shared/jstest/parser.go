@@ -253,18 +253,33 @@ func processTestSuite(callNode *sitter.Node, args *sitter.Node, source []byte, f
 
 // ParseNode recursively traverses the AST to find and process test definitions.
 func ParseNode(node *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite) {
+	parseNodeWithMode(node, source, filename, file, currentSuite, false)
+}
+
+func parseNodeWithMode(node *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite, isDynamic bool) {
 	for i := 0; i < int(node.ChildCount()); i++ {
 		child := node.Child(i)
 
 		switch child.Type() {
 		case "expression_statement":
 			if expr := parser.FindChildByType(child, "call_expression"); expr != nil {
-				ProcessCallExpression(expr, source, filename, file, currentSuite)
+				processCallExpressionWithMode(expr, source, filename, file, currentSuite, isDynamic)
 			}
+		case "for_statement", "for_in_statement", "while_statement", "do_statement":
+			parseLoopBody(child, source, filename, file, currentSuite)
 		default:
-			ParseNode(child, source, filename, file, currentSuite)
+			parseNodeWithMode(child, source, filename, file, currentSuite, isDynamic)
 		}
 	}
+}
+
+// parseLoopBody parses test definitions inside loops (for, while, do-while) as dynamic tests.
+func parseLoopBody(loopNode *sitter.Node, source []byte, filename string, file *domain.TestFile, currentSuite *domain.TestSuite) {
+	body := loopNode.ChildByFieldName("body")
+	if body == nil {
+		return
+	}
+	parseNodeWithMode(body, source, filename, file, currentSuite, true)
 }
 
 // findArrayIteratorCallback extracts callback from array iterator methods (forEach, map).
@@ -294,20 +309,7 @@ func parseDynamicCallback(callback *sitter.Node, source []byte, filename string,
 	if body == nil {
 		return
 	}
-
-	for i := 0; i < int(body.ChildCount()); i++ {
-		child := body.Child(i)
-		if child.Type() != "expression_statement" {
-			continue
-		}
-
-		expr := parser.FindChildByType(child, "call_expression")
-		if expr == nil {
-			continue
-		}
-
-		processCallExpressionWithMode(expr, source, filename, file, currentSuite, true)
-	}
+	parseNodeWithMode(body, source, filename, file, currentSuite, true)
 }
 
 // Parse is the main entry point for parsing JavaScript/TypeScript test files.
