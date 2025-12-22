@@ -82,6 +82,7 @@ XX-brief-decision-title.md
 | 05  | [Worker-Scheduler Process Separation](./collector/05-worker-scheduler-separation.md)            | Architecture | 2024-12-18 |
 | 06  | [Semaphore-Based Clone Concurrency Control](./collector/06-semaphore-clone-concurrency.md)      | Concurrency  | 2024-12-18 |
 | 07  | [Repository Pattern Data Access Abstraction](./collector/07-repository-pattern.md)              | Architecture | 2024-12-18 |
+| 08  | [External Repository ID-Based Data Integrity](./collector/08-external-repo-id-integrity.md)     | Architecture | 2024-12-22 |
 
 ### Web Repository
 

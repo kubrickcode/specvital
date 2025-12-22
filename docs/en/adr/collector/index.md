@@ -19,6 +19,7 @@ Architecture Decision Records for the [specvital/collector](https://github.com/s
 | 05  | [Worker-Scheduler Process Separation](./05-worker-scheduler-separation.md)            | 2024-12-18 |
 | 06  | [Semaphore-Based Clone Concurrency Control](./06-semaphore-clone-concurrency.md)      | 2024-12-18 |
 | 07  | [Repository Pattern Data Access Abstraction](./07-repository-pattern.md)              | 2024-12-18 |
+| 08  | [External Repository ID-Based Data Integrity](./08-external-repo-id-integrity.md)     | 2024-12-22 |
 
 ## Related
 

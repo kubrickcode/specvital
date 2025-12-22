@@ -81,6 +81,7 @@ export default defineConfig({
                     { text: "Worker-Scheduler Separation", link: "/en/adr/collector/05-worker-scheduler-separation" },
                     { text: "Semaphore Clone Concurrency", link: "/en/adr/collector/06-semaphore-clone-concurrency" },
                     { text: "Repository Pattern", link: "/en/adr/collector/07-repository-pattern" },
+                    { text: "External Repo ID Integrity", link: "/en/adr/collector/08-external-repo-id-integrity" },
                   ],
                 },
                 {
@@ -166,6 +167,7 @@ export default defineConfig({
                     { text: "Worker-Scheduler 분리", link: "/ko/adr/collector/05-worker-scheduler-separation" },
                     { text: "Semaphore Clone 동시성", link: "/ko/adr/collector/06-semaphore-clone-concurrency" },
                     { text: "Repository 패턴", link: "/ko/adr/collector/07-repository-pattern" },
+                    { text: "External Repo ID 무결성", link: "/ko/adr/collector/08-external-repo-id-integrity" },
                   ],
                 },
                 {
