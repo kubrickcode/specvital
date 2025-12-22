@@ -66,6 +66,7 @@ export default defineConfig({
                   items: [
                     { text: "Overview", link: "/en/adr/core/" },
                     { text: "Core Library Separation", link: "/en/adr/core/01-core-library-separation" },
+                    { text: "Dynamic Test Counting Policy", link: "/en/adr/core/02-dynamic-test-counting-policy" },
                   ],
                 },
                 {
@@ -150,6 +151,7 @@ export default defineConfig({
                   items: [
                     { text: "개요", link: "/ko/adr/core/" },
                     { text: "코어 라이브러리 분리", link: "/ko/adr/core/01-core-library-separation" },
+                    { text: "동적 테스트 카운팅 정책", link: "/ko/adr/core/02-dynamic-test-counting-policy" },
                   ],
                 },
                 {
