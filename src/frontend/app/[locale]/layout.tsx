@@ -68,6 +68,7 @@ export const generateMetadata = async ({
 
   return {
     description: t("defaultDescription"),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:5173"),
     title: t("defaultTitle"),
   };
 };
