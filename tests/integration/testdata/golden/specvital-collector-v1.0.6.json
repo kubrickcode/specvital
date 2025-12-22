@@ -3,7 +3,7 @@
   "ref": "v1.0.6",
   "expectedFrameworks": ["go-testing"],
   "fileCount": 11,
-  "testCount": 62,
+  "testCount": 64,
   "frameworkCounts": {
     "go-testing": 11
   },
@@ -36,7 +36,7 @@
       "path": "src/internal/adapter/repository/postgres/analysis_test.go",
       "framework": "go-testing",
       "suiteCount": 5,
-      "testCount": 11
+      "testCount": 13
     },
     {
       "path": "src/internal/adapter/repository/postgres/user_test.go",

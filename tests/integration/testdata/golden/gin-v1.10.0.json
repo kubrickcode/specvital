@@ -3,7 +3,7 @@
   "ref": "v1.10.0",
   "expectedFrameworks": ["go-testing"],
   "fileCount": 38,
-  "testCount": 480,
+  "testCount": 483,
   "frameworkCounts": {
     "go-testing": 38
   },
@@ -18,7 +18,7 @@
       "path": "benchmarks_test.go",
       "framework": "go-testing",
       "suiteCount": 0,
-      "testCount": 10
+      "testCount": 13
     },
     {
       "path": "binding/binding_msgpack_test.go",
