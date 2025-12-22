@@ -24,17 +24,25 @@ $ARGUMENTS
 **Interpretation**:
 
 - **Empty**: Auto-select a popular open-source repo (NOT in repos.yaml)
-- **Provided**: Natural language - parse intent and find appropriate repo
+- **Explicit request**: Specific repo name or URL → analyze regardless of repos.yaml
+- **Implicit request**: Vague description → find appropriate repo NOT in repos.yaml
+
+**Request Type Classification**:
+
+| Type         | Pattern                                 | repos.yaml Check |
+| ------------ | --------------------------------------- | ---------------- |
+| **Explicit** | URL, exact repo name (e.g., "axios")    | ❌ Skip          |
+| **Implicit** | Vague (e.g., "Python project", "empty") | ✅ Exclude       |
 
 **Examples**:
 
-| User Input                         | Interpretation                      |
-| ---------------------------------- | ----------------------------------- |
-| (empty)                            | Pick popular repo not in repos.yaml |
-| `axios`                            | Test axios repository               |
-| `https://github.com/lodash/lodash` | Test lodash                         |
-| `Python project with pytest`       | Find Python repo using pytest       |
-| `Something with Vitest`            | Find repo using Vitest              |
+| User Input                         | Type     | Interpretation                      |
+| ---------------------------------- | -------- | ----------------------------------- |
+| (empty)                            | Implicit | Pick popular repo not in repos.yaml |
+| `axios`                            | Explicit | Test axios (even if in repos.yaml)  |
+| `https://github.com/lodash/lodash` | Explicit | Test lodash (even if in repos.yaml) |
+| `Python project with pytest`       | Implicit | Find Python repo NOT in repos.yaml  |
+| `Something with Vitest`            | Implicit | Find Vitest repo NOT in repos.yaml  |
 
 ---
 
@@ -42,18 +50,24 @@ $ARGUMENTS
 
 ### Phase 1: Repository Selection
 
-**1.1 Read repos.yaml to get exclusion list**:
+**1.1 Classify request type**:
+
+- **Explicit**: URL or exact repo name provided → proceed directly
+- **Implicit**: Empty or vague description → need repos.yaml exclusion
+
+**1.2 Read repos.yaml (for implicit requests only)**:
 
 ```bash
+# Skip this step for explicit requests
 grep "url:" tests/integration/repos.yaml
 ```
 
-**1.2 Select repository**:
+**1.3 Select repository**:
 
-- If empty input: Pick well-known repo NOT in repos.yaml
-- If input provided: Parse intent and resolve to GitHub URL
+- **Explicit request**: Parse and resolve to GitHub URL (ignore repos.yaml)
+- **Implicit request**: Pick well-known repo NOT in repos.yaml
 
-**1.3 Detect expected framework**:
+**1.4 Detect expected framework**:
 
 - Check package.json for JS/TS repos
 - Check pyproject.toml/setup.py for Python
@@ -187,7 +201,10 @@ If delta ≠ 0:
 
 Create comprehensive validation report:
 
-- **Language**: Korean
+- **Language**: **🇰🇷 Korean (한국어) - MANDATORY**
+  - ⚠️ **CRITICAL**: Report MUST be written entirely in Korean
+  - Section headers, analysis, conclusions - ALL in Korean
+  - Only code snippets, file paths, and technical terms may remain in English
 - **Location**: `/workspaces/specvital-core/realworld-test-report.md` (single file, overwrite)
 - **Format**: Use the report template below
 
@@ -344,6 +361,7 @@ No significant discrepancies found.
 
 ### ✅ Must Do
 
+- **Write report in Korean (한국어로 리포트 작성)** ← CRITICAL
 - Always get ground truth from actual test CLI
 - Install dependencies (`npm install`, `pip install`, etc.) for CLI to work
 - Compare at both file-level and test-level
@@ -352,10 +370,13 @@ No significant discrepancies found.
 
 ### ❌ Must Not Do
 
+- **Write report in English** ← Use Korean only
 - Skip ground truth collection
 - Assume parser is correct without verification
 - Ignore any discrepancy (even 1 = bug)
-- Test repos already in repos.yaml (waste of time)
+- Auto-select repos already in repos.yaml (for implicit requests only)
+
+**Note**: Explicit user requests override repos.yaml exclusion
 
 ### 🎯 Principles
 
