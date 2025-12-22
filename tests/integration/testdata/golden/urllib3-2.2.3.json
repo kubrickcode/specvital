@@ -2,10 +2,10 @@
   "repository": "urllib3",
   "ref": "2.2.3",
   "expectedFrameworks": ["pytest"],
-  "fileCount": 33,
+  "fileCount": 37,
   "testCount": 717,
   "frameworkCounts": {
-    "pytest": 33
+    "pytest": 37
   },
   "sampleFiles": [
     {
@@ -16,6 +16,18 @@
     },
     {
       "path": "test/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "test/contrib/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "test/contrib/emscripten/__init__.py",
       "framework": "pytest",
       "suiteCount": 0,
       "testCount": 0
@@ -43,6 +55,12 @@
       "framework": "pytest",
       "suiteCount": 4,
       "testCount": 19
+    },
+    {
+      "path": "test/port_helpers.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
       "path": "test/test_collections.py",
@@ -109,28 +127,10 @@
       "framework": "pytest",
       "suiteCount": 1,
       "testCount": 5
-    },
-    {
-      "path": "test/test_queue_monkeypatch.py",
-      "framework": "pytest",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "test/test_response.py",
-      "framework": "pytest",
-      "suiteCount": 3,
-      "testCount": 100
-    },
-    {
-      "path": "test/test_retry.py",
-      "framework": "pytest",
-      "suiteCount": 1,
-      "testCount": 28
     }
   ],
   "stats": {
-    "filesMatched": 33,
+    "filesMatched": 37,
     "filesScanned": 79
   }
 }

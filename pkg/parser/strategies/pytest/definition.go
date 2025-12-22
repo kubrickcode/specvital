@@ -35,10 +35,18 @@ func NewDefinition() *framework.Definition {
 			&PytestFileMatcher{},
 			&PytestContentMatcher{},
 		},
-		ConfigParser: nil, // TODO: implement pytest config parsing if needed
+		ConfigParser: &PytestConfigParser{},
 		Parser:       &PytestParser{},
 		Priority:     framework.PriorityGeneric,
 	}
+}
+
+type PytestConfigParser struct{}
+
+func (p *PytestConfigParser) Parse(ctx context.Context, configPath string, content []byte) (*framework.ConfigScope, error) {
+	scope := framework.NewConfigScope(configPath, "")
+	scope.Framework = frameworkName
+	return scope, nil
 }
 
 // PytestConfigContentMatcher matches pyproject.toml with [tool.pytest] section.

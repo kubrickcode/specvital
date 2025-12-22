@@ -5,16 +5,36 @@ import (
 	"regexp"
 )
 
-// Python import patterns:
-// - import foo
-// - import foo.bar
-// - from foo import bar
-// - from foo.bar import baz
+var pyImportPattern = regexp.MustCompile(`(?m)^(?:import\s+(\S+)|from\s+(\S+)\s+import\s+(\S+))`)
 
-var pyImportPattern = regexp.MustCompile(`(?m)^(?:import\s+(\S+)|from\s+(\S+)\s+import)`)
+var (
+	pyUnittestMockOnlyPattern      = regexp.MustCompile(`(?m)^from\s+unittest\s+import\s+mock\b`)
+	pyUnittestMockSubmodulePattern = regexp.MustCompile(`(?m)^from\s+unittest\.mock\s+import`)
+	pyUnittestMockDirectPattern    = regexp.MustCompile(`(?m)^import\s+unittest\.mock\b`)
+	pyUnittestDirectPattern        = regexp.MustCompile(`(?m)^import\s+unittest\s*$`)
+	pyUnittestFromPattern          = regexp.MustCompile(`(?m)^from\s+unittest\s+import\s+(\w+)`)
+)
 
-// ExtractPythonImports extracts module names from Python import statements.
+// ExtractPythonImports parses Python import statements and returns module names.
 func ExtractPythonImports(_ context.Context, content []byte) []string {
+	hasUnittestMockOnly := pyUnittestMockOnlyPattern.Match(content)
+	hasUnittestMockSubmodule := pyUnittestMockSubmodulePattern.Match(content)
+	hasUnittestMockDirect := pyUnittestMockDirectPattern.Match(content)
+	hasUnittestMock := hasUnittestMockOnly || hasUnittestMockSubmodule || hasUnittestMockDirect
+
+	hasUnittestDirect := pyUnittestDirectPattern.Match(content)
+
+	hasUnittestFromNonMock := false
+	fromMatches := pyUnittestFromPattern.FindAllSubmatch(content, -1)
+	for _, m := range fromMatches {
+		if len(m) > 1 && string(m[1]) != "mock" {
+			hasUnittestFromNonMock = true
+			break
+		}
+	}
+	hasRealUnittest := hasUnittestDirect || hasUnittestFromNonMock
+	usesOnlyUnittestMock := hasUnittestMock && !hasRealUnittest
+
 	matches := pyImportPattern.FindAllSubmatch(content, -1)
 	if len(matches) == 0 {
 		return nil
@@ -26,12 +46,19 @@ func ExtractPythonImports(_ context.Context, content []byte) []string {
 	for _, match := range matches {
 		var mod string
 		if len(match) > 1 && len(match[1]) > 0 {
-			mod = string(match[1]) // import foo
+			mod = string(match[1])
 		} else if len(match) > 2 && len(match[2]) > 0 {
-			mod = string(match[2]) // from foo import bar
+			mod = string(match[2])
+			if mod == "unittest" && len(match) > 3 && string(match[3]) == "mock" {
+				mod = "unittest.mock"
+			}
 		}
 
 		if mod == "" {
+			continue
+		}
+
+		if mod == "unittest" && usesOnlyUnittestMock {
 			continue
 		}
 

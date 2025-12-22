@@ -4,7 +4,6 @@ repositories:
     ref: v2.32.3
     frameworks:
       - pytest
-      - unittest
 
   - name: urllib3
     url: https://github.com/urllib3/urllib3

@@ -64,6 +64,54 @@ import pytest
 `,
 			expected: []string{"pytest"},
 		},
+		{
+			name: "unittest.mock only - from unittest import mock",
+			content: `
+from unittest import mock
+def test_something():
+    pass
+`,
+			expected: []string{"unittest.mock"},
+		},
+		{
+			name: "unittest.mock only - from unittest.mock import",
+			content: `
+from unittest.mock import patch, MagicMock
+def test_something():
+    pass
+`,
+			expected: []string{"unittest.mock"},
+		},
+		{
+			name: "unittest.mock only - import unittest.mock",
+			content: `
+import unittest.mock
+def test_something():
+    pass
+`,
+			expected: []string{"unittest.mock"},
+		},
+		{
+			name: "real unittest usage with TestCase",
+			content: `
+import unittest
+class TestFoo(unittest.TestCase):
+    def test_bar(self):
+        pass
+`,
+			expected: []string{"unittest"},
+		},
+		{
+			name: "unittest with mock - both imports",
+			content: `
+import unittest
+from unittest import mock
+class TestFoo(unittest.TestCase):
+    def test_bar(self):
+        pass
+`,
+			expected: []string{"unittest", "unittest.mock"},
+		},
 	}
 
 	ctx := context.Background()
