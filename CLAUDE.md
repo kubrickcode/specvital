@@ -44,7 +44,7 @@ Before running commands, read `justfile` or check available commands via `just -
 
 ### DB Schema Changes
 
-1. Modify schema in specvital-postgres repo
+1. Modify schema in specvital-infra repo
 2. `just dump-schema` → `just gen-sqlc`
 3. Update `adapter/repository/` implementation
 
