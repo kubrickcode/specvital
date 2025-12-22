@@ -363,7 +363,7 @@ test('top-level test', () => {
 	assert.Equal(t, "top-level test", testFile.Tests[0].Name)
 }
 
-func TestParseRoot(t *testing.T) {
+func TestParseRootDir(t *testing.T) {
 	tests := []struct {
 		name     string
 		content  string
@@ -398,7 +398,7 @@ func TestParseRoot(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := parseRoot([]byte(tt.content))
+			result := parseRootDir([]byte(tt.content))
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -435,6 +435,96 @@ func TestParseInjectGlobalsFalse(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := parseInjectGlobalsFalse([]byte(tt.content))
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestParseRoots(t *testing.T) {
+	tests := []struct {
+		name      string
+		content   string
+		configDir string
+		rootDir   string
+		expected  []string
+	}{
+		{
+			name: "single root with rootDir placeholder",
+			content: `roots: [
+				'<rootDir>',
+			]`,
+			configDir: "",
+			rootDir:   "test",
+			expected:  []string{"test"},
+		},
+		{
+			name: "multiple roots with parent traversal",
+			content: `roots: [
+				'<rootDir>',
+				'<rootDir>/../packages/next/src/',
+				'<rootDir>/../packages/font/src/',
+			]`,
+			configDir: "",
+			rootDir:   "test",
+			expected:  []string{"test", "packages/next/src", "packages/font/src"},
+		},
+		{
+			name:      "no roots",
+			content:   `testEnvironment: 'node'`,
+			configDir: "",
+			rootDir:   "",
+			expected:  nil,
+		},
+		{
+			name: "roots without rootDir",
+			content: `roots: [
+				'src',
+				'lib',
+			]`,
+			configDir: "",
+			rootDir:   "",
+			expected:  []string{"src", "lib"},
+		},
+		{
+			name:      "absolute path roots",
+			content:   `roots: ['/absolute/path/to/tests']`,
+			configDir: "",
+			rootDir:   "",
+			expected:  []string{"/absolute/path/to/tests"},
+		},
+		{
+			name: "roots resolved against configDir",
+			content: `roots: [
+				'src',
+				'lib',
+			]`,
+			configDir: "packages/myapp",
+			rootDir:   "",
+			expected:  []string{"packages/myapp/src", "packages/myapp/lib"},
+		},
+		{
+			name: "absolute path not affected by configDir",
+			content: `roots: ['/absolute/path']`,
+			configDir: "packages/myapp",
+			rootDir:   "",
+			expected:  []string{"/absolute/path"},
+		},
+		{
+			name: "mixed absolute, relative, and rootDir placeholder",
+			content: `roots: [
+				'/absolute/path',
+				'relative/path',
+				'<rootDir>/subdir',
+			]`,
+			configDir: "packages/app",
+			rootDir:   "src",
+			expected:  []string{"/absolute/path", "packages/app/relative/path", "packages/app/src/subdir"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := parseRoots([]byte(tt.content), tt.configDir, tt.rootDir)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

@@ -2,12 +2,12 @@
   "repository": "next.js",
   "ref": "v15.0.3",
   "expectedFrameworks": ["cargo-test", "cypress", "jest", "mocha", "playwright", "vitest"],
-  "fileCount": 1265,
-  "testCount": 6986,
+  "fileCount": 1351,
+  "testCount": 7323,
   "frameworkCounts": {
     "cargo-test": 56,
     "cypress": 3,
-    "jest": 1196,
+    "jest": 1282,
     "mocha": 2,
     "playwright": 3,
     "vitest": 5
@@ -135,7 +135,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 1265,
+    "filesMatched": 1351,
     "filesScanned": 2188
   }
 }

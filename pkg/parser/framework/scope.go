@@ -21,6 +21,10 @@ type ConfigScope struct {
 	ExcludePatterns []string
 	RootDir         string
 
+	// Roots contains additional root directories (e.g., Jest's roots config).
+	// When set, Contains() checks if a file is within any of these roots.
+	Roots []string
+
 	// GlobalsMode: when true, test files don't need explicit imports (e.g., Jest default).
 	GlobalsMode bool
 }
@@ -71,40 +75,59 @@ func (s *ConfigScope) Contains(filePath string) bool {
 	}
 
 	filePath = filepath.Clean(filePath)
-	baseDir := filepath.Clean(s.BaseDir)
 	filePath = filepath.ToSlash(filePath)
-	baseDir = filepath.ToSlash(baseDir)
 
-	relPath, err := filepath.Rel(baseDir, filePath)
-	if err != nil {
-		return false
-	}
-	relPath = filepath.ToSlash(relPath)
+	roots := s.effectiveRoots()
+	for _, r := range roots {
+		root := filepath.ToSlash(filepath.Clean(r))
 
-	if strings.HasPrefix(relPath, "..") {
-		return false
-	}
+		relPath, err := filepath.Rel(root, filePath)
+		if err != nil {
+			// Skip this root if relative path calculation fails
+			// (e.g., different drive letters on Windows)
+			continue
+		}
+		relPath = filepath.ToSlash(relPath)
 
-	if len(s.Include) > 0 {
-		matched := false
-		for _, pattern := range s.Include {
+		if strings.HasPrefix(relPath, "..") {
+			continue
+		}
+
+		if len(s.Include) > 0 {
+			matched := false
+			for _, pattern := range s.Include {
+				if match, err := doublestar.Match(pattern, relPath); err == nil && match {
+					matched = true
+					break
+				}
+			}
+			if !matched {
+				continue
+			}
+		}
+
+		excluded := false
+		for _, pattern := range s.Exclude {
 			if match, err := doublestar.Match(pattern, relPath); err == nil && match {
-				matched = true
+				excluded = true
 				break
 			}
 		}
-		if !matched {
-			return false
+		if excluded {
+			continue
 		}
+
+		return true
 	}
 
-	for _, pattern := range s.Exclude {
-		if match, err := doublestar.Match(pattern, relPath); err == nil && match {
-			return false
-		}
-	}
+	return false
+}
 
-	return true
+func (s *ConfigScope) effectiveRoots() []string {
+	if len(s.Roots) > 0 {
+		return s.Roots
+	}
+	return []string{s.BaseDir}
 }
 
 // Depth returns the directory depth of BaseDir (used for selecting nearest config).

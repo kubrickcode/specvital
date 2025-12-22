@@ -39,12 +39,22 @@ func main() {
 		os.Exit(1)
 	}
 
+	files := make([]map[string]interface{}, 0, len(result.Inventory.Files))
+	for _, file := range result.Inventory.Files {
+		files = append(files, map[string]interface{}{
+			"path":      file.Path,
+			"framework": file.Framework,
+			"testCount": file.CountTests(),
+		})
+	}
+
 	output := map[string]interface{}{
 		"filesScanned": result.Stats.FilesScanned,
 		"filesMatched": result.Stats.FilesMatched,
 		"testCount":    result.Inventory.CountTests(),
 		"duration":     result.Stats.Duration.String(),
 		"frameworks":   countFrameworks(result),
+		"files":        files,
 	}
 	json.NewEncoder(os.Stdout).Encode(output)
 }

@@ -155,6 +155,73 @@ func TestConfigScope_Contains(t *testing.T) {
 			filePath: "src/internal/adapters.spec.ts",
 			want:     true,
 		},
+		// Multi-root tests (Jest roots config support)
+		{
+			name: "should match file in first root",
+			scope: &ConfigScope{
+				BaseDir: ".",
+				Roots:   []string{"packages/next/src", "packages/font/src"},
+			},
+			filePath: "packages/next/src/server/test.ts",
+			want:     true,
+		},
+		{
+			name: "should match file in second root",
+			scope: &ConfigScope{
+				BaseDir: ".",
+				Roots:   []string{"packages/next/src", "packages/font/src"},
+			},
+			filePath: "packages/font/src/utils/test.ts",
+			want:     true,
+		},
+		{
+			name: "should not match file outside all roots",
+			scope: &ConfigScope{
+				BaseDir: ".",
+				Roots:   []string{"packages/next/src", "packages/font/src"},
+			},
+			filePath: "packages/other/test.ts",
+			want:     false,
+		},
+		{
+			name: "should respect include patterns with multiple roots",
+			scope: &ConfigScope{
+				BaseDir: ".",
+				Roots:   []string{"src", "lib"},
+				Include: []string{"**/*.test.ts"},
+			},
+			filePath: "lib/foo.test.ts",
+			want:     true,
+		},
+		{
+			name: "should not match file in root when include pattern does not match",
+			scope: &ConfigScope{
+				BaseDir: ".",
+				Roots:   []string{"src", "lib"},
+				Include: []string{"**/*.test.ts"},
+			},
+			filePath: "lib/foo.spec.ts",
+			want:     false,
+		},
+		{
+			name: "should respect exclude patterns with multiple roots",
+			scope: &ConfigScope{
+				BaseDir: ".",
+				Roots:   []string{"src", "lib"},
+				Exclude: []string{"**/node_modules/**"},
+			},
+			filePath: "lib/node_modules/foo.ts",
+			want:     false,
+		},
+		{
+			name: "should fallback to BaseDir when Roots is empty",
+			scope: &ConfigScope{
+				BaseDir: "src",
+				Roots:   []string{},
+			},
+			filePath: "src/test.ts",
+			want:     true,
+		},
 	}
 
 	for _, tt := range tests {
