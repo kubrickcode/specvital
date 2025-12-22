@@ -56,3 +56,11 @@ docs/
 - English docs (`/en/`): Write in English
 - Korean docs (`/ko/`): Write in Korean
 - Follow document language rules regardless of conversation language
+
+### Korean Writing Style
+
+- Use noun-ending style (명사형 종결): "~생성", "~필요", "~제공"
+- Avoid verb-ending style (동사 종결어미): "~한다", "~이다"
+- Example:
+  - ✅ "정적 분석을 통한 테스트 카운트"
+  - ❌ "정적 분석을 통해 테스트를 카운트한다"
