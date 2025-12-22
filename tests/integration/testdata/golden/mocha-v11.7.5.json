@@ -3,7 +3,7 @@
   "ref": "v11.7.5",
   "expectedFrameworks": ["mocha"],
   "fileCount": 126,
-  "testCount": 1237,
+  "testCount": 1240,
   "frameworkCounts": {
     "mocha": 126
   },
@@ -66,7 +66,7 @@
       "path": "test/integration/diffs.spec.js",
       "framework": "mocha",
       "suiteCount": 1,
-      "testCount": 0
+      "testCount": 1
     },
     {
       "path": "test/integration/duplicate-arguments.spec.js",

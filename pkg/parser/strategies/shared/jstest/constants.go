@@ -23,8 +23,9 @@ const (
 	ModifierSkip       = "skip"
 	ModifierTodo       = "todo"
 
-	DynamicCasesSuffix = " (dynamic cases)"
-	ObjectPlaceholder  = "<object>"
+	DynamicCasesSuffix     = " (dynamic cases)"
+	DynamicNamePlaceholder = "(dynamic)"
+	ObjectPlaceholder      = "<object>"
 )
 
 var SkippedFunctionAliases = map[string]string{

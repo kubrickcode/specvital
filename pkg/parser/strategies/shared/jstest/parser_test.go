@@ -1042,3 +1042,83 @@ func TestParse_MixedStaticAndDynamic(t *testing.T) {
 		t.Errorf("Tests[1].Name = %q, want %q", suite.Tests[1].Name, "dynamic ${n} (dynamic cases)")
 	}
 }
+
+func TestParse_ForEachWithDescribe(t *testing.T) {
+	t.Parallel()
+
+	// Simpler pattern: forEach → describe
+	source := `items.forEach((item) => {
+  describe('Suite', () => {
+    it('test', () => {});
+  });
+});`
+
+	file, err := Parse(context.Background(), []byte(source), "test.ts", "jest")
+
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	// Should detect 1 dynamic suite with 1 test inside
+	if len(file.Suites) != 1 {
+		t.Fatalf("len(Suites) = %d, want 1", len(file.Suites))
+	}
+
+	suite := file.Suites[0]
+	if len(suite.Tests) != 1 {
+		t.Errorf("len(suite.Tests) = %d, want 1", len(suite.Tests))
+	}
+}
+
+func TestParse_ForEachWithConstBeforeIt(t *testing.T) {
+	t.Parallel()
+
+	// Bug case: forEach callback with const declaration before it()
+	source := `items.forEach(item => {
+  const name = 'test' + item;
+  it(name, () => {});
+});`
+
+	file, err := Parse(context.Background(), []byte(source), "test.ts", "jest")
+
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	// Should detect 1 dynamic test
+	if len(file.Tests) != 1 {
+		t.Fatalf("len(Tests) = %d, want 1", len(file.Tests))
+	}
+}
+
+func TestParse_NestedForEachWithDescribe(t *testing.T) {
+	t.Parallel()
+
+	// Pattern from react-testing-library/events.js:
+	// forEach → describe → forEach → it
+	// Note: inner forEach has a const declaration before it()
+	source := `eventTypes.forEach(({type, events}) => {
+  describe('Events', () => {
+    events.forEach(eventName => {
+      const propName = 'on' + eventName;
+      it('triggers ' + propName, () => {});
+    });
+  });
+});`
+
+	file, err := Parse(context.Background(), []byte(source), "test.ts", "jest")
+
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	// Should detect 1 dynamic suite with 1 dynamic test inside
+	if len(file.Suites) != 1 {
+		t.Fatalf("len(Suites) = %d, want 1", len(file.Suites))
+	}
+
+	suite := file.Suites[0]
+	if len(suite.Tests) != 1 {
+		t.Errorf("len(suite.Tests) = %d, want 1", len(suite.Tests))
+	}
+}
