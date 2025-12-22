@@ -108,6 +108,7 @@ repositories:
       - cypress
       - go-testing
       - jest
+      - playwright
     complex: true
     nondeterministic: true
 

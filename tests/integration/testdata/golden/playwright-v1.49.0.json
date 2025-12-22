@@ -2,11 +2,11 @@
   "repository": "playwright",
   "ref": "v1.49.0",
   "expectedFrameworks": ["playwright", "junit5"],
-  "fileCount": 345,
-  "testCount": 2207,
+  "fileCount": 473,
+  "testCount": 5312,
   "frameworkCounts": {
     "junit5": 1,
-    "playwright": 344
+    "playwright": 472
   },
   "sampleFiles": [
     {
@@ -131,7 +131,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 345,
+    "filesMatched": 473,
     "filesScanned": 491
   }
 }

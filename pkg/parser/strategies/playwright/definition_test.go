@@ -337,3 +337,91 @@ test("should be detected", async ({ page }) => {});
 		assert.Equal(t, "should be detected", testFile.Tests[0].Name)
 	})
 }
+
+func TestPlaywrightParser_IndirectImport(t *testing.T) {
+	t.Run("tests with indirect import from pageTest", func(t *testing.T) {
+		source := `
+import { test as it, expect } from './pageTest';
+
+it('should work with indirect import', async ({ page }) => {
+  await page.goto('https://example.com');
+});
+
+it.skip('should skip this test', async ({ page }) => {
+  // This test is skipped
+});
+`
+		parser := &PlaywrightParser{}
+		ctx := context.Background()
+
+		testFile, err := parser.Parse(ctx, []byte(source), "page-test.spec.ts")
+
+		require.NoError(t, err)
+		assert.Equal(t, "playwright", testFile.Framework)
+		require.Len(t, testFile.Tests, 2, "Both tests should be detected")
+		assert.Equal(t, "should work with indirect import", testFile.Tests[0].Name)
+		assert.Equal(t, domain.TestStatusActive, testFile.Tests[0].Status)
+		assert.Equal(t, "should skip this test", testFile.Tests[1].Name)
+		assert.Equal(t, domain.TestStatusSkipped, testFile.Tests[1].Status)
+	})
+
+	t.Run("tests with browserTest import", func(t *testing.T) {
+		source := `
+import { browserTest as it, expect } from '../config/browserTest';
+
+it('should work with browserTest', async ({ browser }) => {
+  const context = await browser.newContext();
+});
+`
+		parser := &PlaywrightParser{}
+		ctx := context.Background()
+
+		testFile, err := parser.Parse(ctx, []byte(source), "browser.spec.ts")
+
+		require.NoError(t, err)
+		assert.Equal(t, "playwright", testFile.Framework)
+		require.Len(t, testFile.Tests, 1, "Test should be detected")
+		assert.Equal(t, "should work with browserTest", testFile.Tests[0].Name)
+	})
+
+	t.Run("tests with contextTest import", func(t *testing.T) {
+		source := `
+import { contextTest as it, expect } from '../config/browserTest';
+
+it('should work with contextTest', async () => {
+  // test code
+});
+`
+		parser := &PlaywrightParser{}
+		ctx := context.Background()
+
+		testFile, err := parser.Parse(ctx, []byte(source), "context.spec.ts")
+
+		require.NoError(t, err)
+		assert.Equal(t, "playwright", testFile.Framework)
+		require.Len(t, testFile.Tests, 1, "Test should be detected")
+		assert.Equal(t, "should work with contextTest", testFile.Tests[0].Name)
+	})
+
+	t.Run("tests without any import should still detect test and it", func(t *testing.T) {
+		source := `
+test('test without import', async ({ page }) => {
+  await page.goto('https://example.com');
+});
+
+it('it without import', async ({ page }) => {
+  await page.click('button');
+});
+`
+		parser := &PlaywrightParser{}
+		ctx := context.Background()
+
+		testFile, err := parser.Parse(ctx, []byte(source), "no-import.spec.ts")
+
+		require.NoError(t, err)
+		assert.Equal(t, "playwright", testFile.Framework)
+		require.Len(t, testFile.Tests, 2, "Both tests should be detected")
+		assert.Equal(t, "test without import", testFile.Tests[0].Name)
+		assert.Equal(t, "it without import", testFile.Tests[1].Name)
+	})
+}
