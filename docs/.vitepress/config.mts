@@ -4,7 +4,10 @@ export default defineConfig({
   title: "Specvital",
   description: "Open-source test coverage insights for code review",
 
-  head: [["link", { rel: "icon", href: "/favicon.ico" }]],
+  head: [
+    ["link", { rel: "icon", href: "/favicon.ico" }],
+    ["meta", { property: "og:image", content: "https://specvital.github.io/og.png" }],
+  ],
 
   vite: {
     publicDir: ".vitepress/public",
