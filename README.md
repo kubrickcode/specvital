@@ -65,7 +65,7 @@ This repository contains the web application (Frontend + Backend API). The full 
 
 | Repository                                                    | Role                                |
 | ------------------------------------------------------------- | ----------------------------------- |
-| [specvital/web](https://github.com/specvital/specvital-web)   | Web dashboard + REST API            |
+| [specvital/web](https://github.com/specvital/web)             | Web dashboard + REST API            |
 | [specvital/core](https://github.com/specvital/core)           | Parser library (Tree-sitter based)  |
 | [specvital/collector](https://github.com/specvital/collector) | Background worker for analysis jobs |
 | [specvital/infra](https://github.com/specvital/infra)         | Database schema and infrastructure  |
@@ -78,8 +78,8 @@ This repository contains the web application (Frontend + Backend API). The full 
 
 ## Feedback
 
-- Questions & Ideas: [GitHub Discussions](https://github.com/specvital/specvital-web/discussions)
-- Bug Reports: [GitHub Issues](https://github.com/specvital/specvital-web/issues)
+- Questions & Ideas: [GitHub Discussions](https://github.com/orgs/specvital/discussions)
+- Bug Reports: [GitHub Issues](https://github.com/specvital/web/issues)
 
 ## License
 

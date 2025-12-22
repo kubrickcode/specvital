@@ -65,7 +65,7 @@ SpecVital은 활발히 개발 중입니다. 현재 제공 기능:
 
 | 저장소                                                        | 역할                               |
 | ------------------------------------------------------------- | ---------------------------------- |
-| [specvital/web](https://github.com/specvital/specvital-web)   | 웹 대시보드 + REST API             |
+| [specvital/web](https://github.com/specvital/web)             | 웹 대시보드 + REST API             |
 | [specvital/core](https://github.com/specvital/core)           | 파서 라이브러리 (Tree-sitter 기반) |
 | [specvital/collector](https://github.com/specvital/collector) | 분석 작업 백그라운드 워커          |
 | [specvital/infra](https://github.com/specvital/infra)         | 데이터베이스 스키마 및 인프라      |
@@ -78,8 +78,8 @@ SpecVital은 활발히 개발 중입니다. 현재 제공 기능:
 
 ## 피드백
 
-- 질문 및 아이디어: [GitHub Discussions](https://github.com/specvital/specvital-web/discussions)
-- 버그 리포트: [GitHub Issues](https://github.com/specvital/specvital-web/issues)
+- 질문 및 아이디어: [GitHub Discussions](https://github.com/orgs/specvital/discussions)
+- 버그 리포트: [GitHub Issues](https://github.com/specvital/web/issues)
 
 ## 라이선스
 
