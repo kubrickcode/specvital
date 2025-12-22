@@ -4,6 +4,12 @@ export default defineConfig({
   title: "Specvital",
   description: "Open-source test coverage insights for code review",
 
+  head: [["link", { rel: "icon", href: "/favicon.ico" }]],
+
+  vite: {
+    publicDir: ".vitepress/public",
+  },
+
   // Clean URLs without .html
   cleanUrls: true,
 
