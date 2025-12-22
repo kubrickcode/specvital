@@ -60,19 +60,32 @@ export default defineConfig({
               items: [
                 { text: "Overview", link: "/en/adr/" },
                 { text: "Static Analysis Approach", link: "/en/adr/01-static-analysis-approach" },
-                { text: "Competitive Differentiation", link: "/en/adr/02-competitive-differentiation" },
+                {
+                  text: "Competitive Differentiation",
+                  link: "/en/adr/02-competitive-differentiation",
+                },
                 { text: "API Worker Separation", link: "/en/adr/04-api-worker-service-separation" },
                 { text: "Queue-Based Processing", link: "/en/adr/05-queue-based-async-processing" },
                 { text: "Repository Strategy", link: "/en/adr/06-repository-strategy" },
                 { text: "PaaS-First Infrastructure", link: "/en/adr/07-paas-first-infrastructure" },
                 { text: "Shared Infrastructure", link: "/en/adr/08-shared-infrastructure" },
                 {
+                  text: "External Repo ID Integrity",
+                  link: "/en/adr/09-external-repo-id-integrity",
+                },
+                {
                   text: "Core",
                   collapsed: true,
                   items: [
                     { text: "Overview", link: "/en/adr/core/" },
-                    { text: "Core Library Separation", link: "/en/adr/core/01-core-library-separation" },
-                    { text: "Dynamic Test Counting Policy", link: "/en/adr/core/02-dynamic-test-counting-policy" },
+                    {
+                      text: "Core Library Separation",
+                      link: "/en/adr/core/01-core-library-separation",
+                    },
+                    {
+                      text: "Dynamic Test Counting Policy",
+                      link: "/en/adr/core/02-dynamic-test-counting-policy",
+                    },
                   ],
                 },
                 {
@@ -80,14 +93,28 @@ export default defineConfig({
                   collapsed: true,
                   items: [
                     { text: "Overview", link: "/en/adr/collector/" },
-                    { text: "Scheduled Re-collection", link: "/en/adr/collector/01-scheduled-recollection" },
-                    { text: "Clean Architecture Layers", link: "/en/adr/collector/02-clean-architecture-layers" },
+                    {
+                      text: "Scheduled Re-collection",
+                      link: "/en/adr/collector/01-scheduled-recollection",
+                    },
+                    {
+                      text: "Clean Architecture Layers",
+                      link: "/en/adr/collector/02-clean-architecture-layers",
+                    },
                     { text: "Graceful Shutdown", link: "/en/adr/collector/03-graceful-shutdown" },
-                    { text: "OAuth Token Degradation", link: "/en/adr/collector/04-oauth-token-graceful-degradation" },
-                    { text: "Worker-Scheduler Separation", link: "/en/adr/collector/05-worker-scheduler-separation" },
-                    { text: "Semaphore Clone Concurrency", link: "/en/adr/collector/06-semaphore-clone-concurrency" },
+                    {
+                      text: "OAuth Token Degradation",
+                      link: "/en/adr/collector/04-oauth-token-graceful-degradation",
+                    },
+                    {
+                      text: "Worker-Scheduler Separation",
+                      link: "/en/adr/collector/05-worker-scheduler-separation",
+                    },
+                    {
+                      text: "Semaphore Clone Concurrency",
+                      link: "/en/adr/collector/06-semaphore-clone-concurrency",
+                    },
                     { text: "Repository Pattern", link: "/en/adr/collector/07-repository-pattern" },
-                    { text: "External Repo ID Integrity", link: "/en/adr/collector/08-external-repo-id-integrity" },
                   ],
                 },
                 {
@@ -152,13 +179,20 @@ export default defineConfig({
                 { text: "리포지토리 전략", link: "/ko/adr/06-repository-strategy" },
                 { text: "PaaS 우선 인프라", link: "/ko/adr/07-paas-first-infrastructure" },
                 { text: "공유 인프라", link: "/ko/adr/08-shared-infrastructure" },
+                { text: "External Repo ID 무결성", link: "/ko/adr/09-external-repo-id-integrity" },
                 {
                   text: "Core",
                   collapsed: true,
                   items: [
                     { text: "개요", link: "/ko/adr/core/" },
-                    { text: "코어 라이브러리 분리", link: "/ko/adr/core/01-core-library-separation" },
-                    { text: "동적 테스트 카운팅 정책", link: "/ko/adr/core/02-dynamic-test-counting-policy" },
+                    {
+                      text: "코어 라이브러리 분리",
+                      link: "/ko/adr/core/01-core-library-separation",
+                    },
+                    {
+                      text: "동적 테스트 카운팅 정책",
+                      link: "/ko/adr/core/02-dynamic-test-counting-policy",
+                    },
                   ],
                 },
                 {
@@ -166,14 +200,28 @@ export default defineConfig({
                   collapsed: true,
                   items: [
                     { text: "개요", link: "/ko/adr/collector/" },
-                    { text: "스케줄 기반 재수집", link: "/ko/adr/collector/01-scheduled-recollection" },
-                    { text: "Clean Architecture 레이어", link: "/ko/adr/collector/02-clean-architecture-layers" },
+                    {
+                      text: "스케줄 기반 재수집",
+                      link: "/ko/adr/collector/01-scheduled-recollection",
+                    },
+                    {
+                      text: "Clean Architecture 레이어",
+                      link: "/ko/adr/collector/02-clean-architecture-layers",
+                    },
                     { text: "Graceful Shutdown", link: "/ko/adr/collector/03-graceful-shutdown" },
-                    { text: "OAuth 토큰 Degradation", link: "/ko/adr/collector/04-oauth-token-graceful-degradation" },
-                    { text: "Worker-Scheduler 분리", link: "/ko/adr/collector/05-worker-scheduler-separation" },
-                    { text: "Semaphore Clone 동시성", link: "/ko/adr/collector/06-semaphore-clone-concurrency" },
+                    {
+                      text: "OAuth 토큰 Degradation",
+                      link: "/ko/adr/collector/04-oauth-token-graceful-degradation",
+                    },
+                    {
+                      text: "Worker-Scheduler 분리",
+                      link: "/ko/adr/collector/05-worker-scheduler-separation",
+                    },
+                    {
+                      text: "Semaphore Clone 동시성",
+                      link: "/ko/adr/collector/06-semaphore-clone-concurrency",
+                    },
                     { text: "Repository 패턴", link: "/ko/adr/collector/07-repository-pattern" },
-                    { text: "External Repo ID 무결성", link: "/ko/adr/collector/08-external-repo-id-integrity" },
                   ],
                 },
                 {

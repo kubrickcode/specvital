@@ -2,9 +2,9 @@
 title: External Repo ID Integrity
 ---
 
-# ADR-08: External Repository ID-Based Data Integrity
+# ADR-09: External Repository ID-Based Data Integrity
 
-> 🇰🇷 [한국어 버전](/ko/adr/collector/08-external-repo-id-integrity.md)
+> 🇰🇷 [한국어 버전](/ko/adr/09-external-repo-id-integrity.md)
 
 | Date       | Author       | Repos |
 | ---------- | ------------ | ----- |
@@ -304,6 +304,6 @@ if existingCodebase.Owner != req.Owner || existingCodebase.Name != req.Name {
 
 ## References
 
-- [ADR-07: Repository Pattern](./07-repository-pattern.md) - Data access abstraction
-- [ADR-05: Worker-Scheduler Separation](./05-worker-scheduler-separation.md) - Process architecture
+- [ADR-07: Repository Pattern](./collector/07-repository-pattern.md) - Data access abstraction
+- [ADR-05: Worker-Scheduler Separation](./collector/05-worker-scheduler-separation.md) - Process architecture
 - [GitHub API Rate Limits](https://docs.github.com/en/rest/rate-limit)

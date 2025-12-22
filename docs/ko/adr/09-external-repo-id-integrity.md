@@ -2,9 +2,9 @@
 title: External Repo ID 무결성
 ---
 
-# ADR-08: External Repository ID 기반 데이터 무결성
+# ADR-09: External Repository ID 기반 데이터 무결성
 
-> 🇺🇸 [English Version](/en/adr/collector/08-external-repo-id-integrity.md)
+> 🇺🇸 [English Version](/en/adr/09-external-repo-id-integrity.md)
 
 | 날짜       | 작성자       | 리포지토리 |
 | ---------- | ------------ | ---------- |
@@ -304,6 +304,6 @@ if existingCodebase.Owner != req.Owner || existingCodebase.Name != req.Name {
 
 ## References
 
-- [ADR-07: Repository 패턴](./07-repository-pattern.md) - 데이터 접근 추상화
-- [ADR-05: Worker-Scheduler 분리](./05-worker-scheduler-separation.md) - 프로세스 아키텍처
+- [ADR-07: Repository 패턴](./collector/07-repository-pattern.md) - 데이터 접근 추상화
+- [ADR-05: Worker-Scheduler 분리](./collector/05-worker-scheduler-separation.md) - 프로세스 아키텍처
 - [GitHub API Rate Limits](https://docs.github.com/en/rest/rate-limit)
