@@ -17,10 +17,14 @@ const (
 )
 
 type Repository interface {
+	FindActiveRiverJobByRepo(ctx context.Context, kind, owner, repo string) (*RiverJobInfo, error)
+	GetCodebaseID(ctx context.Context, owner, repo string) (string, error)
 	GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error)
+	GetPreviousAnalysis(ctx context.Context, codebaseID, currentAnalysisID string) (*PreviousAnalysis, error)
+	GetRecentRepositories(ctx context.Context, limit int) ([]RecentRepository, error)
+	GetRepositoryStats(ctx context.Context) (*domain.RepositoryStats, error)
 	GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error)
 	UpdateLastViewed(ctx context.Context, owner, repo string) error
-	FindActiveRiverJobByRepo(ctx context.Context, kind, owner, repo string) (*RiverJobInfo, error)
 }
 
 type CompletedAnalysis struct {
@@ -50,6 +54,22 @@ type TestCaseRow struct {
 type RiverJobInfo struct {
 	CommitSHA string
 	State     string
+}
+
+type RecentRepository struct {
+	AnalysisID string
+	AnalyzedAt time.Time
+	CodebaseID string
+	CommitSHA  string
+	Name       string
+	Owner      string
+	TotalTests int
+}
+
+type PreviousAnalysis struct {
+	CommitSHA  string
+	ID         string
+	TotalTests int
 }
 
 type repositoryImpl struct {
@@ -185,4 +205,79 @@ func stringToUUID(s string) (pgtype.UUID, error) {
 		return pgtype.UUID{}, err
 	}
 	return uuid, nil
+}
+
+func (r *repositoryImpl) GetCodebaseID(ctx context.Context, owner, repo string) (string, error) {
+	id, err := r.queries.GetCodebaseIDByOwnerRepo(ctx, db.GetCodebaseIDByOwnerRepoParams{
+		Host:  HostGitHub,
+		Owner: owner,
+		Name:  repo,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", domain.WrapNotFound(owner, repo)
+		}
+		return "", fmt.Errorf("get codebase ID for %s/%s: %w", owner, repo, err)
+	}
+	return uuidToString(id), nil
+}
+
+func (r *repositoryImpl) GetRecentRepositories(ctx context.Context, limit int) ([]RecentRepository, error) {
+	rows, err := r.queries.GetRecentRepositories(ctx, int32(limit))
+	if err != nil {
+		return nil, fmt.Errorf("get recent repositories: %w", err)
+	}
+
+	repos := make([]RecentRepository, len(rows))
+	for i, row := range rows {
+		repos[i] = RecentRepository{
+			AnalysisID: uuidToString(row.AnalysisID),
+			AnalyzedAt: row.AnalyzedAt.Time,
+			CodebaseID: uuidToString(row.CodebaseID),
+			CommitSHA:  row.CommitSha,
+			Name:       row.Name,
+			Owner:      row.Owner,
+			TotalTests: int(row.TotalTests),
+		}
+	}
+	return repos, nil
+}
+
+func (r *repositoryImpl) GetRepositoryStats(ctx context.Context) (*domain.RepositoryStats, error) {
+	row, err := r.queries.GetRepositoryStats(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get repository stats: %w", err)
+	}
+	return &domain.RepositoryStats{
+		TotalRepositories: int(row.TotalRepositories),
+		TotalTests:        int(row.TotalTests),
+	}, nil
+}
+
+func (r *repositoryImpl) GetPreviousAnalysis(ctx context.Context, codebaseID, currentAnalysisID string) (*PreviousAnalysis, error) {
+	codebaseUUID, err := stringToUUID(codebaseID)
+	if err != nil {
+		return nil, fmt.Errorf("parse codebase ID: %w", err)
+	}
+	analysisUUID, err := stringToUUID(currentAnalysisID)
+	if err != nil {
+		return nil, fmt.Errorf("parse analysis ID: %w", err)
+	}
+
+	row, err := r.queries.GetPreviousAnalysis(ctx, db.GetPreviousAnalysisParams{
+		CodebaseID: codebaseUUID,
+		ID:         analysisUUID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get previous analysis: %w", err)
+	}
+
+	return &PreviousAnalysis{
+		CommitSHA:  row.CommitSha,
+		ID:         uuidToString(row.ID),
+		TotalTests: int(row.TotalTests),
+	}, nil
 }

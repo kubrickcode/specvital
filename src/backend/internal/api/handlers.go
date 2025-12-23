@@ -20,19 +20,28 @@ type BookmarkHandlers interface {
 	RemoveBookmark(ctx context.Context, request RemoveBookmarkRequestObject) (RemoveBookmarkResponseObject, error)
 }
 
+type RepositoryHandlers interface {
+	GetRecentRepositories(ctx context.Context, request GetRecentRepositoriesRequestObject) (GetRecentRepositoriesResponseObject, error)
+	GetRepositoryStats(ctx context.Context, request GetRepositoryStatsRequestObject) (GetRepositoryStatsResponseObject, error)
+	GetUpdateStatus(ctx context.Context, request GetUpdateStatusRequestObject) (GetUpdateStatusResponseObject, error)
+	ReanalyzeRepository(ctx context.Context, request ReanalyzeRepositoryRequestObject) (ReanalyzeRepositoryResponseObject, error)
+}
+
 type APIHandlers struct {
-	analyzer AnalyzerHandlers
-	auth     AuthHandlers
-	bookmark BookmarkHandlers
+	analyzer   AnalyzerHandlers
+	auth       AuthHandlers
+	bookmark   BookmarkHandlers
+	repository RepositoryHandlers
 }
 
 var _ StrictServerInterface = (*APIHandlers)(nil)
 
-func NewAPIHandlers(analyzer AnalyzerHandlers, auth AuthHandlers, bookmark BookmarkHandlers) *APIHandlers {
+func NewAPIHandlers(analyzer AnalyzerHandlers, auth AuthHandlers, bookmark BookmarkHandlers, repository RepositoryHandlers) *APIHandlers {
 	return &APIHandlers{
-		analyzer: analyzer,
-		auth:     auth,
-		bookmark: bookmark,
+		analyzer:   analyzer,
+		auth:       auth,
+		bookmark:   bookmark,
+		repository: repository,
 	}
 }
 
@@ -64,28 +73,20 @@ func (h *APIHandlers) AddBookmark(ctx context.Context, request AddBookmarkReques
 	return h.bookmark.AddBookmark(ctx, request)
 }
 
-func (h *APIHandlers) GetRecentRepositories(_ context.Context, _ GetRecentRepositoriesRequestObject) (GetRecentRepositoriesResponseObject, error) {
-	return GetRecentRepositories500ApplicationProblemPlusJSONResponse{
-		InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("Recent repositories feature not yet implemented"),
-	}, nil
+func (h *APIHandlers) GetRecentRepositories(ctx context.Context, request GetRecentRepositoriesRequestObject) (GetRecentRepositoriesResponseObject, error) {
+	return h.repository.GetRecentRepositories(ctx, request)
 }
 
-func (h *APIHandlers) GetRepositoryStats(_ context.Context, _ GetRepositoryStatsRequestObject) (GetRepositoryStatsResponseObject, error) {
-	return GetRepositoryStats500ApplicationProblemPlusJSONResponse{
-		InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("Repository stats feature not yet implemented"),
-	}, nil
+func (h *APIHandlers) GetRepositoryStats(ctx context.Context, request GetRepositoryStatsRequestObject) (GetRepositoryStatsResponseObject, error) {
+	return h.repository.GetRepositoryStats(ctx, request)
 }
 
-func (h *APIHandlers) GetUpdateStatus(_ context.Context, _ GetUpdateStatusRequestObject) (GetUpdateStatusResponseObject, error) {
-	return GetUpdateStatus500ApplicationProblemPlusJSONResponse{
-		InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("Update status feature not yet implemented"),
-	}, nil
+func (h *APIHandlers) GetUpdateStatus(ctx context.Context, request GetUpdateStatusRequestObject) (GetUpdateStatusResponseObject, error) {
+	return h.repository.GetUpdateStatus(ctx, request)
 }
 
-func (h *APIHandlers) ReanalyzeRepository(_ context.Context, _ ReanalyzeRepositoryRequestObject) (ReanalyzeRepositoryResponseObject, error) {
-	return ReanalyzeRepository500ApplicationProblemPlusJSONResponse{
-		InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("Reanalyze feature not yet implemented"),
-	}, nil
+func (h *APIHandlers) ReanalyzeRepository(ctx context.Context, request ReanalyzeRepositoryRequestObject) (ReanalyzeRepositoryResponseObject, error) {
+	return h.repository.ReanalyzeRepository(ctx, request)
 }
 
 func (h *APIHandlers) GetUserBookmarks(ctx context.Context, request GetUserBookmarksRequestObject) (GetUserBookmarksResponseObject, error) {

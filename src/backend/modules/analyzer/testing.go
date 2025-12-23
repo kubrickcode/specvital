@@ -50,6 +50,22 @@ func (m *mockRepository) FindActiveRiverJobByRepo(ctx context.Context, kind, own
 	return nil, nil
 }
 
+func (m *mockRepository) GetCodebaseID(ctx context.Context, owner, repo string) (string, error) {
+	return "test-codebase-id", nil
+}
+
+func (m *mockRepository) GetRecentRepositories(ctx context.Context, limit int) ([]RecentRepository, error) {
+	return nil, nil
+}
+
+func (m *mockRepository) GetRepositoryStats(ctx context.Context) (*domain.RepositoryStats, error) {
+	return &domain.RepositoryStats{}, nil
+}
+
+func (m *mockRepository) GetPreviousAnalysis(ctx context.Context, codebaseID, currentAnalysisID string) (*PreviousAnalysis, error) {
+	return nil, nil
+}
+
 // mockQueueService is a test double for QueueService.
 type mockQueueService struct {
 	enqueueCalled     bool
@@ -138,9 +154,36 @@ func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gi
 	handler := NewAnalyzerHandler(log, service)
 
 	r := chi.NewRouter()
-	apiHandlers := api.NewAPIHandlers(handler, auth.NewMockHandler(), auth.NewMockBookmarkHandler())
+	repoHandler := NewMockRepositoryHandler()
+	apiHandlers := api.NewAPIHandlers(handler, auth.NewMockHandler(), auth.NewMockBookmarkHandler(), repoHandler)
 	strictHandler := api.NewStrictHandler(apiHandlers, nil)
 	api.HandlerFromMux(strictHandler, r)
 
 	return handler, r
+}
+
+type mockRepositoryHandler struct{}
+
+var _ api.RepositoryHandlers = (*mockRepositoryHandler)(nil)
+
+func NewMockRepositoryHandler() *mockRepositoryHandler {
+	return &mockRepositoryHandler{}
+}
+
+func (m *mockRepositoryHandler) GetRecentRepositories(ctx context.Context, request api.GetRecentRepositoriesRequestObject) (api.GetRecentRepositoriesResponseObject, error) {
+	return api.GetRecentRepositories200JSONResponse{Data: []api.RepositoryCard{}}, nil
+}
+
+func (m *mockRepositoryHandler) GetRepositoryStats(ctx context.Context, request api.GetRepositoryStatsRequestObject) (api.GetRepositoryStatsResponseObject, error) {
+	return api.GetRepositoryStats200JSONResponse{TotalRepositories: 0, TotalTests: 0}, nil
+}
+
+func (m *mockRepositoryHandler) GetUpdateStatus(ctx context.Context, request api.GetUpdateStatusRequestObject) (api.GetUpdateStatusResponseObject, error) {
+	return api.GetUpdateStatus200JSONResponse{Status: api.Unknown}, nil
+}
+
+func (m *mockRepositoryHandler) ReanalyzeRepository(ctx context.Context, request api.ReanalyzeRepositoryRequestObject) (api.ReanalyzeRepositoryResponseObject, error) {
+	return api.ReanalyzeRepository500ApplicationProblemPlusJSONResponse{
+		InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("mock"),
+	}, nil
 }

@@ -55,7 +55,7 @@ var _ Service = (*mockService)(nil)
 
 func setupTestRouter(handler *Handler) *chi.Mux {
 	r := chi.NewRouter()
-	apiHandlers := api.NewAPIHandlers(&mockAnalyzerHandler{}, handler, NewMockBookmarkHandler())
+	apiHandlers := api.NewAPIHandlers(&mockAnalyzerHandler{}, handler, NewMockBookmarkHandler(), &mockRepositoryHandler{})
 	strictHandler := api.NewStrictHandler(apiHandlers, nil)
 	api.HandlerFromMux(strictHandler, r)
 	return r
@@ -68,6 +68,24 @@ func (m *mockAnalyzerHandler) AnalyzeRepository(_ context.Context, _ api.Analyze
 }
 
 func (m *mockAnalyzerHandler) GetAnalysisStatus(_ context.Context, _ api.GetAnalysisStatusRequestObject) (api.GetAnalysisStatusResponseObject, error) {
+	return nil, nil
+}
+
+type mockRepositoryHandler struct{}
+
+func (m *mockRepositoryHandler) GetRecentRepositories(_ context.Context, _ api.GetRecentRepositoriesRequestObject) (api.GetRecentRepositoriesResponseObject, error) {
+	return nil, nil
+}
+
+func (m *mockRepositoryHandler) GetRepositoryStats(_ context.Context, _ api.GetRepositoryStatsRequestObject) (api.GetRepositoryStatsResponseObject, error) {
+	return nil, nil
+}
+
+func (m *mockRepositoryHandler) GetUpdateStatus(_ context.Context, _ api.GetUpdateStatusRequestObject) (api.GetUpdateStatusResponseObject, error) {
+	return nil, nil
+}
+
+func (m *mockRepositoryHandler) ReanalyzeRepository(_ context.Context, _ api.ReanalyzeRepositoryRequestObject) (api.ReanalyzeRepositoryResponseObject, error) {
 	return nil, nil
 }
 
