@@ -112,4 +112,5 @@ FROM codebases c
 LEFT JOIN latest_completions lc ON c.id = lc.codebase_id
 LEFT JOIN failure_counts fc ON c.id = fc.codebase_id
 WHERE c.last_viewed_at IS NOT NULL
-  AND c.last_viewed_at > now() - interval '90 days';
+  AND c.last_viewed_at > now() - interval '90 days'
+  AND c.is_stale = false;
