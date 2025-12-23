@@ -72,12 +72,22 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 		return nil, fmt.Errorf("create auth handler: %w", err)
 	}
 
+	bookmarkRepo := auth.NewBookmarkRepository(queries)
+	bookmarkService := auth.NewBookmarkService(bookmarkRepo)
+	bookmarkHandler, err := auth.NewBookmarkHandler(&auth.BookmarkHandlerConfig{
+		Logger:  log,
+		Service: bookmarkService,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("create bookmark handler: %w", err)
+	}
+
 	analyzerRepo := analyzer.NewRepository(queries)
 	queueSvc := analyzer.NewQueueService(container.River.Client(), analyzerRepo)
 	analyzerService := analyzer.NewAnalyzerService(log, analyzerRepo, queueSvc, container.GitClient, authService)
 	analyzerHandler := analyzer.NewAnalyzerHandler(log, analyzerService)
 
-	apiHandlers := api.NewAPIHandlers(analyzerHandler, authHandler)
+	apiHandlers := api.NewAPIHandlers(analyzerHandler, authHandler, bookmarkHandler)
 
 	return &Handlers{
 		API:    apiHandlers,

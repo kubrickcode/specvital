@@ -38,3 +38,30 @@ func (h *MockHandler) AuthMe(_ context.Context, _ api.AuthMeRequestObject) (api.
 		UnauthorizedApplicationProblemPlusJSONResponse: api.NewUnauthorized("mock: not implemented"),
 	}, nil
 }
+
+// MockBookmarkHandler is a test double for bookmark endpoints.
+type MockBookmarkHandler struct{}
+
+var _ api.BookmarkHandlers = (*MockBookmarkHandler)(nil)
+
+func NewMockBookmarkHandler() *MockBookmarkHandler {
+	return &MockBookmarkHandler{}
+}
+
+func (h *MockBookmarkHandler) AddBookmark(_ context.Context, _ api.AddBookmarkRequestObject) (api.AddBookmarkResponseObject, error) {
+	return api.AddBookmark500ApplicationProblemPlusJSONResponse{
+		InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("mock: not implemented"),
+	}, nil
+}
+
+func (h *MockBookmarkHandler) GetUserBookmarks(_ context.Context, _ api.GetUserBookmarksRequestObject) (api.GetUserBookmarksResponseObject, error) {
+	return api.GetUserBookmarks500ApplicationProblemPlusJSONResponse{
+		InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("mock: not implemented"),
+	}, nil
+}
+
+func (h *MockBookmarkHandler) RemoveBookmark(_ context.Context, _ api.RemoveBookmarkRequestObject) (api.RemoveBookmarkResponseObject, error) {
+	return api.RemoveBookmark500ApplicationProblemPlusJSONResponse{
+		InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("mock: not implemented"),
+	}, nil
+}

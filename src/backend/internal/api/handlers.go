@@ -14,17 +14,25 @@ type AuthHandlers interface {
 	AuthMe(ctx context.Context, request AuthMeRequestObject) (AuthMeResponseObject, error)
 }
 
+type BookmarkHandlers interface {
+	AddBookmark(ctx context.Context, request AddBookmarkRequestObject) (AddBookmarkResponseObject, error)
+	GetUserBookmarks(ctx context.Context, request GetUserBookmarksRequestObject) (GetUserBookmarksResponseObject, error)
+	RemoveBookmark(ctx context.Context, request RemoveBookmarkRequestObject) (RemoveBookmarkResponseObject, error)
+}
+
 type APIHandlers struct {
 	analyzer AnalyzerHandlers
 	auth     AuthHandlers
+	bookmark BookmarkHandlers
 }
 
 var _ StrictServerInterface = (*APIHandlers)(nil)
 
-func NewAPIHandlers(analyzer AnalyzerHandlers, auth AuthHandlers) *APIHandlers {
+func NewAPIHandlers(analyzer AnalyzerHandlers, auth AuthHandlers, bookmark BookmarkHandlers) *APIHandlers {
 	return &APIHandlers{
 		analyzer: analyzer,
 		auth:     auth,
+		bookmark: bookmark,
 	}
 }
 
@@ -52,12 +60,8 @@ func (h *APIHandlers) AuthMe(ctx context.Context, request AuthMeRequestObject) (
 	return h.auth.AuthMe(ctx, request)
 }
 
-// Stub implementations - actual handlers will be added to auth/analyzer modules
-
-func (h *APIHandlers) AddBookmark(_ context.Context, _ AddBookmarkRequestObject) (AddBookmarkResponseObject, error) {
-	return AddBookmark500ApplicationProblemPlusJSONResponse{
-		InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("Bookmark feature not yet implemented"),
-	}, nil
+func (h *APIHandlers) AddBookmark(ctx context.Context, request AddBookmarkRequestObject) (AddBookmarkResponseObject, error) {
+	return h.bookmark.AddBookmark(ctx, request)
 }
 
 func (h *APIHandlers) GetRecentRepositories(_ context.Context, _ GetRecentRepositoriesRequestObject) (GetRecentRepositoriesResponseObject, error) {
@@ -84,14 +88,10 @@ func (h *APIHandlers) ReanalyzeRepository(_ context.Context, _ ReanalyzeReposito
 	}, nil
 }
 
-func (h *APIHandlers) GetUserBookmarks(_ context.Context, _ GetUserBookmarksRequestObject) (GetUserBookmarksResponseObject, error) {
-	return GetUserBookmarks500ApplicationProblemPlusJSONResponse{
-		InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("Bookmarks feature not yet implemented"),
-	}, nil
+func (h *APIHandlers) GetUserBookmarks(ctx context.Context, request GetUserBookmarksRequestObject) (GetUserBookmarksResponseObject, error) {
+	return h.bookmark.GetUserBookmarks(ctx, request)
 }
 
-func (h *APIHandlers) RemoveBookmark(_ context.Context, _ RemoveBookmarkRequestObject) (RemoveBookmarkResponseObject, error) {
-	return RemoveBookmark500ApplicationProblemPlusJSONResponse{
-		InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("Bookmark feature not yet implemented"),
-	}, nil
+func (h *APIHandlers) RemoveBookmark(ctx context.Context, request RemoveBookmarkRequestObject) (RemoveBookmarkResponseObject, error) {
+	return h.bookmark.RemoveBookmark(ctx, request)
 }

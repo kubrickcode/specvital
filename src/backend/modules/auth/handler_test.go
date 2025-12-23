@@ -55,7 +55,7 @@ var _ Service = (*mockService)(nil)
 
 func setupTestRouter(handler *Handler) *chi.Mux {
 	r := chi.NewRouter()
-	apiHandlers := api.NewAPIHandlers(&mockAnalyzerHandler{}, handler)
+	apiHandlers := api.NewAPIHandlers(&mockAnalyzerHandler{}, handler, NewMockBookmarkHandler())
 	strictHandler := api.NewStrictHandler(apiHandlers, nil)
 	api.HandlerFromMux(strictHandler, r)
 	return r
