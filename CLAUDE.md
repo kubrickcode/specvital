@@ -47,33 +47,68 @@ docs/
 
 ### CRITICAL: Adding New Documents
 
-> **MUST follow ALL steps. Skipping ANY step is a violation.**
+> **VIOLATION WARNING: Skipping ANY file is a critical failure.**
+>
+> **⚠️ `docs/en/index.md` and `docs/ko/index.md` are ALWAYS required but MOST MISSED (10+ occurrences).**
 
-1. Create in both `/en/` and `/ko/` with identical structure
-2. **Update `docs/.vitepress/config.mts`** - sidebar navigation
-3. **Update ALL relevant `index.md` files** in both EN and KO:
+**Step 1: Create Document Files**
 
-#### ADR Document Example (e.g., `collector/08-xxx.md`)
+- Create in both `/en/` and `/ko/` with identical structure
+- Follow naming convention (e.g., `01-xxx.md`, `02-yyy.md`)
 
-Must update these 4 files:
+**Step 2: Update Sidebar Navigation**
+
+- Update `docs/.vitepress/config.mts` - add to sidebar configuration
+
+**Step 3: Update Index Files (COMPLETE CHECKLIST)**
+
+> **CRITICAL**: Use this checklist for EVERY new document. Missing ANY file causes broken links.
+
+#### For ADR Documents (e.g., `adr/core/13-xxx.md`)
+
+**ALWAYS update these 6 files** (check each box):
 
 ```
-docs/en/adr/index.md           ← Parent ADR index (Collector Repository section)
-docs/ko/adr/index.md           ← Parent ADR index (Collector 리포지토리 section)
-docs/en/adr/collector/index.md ← Collector ADR index
-docs/ko/adr/collector/index.md ← Collector ADR index
+☐ docs/en/index.md                 ← Homepage (ADR links section)
+☐ docs/ko/index.md                 ← Homepage (ADR links section)
+☐ docs/en/adr/index.md             ← ADR overview (repository section)
+☐ docs/ko/adr/index.md             ← ADR overview (repository section)
+☐ docs/en/adr/{category}/index.md  ← Category index (core/collector/web)
+☐ docs/ko/adr/{category}/index.md  ← Category index (core/collector/web)
 ```
 
-#### PRD Document Example (e.g., `prd/07-xxx.md`)
+**Concrete examples:**
 
-Must update these 2 files:
+- For `adr/core/13-xxx.md`: Update 6 files (both homepage + adr/index + adr/core/index)
+- For `adr/collector/08-xxx.md`: Update 6 files (both homepage + adr/index + adr/collector/index)
+- For `adr/web/02-xxx.md`: Update 6 files (both homepage + adr/index + adr/web/index)
+
+#### For PRD Documents (e.g., `prd/07-xxx.md`)
+
+**ALWAYS update these 4 files** (check each box):
 
 ```
-docs/en/prd/index.md
-docs/ko/prd/index.md
+☐ docs/en/index.md       ← Homepage (PRD links section)
+☐ docs/ko/index.md       ← Homepage (PRD links section)
+☐ docs/en/prd/index.md   ← PRD index
+☐ docs/ko/prd/index.md   ← PRD index
 ```
 
-> **DO NOT assume "collector/index.md updated = done". Parent index.md MUST also be updated.**
+**Step 4: Verification (File Count Check)**
+
+| Document Type            | Files to Update | Breakdown                                   |
+| ------------------------ | --------------- | ------------------------------------------- |
+| ADR (core/collector/web) | **6 files**     | 2 homepage + 2 adr/index + 2 category/index |
+| Root ADR (adr/XX.md)     | **4 files**     | 2 homepage + 2 adr/index                    |
+| PRD                      | **4 files**     | 2 homepage + 2 prd/index                    |
+
+> **RED FLAG CHECK:**
+>
+> ❌ Updated only 4 files for category ADR → **MISSED 2 FILES** (homepage)
+> ❌ Didn't touch `docs/en/index.md` → **CRITICAL MISS**
+> ❌ Didn't touch `docs/ko/index.md` → **CRITICAL MISS**
+>
+> **If unsure, ALWAYS update `docs/en/index.md` and `docs/ko/index.md` FIRST.**
 
 ### Language Convention
 
