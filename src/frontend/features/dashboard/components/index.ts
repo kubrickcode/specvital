@@ -1,4 +1,6 @@
 export { BookmarkedSection } from "./bookmarked-section";
+export { DashboardContent } from "./dashboard-content";
+export { DashboardHeader } from "./dashboard-header";
 export { EmptyState } from "./empty-state";
 export { RepositoryCard } from "./repository-card";
 export { RepositoryList } from "./repository-list";

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import type { RepositoryCard } from "@/lib/api/types";
 
-type SortOption = "recent" | "name" | "tests";
+import type { SortOption } from "../types";
 
 type UseRepositorySearchReturn = {
   filteredRepositories: RepositoryCard[];
