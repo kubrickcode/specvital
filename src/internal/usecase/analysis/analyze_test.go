@@ -165,14 +165,18 @@ func (m *mockCodebaseRepository) Upsert(ctx context.Context, params analysis.Ups
 }
 
 type mockVCSAPIClient struct {
-	getRepoIDFn func(ctx context.Context, host, owner, repo string, token *string) (string, error)
+	getRepoInfoFn func(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error)
 }
 
-func (m *mockVCSAPIClient) GetRepoID(ctx context.Context, host, owner, repo string, token *string) (string, error) {
-	if m.getRepoIDFn != nil {
-		return m.getRepoIDFn(ctx, host, owner, repo, token)
+func (m *mockVCSAPIClient) GetRepoInfo(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error) {
+	if m.getRepoInfoFn != nil {
+		return m.getRepoInfoFn(ctx, host, owner, repo, token)
 	}
-	return "123456", nil
+	return analysis.RepoInfo{
+		ExternalRepoID: "123456",
+		Name:           repo,
+		Owner:          owner,
+	}, nil
 }
 
 type mockTokenLookup struct {
@@ -1023,9 +1027,9 @@ func TestResolveCodebase(t *testing.T) {
 
 		apiCalled := false
 		vcsAPI := &mockVCSAPIClient{
-			getRepoIDFn: func(ctx context.Context, host, owner, repo string, token *string) (string, error) {
+			getRepoInfoFn: func(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error) {
 				apiCalled = true
-				return "123456", nil
+				return analysis.RepoInfo{ExternalRepoID: "123456", Owner: owner, Name: repo}, nil
 			},
 		}
 
@@ -1139,8 +1143,8 @@ func TestResolveCodebase(t *testing.T) {
 		}
 
 		vcsAPI := &mockVCSAPIClient{
-			getRepoIDFn: func(ctx context.Context, host, owner, repo string, token *string) (string, error) {
-				return "new-external-id", nil
+			getRepoInfoFn: func(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error) {
+				return analysis.RepoInfo{ExternalRepoID: "new-external-id", Owner: owner, Name: repo}, nil
 			},
 		}
 
@@ -1216,8 +1220,8 @@ func TestResolveCodebase(t *testing.T) {
 		}
 
 		vcsAPI := &mockVCSAPIClient{
-			getRepoIDFn: func(ctx context.Context, host, owner, repo string, token *string) (string, error) {
-				return "", errors.New("API rate limit exceeded")
+			getRepoInfoFn: func(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error) {
+				return analysis.RepoInfo{}, errors.New("API rate limit exceeded")
 			},
 		}
 
@@ -1229,6 +1233,141 @@ func TestResolveCodebase(t *testing.T) {
 		}
 		if !errors.Is(err, ErrCodebaseResolutionFailed) {
 			t.Errorf("expected ErrCodebaseResolutionFailed, got %v", err)
+		}
+	})
+
+	t.Run("Race condition: repository renamed during clone", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		repo := newSuccessfulRepository()
+		parser := newSuccessfulParser()
+
+		codebaseRepo := &mockCodebaseRepository{
+			findWithLastCommitFn: func(ctx context.Context, host, owner, name string) (*analysis.Codebase, error) {
+				return nil, analysis.ErrCodebaseNotFound
+			},
+		}
+
+		vcsAPI := &mockVCSAPIClient{
+			getRepoInfoFn: func(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error) {
+				return analysis.RepoInfo{
+					ExternalRepoID: "123456",
+					Owner:          "newowner",
+					Name:           "newrepo",
+				}, nil
+			},
+		}
+
+		uc := NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if err == nil {
+			t.Error("expected error when race condition detected")
+		}
+		if !errors.Is(err, ErrRaceConditionDetected) {
+			t.Errorf("expected ErrRaceConditionDetected, got %v", err)
+		}
+	})
+
+	t.Run("Race condition: only owner changed (transfer)", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		repo := newSuccessfulRepository()
+		parser := newSuccessfulParser()
+
+		codebaseRepo := &mockCodebaseRepository{
+			findWithLastCommitFn: func(ctx context.Context, host, owner, name string) (*analysis.Codebase, error) {
+				return nil, analysis.ErrCodebaseNotFound
+			},
+		}
+
+		vcsAPI := &mockVCSAPIClient{
+			getRepoInfoFn: func(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error) {
+				return analysis.RepoInfo{
+					ExternalRepoID: "123456",
+					Owner:          "differentowner",
+					Name:           repo,
+				}, nil
+			},
+		}
+
+		uc := NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if err == nil {
+			t.Error("expected error when owner changed")
+		}
+		if !errors.Is(err, ErrRaceConditionDetected) {
+			t.Errorf("expected ErrRaceConditionDetected, got %v", err)
+		}
+	})
+
+	t.Run("Race condition: only name changed (rename)", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		repo := newSuccessfulRepository()
+		parser := newSuccessfulParser()
+
+		codebaseRepo := &mockCodebaseRepository{
+			findWithLastCommitFn: func(ctx context.Context, host, owner, name string) (*analysis.Codebase, error) {
+				return nil, analysis.ErrCodebaseNotFound
+			},
+		}
+
+		vcsAPI := &mockVCSAPIClient{
+			getRepoInfoFn: func(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error) {
+				return analysis.RepoInfo{
+					ExternalRepoID: "123456",
+					Owner:          owner,
+					Name:           "differentrepo",
+				}, nil
+			},
+		}
+
+		uc := NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if err == nil {
+			t.Error("expected error when name changed")
+		}
+		if !errors.Is(err, ErrRaceConditionDetected) {
+			t.Errorf("expected ErrRaceConditionDetected, got %v", err)
+		}
+	})
+
+	t.Run("Case change only should not trigger race condition", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		repo := newSuccessfulRepository()
+		parser := newSuccessfulParser()
+
+		codebaseRepo := &mockCodebaseRepository{
+			findWithLastCommitFn: func(ctx context.Context, host, owner, name string) (*analysis.Codebase, error) {
+				return nil, analysis.ErrCodebaseNotFound
+			},
+			findByExternalIDFn: func(ctx context.Context, host, externalRepoID string) (*analysis.Codebase, error) {
+				return nil, analysis.ErrCodebaseNotFound
+			},
+			upsertFn: func(ctx context.Context, params analysis.UpsertCodebaseParams) (*analysis.Codebase, error) {
+				return &analysis.Codebase{ID: analysis.NewUUID()}, nil
+			},
+		}
+
+		vcsAPI := &mockVCSAPIClient{
+			getRepoInfoFn: func(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error) {
+				return analysis.RepoInfo{
+					ExternalRepoID: "123456",
+					Owner:          "TestOwner",
+					Name:           "TestRepo",
+				}, nil
+			},
+		}
+
+		uc := NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if errors.Is(err, ErrRaceConditionDetected) {
+			t.Error("case change only should not trigger race condition")
 		}
 	})
 }

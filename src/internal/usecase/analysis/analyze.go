@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"golang.org/x/sync/semaphore"
@@ -234,14 +235,28 @@ func (uc *AnalyzeUseCase) resolveCodebaseWithAPI(
 	codebaseByName *analysis.Codebase,
 	token *string,
 ) (*analysis.Codebase, error) {
-	externalRepoID, err := uc.vcsAPIClient.GetRepoID(ctx, host, req.Owner, req.Repo, token)
+	repoInfo, err := uc.vcsAPIClient.GetRepoInfo(ctx, host, req.Owner, req.Repo, token)
 	if err != nil {
 		if errors.Is(err, analysis.ErrRepoNotFound) {
 			return nil, fmt.Errorf("repository not found %s/%s: %w", req.Owner, req.Repo, err)
 		}
-		return nil, fmt.Errorf("get external repo ID for %s/%s: %w", req.Owner, req.Repo, err)
+		return nil, fmt.Errorf("get repo info for %s/%s: %w", req.Owner, req.Repo, err)
 	}
 
+	if !strings.EqualFold(repoInfo.Owner, req.Owner) || !strings.EqualFold(repoInfo.Name, req.Repo) {
+		slog.WarnContext(ctx, "race condition detected: repository renamed during clone",
+			"requested_owner", req.Owner,
+			"requested_repo", req.Repo,
+			"actual_owner", repoInfo.Owner,
+			"actual_repo", repoInfo.Name,
+		)
+		return nil, fmt.Errorf(
+			"%w: repository state changed during analysis",
+			ErrRaceConditionDetected,
+		)
+	}
+
+	externalRepoID := repoInfo.ExternalRepoID
 	codebaseByID, err := uc.codebaseRepo.FindByExternalID(ctx, host, externalRepoID)
 	if err != nil && !errors.Is(err, analysis.ErrCodebaseNotFound) {
 		return nil, fmt.Errorf("find by external ID %s for %s/%s: %w", externalRepoID, req.Owner, req.Repo, err)

@@ -19,9 +19,13 @@ type Source interface {
 	VerifyCommitExists(ctx context.Context, sha string) (bool, error)
 }
 
-// VCSAPIClient retrieves repository metadata from VCS platform APIs.
+type RepoInfo struct {
+	ExternalRepoID string
+	Name           string
+	Owner          string
+}
+
 type VCSAPIClient interface {
-	// GetRepoID returns the platform-specific repository ID.
 	// Returns ErrRepoNotFound if the repository does not exist.
-	GetRepoID(ctx context.Context, host, owner, repo string, token *string) (string, error)
+	GetRepoInfo(ctx context.Context, host, owner, repo string, token *string) (RepoInfo, error)
 }

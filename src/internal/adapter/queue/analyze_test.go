@@ -139,8 +139,12 @@ func (m *mockCodebaseRepository) Upsert(ctx context.Context, params analysis.Ups
 
 type mockVCSAPIClient struct{}
 
-func (m *mockVCSAPIClient) GetRepoID(ctx context.Context, host, owner, repo string, token *string) (string, error) {
-	return "123456", nil
+func (m *mockVCSAPIClient) GetRepoInfo(ctx context.Context, host, owner, repo string, token *string) (analysis.RepoInfo, error) {
+	return analysis.RepoInfo{
+		ExternalRepoID: "123456",
+		Name:           repo,
+		Owner:          owner,
+	}, nil
 }
 
 // Test helper functions

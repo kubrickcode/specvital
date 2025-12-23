@@ -31,7 +31,7 @@ func TestNewGitHubAPIClient(t *testing.T) {
 	})
 }
 
-func TestGitHubAPIClient_GetRepoID(t *testing.T) {
+func TestGitHubAPIClient_GetRepoInfo(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != "/repos/octocat/Hello-World" {
@@ -44,18 +44,24 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 				t.Error("missing or incorrect API version header")
 			}
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": 1296269}`))
+			w.Write([]byte(`{"id": 1296269, "name": "Hello-World", "owner": {"login": "octocat"}}`))
 		}))
 		defer server.Close()
 
 		client := newTestClient(server)
 
-		id, err := client.GetRepoID(context.Background(), "github.com", "octocat", "Hello-World", nil)
+		info, err := client.GetRepoInfo(context.Background(), "github.com", "octocat", "Hello-World", nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if id != "1296269" {
-			t.Errorf("expected id 1296269, got %s", id)
+		if info.ExternalRepoID != "1296269" {
+			t.Errorf("expected id 1296269, got %s", info.ExternalRepoID)
+		}
+		if info.Owner != "octocat" {
+			t.Errorf("expected owner octocat, got %s", info.Owner)
+		}
+		if info.Name != "Hello-World" {
+			t.Errorf("expected name Hello-World, got %s", info.Name)
 		}
 	})
 
@@ -66,19 +72,19 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 				t.Errorf("unexpected Authorization header: %s", auth)
 			}
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": 12345}`))
+			w.Write([]byte(`{"id": 12345, "name": "repo", "owner": {"login": "owner"}}`))
 		}))
 		defer server.Close()
 
 		client := newTestClient(server)
 		token := "test-token"
 
-		id, err := client.GetRepoID(context.Background(), "github.com", "owner", "repo", &token)
+		info, err := client.GetRepoInfo(context.Background(), "github.com", "owner", "repo", &token)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if id != "12345" {
-			t.Errorf("expected id 12345, got %s", id)
+		if info.ExternalRepoID != "12345" {
+			t.Errorf("expected id 12345, got %s", info.ExternalRepoID)
 		}
 	})
 
@@ -88,14 +94,14 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 				t.Errorf("expected no Authorization header, got %s", auth)
 			}
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": 12345}`))
+			w.Write([]byte(`{"id": 12345, "name": "repo", "owner": {"login": "owner"}}`))
 		}))
 		defer server.Close()
 
 		client := newTestClient(server)
 		emptyToken := ""
 
-		_, err := client.GetRepoID(context.Background(), "github.com", "owner", "repo", &emptyToken)
+		_, err := client.GetRepoInfo(context.Background(), "github.com", "owner", "repo", &emptyToken)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -109,7 +115,7 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 
 		client := newTestClient(server)
 
-		_, err := client.GetRepoID(context.Background(), "github.com", "owner", "nonexistent", nil)
+		_, err := client.GetRepoInfo(context.Background(), "github.com", "owner", "nonexistent", nil)
 		if err == nil {
 			t.Fatal("expected error")
 		}
@@ -120,7 +126,7 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 
 	t.Run("unsupported host", func(t *testing.T) {
 		client := NewGitHubAPIClient(nil)
-		_, err := client.GetRepoID(context.Background(), "gitlab.com", "owner", "repo", nil)
+		_, err := client.GetRepoInfo(context.Background(), "gitlab.com", "owner", "repo", nil)
 		if err == nil {
 			t.Fatal("expected error")
 		}
@@ -131,7 +137,7 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 
 	t.Run("empty owner", func(t *testing.T) {
 		client := NewGitHubAPIClient(nil)
-		_, err := client.GetRepoID(context.Background(), "github.com", "", "repo", nil)
+		_, err := client.GetRepoInfo(context.Background(), "github.com", "", "repo", nil)
 		if err == nil {
 			t.Fatal("expected error")
 		}
@@ -142,7 +148,7 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 
 	t.Run("empty repo", func(t *testing.T) {
 		client := NewGitHubAPIClient(nil)
-		_, err := client.GetRepoID(context.Background(), "github.com", "owner", "", nil)
+		_, err := client.GetRepoInfo(context.Background(), "github.com", "owner", "", nil)
 		if err == nil {
 			t.Fatal("expected error")
 		}
@@ -159,7 +165,7 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 
 		client := newTestClient(server)
 
-		_, err := client.GetRepoID(context.Background(), "github.com", "owner", "repo", nil)
+		_, err := client.GetRepoInfo(context.Background(), "github.com", "owner", "repo", nil)
 		if err == nil {
 			t.Fatal("expected error")
 		}
@@ -171,7 +177,7 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 	t.Run("context cancellation", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": 1}`))
+			w.Write([]byte(`{"id": 1, "name": "repo", "owner": {"login": "owner"}}`))
 		}))
 		defer server.Close()
 
@@ -179,7 +185,7 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 
-		_, err := client.GetRepoID(ctx, "github.com", "owner", "repo", nil)
+		_, err := client.GetRepoInfo(ctx, "github.com", "owner", "repo", nil)
 		if err == nil {
 			t.Fatal("expected context cancellation error")
 		}
@@ -194,7 +200,7 @@ func TestGitHubAPIClient_GetRepoID(t *testing.T) {
 
 		client := newTestClient(server)
 
-		_, err := client.GetRepoID(context.Background(), "github.com", "owner", "repo", nil)
+		_, err := client.GetRepoInfo(context.Background(), "github.com", "owner", "repo", nil)
 		if err == nil {
 			t.Fatal("expected error")
 		}
