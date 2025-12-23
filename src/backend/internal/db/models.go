@@ -219,14 +219,16 @@ type AtlasSchemaRevision struct {
 }
 
 type Codebasis struct {
-	ID            pgtype.UUID        `json:"id"`
-	Host          string             `json:"host"`
-	Owner         string             `json:"owner"`
-	Name          string             `json:"name"`
-	DefaultBranch pgtype.Text        `json:"default_branch"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
-	LastViewedAt  pgtype.Timestamptz `json:"last_viewed_at"`
+	ID             pgtype.UUID        `json:"id"`
+	Host           string             `json:"host"`
+	Owner          string             `json:"owner"`
+	Name           string             `json:"name"`
+	DefaultBranch  pgtype.Text        `json:"default_branch"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	LastViewedAt   pgtype.Timestamptz `json:"last_viewed_at"`
+	ExternalRepoID string             `json:"external_repo_id"`
+	IsStale        bool               `json:"is_stale"`
 }
 
 type OauthAccount struct {
@@ -325,4 +327,10 @@ type User struct {
 	LastLoginAt pgtype.Timestamptz `json:"last_login_at"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type UserBookmark struct {
+	UserID     pgtype.UUID        `json:"user_id"`
+	CodebaseID pgtype.UUID        `json:"codebase_id"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 }

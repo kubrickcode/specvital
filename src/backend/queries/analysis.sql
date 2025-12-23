@@ -68,3 +68,57 @@ ORDER BY tc.suite_id, tc.line_number;
 UPDATE codebases
 SET last_viewed_at = now()
 WHERE host = $1 AND owner = $2 AND name = $3;
+
+-- name: GetRecentRepositories :many
+SELECT
+    c.id AS codebase_id,
+    c.owner,
+    c.name,
+    c.last_viewed_at,
+    a.id AS analysis_id,
+    a.commit_sha,
+    a.completed_at AS analyzed_at,
+    a.total_tests
+FROM codebases c
+LEFT JOIN LATERAL (
+    SELECT id, commit_sha, completed_at, total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL AND c.is_stale = false
+ORDER BY c.last_viewed_at DESC
+LIMIT $1;
+
+-- name: GetRepositoryStats :one
+SELECT
+    COUNT(DISTINCT c.id) AS total_repositories,
+    COALESCE(SUM(a.total_tests), 0)::bigint AS total_tests
+FROM codebases c
+LEFT JOIN LATERAL (
+    SELECT total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL AND c.is_stale = false;
+
+-- name: GetPreviousAnalysis :one
+SELECT
+    id,
+    commit_sha,
+    completed_at,
+    total_tests
+FROM analyses
+WHERE codebase_id = $1
+  AND status = 'completed'
+  AND id != $2
+ORDER BY created_at DESC
+LIMIT 1;
+
+-- name: GetCodebaseIDByOwnerRepo :one
+SELECT id
+FROM codebases
+WHERE host = $1 AND owner = $2 AND name = $3 AND is_stale = false;

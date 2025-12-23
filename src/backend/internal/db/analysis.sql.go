@@ -70,6 +70,25 @@ func (q *Queries) GetAnalysisStatus(ctx context.Context, arg GetAnalysisStatusPa
 	return i, err
 }
 
+const getCodebaseIDByOwnerRepo = `-- name: GetCodebaseIDByOwnerRepo :one
+SELECT id
+FROM codebases
+WHERE host = $1 AND owner = $2 AND name = $3 AND is_stale = false
+`
+
+type GetCodebaseIDByOwnerRepoParams struct {
+	Host  string `json:"host"`
+	Owner string `json:"owner"`
+	Name  string `json:"name"`
+}
+
+func (q *Queries) GetCodebaseIDByOwnerRepo(ctx context.Context, arg GetCodebaseIDByOwnerRepoParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, getCodebaseIDByOwnerRepo, arg.Host, arg.Owner, arg.Name)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getLatestCompletedAnalysis = `-- name: GetLatestCompletedAnalysis :one
 SELECT
     a.id,
@@ -115,6 +134,134 @@ func (q *Queries) GetLatestCompletedAnalysis(ctx context.Context, arg GetLatestC
 		&i.Owner,
 		&i.Repo,
 	)
+	return i, err
+}
+
+const getPreviousAnalysis = `-- name: GetPreviousAnalysis :one
+SELECT
+    id,
+    commit_sha,
+    completed_at,
+    total_tests
+FROM analyses
+WHERE codebase_id = $1
+  AND status = 'completed'
+  AND id != $2
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+type GetPreviousAnalysisParams struct {
+	CodebaseID pgtype.UUID `json:"codebase_id"`
+	ID         pgtype.UUID `json:"id"`
+}
+
+type GetPreviousAnalysisRow struct {
+	ID          pgtype.UUID        `json:"id"`
+	CommitSha   string             `json:"commit_sha"`
+	CompletedAt pgtype.Timestamptz `json:"completed_at"`
+	TotalTests  int32              `json:"total_tests"`
+}
+
+func (q *Queries) GetPreviousAnalysis(ctx context.Context, arg GetPreviousAnalysisParams) (GetPreviousAnalysisRow, error) {
+	row := q.db.QueryRow(ctx, getPreviousAnalysis, arg.CodebaseID, arg.ID)
+	var i GetPreviousAnalysisRow
+	err := row.Scan(
+		&i.ID,
+		&i.CommitSha,
+		&i.CompletedAt,
+		&i.TotalTests,
+	)
+	return i, err
+}
+
+const getRecentRepositories = `-- name: GetRecentRepositories :many
+SELECT
+    c.id AS codebase_id,
+    c.owner,
+    c.name,
+    c.last_viewed_at,
+    a.id AS analysis_id,
+    a.commit_sha,
+    a.completed_at AS analyzed_at,
+    a.total_tests
+FROM codebases c
+LEFT JOIN LATERAL (
+    SELECT id, commit_sha, completed_at, total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL AND c.is_stale = false
+ORDER BY c.last_viewed_at DESC
+LIMIT $1
+`
+
+type GetRecentRepositoriesRow struct {
+	CodebaseID   pgtype.UUID        `json:"codebase_id"`
+	Owner        string             `json:"owner"`
+	Name         string             `json:"name"`
+	LastViewedAt pgtype.Timestamptz `json:"last_viewed_at"`
+	AnalysisID   pgtype.UUID        `json:"analysis_id"`
+	CommitSha    string             `json:"commit_sha"`
+	AnalyzedAt   pgtype.Timestamptz `json:"analyzed_at"`
+	TotalTests   int32              `json:"total_tests"`
+}
+
+func (q *Queries) GetRecentRepositories(ctx context.Context, limit int32) ([]GetRecentRepositoriesRow, error) {
+	rows, err := q.db.Query(ctx, getRecentRepositories, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetRecentRepositoriesRow
+	for rows.Next() {
+		var i GetRecentRepositoriesRow
+		if err := rows.Scan(
+			&i.CodebaseID,
+			&i.Owner,
+			&i.Name,
+			&i.LastViewedAt,
+			&i.AnalysisID,
+			&i.CommitSha,
+			&i.AnalyzedAt,
+			&i.TotalTests,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRepositoryStats = `-- name: GetRepositoryStats :one
+SELECT
+    COUNT(DISTINCT c.id) AS total_repositories,
+    COALESCE(SUM(a.total_tests), 0)::bigint AS total_tests
+FROM codebases c
+LEFT JOIN LATERAL (
+    SELECT total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL AND c.is_stale = false
+`
+
+type GetRepositoryStatsRow struct {
+	TotalRepositories int64 `json:"total_repositories"`
+	TotalTests        int64 `json:"total_tests"`
+}
+
+func (q *Queries) GetRepositoryStats(ctx context.Context) (GetRepositoryStatsRow, error) {
+	row := q.db.QueryRow(ctx, getRepositoryStats)
+	var i GetRepositoryStatsRow
+	err := row.Scan(&i.TotalRepositories, &i.TotalTests)
 	return i, err
 }
 
