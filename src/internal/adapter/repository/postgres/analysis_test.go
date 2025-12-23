@@ -91,7 +91,7 @@ func setupTestDB(t *testing.T) (*pgxpool.Pool, func()) {
 func runMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 	schema := `
 		CREATE TYPE analysis_status AS ENUM ('pending', 'running', 'completed', 'failed');
-		CREATE TYPE test_status AS ENUM ('active', 'skipped', 'todo');
+		CREATE TYPE test_status AS ENUM ('active', 'skipped', 'todo', 'focused', 'xfail');
 
 		CREATE TABLE codebases (
 			id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -101,8 +101,13 @@ func runMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 			default_branch varchar(100),
 			created_at timestamptz DEFAULT now() NOT NULL,
 			updated_at timestamptz DEFAULT now() NOT NULL,
-			UNIQUE (host, owner, name)
+			last_viewed_at timestamptz,
+			external_repo_id varchar(64) NOT NULL,
+			is_stale boolean DEFAULT false NOT NULL
 		);
+
+		CREATE UNIQUE INDEX idx_codebases_external_repo_id ON codebases (host, external_repo_id);
+		CREATE UNIQUE INDEX idx_codebases_identity ON codebases (host, owner, name) WHERE (is_stale = false);
 
 		CREATE TABLE analyses (
 			id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -158,10 +163,11 @@ func TestAnalysisRepository_SaveAnalysisResult(t *testing.T) {
 
 	t.Run("should save analysis with suites and tests", func(t *testing.T) {
 		params := SaveAnalysisResultParams{
-			Owner:     "testowner",
-			Repo:      "testrepo",
-			CommitSHA: "abc123def456",
-			Branch:    "main",
+			Owner:          "testowner",
+			Repo:           "testrepo",
+			CommitSHA:      "abc123def456",
+			Branch:         "main",
+			ExternalRepoID: "12345",
 			Result: &parser.ScanResult{
 				Inventory: &domain.Inventory{
 					Files: []domain.TestFile{
@@ -247,10 +253,11 @@ func TestAnalysisRepository_SaveAnalysisResult(t *testing.T) {
 		}
 
 		params := SaveAnalysisResultParams{
-			Owner:     "owner2",
-			Repo:      "repo2",
-			CommitSHA: "def789",
-			Branch:    "develop",
+			Owner:          "owner2",
+			Repo:           "repo2",
+			CommitSHA:      "def789",
+			Branch:         "develop",
+			ExternalRepoID: "22222",
 			Result: &parser.ScanResult{
 				Inventory: &domain.Inventory{
 					Files: []domain.TestFile{
@@ -329,10 +336,11 @@ func TestAnalysisRepository_SaveAnalysisResult(t *testing.T) {
 		}
 
 		params := SaveAnalysisResultParams{
-			Owner:     "owner3",
-			Repo:      "repo3",
-			CommitSHA: "ghi012",
-			Branch:    "main",
+			Owner:          "owner3",
+			Repo:           "repo3",
+			CommitSHA:      "ghi012",
+			Branch:         "main",
+			ExternalRepoID: "33333",
 			Result: &parser.ScanResult{
 				Inventory: &domain.Inventory{
 					Files: []domain.TestFile{
@@ -374,11 +382,12 @@ func TestAnalysisRepository_SaveAnalysisResult(t *testing.T) {
 		}
 
 		params := SaveAnalysisResultParams{
-			Owner:     "owner4",
-			Repo:      "repo4",
-			CommitSHA: "jkl345",
-			Branch:    "main",
-			Result:    &parser.ScanResult{Inventory: nil},
+			Owner:          "owner4",
+			Repo:           "repo4",
+			CommitSHA:      "jkl345",
+			Branch:         "main",
+			ExternalRepoID: "44444",
+			Result:         &parser.ScanResult{Inventory: nil},
 		}
 
 		err = repo.SaveAnalysisResult(ctx, params)
@@ -410,11 +419,12 @@ func TestAnalysisRepository_TransactionRollback(t *testing.T) {
 
 	t.Run("should rollback on duplicate commit", func(t *testing.T) {
 		params := SaveAnalysisResultParams{
-			Owner:     "rollback-owner",
-			Repo:      "rollback-repo",
-			CommitSHA: "same-commit-sha",
-			Branch:    "main",
-			Result:    &parser.ScanResult{Inventory: nil},
+			Owner:          "rollback-owner",
+			Repo:           "rollback-repo",
+			CommitSHA:      "same-commit-sha",
+			Branch:         "main",
+			ExternalRepoID: "rollback-id",
+			Result:         &parser.ScanResult{Inventory: nil},
 		}
 
 		err := repo.SaveAnalysisResult(ctx, params)
@@ -451,10 +461,11 @@ func TestAnalysisRepository_RecordFailure(t *testing.T) {
 
 	t.Run("should record failure with error message", func(t *testing.T) {
 		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
-			Owner:     "test-owner",
-			Repo:      "test-repo",
-			CommitSHA: "abc123",
-			Branch:    "main",
+			Owner:          "test-owner",
+			Repo:           "test-repo",
+			CommitSHA:      "abc123",
+			Branch:         "main",
+			ExternalRepoID: "failure-test-1",
 		})
 		if err != nil {
 			t.Fatalf("CreateAnalysisRecord failed: %v", err)
@@ -490,10 +501,11 @@ func TestAnalysisRepository_RecordFailure(t *testing.T) {
 
 	t.Run("should fail with empty error message", func(t *testing.T) {
 		analysisID, _ := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
-			Owner:     "empty-err-owner",
-			Repo:      "empty-err-repo",
-			CommitSHA: "empty123",
-			Branch:    "main",
+			Owner:          "empty-err-owner",
+			Repo:           "empty-err-repo",
+			CommitSHA:      "empty123",
+			Branch:         "main",
+			ExternalRepoID: "empty-err-id",
 		})
 		err := repo.RecordFailure(ctx, analysisID, "")
 		if !errors.Is(err, analysis.ErrInvalidInput) {
@@ -515,10 +527,11 @@ func TestAnalysisRepository_CreateAnalysisRecord(t *testing.T) {
 
 	t.Run("should create analysis record", func(t *testing.T) {
 		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
-			Owner:     "create-owner",
-			Repo:      "create-repo",
-			CommitSHA: "def456",
-			Branch:    "develop",
+			Owner:          "create-owner",
+			Repo:           "create-repo",
+			CommitSHA:      "def456",
+			Branch:         "develop",
+			ExternalRepoID: "create-id",
 		})
 		if err != nil {
 			t.Fatalf("CreateAnalysisRecord failed: %v", err)
@@ -554,10 +567,11 @@ func TestAnalysisRepository_SaveAnalysisInventory(t *testing.T) {
 
 	t.Run("should save inventory using domain types", func(t *testing.T) {
 		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
-			Owner:     "domain-owner",
-			Repo:      "domain-repo",
-			CommitSHA: "xyz789",
-			Branch:    "main",
+			Owner:          "domain-owner",
+			Repo:           "domain-repo",
+			CommitSHA:      "xyz789",
+			Branch:         "main",
+			ExternalRepoID: "domain-id",
 		})
 		if err != nil {
 			t.Fatalf("CreateAnalysisRecord failed: %v", err)

@@ -32,19 +32,21 @@ func truncateErrorMessage(msg string) string {
 }
 
 type SaveAnalysisResultParams struct {
-	Branch    string
-	CommitSHA string
-	Owner     string
-	Repo      string
-	Result    *parser.ScanResult
+	Branch         string
+	CommitSHA      string
+	ExternalRepoID string
+	Owner          string
+	Repo           string
+	Result         *parser.ScanResult
 }
 
 func (p SaveAnalysisResultParams) Validate() error {
 	domainParams := analysis.CreateAnalysisRecordParams{
-		Owner:     p.Owner,
-		Repo:      p.Repo,
-		CommitSHA: p.CommitSHA,
-		Branch:    p.Branch,
+		Branch:         p.Branch,
+		CommitSHA:      p.CommitSHA,
+		ExternalRepoID: p.ExternalRepoID,
+		Owner:          p.Owner,
+		Repo:           p.Repo,
 	}
 	if err := domainParams.Validate(); err != nil {
 		return err
@@ -87,10 +89,11 @@ func (r *AnalysisRepository) CreateAnalysisRecord(ctx context.Context, params an
 	startedAt := time.Now()
 
 	codebase, err := queries.UpsertCodebase(ctx, db.UpsertCodebaseParams{
-		Host:          defaultHost,
-		Owner:         params.Owner,
-		Name:          params.Repo,
-		DefaultBranch: pgtype.Text{String: params.Branch, Valid: params.Branch != ""},
+		Host:           defaultHost,
+		Owner:          params.Owner,
+		Name:           params.Repo,
+		DefaultBranch:  pgtype.Text{String: params.Branch, Valid: params.Branch != ""},
+		ExternalRepoID: params.ExternalRepoID,
 	})
 	if err != nil {
 		return analysis.NilUUID, fmt.Errorf("upsert codebase: %w", err)
@@ -221,10 +224,11 @@ func (r *AnalysisRepository) SaveAnalysisResult(ctx context.Context, params Save
 	}
 
 	analysisID, err := r.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
-		Branch:    params.Branch,
-		CommitSHA: params.CommitSHA,
-		Owner:     params.Owner,
-		Repo:      params.Repo,
+		Branch:         params.Branch,
+		CommitSHA:      params.CommitSHA,
+		ExternalRepoID: params.ExternalRepoID,
+		Owner:          params.Owner,
+		Repo:           params.Repo,
 	})
 	if err != nil {
 		return err

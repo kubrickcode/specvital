@@ -129,8 +129,65 @@ func (q *Queries) CreateTestSuite(ctx context.Context, arg CreateTestSuiteParams
 	return i, err
 }
 
+const findCodebaseByExternalID = `-- name: FindCodebaseByExternalID :one
+SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale FROM codebases
+WHERE host = $1 AND external_repo_id = $2
+`
+
+type FindCodebaseByExternalIDParams struct {
+	Host           string `json:"host"`
+	ExternalRepoID string `json:"external_repo_id"`
+}
+
+func (q *Queries) FindCodebaseByExternalID(ctx context.Context, arg FindCodebaseByExternalIDParams) (Codebasis, error) {
+	row := q.db.QueryRow(ctx, findCodebaseByExternalID, arg.Host, arg.ExternalRepoID)
+	var i Codebasis
+	err := row.Scan(
+		&i.ID,
+		&i.Host,
+		&i.Owner,
+		&i.Name,
+		&i.DefaultBranch,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LastViewedAt,
+		&i.ExternalRepoID,
+		&i.IsStale,
+	)
+	return i, err
+}
+
+const findCodebaseByOwnerName = `-- name: FindCodebaseByOwnerName :one
+SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale FROM codebases
+WHERE host = $1 AND owner = $2 AND name = $3 AND is_stale = false
+`
+
+type FindCodebaseByOwnerNameParams struct {
+	Host  string `json:"host"`
+	Owner string `json:"owner"`
+	Name  string `json:"name"`
+}
+
+func (q *Queries) FindCodebaseByOwnerName(ctx context.Context, arg FindCodebaseByOwnerNameParams) (Codebasis, error) {
+	row := q.db.QueryRow(ctx, findCodebaseByOwnerName, arg.Host, arg.Owner, arg.Name)
+	var i Codebasis
+	err := row.Scan(
+		&i.ID,
+		&i.Host,
+		&i.Owner,
+		&i.Name,
+		&i.DefaultBranch,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LastViewedAt,
+		&i.ExternalRepoID,
+		&i.IsStale,
+	)
+	return i, err
+}
+
 const getCodebaseByID = `-- name: GetCodebaseByID :one
-SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at FROM codebases WHERE id = $1
+SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale FROM codebases WHERE id = $1
 `
 
 func (q *Queries) GetCodebaseByID(ctx context.Context, id pgtype.UUID) (Codebasis, error) {
@@ -145,6 +202,8 @@ func (q *Queries) GetCodebaseByID(ctx context.Context, id pgtype.UUID) (Codebasi
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LastViewedAt,
+		&i.ExternalRepoID,
+		&i.IsStale,
 	)
 	return i, err
 }
@@ -353,20 +412,24 @@ func (q *Queries) UpdateAnalysisFailed(ctx context.Context, arg UpdateAnalysisFa
 }
 
 const upsertCodebase = `-- name: UpsertCodebase :one
-INSERT INTO codebases (host, owner, name, default_branch)
-VALUES ($1, $2, $3, $4)
-ON CONFLICT (host, owner, name)
+INSERT INTO codebases (host, owner, name, default_branch, external_repo_id)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (host, external_repo_id)
 DO UPDATE SET
+    owner = EXCLUDED.owner,
+    name = EXCLUDED.name,
     default_branch = COALESCE(EXCLUDED.default_branch, codebases.default_branch),
+    is_stale = false,
     updated_at = now()
-RETURNING id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at
+RETURNING id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale
 `
 
 type UpsertCodebaseParams struct {
-	Host          string      `json:"host"`
-	Owner         string      `json:"owner"`
-	Name          string      `json:"name"`
-	DefaultBranch pgtype.Text `json:"default_branch"`
+	Host           string      `json:"host"`
+	Owner          string      `json:"owner"`
+	Name           string      `json:"name"`
+	DefaultBranch  pgtype.Text `json:"default_branch"`
+	ExternalRepoID string      `json:"external_repo_id"`
 }
 
 func (q *Queries) UpsertCodebase(ctx context.Context, arg UpsertCodebaseParams) (Codebasis, error) {
@@ -375,6 +438,7 @@ func (q *Queries) UpsertCodebase(ctx context.Context, arg UpsertCodebaseParams) 
 		arg.Owner,
 		arg.Name,
 		arg.DefaultBranch,
+		arg.ExternalRepoID,
 	)
 	var i Codebasis
 	err := row.Scan(
@@ -386,6 +450,8 @@ func (q *Queries) UpsertCodebase(ctx context.Context, arg UpsertCodebaseParams) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LastViewedAt,
+		&i.ExternalRepoID,
+		&i.IsStale,
 	)
 	return i, err
 }

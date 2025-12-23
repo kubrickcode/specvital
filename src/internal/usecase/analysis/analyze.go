@@ -116,10 +116,11 @@ func (uc *AnalyzeUseCase) Execute(ctx context.Context, req analysis.AnalyzeReque
 	defer uc.closeSource(src, req.Owner, req.Repo)
 
 	createParams := analysis.CreateAnalysisRecordParams{
-		Branch:    src.Branch(),
-		CommitSHA: src.CommitSHA(),
-		Owner:     req.Owner,
-		Repo:      req.Repo,
+		Branch:         src.Branch(),
+		CommitSHA:      src.CommitSHA(),
+		ExternalRepoID: fmt.Sprintf("legacy:%s/%s", req.Owner, req.Repo), // TODO: replace with actual repo ID from GitHub API
+		Owner:          req.Owner,
+		Repo:           req.Repo,
 	}
 	if err = createParams.Validate(); err != nil {
 		return fmt.Errorf("%w: %w", ErrSaveFailed, err)

@@ -12,11 +12,12 @@ type Repository interface {
 }
 
 type CreateAnalysisRecordParams struct {
-	AnalysisID *UUID
-	Branch     string
-	CommitSHA  string
-	Owner      string
-	Repo       string
+	AnalysisID     *UUID
+	Branch         string
+	CommitSHA      string
+	ExternalRepoID string
+	Owner          string
+	Repo           string
 }
 
 func (p CreateAnalysisRecordParams) Validate() error {
@@ -32,6 +33,7 @@ func (p CreateAnalysisRecordParams) Validate() error {
 	if p.CommitSHA == "" {
 		return fmt.Errorf("%w: commit SHA is required", ErrInvalidInput)
 	}
+	// ExternalRepoID: allows legacy placeholder for now, add required validation after GitHub API integration
 	if p.AnalysisID != nil && *p.AnalysisID == NilUUID {
 		return fmt.Errorf("%w: analysis ID cannot be nil UUID", ErrInvalidInput)
 	}

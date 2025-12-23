@@ -1,11 +1,22 @@
 -- name: UpsertCodebase :one
-INSERT INTO codebases (host, owner, name, default_branch)
-VALUES ($1, $2, $3, $4)
-ON CONFLICT (host, owner, name)
+INSERT INTO codebases (host, owner, name, default_branch, external_repo_id)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (host, external_repo_id)
 DO UPDATE SET
+    owner = EXCLUDED.owner,
+    name = EXCLUDED.name,
     default_branch = COALESCE(EXCLUDED.default_branch, codebases.default_branch),
+    is_stale = false,
     updated_at = now()
 RETURNING *;
+
+-- name: FindCodebaseByExternalID :one
+SELECT * FROM codebases
+WHERE host = $1 AND external_repo_id = $2;
+
+-- name: FindCodebaseByOwnerName :one
+SELECT * FROM codebases
+WHERE host = $1 AND owner = $2 AND name = $3 AND is_stale = false;
 
 -- name: GetCodebaseByID :one
 SELECT * FROM codebases WHERE id = $1;

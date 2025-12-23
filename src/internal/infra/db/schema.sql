@@ -138,7 +138,9 @@ CREATE TABLE public.codebases (
     default_branch character varying(100),
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    last_viewed_at timestamp with time zone
+    last_viewed_at timestamp with time zone,
+    external_repo_id character varying(64) NOT NULL,
+    is_stale boolean DEFAULT false NOT NULL
 );
 
 
@@ -412,14 +414,6 @@ ALTER TABLE ONLY public.test_suites
 
 
 --
--- Name: codebases uq_codebases_identity; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.codebases
-    ADD CONSTRAINT uq_codebases_identity UNIQUE (host, owner, name);
-
-
---
 -- Name: oauth_accounts uq_oauth_provider_user; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -447,6 +441,20 @@ CREATE INDEX idx_analyses_codebase_status ON public.analyses USING btree (codeba
 --
 
 CREATE INDEX idx_analyses_created ON public.analyses USING btree (codebase_id, created_at);
+
+
+--
+-- Name: idx_codebases_external_repo_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_codebases_external_repo_id ON public.codebases USING btree (host, external_repo_id);
+
+
+--
+-- Name: idx_codebases_identity; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_codebases_identity ON public.codebases USING btree (host, owner, name) WHERE (is_stale = false);
 
 
 --

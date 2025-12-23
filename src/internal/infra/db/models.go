@@ -219,14 +219,16 @@ type AtlasSchemaRevision struct {
 }
 
 type Codebasis struct {
-	ID            pgtype.UUID        `json:"id"`
-	Host          string             `json:"host"`
-	Owner         string             `json:"owner"`
-	Name          string             `json:"name"`
-	DefaultBranch pgtype.Text        `json:"default_branch"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
-	LastViewedAt  pgtype.Timestamptz `json:"last_viewed_at"`
+	ID             pgtype.UUID        `json:"id"`
+	Host           string             `json:"host"`
+	Owner          string             `json:"owner"`
+	Name           string             `json:"name"`
+	DefaultBranch  pgtype.Text        `json:"default_branch"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	LastViewedAt   pgtype.Timestamptz `json:"last_viewed_at"`
+	ExternalRepoID string             `json:"external_repo_id"`
+	IsStale        bool               `json:"is_stale"`
 }
 
 type OauthAccount struct {
