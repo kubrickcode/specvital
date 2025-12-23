@@ -256,6 +256,6 @@ applicationCtx (cancels on SIGTERM)
 
 ## References
 
-- [ADR-05: Queue-Based Asynchronous Processing](/en/adr/05-queue-based-async-processing.md)
+- [ADR-04: Queue-Based Asynchronous Processing](/en/adr/04-queue-based-async-processing.md)
 - [ADR-02: Clean Architecture Layers](./02-clean-architecture-layers.md)
 - [Go Context Package](https://pkg.go.dev/context)

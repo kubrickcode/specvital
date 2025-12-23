@@ -200,6 +200,6 @@ NestJS 사용 시:
 
 ## References
 
-- [ADR-05: 큐 기반 비동기 처리](/ko/adr/05-queue-based-async-processing.md)
-- [ADR-08: 공유 인프라 전략](/ko/adr/08-shared-infrastructure.md)
+- [ADR-04: 큐 기반 비동기 처리](/ko/adr/04-queue-based-async-processing.md)
+- [ADR-07: 공유 인프라 전략](/ko/adr/07-shared-infrastructure.md)
 - [Core ADR-01: 코어 라이브러리 분리](/ko/adr/core/01-core-library-separation.md)

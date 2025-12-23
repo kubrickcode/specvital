@@ -200,6 +200,6 @@ With NestJS:
 
 ## References
 
-- [ADR-05: Queue-Based Asynchronous Processing](/en/adr/05-queue-based-async-processing.md)
-- [ADR-08: Shared Infrastructure Strategy](/en/adr/08-shared-infrastructure.md)
+- [ADR-04: Queue-Based Asynchronous Processing](/en/adr/04-queue-based-async-processing.md)
+- [ADR-07: Shared Infrastructure Strategy](/en/adr/07-shared-infrastructure.md)
 - [Core ADR-01: Core Library Separation](/en/adr/core/01-core-library-separation.md)

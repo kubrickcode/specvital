@@ -186,4 +186,4 @@ Repository visibility is not stored in the database because it can change at any
 
 ## References
 
-- [ADR-05: Queue-Based Asynchronous Processing](/en/adr/05-queue-based-async-processing.md)
+- [ADR-04: Queue-Based Asynchronous Processing](/en/adr/04-queue-based-async-processing.md)

@@ -31,11 +31,12 @@ Documentation of architectural decisions made during the development of Specvita
 - [ADR Overview](./adr/) - Introduction to architecture decision records
 - [Static Analysis Approach](./adr/01-static-analysis-approach.md)
 - [Competitive Differentiation](./adr/02-competitive-differentiation.md)
-- [API Worker Service Separation](./adr/04-api-worker-service-separation.md)
-- [Queue-Based Async Processing](./adr/05-queue-based-async-processing.md)
-- [Repository Strategy](./adr/06-repository-strategy.md)
-- [PaaS-First Infrastructure](./adr/07-paas-first-infrastructure.md)
-- [Shared Infrastructure](./adr/08-shared-infrastructure.md)
+- [API Worker Service Separation](./adr/03-api-worker-service-separation.md)
+- [Queue-Based Async Processing](./adr/04-queue-based-async-processing.md)
+- [Repository Strategy](./adr/05-repository-strategy.md)
+- [PaaS-First Infrastructure](./adr/06-paas-first-infrastructure.md)
+- [Shared Infrastructure](./adr/07-shared-infrastructure.md)
+- [External Repo ID Integrity](./adr/08-external-repo-id-integrity.md)
 
 **[Core](./adr/core/)**
 

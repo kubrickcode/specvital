@@ -256,6 +256,6 @@ applicationCtx (SIGTERM 시 취소)
 
 ## 참고 자료
 
-- [ADR-05: 큐 기반 비동기 처리](/ko/adr/05-queue-based-async-processing.md)
+- [ADR-04: 큐 기반 비동기 처리](/ko/adr/04-queue-based-async-processing.md)
 - [ADR-02: Clean Architecture 레이어](./02-clean-architecture-layers.md)
 - [Go Context Package](https://pkg.go.dev/context)

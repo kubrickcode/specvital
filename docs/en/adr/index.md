@@ -54,15 +54,16 @@ XX-brief-decision-title.md
 
 ### Cross-cutting (All Repositories)
 
-| #   | Title                                                                       | Area           | Date       |
-| --- | --------------------------------------------------------------------------- | -------------- | ---------- |
-| 01  | [Static Analysis-Based Instant Analysis](./01-static-analysis-approach.md)  | Cross-cutting  | 2024-12-17 |
-| 02  | [Competitive Differentiation Strategy](./02-competitive-differentiation.md) | Cross-cutting  | 2024-12-17 |
-| 03  | [API and Worker Service Separation](./04-api-worker-service-separation.md)  | Architecture   | 2024-12-17 |
-| 04  | [Queue-Based Asynchronous Processing](./05-queue-based-async-processing.md) | Architecture   | 2024-12-17 |
-| 05  | [Polyrepo Repository Strategy](./06-repository-strategy.md)                 | Architecture   | 2024-12-17 |
-| 06  | [PaaS-First Infrastructure Strategy](./07-paas-first-infrastructure.md)     | Infrastructure | 2024-12-17 |
-| 07  | [Shared Infrastructure Strategy](./08-shared-infrastructure.md)             | Infrastructure | 2024-12-17 |
+| #   | Title                                                                             | Area           | Date       |
+| --- | --------------------------------------------------------------------------------- | -------------- | ---------- |
+| 01  | [Static Analysis-Based Instant Analysis](./01-static-analysis-approach.md)        | Cross-cutting  | 2024-12-17 |
+| 02  | [Competitive Differentiation Strategy](./02-competitive-differentiation.md)       | Cross-cutting  | 2024-12-17 |
+| 03  | [API and Worker Service Separation](./03-api-worker-service-separation.md)        | Architecture   | 2024-12-17 |
+| 04  | [Queue-Based Asynchronous Processing](./04-queue-based-async-processing.md)       | Architecture   | 2024-12-17 |
+| 05  | [Polyrepo Repository Strategy](./05-repository-strategy.md)                       | Architecture   | 2024-12-17 |
+| 06  | [PaaS-First Infrastructure Strategy](./06-paas-first-infrastructure.md)           | Infrastructure | 2024-12-17 |
+| 07  | [Shared Infrastructure Strategy](./07-shared-infrastructure.md)                   | Infrastructure | 2024-12-17 |
+| 08  | [External Repository ID-Based Data Integrity](./08-external-repo-id-integrity.md) | Data Integrity | 2024-12-22 |
 
 ### Core Repository
 

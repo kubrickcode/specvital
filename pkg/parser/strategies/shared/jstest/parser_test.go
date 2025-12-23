@@ -874,8 +874,8 @@ func TestParse_ForEachCallback(t *testing.T) {
 		wantFirst string
 	}{
 		{
-			name: "should parse forEach with template literal",
-			source: "browsers.forEach((browser) => {\n  it(`supports ${browser}`, () => {});\n});",
+			name:      "should parse forEach with template literal",
+			source:    "browsers.forEach((browser) => {\n  it(`supports ${browser}`, () => {});\n});",
 			wantCount: 1,
 			wantFirst: "supports ${browser} (dynamic cases)",
 		},
@@ -889,8 +889,8 @@ func TestParse_ForEachCallback(t *testing.T) {
 			wantFirst: "renders full mode (dynamic cases)",
 		},
 		{
-			name: "should parse map with template literal",
-			source: "items.map((item) => {\n  it(`handles ${item}`, () => {});\n});",
+			name:      "should parse map with template literal",
+			source:    "items.map((item) => {\n  it(`handles ${item}`, () => {});\n});",
 			wantCount: 1,
 			wantFirst: "handles ${item} (dynamic cases)",
 		},

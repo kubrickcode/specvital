@@ -304,5 +304,5 @@ Scheduler ──[태스크 Enqueue]──> River Queue (PostgreSQL) ──[태�
 
 - [ADR-02: Clean Architecture 레이어](./02-clean-architecture-layers.md) (컨테이너 분리)
 - [ADR-03: Graceful Shutdown](./03-graceful-shutdown.md) (생명주기 관리)
-- [ADR-04: API와 Worker 서비스 분리](/ko/adr/04-api-worker-service-separation.md) (Cross-cutting)
-- [ADR-05: 큐 기반 비동기 처리](/ko/adr/05-queue-based-async-processing.md)
+- [ADR-03: API와 Worker 서비스 분리](/ko/adr/03-api-worker-service-separation.md) (Cross-cutting)
+- [ADR-04: 큐 기반 비동기 처리](/ko/adr/04-queue-based-async-processing.md)

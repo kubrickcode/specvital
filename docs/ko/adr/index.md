@@ -54,15 +54,16 @@ XX-brief-decision-title.md
 
 ### 공통 (전체 리포지토리)
 
-| #   | 제목                                                              | 영역           | 날짜       |
-| --- | ----------------------------------------------------------------- | -------------- | ---------- |
-| 01  | [정적 분석 기반 즉시 분석](./01-static-analysis-approach.md)      | Cross-cutting  | 2024-12-17 |
-| 02  | [경쟁 차별화 전략](./02-competitive-differentiation.md)           | Cross-cutting  | 2024-12-17 |
-| 03  | [API와 Worker 서비스 분리](./04-api-worker-service-separation.md) | Architecture   | 2024-12-17 |
-| 04  | [큐 기반 비동기 처리](./05-queue-based-async-processing.md)       | Architecture   | 2024-12-17 |
-| 05  | [Polyrepo 리포지토리 전략](./06-repository-strategy.md)           | Architecture   | 2024-12-17 |
-| 06  | [PaaS 우선 인프라 전략](./07-paas-first-infrastructure.md)        | Infrastructure | 2024-12-17 |
-| 07  | [공유 인프라 전략](./08-shared-infrastructure.md)                 | Infrastructure | 2024-12-17 |
+| #   | 제목                                                                            | 영역           | 날짜       |
+| --- | ------------------------------------------------------------------------------- | -------------- | ---------- |
+| 01  | [정적 분석 기반 즉시 분석](./01-static-analysis-approach.md)                    | Cross-cutting  | 2024-12-17 |
+| 02  | [경쟁 차별화 전략](./02-competitive-differentiation.md)                         | Cross-cutting  | 2024-12-17 |
+| 03  | [API와 Worker 서비스 분리](./03-api-worker-service-separation.md)               | Architecture   | 2024-12-17 |
+| 04  | [큐 기반 비동기 처리](./04-queue-based-async-processing.md)                     | Architecture   | 2024-12-17 |
+| 05  | [Polyrepo 리포지토리 전략](./05-repository-strategy.md)                         | Architecture   | 2024-12-17 |
+| 06  | [PaaS 우선 인프라 전략](./06-paas-first-infrastructure.md)                      | Infrastructure | 2024-12-17 |
+| 07  | [공유 인프라 전략](./07-shared-infrastructure.md)                               | Infrastructure | 2024-12-17 |
+| 08  | [External Repository ID 기반 데이터 무결성](./08-external-repo-id-integrity.md) | Data Integrity | 2024-12-22 |
 
 ### Core 리포지토리
 

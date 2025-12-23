@@ -304,5 +304,5 @@ Each process has tailored shutdown behavior:
 
 - [ADR-02: Clean Architecture Layers](./02-clean-architecture-layers.md) (Container separation)
 - [ADR-03: Graceful Shutdown](./03-graceful-shutdown.md) (Lifecycle management)
-- [ADR-04: API and Worker Service Separation](/en/adr/04-api-worker-service-separation.md) (Cross-cutting)
-- [ADR-05: Queue-Based Asynchronous Processing](/en/adr/05-queue-based-async-processing.md)
+- [ADR-03: API and Worker Service Separation](/en/adr/03-api-worker-service-separation.md) (Cross-cutting)
+- [ADR-04: Queue-Based Asynchronous Processing](/en/adr/04-queue-based-async-processing.md)

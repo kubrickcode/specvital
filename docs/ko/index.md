@@ -31,11 +31,12 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [ADR 개요](./adr/) - 아키텍처 결정 기록 소개
 - [정적 분석 접근법](./adr/01-static-analysis-approach.md)
 - [경쟁 차별화](./adr/02-competitive-differentiation.md)
-- [API 워커 서비스 분리](./adr/04-api-worker-service-separation.md)
-- [큐 기반 비동기 처리](./adr/05-queue-based-async-processing.md)
-- [리포지토리 전략](./adr/06-repository-strategy.md)
-- [PaaS 우선 인프라](./adr/07-paas-first-infrastructure.md)
-- [공유 인프라](./adr/08-shared-infrastructure.md)
+- [API 워커 서비스 분리](./adr/03-api-worker-service-separation.md)
+- [큐 기반 비동기 처리](./adr/04-queue-based-async-processing.md)
+- [리포지토리 전략](./adr/05-repository-strategy.md)
+- [PaaS 우선 인프라](./adr/06-paas-first-infrastructure.md)
+- [공유 인프라](./adr/07-shared-infrastructure.md)
+- [External Repo ID 무결성](./adr/08-external-repo-id-integrity.md)
 
 **[Core](./adr/core/)**
 

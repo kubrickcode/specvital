@@ -503,8 +503,8 @@ func TestParseRoots(t *testing.T) {
 			expected:  []string{"packages/myapp/src", "packages/myapp/lib"},
 		},
 		{
-			name: "absolute path not affected by configDir",
-			content: `roots: ['/absolute/path']`,
+			name:      "absolute path not affected by configDir",
+			content:   `roots: ['/absolute/path']`,
 			configDir: "packages/myapp",
 			rootDir:   "",
 			expected:  []string{"/absolute/path"},
