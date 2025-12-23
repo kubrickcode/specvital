@@ -35,9 +35,5 @@ export const triggerReanalyze = async (
   const response = await apiFetch(`/api/repositories/${owner}/${repo}/reanalyze`, {
     method: "POST",
   });
-  if (!response.ok && response.status !== 202) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.detail || response.statusText);
-  }
-  return response.json();
+  return parseJsonResponse(response);
 };
