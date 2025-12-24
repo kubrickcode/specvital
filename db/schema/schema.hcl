@@ -469,3 +469,49 @@ table "user_bookmarks" {
     columns = [column.user_id, column.created_at]
   }
 }
+
+table "user_analysis_history" {
+  schema = schema.public
+
+  column "user_id" {
+    type = uuid
+  }
+
+  column "analysis_id" {
+    type = uuid
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  column "updated_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.user_id, column.analysis_id]
+  }
+
+  foreign_key "fk_user_analysis_history_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete   = CASCADE
+  }
+
+  foreign_key "fk_user_analysis_history_analysis" {
+    columns     = [column.analysis_id]
+    ref_columns = [table.analyses.column.id]
+    on_delete   = CASCADE
+  }
+
+  index "idx_user_analysis_history_user" {
+    columns = [column.user_id, column.updated_at]
+  }
+
+  index "idx_user_analysis_history_analysis" {
+    columns = [column.analysis_id]
+  }
+}
