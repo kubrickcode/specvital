@@ -10,6 +10,12 @@
     "analyzeAnother": "다른 분석",
     "selectLanguage": "언어 선택"
   },
+  "analyzeDialog": {
+    "title": "리포지토리 분석",
+    "description": "테스트 스펙을 분석할 GitHub 리포지토리 URL을 입력하세요.",
+    "trigger": "새 분석",
+    "ctaTrigger": "리포지토리 분석하기"
+  },
   "auth": {
     "login": "로그인",
     "logout": "로그아웃",

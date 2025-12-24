@@ -10,6 +10,12 @@
     "analyzeAnother": "Analyze Another",
     "selectLanguage": "Select language"
   },
+  "analyzeDialog": {
+    "title": "Analyze Repository",
+    "description": "Enter a GitHub repository URL to analyze test specifications.",
+    "trigger": "New Analysis",
+    "ctaTrigger": "Analyze a repository"
+  },
   "auth": {
     "login": "Sign in",
     "logout": "Sign out",

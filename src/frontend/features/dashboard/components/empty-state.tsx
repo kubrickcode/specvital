@@ -1,11 +1,10 @@
 "use client";
 
-import { GitFork, Search } from "lucide-react";
-import Link from "next/link";
+import { GitFork } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { AnalyzeDialog } from "@/features/home";
 
 export const EmptyState = () => {
   const t = useTranslations("dashboard.emptyState");
@@ -19,12 +18,7 @@ export const EmptyState = () => {
       <h2 className="text-xl font-semibold mb-2">{t("title")}</h2>
       <p className="text-muted-foreground mb-6 max-w-md">{t("description")}</p>
 
-      <Button asChild size="lg">
-        <Link href="/">
-          <Search aria-hidden="true" className="size-4 mr-2" />
-          {t("cta")}
-        </Link>
-      </Button>
+      <AnalyzeDialog variant="empty-state" />
     </Card>
   );
 };

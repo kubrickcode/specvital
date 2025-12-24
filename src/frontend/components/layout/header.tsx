@@ -1,17 +1,15 @@
 "use client";
 
-import { Home } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { AuthErrorBoundary } from "@/components/feedback";
 import { LanguageSelector, ThemeToggle } from "@/components/theme";
-import { Button } from "@/components/ui/button";
 import { AuthStatus, LoginButton } from "@/features/auth";
+import { AnalyzeDialog } from "@/features/home";
 import { Link, usePathname } from "@/i18n/navigation";
 
 export const Header = () => {
   const pathname = usePathname();
-  const t = useTranslations("header");
   const tCommon = useTranslations("common");
   const isHomePage = pathname === "/";
 
@@ -28,14 +26,7 @@ export const Header = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {!isHomePage && (
-            <Button asChild size="sm" variant="ghost">
-              <Link className="flex items-center gap-2" href="/">
-                <Home className="h-4 w-4" />
-                <span className="hidden sm:inline">{t("analyzeAnother")}</span>
-              </Link>
-            </Button>
-          )}
+          {!isHomePage && <AnalyzeDialog variant="header" />}
           <LanguageSelector />
           <ThemeToggle />
           <AuthErrorBoundary fallback={<LoginButton />}>
