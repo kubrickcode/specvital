@@ -3,7 +3,7 @@
   "ref": "v8.4.5",
   "expectedFrameworks": ["cypress", "jest", "playwright", "vitest"],
   "fileCount": 309,
-  "testCount": 2731,
+  "testCount": 2910,
   "frameworkCounts": {
     "cypress": 3,
     "jest": 2,
@@ -26,14 +26,14 @@
     {
       "path": "code/addons/a11y/src/components/A11YPanel.test.tsx",
       "framework": "vitest",
-      "suiteCount": 0,
-      "testCount": 1
+      "suiteCount": 1,
+      "testCount": 7
     },
     {
       "path": "code/addons/a11y/src/components/A11yContext.test.tsx",
       "framework": "vitest",
-      "suiteCount": 0,
-      "testCount": 4
+      "suiteCount": 1,
+      "testCount": 5
     },
     {
       "path": "code/addons/a11y/src/components/Report/HighlightToggle.test.tsx",
@@ -44,8 +44,8 @@
     {
       "path": "code/addons/a11y/src/components/VisionSimulator.test.tsx",
       "framework": "vitest",
-      "suiteCount": 0,
-      "testCount": 1
+      "suiteCount": 1,
+      "testCount": 3
     },
     {
       "path": "code/addons/a11y/src/manager.test.tsx",

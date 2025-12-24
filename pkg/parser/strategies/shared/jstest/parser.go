@@ -17,6 +17,8 @@ func DetectLanguage(filename string) domain.Language {
 	switch ext {
 	case ".js", ".jsx":
 		return domain.LanguageJavaScript
+	case ".tsx":
+		return domain.LanguageTSX
 	default:
 		return domain.LanguageTypeScript
 	}

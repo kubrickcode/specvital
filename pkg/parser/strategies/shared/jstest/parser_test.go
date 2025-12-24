@@ -31,9 +31,9 @@ func TestDetectLanguage(t *testing.T) {
 			want:     domain.LanguageTypeScript,
 		},
 		{
-			name:     "should detect TypeScript for .tsx",
+			name:     "should detect TSX for .tsx",
 			filename: "test.tsx",
-			want:     domain.LanguageTypeScript,
+			want:     domain.LanguageTSX,
 		},
 		{
 			name:     "should default to TypeScript for unknown extension",
@@ -43,7 +43,7 @@ func TestDetectLanguage(t *testing.T) {
 		{
 			name:     "should handle path with directory",
 			filename: "src/components/Button.test.tsx",
-			want:     domain.LanguageTypeScript,
+			want:     domain.LanguageTSX,
 		},
 	}
 

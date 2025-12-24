@@ -3,7 +3,7 @@
   "ref": "v1.49.0",
   "expectedFrameworks": ["playwright", "junit5"],
   "fileCount": 473,
-  "testCount": 5312,
+  "testCount": 5353,
   "frameworkCounts": {
     "junit5": 1,
     "playwright": 472
@@ -61,7 +61,7 @@
       "path": "packages/html-reporter/src/chip.spec.tsx",
       "framework": "playwright",
       "suiteCount": 0,
-      "testCount": 2
+      "testCount": 4
     },
     {
       "path": "packages/html-reporter/src/headerView.spec.tsx",
@@ -73,7 +73,7 @@
       "path": "packages/html-reporter/src/testCaseView.spec.tsx",
       "framework": "playwright",
       "suiteCount": 0,
-      "testCount": 0
+      "testCount": 6
     },
     {
       "path": "packages/playwright-core/src/server/android/driver/app/src/androidTest/java/com/microsoft/playwright/androiddriver/InstrumentedTest.java",
@@ -85,7 +85,7 @@
       "path": "packages/web/src/components/codeMirrorWrapper.spec.tsx",
       "framework": "playwright",
       "suiteCount": 0,
-      "testCount": 0
+      "testCount": 5
     },
     {
       "path": "packages/web/src/components/expandable.spec.tsx",
@@ -97,7 +97,7 @@
       "path": "packages/web/src/components/splitView.spec.tsx",
       "framework": "playwright",
       "suiteCount": 0,
-      "testCount": 0
+      "testCount": 5
     },
     {
       "path": "packages/web/src/shared/imageDiffView.spec.tsx",

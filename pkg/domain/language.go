@@ -17,5 +17,6 @@ const (
 	LanguageRuby       Language = "ruby"
 	LanguageRust       Language = "rust"
 	LanguageSwift      Language = "swift"
+	LanguageTSX        Language = "tsx"
 	LanguageTypeScript Language = "typescript"
 )

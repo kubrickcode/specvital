@@ -3,7 +3,7 @@
   "ref": "v10.45.2",
   "expectedFrameworks": ["playwright", "vitest"],
   "fileCount": 172,
-  "testCount": 738,
+  "testCount": 793,
   "frameworkCounts": {
     "playwright": 9,
     "vitest": 163
@@ -108,8 +108,8 @@
     {
       "path": "packages/next/src/app-dir/client.test.tsx",
       "framework": "vitest",
-      "suiteCount": 1,
-      "testCount": 7
+      "suiteCount": 3,
+      "testCount": 8
     },
     {
       "path": "packages/next/src/app-dir/formDataToObject.test.ts",

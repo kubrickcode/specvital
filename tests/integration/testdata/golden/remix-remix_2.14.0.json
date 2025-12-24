@@ -3,7 +3,7 @@
   "ref": "remix@2.14.0",
   "expectedFrameworks": ["jest"],
   "fileCount": 88,
-  "testCount": 358,
+  "testCount": 361,
   "frameworkCounts": {
     "jest": 88
   },

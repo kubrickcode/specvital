@@ -30,6 +30,7 @@ import (
 	"github.com/smacker/go-tree-sitter/ruby"
 	"github.com/smacker/go-tree-sitter/rust"
 	"github.com/smacker/go-tree-sitter/swift"
+	"github.com/smacker/go-tree-sitter/typescript/tsx"
 	"github.com/smacker/go-tree-sitter/typescript/typescript"
 
 	"github.com/specvital/core/pkg/domain"
@@ -51,6 +52,7 @@ var (
 	rsLang    *sitter.Language
 	swiftLang *sitter.Language
 	tsLang    *sitter.Language
+	tsxLang   *sitter.Language
 
 	langOnce sync.Once
 )
@@ -69,6 +71,7 @@ func initLanguages() {
 		rsLang = rust.GetLanguage()
 		swiftLang = swift.GetLanguage()
 		tsLang = typescript.GetLanguage()
+		tsxLang = tsx.GetLanguage()
 	})
 }
 
@@ -98,6 +101,8 @@ func GetLanguage(lang domain.Language) *sitter.Language {
 		return rsLang
 	case domain.LanguageSwift:
 		return swiftLang
+	case domain.LanguageTSX:
+		return tsxLang
 	default:
 		return tsLang
 	}
