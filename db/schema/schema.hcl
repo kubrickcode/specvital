@@ -525,8 +525,8 @@ table "user_analysis_history" {
     columns = [column.user_id, column.analysis_id]
   }
 
-  index "idx_user_analysis_history_user" {
-    columns = [column.user_id, column.updated_at]
+  index "idx_user_analysis_history_cursor" {
+    columns = [column.user_id, column.updated_at, column.id]
   }
 
   index "idx_user_analysis_history_analysis" {
