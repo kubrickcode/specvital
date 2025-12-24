@@ -304,13 +304,27 @@ CREATE TABLE public.test_suites (
 
 
 --
+-- Name: user_analysis_history; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_analysis_history (
+    user_id uuid NOT NULL,
+    analysis_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL
+);
+
+
+--
 -- Name: user_bookmarks; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_bookmarks (
     user_id uuid NOT NULL,
     codebase_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL
 );
 
 
@@ -433,11 +447,35 @@ ALTER TABLE ONLY public.oauth_accounts
 
 
 --
+-- Name: user_analysis_history uq_user_analysis_history_user_analysis; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_analysis_history
+    ADD CONSTRAINT uq_user_analysis_history_user_analysis UNIQUE (user_id, analysis_id);
+
+
+--
+-- Name: user_bookmarks uq_user_bookmarks_user_codebase; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_bookmarks
+    ADD CONSTRAINT uq_user_bookmarks_user_codebase UNIQUE (user_id, codebase_id);
+
+
+--
+-- Name: user_analysis_history user_analysis_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_analysis_history
+    ADD CONSTRAINT user_analysis_history_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: user_bookmarks user_bookmarks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_bookmarks
-    ADD CONSTRAINT user_bookmarks_pkey PRIMARY KEY (user_id, codebase_id);
+    ADD CONSTRAINT user_bookmarks_pkey PRIMARY KEY (id);
 
 
 --
@@ -537,6 +575,20 @@ CREATE INDEX idx_test_suites_file ON public.test_suites USING btree (analysis_id
 --
 
 CREATE INDEX idx_test_suites_parent ON public.test_suites USING btree (parent_id) WHERE (parent_id IS NOT NULL);
+
+
+--
+-- Name: idx_user_analysis_history_analysis; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_user_analysis_history_analysis ON public.user_analysis_history USING btree (analysis_id);
+
+
+--
+-- Name: idx_user_analysis_history_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_user_analysis_history_user ON public.user_analysis_history USING btree (user_id, updated_at);
 
 
 --
@@ -647,6 +699,22 @@ ALTER TABLE ONLY public.test_suites
 
 ALTER TABLE ONLY public.test_suites
     ADD CONSTRAINT fk_test_suites_parent FOREIGN KEY (parent_id) REFERENCES public.test_suites(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_analysis_history fk_user_analysis_history_analysis; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_analysis_history
+    ADD CONSTRAINT fk_user_analysis_history_analysis FOREIGN KEY (analysis_id) REFERENCES public.analyses(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_analysis_history fk_user_analysis_history_user; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_analysis_history
+    ADD CONSTRAINT fk_user_analysis_history_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
