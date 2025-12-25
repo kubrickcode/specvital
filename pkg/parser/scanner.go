@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -326,6 +327,10 @@ func (s *Scanner) discoverConfigFiles(ctx context.Context, src source.Source) []
 			return nil
 		}
 
+		if d.Type()&os.ModeSymlink != 0 {
+			return nil
+		}
+
 		filename := filepath.Base(path)
 		for _, pattern := range patterns {
 			if filename == pattern {
@@ -441,6 +446,10 @@ func (s *Scanner) discoverTestFiles(ctx context.Context, src source.Source) ([]s
 			if shouldSkipDir(path, rootPath, skipSet) {
 				return filepath.SkipDir
 			}
+			return nil
+		}
+
+		if d.Type()&os.ModeSymlink != 0 {
 			return nil
 		}
 
@@ -633,6 +642,12 @@ func shouldSkipDir(path, rootPath string, skipSet map[string]bool) bool {
 	}
 
 	base := filepath.Base(path)
+
+	if base == "coverage" {
+		parent := filepath.Dir(path)
+		return parent == rootPath
+	}
+
 	return skipSet[base]
 }
 

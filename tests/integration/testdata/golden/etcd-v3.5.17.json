@@ -2,10 +2,10 @@
   "repository": "etcd",
   "ref": "v3.5.17",
   "expectedFrameworks": ["go-testing"],
-  "fileCount": 367,
-  "testCount": 1936,
+  "fileCount": 355,
+  "testCount": 1902,
   "frameworkCounts": {
-    "go-testing": 367
+    "go-testing": 355
   },
   "sampleFiles": [
     {
@@ -130,7 +130,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 367,
-    "filesScanned": 367
+    "filesMatched": 355,
+    "filesScanned": 355
   }
 }

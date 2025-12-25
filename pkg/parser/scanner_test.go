@@ -802,6 +802,98 @@ class NotATest
 	})
 }
 
+func TestScan_SymlinkSkipping(t *testing.T) {
+	t.Run("should skip symlinked test files", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		realDir := filepath.Join(tmpDir, "real")
+		if err := os.MkdirAll(realDir, 0755); err != nil {
+			t.Fatalf("failed to create real dir: %v", err)
+		}
+
+		testContent := []byte(`import { it } from '@jest/globals'; it('test', () => {});`)
+		realFile := filepath.Join(realDir, "actual.test.ts")
+		if err := os.WriteFile(realFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		symlinkFile := filepath.Join(tmpDir, "symlink.test.ts")
+		if err := os.Symlink(realFile, symlinkFile); err != nil {
+			t.Skipf("symlinks not supported: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Errorf("expected 1 file (real file only), got %d", len(result.Inventory.Files))
+			for _, f := range result.Inventory.Files {
+				t.Logf("found file: %s", f.Path)
+			}
+		}
+	})
+}
+
+func TestScan_NestedCoverageDirectory(t *testing.T) {
+	t.Run("should scan nested coverage directory but skip root coverage", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		nestedCoverage := filepath.Join(tmpDir, "tests", "robustness", "coverage")
+		if err := os.MkdirAll(nestedCoverage, 0755); err != nil {
+			t.Fatalf("failed to create nested coverage dir: %v", err)
+		}
+
+		testContent := []byte(`import { it } from '@jest/globals'; it('test', () => {});`)
+		nestedFile := filepath.Join(nestedCoverage, "contract.test.ts")
+		if err := os.WriteFile(nestedFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write nested test file: %v", err)
+		}
+
+		rootCoverage := filepath.Join(tmpDir, "coverage")
+		if err := os.MkdirAll(rootCoverage, 0755); err != nil {
+			t.Fatalf("failed to create root coverage dir: %v", err)
+		}
+
+		rootFile := filepath.Join(rootCoverage, "report.test.ts")
+		if err := os.WriteFile(rootFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write root coverage file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Errorf("expected 1 file (nested coverage only), got %d", len(result.Inventory.Files))
+			for _, f := range result.Inventory.Files {
+				t.Logf("found file: %s", f.Path)
+			}
+		}
+
+		if len(result.Inventory.Files) == 1 {
+			expectedPath := filepath.Join("tests", "robustness", "coverage", "contract.test.ts")
+			if result.Inventory.Files[0].Path != expectedPath {
+				t.Errorf("expected path %q, got %q", expectedPath, result.Inventory.Files[0].Path)
+			}
+		}
+	})
+}
+
 func TestScan_FixtureExclusion(t *testing.T) {
 	tests := []struct {
 		name         string
