@@ -98,6 +98,30 @@ class CalculatorTest {
 			expectedConfidence: 40,
 		},
 		{
+			name: "@TestFactory annotation",
+			content: `
+import org.junit.jupiter.api.TestFactory;
+
+class DynamicTests {
+    @TestFactory
+    Stream<DynamicTest> dynamicTests() {}
+}
+`,
+			expectedConfidence: 40,
+		},
+		{
+			name: "@TestTemplate annotation",
+			content: `
+import org.junit.jupiter.api.TestTemplate;
+
+class TemplateTests {
+    @TestTemplate
+    void templateTest() {}
+}
+`,
+			expectedConfidence: 40,
+		},
+		{
 			name: "@Nested annotation",
 			content: `
 import org.junit.jupiter.api.Nested;
@@ -449,6 +473,69 @@ class RepeatedTests {
 
 		if suite.Tests[0].Name != "testRepeated" {
 			t.Errorf("expected Name='testRepeated', got '%s'", suite.Tests[0].Name)
+		}
+	})
+
+	t.Run("@TestFactory annotation", func(t *testing.T) {
+		source := `
+package com.example;
+
+import org.junit.jupiter.api.TestFactory;
+import java.util.stream.Stream;
+
+class DynamicTests {
+    @TestFactory
+    Stream<DynamicTest> dynamicTests() {
+        return Stream.of();
+    }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "DynamicTests.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 1 {
+			t.Fatalf("expected 1 Test, got %d", len(suite.Tests))
+		}
+
+		if suite.Tests[0].Name != "dynamicTests" {
+			t.Errorf("expected Name='dynamicTests', got '%s'", suite.Tests[0].Name)
+		}
+	})
+
+	t.Run("@TestTemplate annotation", func(t *testing.T) {
+		source := `
+package com.example;
+
+import org.junit.jupiter.api.TestTemplate;
+
+class TemplateTests {
+    @TestTemplate
+    void templateTest() {}
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "TemplateTests.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 1 {
+			t.Fatalf("expected 1 Test, got %d", len(suite.Tests))
+		}
+
+		if suite.Tests[0].Name != "templateTest" {
+			t.Errorf("expected Name='templateTest', got '%s'", suite.Tests[0].Name)
 		}
 	})
 }

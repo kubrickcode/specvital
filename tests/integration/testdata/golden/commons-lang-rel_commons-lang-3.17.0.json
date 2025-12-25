@@ -3,7 +3,7 @@
   "ref": "rel/commons-lang-3.17.0",
   "expectedFrameworks": ["junit5"],
   "fileCount": 218,
-  "testCount": 4339,
+  "testCount": 4343,
   "frameworkCounts": {
     "junit5": 218
   },

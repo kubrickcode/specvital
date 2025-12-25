@@ -82,6 +82,8 @@ var junit5Patterns = []struct {
 	{regexp.MustCompile(`@Test\s*(?:\(|$|\n)`), "@Test annotation"},
 	{regexp.MustCompile(`@ParameterizedTest`), "@ParameterizedTest annotation"},
 	{regexp.MustCompile(`@RepeatedTest`), "@RepeatedTest annotation"},
+	{regexp.MustCompile(`@TestFactory`), "@TestFactory annotation"},
+	{regexp.MustCompile(`@TestTemplate`), "@TestTemplate annotation"},
 	{regexp.MustCompile(`@Nested`), "@Nested annotation"},
 	{regexp.MustCompile(`@DisplayName`), "@DisplayName annotation"},
 	{regexp.MustCompile(`import\s+org\.junit\.jupiter`), "JUnit Jupiter import"},
@@ -222,6 +224,10 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 		case "ParameterizedTest":
 			isTest = true
 		case "RepeatedTest":
+			isTest = true
+		case "TestFactory":
+			isTest = true
+		case "TestTemplate":
 			isTest = true
 		case "Disabled":
 			status = domain.TestStatusSkipped
