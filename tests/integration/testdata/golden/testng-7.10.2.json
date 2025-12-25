@@ -1,32 +1,13 @@
 {
   "repository": "testng",
   "ref": "7.10.2",
-  "expectedFrameworks": ["junit5", "testng"],
-  "fileCount": 1968,
+  "expectedFrameworks": ["testng"],
+  "fileCount": 1710,
   "testCount": 3042,
   "frameworkCounts": {
-    "junit5": 2,
-    "testng": 1966
+    "testng": 1710
   },
   "sampleFiles": [
-    {
-      "path": "testng-asserts/src/main/java/org/testng/Assert.java",
-      "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "testng-asserts/src/main/java/org/testng/asserts/LoggingAssert.java",
-      "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "testng-asserts/src/main/java/org/testng/asserts/SoftAssert.java",
-      "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
-    },
     {
       "path": "testng-asserts/src/test/java/org/testng/AssertTest.java",
       "framework": "testng",
@@ -70,68 +51,86 @@
       "testCount": 57
     },
     {
-      "path": "testng-collections/src/main/java/org/testng/collections/Objects.java",
+      "path": "testng-core/src/test/groovy/test/groovy/Issue2360Sample.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/NoPackageTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/ReporterConfigTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/DryRunSample.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/DryRunTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/JarFileUtilsTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/TestRunnerTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/internal/ConsoleReporter.java",
       "framework": "testng",
       "suiteCount": 0,
       "testCount": 0
     },
     {
-      "path": "testng-collections/src/main/java/org/testng/util/Strings.java",
+      "path": "testng-core/src/test/java/org/testng/internal/DynamicGraphHelperTest.java",
       "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 7
     },
     {
-      "path": "testng-core-api/src/main/java/org/testng/IAlterSuiteListener.java",
+      "path": "testng-core/src/test/java/org/testng/internal/DynamicGraphTest.java",
       "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 13
     },
     {
-      "path": "testng-core-api/src/main/java/org/testng/IAnnotationTransformer.java",
+      "path": "testng-core/src/test/java/org/testng/internal/GroupsHelperTest.java",
       "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 2
     },
     {
-      "path": "testng-core-api/src/main/java/org/testng/IClass.java",
+      "path": "testng-core/src/test/java/org/testng/internal/KeyAwareAutoCloseableLockTest.java",
       "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 1
     },
     {
-      "path": "testng-core-api/src/main/java/org/testng/IHookable.java",
-      "framework": "junit5",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "testng-core-api/src/main/java/org/testng/IReporter.java",
+      "path": "testng-core/src/test/java/org/testng/internal/MethodHelperTest.java",
       "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "testng-core-api/src/main/java/org/testng/ISuite.java",
-      "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "testng-core-api/src/main/java/org/testng/ITestContext.java",
-      "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "testng-core-api/src/main/java/org/testng/ITestMethodFinder.java",
-      "framework": "testng",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 1
     }
   ],
   "stats": {
-    "filesMatched": 1968,
-    "filesScanned": 2275
+    "filesMatched": 1710,
+    "filesScanned": 1877
   }
 }

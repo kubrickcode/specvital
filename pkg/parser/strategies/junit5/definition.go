@@ -50,6 +50,12 @@ func (m *JUnit5FileMatcher) Match(ctx context.Context, signal framework.Signal) 
 	}
 
 	filename := signal.Value
+
+	// Exclude src/main/ (production code in Maven/Gradle structure)
+	if strings.Contains(filename, "/src/main/") || strings.HasPrefix(filename, "src/main/") {
+		return framework.NoMatch()
+	}
+
 	base := filename
 	if idx := strings.LastIndex(filename, "/"); idx >= 0 {
 		base = filename[idx+1:]

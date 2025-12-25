@@ -239,7 +239,6 @@ repositories:
     url: https://github.com/testng-team/testng
     ref: 7.10.2
     frameworks:
-      - junit5
       - testng
     complex: true
 

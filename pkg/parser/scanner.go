@@ -688,6 +688,13 @@ func isGoTestFile(path string) bool {
 }
 
 func isJavaTestFile(path string) bool {
+	normalizedPath := filepath.ToSlash(path)
+
+	// Exclude src/main/ (production code in Maven/Gradle structure)
+	if strings.Contains(normalizedPath, "/src/main/") || strings.HasPrefix(normalizedPath, "src/main/") {
+		return false
+	}
+
 	base := filepath.Base(path)
 	name := strings.TrimSuffix(base, ".java")
 
@@ -700,7 +707,6 @@ func isJavaTestFile(path string) bool {
 	}
 
 	// Files in test/ or tests/ directory
-	normalizedPath := filepath.ToSlash(path)
 	if strings.Contains(normalizedPath, "/test/") || strings.Contains(normalizedPath, "/tests/") {
 		return true
 	}

@@ -2,44 +2,14 @@
   "repository": "junit5-samples",
   "ref": "main",
   "expectedFrameworks": ["junit5", "kotest", "testng"],
-  "fileCount": 31,
+  "fileCount": 26,
   "testCount": 41,
   "frameworkCounts": {
-    "junit5": 29,
+    "junit5": 24,
     "kotest": 1,
     "testng": 1
   },
   "sampleFiles": [
-    {
-      "path": "junit-jupiter-extensions/src/main/java/com/example/cartesian/CartesianProductContext.java",
-      "framework": "junit5",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "junit-jupiter-extensions/src/main/java/com/example/cartesian/CartesianProductProvider.java",
-      "framework": "junit5",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "junit-jupiter-extensions/src/main/java/com/example/cartesian/CartesianProductResolver.java",
-      "framework": "junit5",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "junit-jupiter-extensions/src/main/java/com/example/cartesian/CartesianProductTest.java",
-      "framework": "junit5",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "junit-jupiter-extensions/src/main/java/com/example/random/RandomParametersExtension.java",
-      "framework": "junit5",
-      "suiteCount": 0,
-      "testCount": 0
-    },
     {
       "path": "junit-jupiter-extensions/src/test/java/com/example/cartesian/CartesianProductTests.java",
       "framework": "junit5",
@@ -129,10 +99,40 @@
       "framework": "junit5",
       "suiteCount": 1,
       "testCount": 2
+    },
+    {
+      "path": "junit-modular-world/src/test/com.example.tool/com/example/tool/CalculatorTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "junit-modular-world/src/test/com.example.tool/com/example/tool/internal/MathHelperTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-modular-world/src/test/extra.modular/extra/modular/ExtraModularTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "junit-modular-world/src/test/extra.modular/extra/modular/GoodOldTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "junit-modular-world/src/test/ice.cream/ice/cream/FlavorTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
     }
   ],
   "stats": {
-    "filesMatched": 31,
-    "filesScanned": 75
+    "filesMatched": 26,
+    "filesScanned": 55
   }
 }

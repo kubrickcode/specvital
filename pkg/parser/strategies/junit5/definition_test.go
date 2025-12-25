@@ -43,6 +43,9 @@ func TestJUnit5FileMatcher_Match(t *testing.T) {
 		{"Test suffix with path", "src/test/java/com/example/UserServiceTest.java", 20},
 		{"regular java file", "Calculator.java", 0},
 		{"non-java file", "CalculatorTest.py", 0},
+		{"src/main should be excluded", "src/main/java/com/example/CartesianProductTest.java", 0},
+		{"src/main/kotlin should be excluded", "src/main/kotlin/com/example/TestFactory.java", 0},
+		{"nested src/main should be excluded", "project/src/main/java/SomeTest.java", 0},
 	}
 
 	for _, tt := range tests {
