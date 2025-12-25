@@ -85,7 +85,6 @@ export const useAllOrgRepos = ({
       toast.error(`Failed to refresh ${org}`, {
         description: error instanceof Error ? error.message : String(error),
       });
-      throw error;
     }
   };
 

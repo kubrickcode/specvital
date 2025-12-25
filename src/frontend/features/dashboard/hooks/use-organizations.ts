@@ -38,7 +38,6 @@ export const useOrganizations = (): UseOrganizationsReturn => {
       toast.error("Failed to refresh", {
         description: error instanceof Error ? error.message : String(error),
       });
-      throw error;
     }
   };
 

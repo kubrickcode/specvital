@@ -14,6 +14,8 @@ FROM user_analysis_history uah
 JOIN analyses a ON a.id = uah.analysis_id
 JOIN codebases c ON c.id = a.codebase_id
 JOIN users u ON u.id = uah.user_id
+LEFT JOIN user_github_org_memberships ugom ON ugom.user_id = uah.user_id
+LEFT JOIN github_organizations go ON go.id = ugom.org_id AND go.login = c.owner
 WHERE uah.user_id = sqlc.arg(user_id)
   AND a.status = 'completed'
   AND c.is_stale = false
@@ -24,7 +26,7 @@ WHERE uah.user_id = sqlc.arg(user_id)
   AND (
     sqlc.arg(ownership)::text = 'all'
     OR (sqlc.arg(ownership)::text = 'mine' AND c.owner = u.username)
-    OR (sqlc.arg(ownership)::text = 'organization' AND c.owner != u.username)
+    OR (sqlc.arg(ownership)::text = 'organization' AND go.id IS NOT NULL)
   )
 ORDER BY uah.updated_at DESC, uah.id DESC
 LIMIT sqlc.arg(page_limit);
