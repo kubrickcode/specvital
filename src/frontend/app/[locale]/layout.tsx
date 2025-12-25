@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { Header } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
@@ -42,15 +43,17 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-        <QueryProvider>
-          <NextIntlClientProvider messages={messages}>
-            <ThemeProvider>
-              <Header />
-              {children}
-              <Toaster richColors />
-            </ThemeProvider>
-          </NextIntlClientProvider>
-        </QueryProvider>
+        <NuqsAdapter>
+          <QueryProvider>
+            <NextIntlClientProvider messages={messages}>
+              <ThemeProvider>
+                <Header />
+                {children}
+                <Toaster richColors />
+              </ThemeProvider>
+            </NextIntlClientProvider>
+          </QueryProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

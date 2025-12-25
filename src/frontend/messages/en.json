@@ -103,6 +103,10 @@
     "title": "Dashboard",
     "allRepositories": "All Repositories",
     "bookmarked": "Bookmarked",
+    "tabs": {
+      "bookmarked": "Bookmarked",
+      "myAnalyses": "My Analyses"
+    },
     "card": {
       "addBookmark": "Add bookmark",
       "analyzeLatest": "Analyze latest commits",
