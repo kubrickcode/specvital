@@ -194,6 +194,12 @@ func processCallExpressionWithMode(node *sitter.Node, source []byte, filename st
 		processTestSuite(node, args, source, filename, file, currentSuite, status, modifier, isDynamic)
 	case FuncIt, FuncTest, FuncSpecify:
 		processTestCase(node, args, source, filename, file, currentSuite, status, modifier, isDynamic)
+	default:
+		// Traverse callbacks of unrecognized functions (e.g., describeMatrix, describeIf).
+		// This allows detecting tests inside custom wrapper functions.
+		if callback := FindLastCallback(args); callback != nil {
+			ParseCallbackBody(callback, source, filename, file, currentSuite)
+		}
 	}
 }
 

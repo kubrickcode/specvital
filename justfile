@@ -59,10 +59,13 @@ snapshot-update repo="all":
     #!/usr/bin/env bash
     set -euox pipefail
     cd {{ root_dir }}
-    if [ "{{ repo }}" = "all" ]; then
+    # Handle both "just snapshot-update prisma" and "just snapshot-update repo=prisma"
+    repo_name="{{ repo }}"
+    repo_name="${repo_name#repo=}"
+    if [ "$repo_name" = "all" ]; then
         go test -tags integration ./tests/integration/... -v -timeout 15m -update
     else
-        go test -tags integration ./tests/integration/... -v -timeout 15m -update -run "TestSingleFramework/{{ repo }}"
+        go test -tags integration ./tests/integration/... -v -timeout 15m -update -run "TestSingleFramework/$repo_name"
     fi
     just lint config
 

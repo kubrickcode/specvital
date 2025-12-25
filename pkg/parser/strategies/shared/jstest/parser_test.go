@@ -1357,3 +1357,111 @@ func TestParse_IIFENestedTests(t *testing.T) {
 		t.Errorf("test name = %q, want %q", innerSuite.Tests[0].Name, "should build and trace correctly")
 	}
 }
+
+func TestParse_CustomWrapperFunctions(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		source     string
+		wantSuites int
+		wantTests  int
+	}{
+		{
+			name: "should detect tests inside describeMatrix wrapper",
+			source: `describeMatrix({ providers: { d1: true } }, 'D1', () => {
+  test('should succeed', async () => {});
+  test('should fail gracefully', async () => {});
+});`,
+			wantSuites: 0,
+			wantTests:  2,
+		},
+		{
+			name: "should detect tests inside custom wrapper with describe inside",
+			source: `describeMatrix({ providers: sqliteOnly }, 'SQLite', () => {
+  describe('introspection', () => {
+    it('basic introspection', async () => {});
+    it('introspection --force', async () => {});
+  });
+});`,
+			wantSuites: 1,
+			wantTests:  0,
+		},
+		{
+			name: "should detect tests inside nested custom wrappers",
+			source: `customWrapper('outer', () => {
+  anotherWrapper('inner', () => {
+    test('nested test', () => {});
+  });
+});`,
+			wantSuites: 0,
+			wantTests:  1,
+		},
+		{
+			name: "should detect tests with multiple arguments before callback",
+			source: `myTestHelper(config, options, 'name', () => {
+  it('should work', () => {});
+});`,
+			wantSuites: 0,
+			wantTests:  1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := Parse(context.Background(), []byte(tt.source), "test.ts", "jest")
+
+			if err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			if len(file.Suites) != tt.wantSuites {
+				t.Errorf("len(Suites) = %d, want %d", len(file.Suites), tt.wantSuites)
+			}
+
+			if len(file.Tests) != tt.wantTests {
+				t.Errorf("len(Tests) = %d, want %d", len(file.Tests), tt.wantTests)
+			}
+		})
+	}
+}
+
+func TestParse_CustomWrapperWithDescribeInside(t *testing.T) {
+	t.Parallel()
+
+	source := `describeMatrix({ providers: sqliteOnly }, 'SQLite', () => {
+  describe('introspection', () => {
+    it('basic introspection', async () => {});
+    it('introspection --force', async () => {});
+  });
+
+  it('should succeed when schema and db do match', async () => {});
+});`
+
+	file, err := Parse(context.Background(), []byte(source), "test.ts", "jest")
+
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+
+	// describeMatrix is not recognized as a suite, so describe inside becomes top-level
+	if len(file.Suites) != 1 {
+		t.Fatalf("len(Suites) = %d, want 1", len(file.Suites))
+	}
+
+	suite := file.Suites[0]
+	if suite.Name != "introspection" {
+		t.Errorf("Suites[0].Name = %q, want %q", suite.Name, "introspection")
+	}
+
+	if len(suite.Tests) != 2 {
+		t.Errorf("len(suite.Tests) = %d, want 2", len(suite.Tests))
+	}
+
+	// The it() outside describe should be at file level
+	if len(file.Tests) != 1 {
+		t.Errorf("len(file.Tests) = %d, want 1", len(file.Tests))
+	}
+}

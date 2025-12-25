@@ -124,6 +124,20 @@ func FindCallback(args *sitter.Node) *sitter.Node {
 	return nil
 }
 
+// FindLastCallback finds the last argument that is a function (arrow_function, function_expression, function).
+// This is used to detect callbacks in custom wrapper functions like describeMatrix() or describeIf().
+func FindLastCallback(args *sitter.Node) *sitter.Node {
+	var lastCallback *sitter.Node
+	for i := 0; i < int(args.ChildCount()); i++ {
+		child := args.Child(i)
+		switch child.Type() {
+		case "arrow_function", "function_expression", "function":
+			lastCallback = child
+		}
+	}
+	return lastCallback
+}
+
 func ExtractTestName(args *sitter.Node, source []byte) string {
 	for i := 0; i < int(args.ChildCount()); i++ {
 		child := args.Child(i)
