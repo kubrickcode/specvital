@@ -143,6 +143,21 @@
       "all": "전체",
       "mine": "내 저장소",
       "organization": "조직"
+    },
+    "discovery": {
+      "title": "새 저장소 발견",
+      "description": "아직 분석하지 않은 저장소를 찾아 테스트 상태를 추적하세요.",
+      "myRepos": "내 저장소",
+      "orgRepos": "조직 저장소",
+      "loading": "로딩 중...",
+      "reposFound": "분석 가능한 저장소 {count}개",
+      "noRepos": "저장소를 찾을 수 없습니다",
+      "refresh": "GitHub에서 새로고침",
+      "analyze": "분석",
+      "lastPush": "마지막 푸시",
+      "searchPlaceholder": "저장소 검색...",
+      "sheetDescription": "분석 가능한 저장소 {count}개",
+      "noSearchResults": "검색 결과가 없습니다"
     }
   }
 }

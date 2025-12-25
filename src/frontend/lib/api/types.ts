@@ -53,3 +53,9 @@ export const OWNERSHIP_FILTER_VALUES = ["all", "mine", "organization"] as const;
 export type OwnershipFilter = NonNullable<
   NonNullable<operations["getUserAnalyzedRepositories"]["parameters"]["query"]>["ownership"]
 >;
+
+// GitHub types
+export type GitHubOrganization = components["schemas"]["GitHubOrganization"];
+export type GitHubOrganizationsResponse = components["schemas"]["GitHubOrganizationsResponse"];
+export type GitHubRepository = components["schemas"]["GitHubRepository"];
+export type GitHubRepositoriesResponse = components["schemas"]["GitHubRepositoriesResponse"];

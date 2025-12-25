@@ -1,5 +1,10 @@
 export { addBookmark, fetchBookmarkedRepositories, removeBookmark } from "./bookmarks";
 export {
+  fetchOrganizationRepositories,
+  fetchUserGitHubOrganizations,
+  fetchUserGitHubRepositories,
+} from "./github";
+export {
   checkUpdateStatus,
   fetchRecentRepositories,
   fetchRepositoryStats,

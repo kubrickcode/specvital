@@ -12,6 +12,7 @@ import {
 } from "../hooks";
 import { BookmarkedSection } from "./bookmarked-section";
 import { DashboardHeader } from "./dashboard-header";
+import { DiscoverySection } from "./discovery-section";
 import { EmptyState } from "./empty-state";
 import { RepositoryList } from "./repository-list";
 
@@ -82,6 +83,8 @@ export const DashboardContent = () => {
           />
         )}
       </section>
+
+      <DiscoverySection analyzedRepositories={recent} />
     </div>
   );
 };

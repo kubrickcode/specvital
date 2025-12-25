@@ -143,6 +143,21 @@
       "all": "All",
       "mine": "Mine",
       "organization": "Organization"
+    },
+    "discovery": {
+      "title": "Discover New Repos",
+      "description": "Find repositories you haven't analyzed yet and start tracking their test health.",
+      "myRepos": "My Repositories",
+      "orgRepos": "Organization Repos",
+      "loading": "Loading...",
+      "reposFound": "{count, plural, =0 {No repos} =1 {1 repo} other {# repos}} to analyze",
+      "noRepos": "No repositories found",
+      "refresh": "Refresh from GitHub",
+      "analyze": "Analyze",
+      "lastPush": "Last push",
+      "searchPlaceholder": "Search repositories...",
+      "sheetDescription": "{count, plural, =0 {No repositories} =1 {1 repository} other {# repositories}} available to analyze",
+      "noSearchResults": "No repositories match your search"
     }
   }
 }
