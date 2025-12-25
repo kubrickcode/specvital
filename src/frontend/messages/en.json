@@ -137,6 +137,12 @@
       "newCommits": "New commits available",
       "unknown": "Status unknown",
       "upToDate": "Up to date"
+    },
+    "ownership": {
+      "label": "Ownership",
+      "all": "All",
+      "mine": "Mine",
+      "organization": "Organization"
     }
   }
 }

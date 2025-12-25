@@ -1,5 +1,7 @@
 export { bookmarkKeys, useBookmarkedRepositories } from "./use-bookmarked-repositories";
 export { useAddBookmark, useRemoveBookmark } from "./use-bookmark-mutation";
+export { myAnalysesKeys, useMyAnalyses } from "./use-my-analyses";
+export { useOwnershipFilter } from "./use-ownership-filter";
 export { recentRepositoriesKeys, useRecentRepositories } from "./use-recent-repositories";
 export { useReanalyze } from "./use-reanalyze";
 export { repositoryStatsKeys, useRepositoryStats } from "./use-repository-stats";

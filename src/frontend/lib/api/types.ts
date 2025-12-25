@@ -5,7 +5,7 @@
  * @see generated-types.ts (auto-generated from backend/api/openapi.yaml)
  */
 
-import type { components } from "./generated-types";
+import type { components, operations } from "./generated-types";
 
 // Core domain types
 export type AnalysisResult = components["schemas"]["AnalysisResult"];
@@ -45,3 +45,11 @@ export type BookmarkedRepositoriesResponse =
   components["schemas"]["BookmarkedRepositoriesResponse"];
 export type RecentRepositoriesResponse = components["schemas"]["RecentRepositoriesResponse"];
 export type RepositoryStatsResponse = components["schemas"]["RepositoryStatsResponse"];
+export type UserAnalyzedRepositoriesResponse =
+  components["schemas"]["UserAnalyzedRepositoriesResponse"];
+
+// Ownership filter type - derived from OpenAPI spec
+export const OWNERSHIP_FILTER_VALUES = ["all", "mine", "organization"] as const;
+export type OwnershipFilter = NonNullable<
+  NonNullable<operations["getUserAnalyzedRepositories"]["parameters"]["query"]>["ownership"]
+>;

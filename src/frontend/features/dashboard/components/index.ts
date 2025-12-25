@@ -3,6 +3,7 @@ export { DashboardContent } from "./dashboard-content";
 export { DashboardHeader } from "./dashboard-header";
 export { DashboardTabs } from "./dashboard-tabs";
 export { EmptyState } from "./empty-state";
+export { OwnershipFilter } from "./ownership-filter";
 export { RepositoryCard } from "./repository-card";
 export { RepositoryList } from "./repository-list";
 export { RepositorySkeleton } from "./repository-skeleton";

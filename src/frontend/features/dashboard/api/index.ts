@@ -5,3 +5,4 @@ export {
   fetchRepositoryStats,
   triggerReanalyze,
 } from "./repositories";
+export { fetchUserAnalyzedRepositories } from "./user-analyses";
