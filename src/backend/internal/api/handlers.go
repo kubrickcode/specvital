@@ -1,10 +1,17 @@
 package api
 
-import "context"
+import (
+	"context"
+	"net/http"
+)
 
 type AnalyzerHandlers interface {
 	AnalyzeRepository(ctx context.Context, request AnalyzeRepositoryRequestObject) (AnalyzeRepositoryResponseObject, error)
 	GetAnalysisStatus(ctx context.Context, request GetAnalysisStatusRequestObject) (GetAnalysisStatusResponseObject, error)
+}
+
+type WebhookHandlers interface {
+	HandleGitHubAppWebhookRaw(w http.ResponseWriter, r *http.Request)
 }
 
 type AuthHandlers interface {
@@ -44,6 +51,7 @@ type APIHandlers struct {
 	bookmark        BookmarkHandlers
 	github          GitHubHandlers
 	repository      RepositoryHandlers
+	webhook         WebhookHandlers
 }
 
 var _ StrictServerInterface = (*APIHandlers)(nil)
@@ -55,6 +63,7 @@ func NewAPIHandlers(
 	bookmark BookmarkHandlers,
 	github GitHubHandlers,
 	repository RepositoryHandlers,
+	webhook WebhookHandlers,
 ) *APIHandlers {
 	return &APIHandlers{
 		analyzer:        analyzer,
@@ -63,6 +72,7 @@ func NewAPIHandlers(
 		bookmark:        bookmark,
 		github:          github,
 		repository:      repository,
+		webhook:         webhook,
 	}
 }
 
@@ -132,4 +142,14 @@ func (h *APIHandlers) GetUserGitHubOrganizations(ctx context.Context, request Ge
 
 func (h *APIHandlers) GetUserGitHubRepositories(ctx context.Context, request GetUserGitHubRepositoriesRequestObject) (GetUserGitHubRepositoriesResponseObject, error) {
 	return h.github.GetUserGitHubRepositories(ctx, request)
+}
+
+func (h *APIHandlers) HandleGitHubAppWebhook(_ context.Context, _ HandleGitHubAppWebhookRequestObject) (HandleGitHubAppWebhookResponseObject, error) {
+	return HandleGitHubAppWebhook500ApplicationProblemPlusJSONResponse{
+		InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("use raw handler instead"),
+	}, nil
+}
+
+func (h *APIHandlers) WebhookHandler() WebhookHandlers {
+	return h.webhook
 }

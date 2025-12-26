@@ -60,12 +60,12 @@ func run() error {
 		}
 	}()
 
-	router := newRouter(origins, app.RouteRegistrars(), app.APIHandler(), app.AuthMiddleware)
+	router := newRouter(origins, app.RouteRegistrars(), app.APIHandler(), app.AuthMiddleware, app.WebhookHandler())
 
 	return startServer(router)
 }
 
-func newRouter(origins []string, registrars []server.RouteRegistrar, apiHandler api.StrictServerInterface, authMiddleware *middleware.AuthMiddleware) *chi.Mux {
+func newRouter(origins []string, registrars []server.RouteRegistrar, apiHandler api.StrictServerInterface, authMiddleware *middleware.AuthMiddleware, webhookHandler api.WebhookHandlers) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(chimiddleware.RequestID)
@@ -82,6 +82,10 @@ func newRouter(origins []string, registrars []server.RouteRegistrar, apiHandler 
 	r.Route("/api/auth", func(authRouter chi.Router) {
 		authRouter.Use(middleware.RateLimit(authLimiter))
 	})
+
+	if webhookHandler != nil {
+		r.Post("/api/webhooks/github-app", webhookHandler.HandleGitHubAppWebhookRaw)
+	}
 
 	for _, reg := range registrars {
 		reg.RegisterRoutes(r)

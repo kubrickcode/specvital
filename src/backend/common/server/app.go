@@ -18,6 +18,9 @@ import (
 	authadapter "github.com/specvital/web/src/backend/modules/auth/adapter"
 	authhandler "github.com/specvital/web/src/backend/modules/auth/handler"
 	authusecase "github.com/specvital/web/src/backend/modules/auth/usecase"
+	ghappadapter "github.com/specvital/web/src/backend/modules/github-app/adapter"
+	ghapphandler "github.com/specvital/web/src/backend/modules/github-app/handler"
+	ghappusecase "github.com/specvital/web/src/backend/modules/github-app/usecase"
 	githubadapter "github.com/specvital/web/src/backend/modules/github/adapter"
 	githubhandler "github.com/specvital/web/src/backend/modules/github/handler"
 	githubusecase "github.com/specvital/web/src/backend/modules/github/usecase"
@@ -28,9 +31,10 @@ import (
 )
 
 type Handlers struct {
-	API    api.StrictServerInterface
-	Docs   *docs.Handler
-	Health *health.Handler
+	API     api.StrictServerInterface
+	Docs    *docs.Handler
+	Health  *health.Handler
+	Webhook api.WebhookHandlers
 }
 
 type App struct {
@@ -149,12 +153,32 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 		return nil, fmt.Errorf("create github handler: %w", err)
 	}
 
-	apiHandlers := api.NewAPIHandlers(analyzerHandler, userHandler, authHandler, userHandler, githubHandler, analyzerHandler)
+	var webhookHandler api.WebhookHandlers
+	if container.GitHubAppWebhookSecret != "" {
+		ghAppRepo := ghappadapter.NewPostgresRepository(queries)
+		handleWebhookUC := ghappusecase.NewHandleWebhookUseCase(ghAppRepo)
+		webhookVerifier, err := ghappadapter.NewWebhookVerifier(container.GitHubAppWebhookSecret)
+		if err != nil {
+			return nil, fmt.Errorf("create webhook verifier: %w", err)
+		}
+
+		webhookHandler, err = ghapphandler.NewHandler(&ghapphandler.HandlerConfig{
+			HandleWebhook: handleWebhookUC,
+			Logger:        log,
+			Verifier:      webhookVerifier,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("create github-app handler: %w", err)
+		}
+	}
+
+	apiHandlers := api.NewAPIHandlers(analyzerHandler, userHandler, authHandler, userHandler, githubHandler, analyzerHandler, webhookHandler)
 
 	return &Handlers{
-		API:    apiHandlers,
-		Docs:   docs.NewHandler(),
-		Health: health.NewHandler(log),
+		API:     apiHandlers,
+		Docs:    docs.NewHandler(),
+		Health:  health.NewHandler(log),
+		Webhook: webhookHandler,
 	}, nil
 }
 
@@ -167,6 +191,10 @@ func (a *App) RouteRegistrars() []RouteRegistrar {
 		a.Handlers.Docs,
 		a.Handlers.Health,
 	}
+}
+
+func (a *App) WebhookHandler() api.WebhookHandlers {
+	return a.Handlers.Webhook
 }
 
 func (a *App) Close() error {

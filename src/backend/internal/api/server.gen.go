@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 const (
@@ -36,11 +37,17 @@ const (
 	UpToDate   UpdateStatus = "up-to-date"
 )
 
+// Defines values for WebhookAccountType.
+const (
+	WebhookAccountTypeOrganization WebhookAccountType = "Organization"
+	WebhookAccountTypeUser         WebhookAccountType = "User"
+)
+
 // Defines values for GetUserAnalyzedRepositoriesParamsOwnership.
 const (
-	All          GetUserAnalyzedRepositoriesParamsOwnership = "all"
-	Mine         GetUserAnalyzedRepositoriesParamsOwnership = "mine"
-	Organization GetUserAnalyzedRepositoriesParamsOwnership = "organization"
+	GetUserAnalyzedRepositoriesParamsOwnershipAll          GetUserAnalyzedRepositoriesParamsOwnership = "all"
+	GetUserAnalyzedRepositoriesParamsOwnershipMine         GetUserAnalyzedRepositoriesParamsOwnership = "mine"
+	GetUserAnalyzedRepositoriesParamsOwnershipOrganization GetUserAnalyzedRepositoriesParamsOwnership = "organization"
 )
 
 // AnalysisResponse defines model for AnalysisResponse.
@@ -181,6 +188,24 @@ type GitHubRepository struct {
 
 	// PushedAt Last push timestamp
 	PushedAt *time.Time `json:"pushedAt,omitempty"`
+}
+
+// GitHubWebhookPayload GitHub webhook payload. The structure varies by event type.
+// This schema represents the common fields; specific event handling uses raw JSON.
+type GitHubWebhookPayload struct {
+	// Action The action that was performed (e.g., created, deleted, added, removed)
+	Action       *string              `json:"action,omitempty"`
+	Installation *WebhookInstallation `json:"installation,omitempty"`
+
+	// Repositories Repositories affected by the event (for installation_repositories events)
+	Repositories *[]WebhookRepository `json:"repositories,omitempty"`
+
+	// RepositoriesAdded Repositories added (for installation_repositories.added events)
+	RepositoriesAdded *[]WebhookRepository `json:"repositories_added,omitempty"`
+
+	// RepositoriesRemoved Repositories removed (for installation_repositories.removed events)
+	RepositoriesRemoved *[]WebhookRepository `json:"repositories_removed,omitempty"`
+	Sender              *WebhookSender       `json:"sender,omitempty"`
 }
 
 // LoginResponse defines model for LoginResponse.
@@ -388,6 +413,68 @@ type UserInfo struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// WebhookAccount defines model for WebhookAccount.
+type WebhookAccount struct {
+	// AvatarURL Account avatar URL
+	AvatarURL *string `json:"avatar_url,omitempty"`
+
+	// ID GitHub account ID
+	ID int64 `json:"id"`
+
+	// Login Account login name
+	Login string `json:"login"`
+
+	// Type Account type
+	Type WebhookAccountType `json:"type"`
+}
+
+// WebhookAccountType Account type
+type WebhookAccountType string
+
+// WebhookInstallation defines model for WebhookInstallation.
+type WebhookInstallation struct {
+	Account WebhookAccount `json:"account"`
+
+	// ID GitHub App installation ID
+	ID int64 `json:"id"`
+
+	// SuspendedAt When the installation was suspended
+	SuspendedAt *time.Time `json:"suspended_at"`
+}
+
+// WebhookRepository defines model for WebhookRepository.
+type WebhookRepository struct {
+	// FullName Full repository name (owner/repo)
+	FullName string `json:"full_name"`
+
+	// ID GitHub repository ID
+	ID int64 `json:"id"`
+
+	// Name Repository name
+	Name string `json:"name"`
+
+	// Private Whether the repository is private
+	Private *bool `json:"private,omitempty"`
+}
+
+// WebhookResponse defines model for WebhookResponse.
+type WebhookResponse struct {
+	// Message Optional message about the processing result
+	Message *string `json:"message,omitempty"`
+
+	// Success Whether the webhook was processed successfully
+	Success bool `json:"success"`
+}
+
+// WebhookSender defines model for WebhookSender.
+type WebhookSender struct {
+	// ID GitHub user ID of the sender
+	ID int64 `json:"id"`
+
+	// Login GitHub username of the sender
+	Login string `json:"login"`
+}
+
 // Owner defines model for Owner.
 type Owner = string
 
@@ -459,6 +546,21 @@ type GetUserGitHubRepositoriesParams struct {
 	// Refresh Force refresh from GitHub API, bypassing cache
 	Refresh *bool `form:"refresh,omitempty" json:"refresh,omitempty"`
 }
+
+// HandleGitHubAppWebhookParams defines parameters for HandleGitHubAppWebhook.
+type HandleGitHubAppWebhookParams struct {
+	// XGitHubEvent GitHub event type (e.g., installation, installation_repositories)
+	XGitHubEvent string `json:"X-GitHub-Event"`
+
+	// XHubSignature256 HMAC-SHA256 signature for payload verification
+	XHubSignature256 string `json:"X-Hub-Signature-256"`
+
+	// XGitHubDelivery Unique delivery ID for this webhook event
+	XGitHubDelivery openapi_types.UUID `json:"X-GitHub-Delivery"`
+}
+
+// HandleGitHubAppWebhookJSONRequestBody defines body for HandleGitHubAppWebhook for application/json ContentType.
+type HandleGitHubAppWebhookJSONRequestBody = GitHubWebhookPayload
 
 // AsCompletedResponse returns the union data inside the AnalysisResponse as a CompletedResponse
 func (t AnalysisResponse) AsCompletedResponse() (CompletedResponse, error) {
@@ -662,6 +764,9 @@ type ServerInterface interface {
 	// Get user's GitHub repositories
 	// (GET /api/user/github/repositories)
 	GetUserGitHubRepositories(w http.ResponseWriter, r *http.Request, params GetUserGitHubRepositoriesParams)
+	// Handle GitHub App webhook events
+	// (POST /api/webhooks/github-app)
+	HandleGitHubAppWebhook(w http.ResponseWriter, r *http.Request, params HandleGitHubAppWebhookParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -767,6 +872,12 @@ func (_ Unimplemented) GetOrganizationRepositories(w http.ResponseWriter, r *htt
 // Get user's GitHub repositories
 // (GET /api/user/github/repositories)
 func (_ Unimplemented) GetUserGitHubRepositories(w http.ResponseWriter, r *http.Request, params GetUserGitHubRepositoriesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Handle GitHub App webhook events
+// (POST /api/webhooks/github-app)
+func (_ Unimplemented) HandleGitHubAppWebhook(w http.ResponseWriter, r *http.Request, params HandleGitHubAppWebhookParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -1340,6 +1451,96 @@ func (siw *ServerInterfaceWrapper) GetUserGitHubRepositories(w http.ResponseWrit
 	handler.ServeHTTP(w, r)
 }
 
+// HandleGitHubAppWebhook operation middleware
+func (siw *ServerInterfaceWrapper) HandleGitHubAppWebhook(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params HandleGitHubAppWebhookParams
+
+	headers := r.Header
+
+	// ------------- Required header parameter "X-GitHub-Event" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-GitHub-Event")]; found {
+		var XGitHubEvent string
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-GitHub-Event", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-GitHub-Event", valueList[0], &XGitHubEvent, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-GitHub-Event", Err: err})
+			return
+		}
+
+		params.XGitHubEvent = XGitHubEvent
+
+	} else {
+		err := fmt.Errorf("Header parameter X-GitHub-Event is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "X-GitHub-Event", Err: err})
+		return
+	}
+
+	// ------------- Required header parameter "X-Hub-Signature-256" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Hub-Signature-256")]; found {
+		var XHubSignature256 string
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-Hub-Signature-256", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Hub-Signature-256", valueList[0], &XHubSignature256, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-Hub-Signature-256", Err: err})
+			return
+		}
+
+		params.XHubSignature256 = XHubSignature256
+
+	} else {
+		err := fmt.Errorf("Header parameter X-Hub-Signature-256 is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "X-Hub-Signature-256", Err: err})
+		return
+	}
+
+	// ------------- Required header parameter "X-GitHub-Delivery" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-GitHub-Delivery")]; found {
+		var XGitHubDelivery openapi_types.UUID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "X-GitHub-Delivery", Count: n})
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-GitHub-Delivery", valueList[0], &XGitHubDelivery, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "X-GitHub-Delivery", Err: err})
+			return
+		}
+
+		params.XGitHubDelivery = XGitHubDelivery
+
+	} else {
+		err := fmt.Errorf("Header parameter X-GitHub-Delivery is required, but not found")
+		siw.ErrorHandlerFunc(w, r, &RequiredHeaderError{ParamName: "X-GitHub-Delivery", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.HandleGitHubAppWebhook(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -1503,6 +1704,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/user/github/repositories", wrapper.GetUserGitHubRepositories)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/webhooks/github-app", wrapper.HandleGitHubAppWebhook)
 	})
 
 	return r
@@ -2335,6 +2539,55 @@ func (response GetUserGitHubRepositories500ApplicationProblemPlusJSONResponse) V
 	return json.NewEncoder(w).Encode(response)
 }
 
+type HandleGitHubAppWebhookRequestObject struct {
+	Params HandleGitHubAppWebhookParams
+	Body   *HandleGitHubAppWebhookJSONRequestBody
+}
+
+type HandleGitHubAppWebhookResponseObject interface {
+	VisitHandleGitHubAppWebhookResponse(w http.ResponseWriter) error
+}
+
+type HandleGitHubAppWebhook200JSONResponse WebhookResponse
+
+func (response HandleGitHubAppWebhook200JSONResponse) VisitHandleGitHubAppWebhookResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type HandleGitHubAppWebhook400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response HandleGitHubAppWebhook400ApplicationProblemPlusJSONResponse) VisitHandleGitHubAppWebhookResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type HandleGitHubAppWebhook401ApplicationProblemPlusJSONResponse ProblemDetail
+
+func (response HandleGitHubAppWebhook401ApplicationProblemPlusJSONResponse) VisitHandleGitHubAppWebhookResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type HandleGitHubAppWebhook500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response HandleGitHubAppWebhook500ApplicationProblemPlusJSONResponse) VisitHandleGitHubAppWebhookResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Analyze repository test specifications
@@ -2388,6 +2641,9 @@ type StrictServerInterface interface {
 	// Get user's GitHub repositories
 	// (GET /api/user/github/repositories)
 	GetUserGitHubRepositories(ctx context.Context, request GetUserGitHubRepositoriesRequestObject) (GetUserGitHubRepositoriesResponseObject, error)
+	// Handle GitHub App webhook events
+	// (POST /api/webhooks/github-app)
+	HandleGitHubAppWebhook(ctx context.Context, request HandleGitHubAppWebhookRequestObject) (HandleGitHubAppWebhookResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -2851,6 +3107,39 @@ func (sh *strictHandler) GetUserGitHubRepositories(w http.ResponseWriter, r *htt
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetUserGitHubRepositoriesResponseObject); ok {
 		if err := validResponse.VisitGetUserGitHubRepositoriesResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// HandleGitHubAppWebhook operation middleware
+func (sh *strictHandler) HandleGitHubAppWebhook(w http.ResponseWriter, r *http.Request, params HandleGitHubAppWebhookParams) {
+	var request HandleGitHubAppWebhookRequestObject
+
+	request.Params = params
+
+	var body HandleGitHubAppWebhookJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.HandleGitHubAppWebhook(ctx, request.(HandleGitHubAppWebhookRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "HandleGitHubAppWebhook")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(HandleGitHubAppWebhookResponseObject); ok {
+		if err := validResponse.VisitHandleGitHubAppWebhookResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

@@ -397,6 +397,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/webhooks/github-app": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Handle GitHub App webhook events
+         * @description Receives and processes webhook events from GitHub App.
+         *     Handles installation, installation_repositories, and other GitHub App events.
+         *     Webhook signature is verified using HMAC-SHA256.
+         *
+         */
+        post: operations["handleGitHubAppWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -745,6 +768,81 @@ export interface components {
             avatarUrl?: string;
             /** @description Organization description */
             description?: string;
+        };
+        /** @description GitHub webhook payload. The structure varies by event type.
+         *     This schema represents the common fields; specific event handling uses raw JSON.
+         *      */
+        GitHubWebhookPayload: {
+            /** @description The action that was performed (e.g., created, deleted, added, removed) */
+            action?: string;
+            installation?: components["schemas"]["WebhookInstallation"];
+            sender?: components["schemas"]["WebhookSender"];
+            /** @description Repositories affected by the event (for installation_repositories events) */
+            repositories?: components["schemas"]["WebhookRepository"][];
+            /** @description Repositories added (for installation_repositories.added events) */
+            repositories_added?: components["schemas"]["WebhookRepository"][];
+            /** @description Repositories removed (for installation_repositories.removed events) */
+            repositories_removed?: components["schemas"]["WebhookRepository"][];
+        };
+        WebhookInstallation: {
+            /**
+             * Format: int64
+             * @description GitHub App installation ID
+             */
+            id: number;
+            account: components["schemas"]["WebhookAccount"];
+            /**
+             * Format: date-time
+             * @description When the installation was suspended
+             */
+            suspended_at?: string | null;
+        };
+        WebhookAccount: {
+            /**
+             * Format: int64
+             * @description GitHub account ID
+             */
+            id: number;
+            /** @description Account login name */
+            login: string;
+            /**
+             * @description Account type
+             * @enum {string}
+             */
+            type: "User" | "Organization";
+            /**
+             * Format: uri
+             * @description Account avatar URL
+             */
+            avatar_url?: string;
+        };
+        WebhookSender: {
+            /**
+             * Format: int64
+             * @description GitHub user ID of the sender
+             */
+            id: number;
+            /** @description GitHub username of the sender */
+            login: string;
+        };
+        WebhookRepository: {
+            /**
+             * Format: int64
+             * @description GitHub repository ID
+             */
+            id: number;
+            /** @description Repository name */
+            name: string;
+            /** @description Full repository name (owner/repo) */
+            full_name: string;
+            /** @description Whether the repository is private */
+            private?: boolean;
+        };
+        WebhookResponse: {
+            /** @description Whether the webhook was processed successfully */
+            success: boolean;
+            /** @description Optional message about the processing result */
+            message?: string;
         };
     };
     responses: {
@@ -1306,6 +1404,48 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    handleGitHubAppWebhook: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description GitHub event type (e.g., installation, installation_repositories) */
+                "X-GitHub-Event": string;
+                /** @description HMAC-SHA256 signature for payload verification */
+                "X-Hub-Signature-256": string;
+                /** @description Unique delivery ID for this webhook event */
+                "X-GitHub-Delivery": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GitHubWebhookPayload"];
+            };
+        };
+        responses: {
+            /** @description Webhook processed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            /** @description Invalid webhook signature */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
             500: components["responses"]["InternalError"];
         };
     };

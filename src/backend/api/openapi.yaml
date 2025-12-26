@@ -468,6 +468,60 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+  /api/webhooks/github-app:
+    post:
+      operationId: handleGitHubAppWebhook
+      summary: Handle GitHub App webhook events
+      description: |
+        Receives and processes webhook events from GitHub App.
+        Handles installation, installation_repositories, and other GitHub App events.
+        Webhook signature is verified using HMAC-SHA256.
+      tags:
+        - Webhooks
+      parameters:
+        - name: X-GitHub-Event
+          in: header
+          required: true
+          description: GitHub event type (e.g., installation, installation_repositories)
+          schema:
+            type: string
+        - name: X-Hub-Signature-256
+          in: header
+          required: true
+          description: HMAC-SHA256 signature for payload verification
+          schema:
+            type: string
+        - name: X-GitHub-Delivery
+          in: header
+          required: true
+          description: Unique delivery ID for this webhook event
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GitHubWebhookPayload"
+      responses:
+        "200":
+          description: Webhook processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Invalid webhook signature
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
 components:
   securitySchemes:
     cookieAuth:
@@ -1112,3 +1166,121 @@ components:
         description:
           type: string
           description: Organization description
+
+    # GitHub App Webhook Schemas
+    GitHubWebhookPayload:
+      type: object
+      description: |
+        GitHub webhook payload. The structure varies by event type.
+        This schema represents the common fields; specific event handling uses raw JSON.
+      properties:
+        action:
+          type: string
+          description: The action that was performed (e.g., created, deleted, added, removed)
+        installation:
+          $ref: "#/components/schemas/WebhookInstallation"
+        sender:
+          $ref: "#/components/schemas/WebhookSender"
+        repositories:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookRepository"
+          description: Repositories affected by the event (for installation_repositories events)
+        repositories_added:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookRepository"
+          description: Repositories added (for installation_repositories.added events)
+        repositories_removed:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookRepository"
+          description: Repositories removed (for installation_repositories.removed events)
+
+    WebhookInstallation:
+      type: object
+      required:
+        - id
+        - account
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub App installation ID
+        account:
+          $ref: "#/components/schemas/WebhookAccount"
+        suspended_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the installation was suspended
+
+    WebhookAccount:
+      type: object
+      required:
+        - id
+        - login
+        - type
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub account ID
+        login:
+          type: string
+          description: Account login name
+        type:
+          type: string
+          enum: [User, Organization]
+          description: Account type
+        avatar_url:
+          type: string
+          format: uri
+          description: Account avatar URL
+
+    WebhookSender:
+      type: object
+      required:
+        - id
+        - login
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub user ID of the sender
+        login:
+          type: string
+          description: GitHub username of the sender
+
+    WebhookRepository:
+      type: object
+      required:
+        - id
+        - name
+        - full_name
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub repository ID
+        name:
+          type: string
+          description: Repository name
+        full_name:
+          type: string
+          description: Full repository name (owner/repo)
+        private:
+          type: boolean
+          description: Whether the repository is private
+
+    WebhookResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Whether the webhook was processed successfully
+        message:
+          type: string
+          description: Optional message about the processing result
