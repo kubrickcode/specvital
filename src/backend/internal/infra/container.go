@@ -3,26 +3,32 @@ package infra
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/specvital/core/pkg/crypto"
 	"github.com/specvital/web/src/backend/internal/client"
 	authadapter "github.com/specvital/web/src/backend/modules/auth/adapter"
-	"github.com/specvital/web/src/backend/modules/auth/domain/port"
+	authport "github.com/specvital/web/src/backend/modules/auth/domain/port"
+	ghappport "github.com/specvital/web/src/backend/modules/github-app/domain/port"
 )
 
 type Container struct {
-	River        *RiverClient
-	CookieDomain string
-	DB           *pgxpool.Pool
-	Encryptor    crypto.Encryptor
-	FrontendURL  string
-	GitClient    client.GitClient
-	GitHubOAuth  port.OAuthClient
-	JWTManager   port.TokenManager
-	SecureCookie bool
+	River                  *RiverClient
+	CookieDomain           string
+	DB                     *pgxpool.Pool
+	Encryptor              crypto.Encryptor
+	FrontendURL            string
+	GitClient              client.GitClient
+	GitHubAppClient        ghappport.GitHubAppClient
+	GitHubAppWebhookSecret string
+	GitHubOAuth            authport.OAuthClient
+	JWTManager             authport.TokenManager
+	SecureCookie           bool
 }
 
 type Config struct {
@@ -31,6 +37,10 @@ type Config struct {
 	EncryptionKey           string
 	Environment             string
 	FrontendURL             string
+	GitHubAppID             int64
+	GitHubAppPrivateKey     []byte
+	GitHubAppSlug           string
+	GitHubAppWebhookSecret  string
 	GitHubOAuthClientID     string
 	GitHubOAuthClientSecret string
 	GitHubOAuthRedirectURL  string
@@ -43,12 +53,32 @@ func ConfigFromEnv() Config {
 	if frontendURL == "" {
 		frontendURL = "http://localhost:5173"
 	}
+
+	var ghAppID int64
+	if id := os.Getenv("GITHUB_APP_ID"); id != "" {
+		var err error
+		ghAppID, err = strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			slog.Warn("invalid GITHUB_APP_ID, GitHub App will be disabled", "value", id, "error", err)
+			ghAppID = 0
+		}
+	}
+
+	var ghAppPrivateKey []byte
+	if key := os.Getenv("GITHUB_APP_PRIVATE_KEY"); key != "" {
+		ghAppPrivateKey = []byte(strings.ReplaceAll(key, "\\n", "\n"))
+	}
+
 	return Config{
 		CookieDomain:            os.Getenv("COOKIE_DOMAIN"),
 		DatabaseURL:             os.Getenv("DATABASE_URL"),
 		EncryptionKey:           os.Getenv("ENCRYPTION_KEY"),
 		Environment:             os.Getenv("ENV"),
 		FrontendURL:             frontendURL,
+		GitHubAppID:             ghAppID,
+		GitHubAppPrivateKey:     ghAppPrivateKey,
+		GitHubAppSlug:           os.Getenv("GITHUB_APP_SLUG"),
+		GitHubAppWebhookSecret:  os.Getenv("GITHUB_APP_WEBHOOK_SECRET"),
 		GitHubOAuthClientID:     os.Getenv("GITHUB_OAUTH_CLIENT_ID"),
 		GitHubOAuthClientSecret: os.Getenv("GITHUB_OAUTH_CLIENT_SECRET"),
 		GitHubOAuthRedirectURL:  os.Getenv("GITHUB_OAUTH_REDIRECT_URL"),
@@ -108,16 +138,32 @@ func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 
 	gitClient := client.NewGitClient()
 
+	var ghAppClient ghappport.GitHubAppClient
+	if cfg.GitHubAppID != 0 && len(cfg.GitHubAppPrivateKey) > 0 {
+		c, err := client.NewGitHubAppClient(client.GitHubAppConfig{
+			AppID:      cfg.GitHubAppID,
+			AppSlug:    cfg.GitHubAppSlug,
+			PrivateKey: cfg.GitHubAppPrivateKey,
+		})
+		if err != nil {
+			cleanup()
+			return nil, fmt.Errorf("github app: %w", err)
+		}
+		ghAppClient = c
+	}
+
 	return &Container{
-		River:        riverClient,
-		CookieDomain: cfg.CookieDomain,
-		DB:           pool,
-		Encryptor:    encryptor,
-		FrontendURL:  cfg.FrontendURL,
-		GitClient:    gitClient,
-		GitHubOAuth:  githubClient,
-		JWTManager:   jwtManager,
-		SecureCookie: cfg.SecureCookie,
+		River:                  riverClient,
+		CookieDomain:           cfg.CookieDomain,
+		DB:                     pool,
+		Encryptor:              encryptor,
+		FrontendURL:            cfg.FrontendURL,
+		GitClient:              gitClient,
+		GitHubAppClient:        ghAppClient,
+		GitHubAppWebhookSecret: cfg.GitHubAppWebhookSecret,
+		GitHubOAuth:            githubClient,
+		JWTManager:             jwtManager,
+		SecureCookie:           cfg.SecureCookie,
 	}, nil
 }
 

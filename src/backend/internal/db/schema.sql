@@ -27,6 +27,16 @@ CREATE TYPE public.analysis_status AS ENUM (
 
 
 --
+-- Name: github_account_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.github_account_type AS ENUM (
+    'organization',
+    'user'
+);
+
+
+--
 -- Name: oauth_provider; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -141,6 +151,24 @@ CREATE TABLE public.codebases (
     last_viewed_at timestamp with time zone,
     external_repo_id character varying(64) NOT NULL,
     is_stale boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: github_app_installations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.github_app_installations (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    installation_id bigint NOT NULL,
+    account_type public.github_account_type NOT NULL,
+    account_id bigint NOT NULL,
+    account_login character varying(255) NOT NULL,
+    account_avatar_url text,
+    installer_user_id uuid,
+    suspended_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -433,6 +461,14 @@ ALTER TABLE ONLY public.codebases
 
 
 --
+-- Name: github_app_installations github_app_installations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.github_app_installations
+    ADD CONSTRAINT github_app_installations_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: github_organizations github_organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -502,6 +538,22 @@ ALTER TABLE ONLY public.test_cases
 
 ALTER TABLE ONLY public.test_suites
     ADD CONSTRAINT test_suites_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: github_app_installations uq_github_app_installations_account; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.github_app_installations
+    ADD CONSTRAINT uq_github_app_installations_account UNIQUE (account_type, account_id);
+
+
+--
+-- Name: github_app_installations uq_github_app_installations_installation_id; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.github_app_installations
+    ADD CONSTRAINT uq_github_app_installations_installation_id UNIQUE (installation_id);
 
 
 --
@@ -632,6 +684,13 @@ CREATE INDEX idx_codebases_last_viewed ON public.codebases USING btree (last_vie
 --
 
 CREATE INDEX idx_codebases_owner_name ON public.codebases USING btree (owner, name);
+
+
+--
+-- Name: idx_github_app_installations_installer; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_github_app_installations_installer ON public.github_app_installations USING btree (installer_user_id) WHERE (installer_user_id IS NOT NULL);
 
 
 --
@@ -822,6 +881,14 @@ CREATE UNIQUE INDEX uq_analyses_completed_commit ON public.analyses USING btree 
 
 ALTER TABLE ONLY public.analyses
     ADD CONSTRAINT fk_analyses_codebase FOREIGN KEY (codebase_id) REFERENCES public.codebases(id) ON DELETE CASCADE;
+
+
+--
+-- Name: github_app_installations fk_github_app_installations_installer; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.github_app_installations
+    ADD CONSTRAINT fk_github_app_installations_installer FOREIGN KEY (installer_user_id) REFERENCES public.users(id) ON DELETE SET NULL;
 
 
 --

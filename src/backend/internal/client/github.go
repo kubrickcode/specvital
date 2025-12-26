@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	gh "github.com/google/go-github/v68/github"
+	gh "github.com/google/go-github/v75/github"
 	"golang.org/x/oauth2"
 )
 

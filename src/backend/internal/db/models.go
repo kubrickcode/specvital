@@ -55,6 +55,48 @@ func (ns NullAnalysisStatus) Value() (driver.Value, error) {
 	return string(ns.AnalysisStatus), nil
 }
 
+type GithubAccountType string
+
+const (
+	GithubAccountTypeOrganization GithubAccountType = "organization"
+	GithubAccountTypeUser         GithubAccountType = "user"
+)
+
+func (e *GithubAccountType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = GithubAccountType(s)
+	case string:
+		*e = GithubAccountType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for GithubAccountType: %T", src)
+	}
+	return nil
+}
+
+type NullGithubAccountType struct {
+	GithubAccountType GithubAccountType `json:"github_account_type"`
+	Valid             bool              `json:"valid"` // Valid is true if GithubAccountType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullGithubAccountType) Scan(value interface{}) error {
+	if value == nil {
+		ns.GithubAccountType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.GithubAccountType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullGithubAccountType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.GithubAccountType), nil
+}
+
 type OauthProvider string
 
 const (
@@ -229,6 +271,19 @@ type Codebasis struct {
 	LastViewedAt   pgtype.Timestamptz `json:"last_viewed_at"`
 	ExternalRepoID string             `json:"external_repo_id"`
 	IsStale        bool               `json:"is_stale"`
+}
+
+type GithubAppInstallation struct {
+	ID               pgtype.UUID        `json:"id"`
+	InstallationID   int64              `json:"installation_id"`
+	AccountType      GithubAccountType  `json:"account_type"`
+	AccountID        int64              `json:"account_id"`
+	AccountLogin     string             `json:"account_login"`
+	AccountAvatarUrl pgtype.Text        `json:"account_avatar_url"`
+	InstallerUserID  pgtype.UUID        `json:"installer_user_id"`
+	SuspendedAt      pgtype.Timestamptz `json:"suspended_at"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 }
 
 type GithubOrganization struct {
