@@ -11,8 +11,8 @@ import (
 	"github.com/specvital/web/src/backend/common/logger"
 	"github.com/specvital/web/src/backend/common/middleware"
 	"github.com/specvital/web/src/backend/internal/api"
+	"github.com/specvital/web/src/backend/modules/auth/adapter/mapper"
 	"github.com/specvital/web/src/backend/modules/auth/domain"
-	"github.com/specvital/web/src/backend/modules/auth/mapper"
 	"github.com/specvital/web/src/backend/modules/auth/usecase"
 )
 
