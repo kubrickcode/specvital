@@ -2,91 +2,13 @@
   "repository": "testcontainers-java",
   "ref": "1.20.4",
   "expectedFrameworks": ["junit5", "testng"],
-  "fileCount": 298,
-  "testCount": 919,
+  "fileCount": 73,
+  "testCount": 144,
   "frameworkCounts": {
-    "junit5": 282,
+    "junit5": 57,
     "testng": 16
   },
   "sampleFiles": [
-    {
-      "path": "core/src/jarFileTest/java/org/testcontainers/JarFileShadingTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 3
-    },
-    {
-      "path": "core/src/jarFileTest/java/org/testcontainers/PublicBinaryAPITest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 5
-    },
-    {
-      "path": "core/src/test/java/alt/testcontainers/images/OutOfPackageImagePullPolicyTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/DaemonTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/DockerClientFactoryTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 3
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/ComposeContainerWithServicesTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 9
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/ComposeOverridesTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/ComposeProfilesOptionTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/ContainerStateTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/DockerComposeContainerWithServicesTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 9
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/DockerComposeFilesTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 2
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/DockerComposeOverridesTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/DockerComposeProfilesOptionTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
     {
       "path": "core/src/test/java/org/testcontainers/containers/ExposedHostTest.java",
       "framework": "testng",
@@ -94,44 +16,122 @@
       "testCount": 6
     },
     {
-      "path": "core/src/test/java/org/testcontainers/containers/FailureDetectingExternalResourceTest.java",
+      "path": "core/src/test/java/org/testcontainers/junit/BaseComposeTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "core/src/test/java/org/testcontainers/junit/BaseDockerComposeTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "core/src/test/java/org/testcontainers/junit/ComposeContainerScalingTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "core/src/test/java/org/testcontainers/junit/ComposePassthroughTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "core/src/test/java/org/testcontainers/junit/DockerComposeContainerScalingTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "core/src/test/java/org/testcontainers/junit/DockerComposePassthroughTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "core/src/test/java/org/testcontainers/junit/GenericContainerRuleTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 17
+    },
+    {
+      "path": "core/src/test/java/org/testcontainers/utility/AuthenticatedImagePullTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "core/src/test/java/org/testcontainers/utility/ClasspathScannerTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "docs/examples/junit4/generic/src/test/java/generic/HostPortExposedTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "docs/examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTest.java",
       "framework": "junit5",
       "suiteCount": 1,
       "testCount": 1
     },
     {
-      "path": "core/src/test/java/org/testcontainers/containers/GenericContainerTest.java",
+      "path": "docs/examples/junit5/redis/src/test/java/quickstart/RedisBackedCacheIntTestStep0.java",
       "framework": "junit5",
       "suiteCount": 1,
-      "testCount": 14
+      "testCount": 1
     },
     {
-      "path": "core/src/test/java/org/testcontainers/containers/JibTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 3
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/MultiStageBuildTest.java",
+      "path": "examples/hazelcast/src/test/java/org/testcontainers/examples/HazelcastTest.java",
       "framework": "junit5",
       "suiteCount": 1,
       "testCount": 2
     },
     {
-      "path": "core/src/test/java/org/testcontainers/containers/NetworkTest.java",
-      "framework": "junit5",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "core/src/test/java/org/testcontainers/containers/ParsedDockerComposeFileValidationTest.java",
+      "path": "examples/immudb/src/test/java/ImmuDbTest.java",
       "framework": "junit5",
       "suiteCount": 1,
-      "testCount": 11
+      "testCount": 1
+    },
+    {
+      "path": "examples/kafka-cluster/src/test/java/com/example/kafkacluster/KafkaContainerClusterTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "examples/nats/src/test/java/com/example/NatsContainerTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "examples/neo4j-container/src/test/java/org/testcontainers/containers/Neo4jExampleTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "examples/ollama-hugging-face/src/test/java/com/example/ollamahf/OllamaHuggingFaceTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "examples/redis-backed-cache-testng/src/test/java/RedisBackedCacheTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 2
     }
   ],
   "stats": {
-    "filesMatched": 298,
+    "filesMatched": 73,
     "filesScanned": 396
   }
 }

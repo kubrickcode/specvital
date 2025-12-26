@@ -1,11 +1,10 @@
 {
   "repository": "playwright",
   "ref": "v1.49.0",
-  "expectedFrameworks": ["playwright", "junit5"],
-  "fileCount": 473,
-  "testCount": 5353,
+  "expectedFrameworks": ["playwright"],
+  "fileCount": 472,
+  "testCount": 5352,
   "frameworkCounts": {
-    "junit5": 1,
     "playwright": 472
   },
   "sampleFiles": [
@@ -76,12 +75,6 @@
       "testCount": 6
     },
     {
-      "path": "packages/playwright-core/src/server/android/driver/app/src/androidTest/java/com/microsoft/playwright/androiddriver/InstrumentedTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
       "path": "packages/web/src/components/codeMirrorWrapper.spec.tsx",
       "framework": "playwright",
       "suiteCount": 0,
@@ -128,10 +121,16 @@
       "framework": "playwright",
       "suiteCount": 0,
       "testCount": 9
+    },
+    {
+      "path": "tests/android/webview.spec.ts",
+      "framework": "playwright",
+      "suiteCount": 0,
+      "testCount": 5
     }
   ],
   "stats": {
-    "filesMatched": 473,
+    "filesMatched": 472,
     "filesScanned": 490
   }
 }

@@ -166,6 +166,76 @@ public class Calculator {
 `,
 			expectedConfidence: 0,
 		},
+		{
+			name: "JUnit 4 file should not match (org.junit.Test import)",
+			content: `
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
+public class JUnit4Test {
+    @Test
+    public void test() {
+        assertEquals(3, 1 + 2);
+    }
+}
+`,
+			expectedConfidence: 0,
+		},
+		{
+			name: "JUnit 4 file with Assert import should not match",
+			content: `
+import org.junit.Assert;
+
+public class JUnit4AssertTest {
+    @Test
+    public void test() {
+        Assert.assertEquals(3, 1 + 2);
+    }
+}
+`,
+			expectedConfidence: 0,
+		},
+		{
+			name: "JUnit 4 wildcard import should not match",
+			content: `
+import org.junit.*;
+
+public class JUnit4WildcardTest {
+    @Test
+    public void test() {
+        Assert.assertEquals(3, 1 + 2);
+    }
+}
+`,
+			expectedConfidence: 0,
+		},
+		{
+			name: "JUnit 4 static import should not match",
+			content: `
+import static org.junit.Assert.assertEquals;
+
+public class JUnit4StaticTest {
+    @Test
+    public void test() {
+        assertEquals(3, 1 + 2);
+    }
+}
+`,
+			expectedConfidence: 0,
+		},
+		{
+			name: "mixed JUnit 4 and 5 imports should match (migration scenario)",
+			content: `
+import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+
+public class MigrationTest {
+    @Test
+    public void test() {}
+}
+`,
+			expectedConfidence: 40,
+		},
 	}
 
 	for _, tt := range tests {

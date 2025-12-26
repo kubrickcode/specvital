@@ -2,10 +2,10 @@
   "repository": "junit5-samples",
   "ref": "main",
   "expectedFrameworks": ["junit5", "kotest", "testng"],
-  "fileCount": 26,
-  "testCount": 43,
+  "fileCount": 22,
+  "testCount": 39,
   "frameworkCounts": {
-    "junit5": 24,
+    "junit5": 20,
     "kotest": 1,
     "testng": 1
   },
@@ -53,12 +53,6 @@
       "testCount": 1
     },
     {
-      "path": "junit-migration-gradle/src/test/java/com/example/project/JUnit4Test.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
       "path": "junit-migration-gradle/src/test/java/com/example/project/OtherTests.java",
       "framework": "junit5",
       "suiteCount": 1,
@@ -72,12 +66,6 @@
     },
     {
       "path": "junit-migration-maven/src/test/java/com/example/project/FirstTest.java",
-      "framework": "junit5",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "junit-migration-maven/src/test/java/com/example/project/JUnit4Test.java",
       "framework": "junit5",
       "suiteCount": 1,
       "testCount": 1
@@ -119,20 +107,32 @@
       "testCount": 3
     },
     {
-      "path": "junit-modular-world/src/test/extra.modular/extra/modular/GoodOldTest.java",
+      "path": "junit-modular-world/src/test/ice.cream/ice/cream/FlavorTests.java",
       "framework": "junit5",
       "suiteCount": 1,
       "testCount": 1
     },
     {
-      "path": "junit-modular-world/src/test/ice.cream/ice/cream/FlavorTests.java",
+      "path": "junit-modular-world/src/test/ice.cream/ice/cream/MachineTests.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "junit-multiple-engines/src/test/java/junit/jupiter/JupiterTests.java",
       "framework": "junit5",
       "suiteCount": 1,
       "testCount": 1
+    },
+    {
+      "path": "junit-multiple-engines/src/test/java/testng/TestNGTests.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 2
     }
   ],
   "stats": {
-    "filesMatched": 26,
+    "filesMatched": 22,
     "filesScanned": 55
   }
 }

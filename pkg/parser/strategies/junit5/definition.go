@@ -81,6 +81,15 @@ func (m *JUnit5FileMatcher) Match(ctx context.Context, signal framework.Signal) 
 // JUnit5ContentMatcher matches JUnit 5 specific patterns.
 type JUnit5ContentMatcher struct{}
 
+var (
+	// junit4ImportPattern detects JUnit 4 imports (org.junit.Test, org.junit.Assert, org.junit.*, etc.)
+	// Matches: org.junit.Test, org.junit.Assert, org.junit.* (wildcard)
+	// Does NOT match: org.junit.jupiter (handled by junit5ImportPattern)
+	junit4ImportPattern = regexp.MustCompile(`import\s+(?:static\s+)?org\.junit\.(?:\*|[A-Z])`)
+	// junit5ImportPattern detects JUnit 5 (Jupiter) imports
+	junit5ImportPattern = regexp.MustCompile(`import\s+(?:static\s+)?org\.junit\.jupiter`)
+)
+
 var junit5Patterns = []struct {
 	pattern *regexp.Regexp
 	desc    string
@@ -103,6 +112,11 @@ func (m *JUnit5ContentMatcher) Match(ctx context.Context, signal framework.Signa
 	content, ok := signal.Context.([]byte)
 	if !ok {
 		content = []byte(signal.Value)
+	}
+
+	// Exclude JUnit 4 files: has org.junit.* import but no org.junit.jupiter import
+	if junit4ImportPattern.Match(content) && !junit5ImportPattern.Match(content) {
+		return framework.NoMatch()
 	}
 
 	for _, p := range junit5Patterns {

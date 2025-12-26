@@ -48,7 +48,6 @@ repositories:
     ref: v1.49.0
     frameworks:
       - playwright
-      - junit5
 
   - name: gin
     url: https://github.com/gin-gonic/gin
