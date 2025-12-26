@@ -79,6 +79,7 @@ func setupTestRouter(handler *Handler) *chi.Mux {
 		authhandler.NewMockHandler(),
 		handler,
 		&mockGitHubHandler{},
+		&mockGitHubAppHandler{},
 		&mockRepositoryHandler{},
 		nil,
 	)
@@ -127,6 +128,16 @@ func (m *mockGitHubHandler) GetUserGitHubOrganizations(_ context.Context, _ api.
 
 func (m *mockGitHubHandler) GetUserGitHubRepositories(_ context.Context, _ api.GetUserGitHubRepositoriesRequestObject) (api.GetUserGitHubRepositoriesResponseObject, error) {
 	return nil, nil
+}
+
+type mockGitHubAppHandler struct{}
+
+func (m *mockGitHubAppHandler) GetGitHubAppInstallURL(_ context.Context, _ api.GetGitHubAppInstallURLRequestObject) (api.GetGitHubAppInstallURLResponseObject, error) {
+	return api.GetGitHubAppInstallURL200JSONResponse{InstallURL: ""}, nil
+}
+
+func (m *mockGitHubAppHandler) GetUserGitHubAppInstallations(_ context.Context, _ api.GetUserGitHubAppInstallationsRequestObject) (api.GetUserGitHubAppInstallationsResponseObject, error) {
+	return api.GetUserGitHubAppInstallations200JSONResponse{Data: []api.GitHubAppInstallation{}}, nil
 }
 
 func createTestHandler(t *testing.T, bookmarkRepo *mockBookmarkRepository, historyRepo *mockHistoryRepository) *Handler {

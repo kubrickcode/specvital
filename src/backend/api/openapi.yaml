@@ -468,6 +468,48 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+  /api/user/github-app/installations:
+    get:
+      operationId: getUserGitHubAppInstallations
+      summary: Get user's GitHub App installations
+      description: Returns list of GitHub App installations accessible to the authenticated user
+      tags:
+        - GitHub App
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: GitHub App installations retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GitHubAppInstallationsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/user/github-app/install-url:
+    get:
+      operationId: getGitHubAppInstallUrl
+      summary: Get GitHub App installation URL
+      description: Returns the URL to install the GitHub App on a GitHub account
+      tags:
+        - GitHub App
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Installation URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GitHubAppInstallUrlResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /api/webhooks/github-app:
     post:
       operationId: handleGitHubAppWebhook
@@ -1166,6 +1208,69 @@ components:
         description:
           type: string
           description: Organization description
+
+    # GitHub App API Schemas
+    GitHubAppInstallationsResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/GitHubAppInstallation"
+          description: List of GitHub App installations
+
+    GitHubAppInstallation:
+      type: object
+      required:
+        - id
+        - installationId
+        - accountType
+        - accountId
+        - accountLogin
+        - createdAt
+        - isSuspended
+      properties:
+        id:
+          type: string
+          description: Internal installation record ID
+        installationId:
+          type: integer
+          format: int64
+          description: GitHub installation ID
+        accountType:
+          type: string
+          enum: [organization, user]
+          description: Type of GitHub account
+        accountId:
+          type: integer
+          format: int64
+          description: GitHub account ID
+        accountLogin:
+          type: string
+          description: GitHub account login name
+        accountAvatarUrl:
+          type: string
+          format: uri
+          description: GitHub account avatar URL
+        createdAt:
+          type: string
+          format: date-time
+          description: When the installation was created
+        isSuspended:
+          type: boolean
+          description: Whether the installation is suspended
+
+    GitHubAppInstallUrlResponse:
+      type: object
+      required:
+        - installUrl
+      properties:
+        installUrl:
+          type: string
+          format: uri
+          description: URL to install the GitHub App
 
     # GitHub App Webhook Schemas
     GitHubWebhookPayload:

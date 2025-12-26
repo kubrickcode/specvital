@@ -21,6 +21,12 @@ const (
 	CookieAuthScopes = "cookieAuth.Scopes"
 )
 
+// Defines values for GitHubAppInstallationAccountType.
+const (
+	GitHubAppInstallationAccountTypeOrganization GitHubAppInstallationAccountType = "organization"
+	GitHubAppInstallationAccountTypeUser         GitHubAppInstallationAccountType = "user"
+)
+
 // Defines values for TestStatus.
 const (
 	Active  TestStatus = "active"
@@ -45,9 +51,9 @@ const (
 
 // Defines values for GetUserAnalyzedRepositoriesParamsOwnership.
 const (
-	GetUserAnalyzedRepositoriesParamsOwnershipAll          GetUserAnalyzedRepositoriesParamsOwnership = "all"
-	GetUserAnalyzedRepositoriesParamsOwnershipMine         GetUserAnalyzedRepositoriesParamsOwnership = "mine"
-	GetUserAnalyzedRepositoriesParamsOwnershipOrganization GetUserAnalyzedRepositoriesParamsOwnership = "organization"
+	All          GetUserAnalyzedRepositoriesParamsOwnership = "all"
+	Mine         GetUserAnalyzedRepositoriesParamsOwnership = "mine"
+	Organization GetUserAnalyzedRepositoriesParamsOwnership = "organization"
 )
 
 // AnalysisResponse defines model for AnalysisResponse.
@@ -134,6 +140,48 @@ type FrameworkSummary struct {
 	Todo      int       `json:"todo"`
 	Total     int       `json:"total"`
 	Xfail     int       `json:"xfail"`
+}
+
+// GitHubAppInstallURLResponse defines model for GitHubAppInstallUrlResponse.
+type GitHubAppInstallURLResponse struct {
+	// InstallURL URL to install the GitHub App
+	InstallURL string `json:"installUrl"`
+}
+
+// GitHubAppInstallation defines model for GitHubAppInstallation.
+type GitHubAppInstallation struct {
+	// AccountAvatarURL GitHub account avatar URL
+	AccountAvatarURL *string `json:"accountAvatarUrl,omitempty"`
+
+	// AccountID GitHub account ID
+	AccountID int64 `json:"accountId"`
+
+	// AccountLogin GitHub account login name
+	AccountLogin string `json:"accountLogin"`
+
+	// AccountType Type of GitHub account
+	AccountType GitHubAppInstallationAccountType `json:"accountType"`
+
+	// CreatedAt When the installation was created
+	CreatedAt time.Time `json:"createdAt"`
+
+	// ID Internal installation record ID
+	ID string `json:"id"`
+
+	// InstallationID GitHub installation ID
+	InstallationID int64 `json:"installationId"`
+
+	// IsSuspended Whether the installation is suspended
+	IsSuspended bool `json:"isSuspended"`
+}
+
+// GitHubAppInstallationAccountType Type of GitHub account
+type GitHubAppInstallationAccountType string
+
+// GitHubAppInstallationsResponse defines model for GitHubAppInstallationsResponse.
+type GitHubAppInstallationsResponse struct {
+	// Data List of GitHub App installations
+	Data []GitHubAppInstallation `json:"data"`
 }
 
 // GitHubOrganization defines model for GitHubOrganization.
@@ -755,6 +803,12 @@ type ServerInterface interface {
 	// Get user's bookmarked repositories
 	// (GET /api/user/bookmarks)
 	GetUserBookmarks(w http.ResponseWriter, r *http.Request)
+	// Get GitHub App installation URL
+	// (GET /api/user/github-app/install-url)
+	GetGitHubAppInstallURL(w http.ResponseWriter, r *http.Request)
+	// Get user's GitHub App installations
+	// (GET /api/user/github-app/installations)
+	GetUserGitHubAppInstallations(w http.ResponseWriter, r *http.Request)
 	// Get user's GitHub organizations
 	// (GET /api/user/github/organizations)
 	GetUserGitHubOrganizations(w http.ResponseWriter, r *http.Request, params GetUserGitHubOrganizationsParams)
@@ -854,6 +908,18 @@ func (_ Unimplemented) GetUserAnalyzedRepositories(w http.ResponseWriter, r *htt
 // Get user's bookmarked repositories
 // (GET /api/user/bookmarks)
 func (_ Unimplemented) GetUserBookmarks(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get GitHub App installation URL
+// (GET /api/user/github-app/install-url)
+func (_ Unimplemented) GetGitHubAppInstallURL(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get user's GitHub App installations
+// (GET /api/user/github-app/installations)
+func (_ Unimplemented) GetUserGitHubAppInstallations(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -1343,6 +1409,46 @@ func (siw *ServerInterfaceWrapper) GetUserBookmarks(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// GetGitHubAppInstallURL operation middleware
+func (siw *ServerInterfaceWrapper) GetGitHubAppInstallURL(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetGitHubAppInstallURL(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetUserGitHubAppInstallations operation middleware
+func (siw *ServerInterfaceWrapper) GetUserGitHubAppInstallations(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetUserGitHubAppInstallations(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetUserGitHubOrganizations operation middleware
 func (siw *ServerInterfaceWrapper) GetUserGitHubOrganizations(w http.ResponseWriter, r *http.Request) {
 
@@ -1695,6 +1801,12 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/user/bookmarks", wrapper.GetUserBookmarks)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/user/github-app/install-url", wrapper.GetGitHubAppInstallURL)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/user/github-app/installations", wrapper.GetUserGitHubAppInstallations)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/user/github/organizations", wrapper.GetUserGitHubOrganizations)
@@ -2377,6 +2489,82 @@ func (response GetUserBookmarks500ApplicationProblemPlusJSONResponse) VisitGetUs
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetGitHubAppInstallURLRequestObject struct {
+}
+
+type GetGitHubAppInstallURLResponseObject interface {
+	VisitGetGitHubAppInstallURLResponse(w http.ResponseWriter) error
+}
+
+type GetGitHubAppInstallURL200JSONResponse GitHubAppInstallURLResponse
+
+func (response GetGitHubAppInstallURL200JSONResponse) VisitGetGitHubAppInstallURLResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGitHubAppInstallURL401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetGitHubAppInstallURL401ApplicationProblemPlusJSONResponse) VisitGetGitHubAppInstallURLResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGitHubAppInstallURL500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response GetGitHubAppInstallURL500ApplicationProblemPlusJSONResponse) VisitGetGitHubAppInstallURLResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetUserGitHubAppInstallationsRequestObject struct {
+}
+
+type GetUserGitHubAppInstallationsResponseObject interface {
+	VisitGetUserGitHubAppInstallationsResponse(w http.ResponseWriter) error
+}
+
+type GetUserGitHubAppInstallations200JSONResponse GitHubAppInstallationsResponse
+
+func (response GetUserGitHubAppInstallations200JSONResponse) VisitGetUserGitHubAppInstallationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetUserGitHubAppInstallations401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetUserGitHubAppInstallations401ApplicationProblemPlusJSONResponse) VisitGetUserGitHubAppInstallationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetUserGitHubAppInstallations500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response GetUserGitHubAppInstallations500ApplicationProblemPlusJSONResponse) VisitGetUserGitHubAppInstallationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetUserGitHubOrganizationsRequestObject struct {
 	Params GetUserGitHubOrganizationsParams
 }
@@ -2632,6 +2820,12 @@ type StrictServerInterface interface {
 	// Get user's bookmarked repositories
 	// (GET /api/user/bookmarks)
 	GetUserBookmarks(ctx context.Context, request GetUserBookmarksRequestObject) (GetUserBookmarksResponseObject, error)
+	// Get GitHub App installation URL
+	// (GET /api/user/github-app/install-url)
+	GetGitHubAppInstallURL(ctx context.Context, request GetGitHubAppInstallURLRequestObject) (GetGitHubAppInstallURLResponseObject, error)
+	// Get user's GitHub App installations
+	// (GET /api/user/github-app/installations)
+	GetUserGitHubAppInstallations(ctx context.Context, request GetUserGitHubAppInstallationsRequestObject) (GetUserGitHubAppInstallationsResponseObject, error)
 	// Get user's GitHub organizations
 	// (GET /api/user/github/organizations)
 	GetUserGitHubOrganizations(ctx context.Context, request GetUserGitHubOrganizationsRequestObject) (GetUserGitHubOrganizationsResponseObject, error)
@@ -3028,6 +3222,54 @@ func (sh *strictHandler) GetUserBookmarks(w http.ResponseWriter, r *http.Request
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetUserBookmarksResponseObject); ok {
 		if err := validResponse.VisitGetUserBookmarksResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetGitHubAppInstallURL operation middleware
+func (sh *strictHandler) GetGitHubAppInstallURL(w http.ResponseWriter, r *http.Request) {
+	var request GetGitHubAppInstallURLRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetGitHubAppInstallURL(ctx, request.(GetGitHubAppInstallURLRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetGitHubAppInstallURL")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetGitHubAppInstallURLResponseObject); ok {
+		if err := validResponse.VisitGetGitHubAppInstallURLResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetUserGitHubAppInstallations operation middleware
+func (sh *strictHandler) GetUserGitHubAppInstallations(w http.ResponseWriter, r *http.Request) {
+	var request GetUserGitHubAppInstallationsRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetUserGitHubAppInstallations(ctx, request.(GetUserGitHubAppInstallationsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetUserGitHubAppInstallations")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetUserGitHubAppInstallationsResponseObject); ok {
+		if err := validResponse.VisitGetUserGitHubAppInstallationsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

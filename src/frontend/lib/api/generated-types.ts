@@ -397,6 +397,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/user/github-app/installations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get user's GitHub App installations
+         * @description Returns list of GitHub App installations accessible to the authenticated user
+         */
+        get: operations["getUserGitHubAppInstallations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/github-app/install-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get GitHub App installation URL
+         * @description Returns the URL to install the GitHub App on a GitHub account
+         */
+        get: operations["getGitHubAppInstallUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/webhooks/github-app": {
         parameters: {
             query?: never;
@@ -768,6 +808,50 @@ export interface components {
             avatarUrl?: string;
             /** @description Organization description */
             description?: string;
+        };
+        GitHubAppInstallationsResponse: {
+            /** @description List of GitHub App installations */
+            data: components["schemas"]["GitHubAppInstallation"][];
+        };
+        GitHubAppInstallation: {
+            /** @description Internal installation record ID */
+            id: string;
+            /**
+             * Format: int64
+             * @description GitHub installation ID
+             */
+            installationId: number;
+            /**
+             * @description Type of GitHub account
+             * @enum {string}
+             */
+            accountType: "organization" | "user";
+            /**
+             * Format: int64
+             * @description GitHub account ID
+             */
+            accountId: number;
+            /** @description GitHub account login name */
+            accountLogin: string;
+            /**
+             * Format: uri
+             * @description GitHub account avatar URL
+             */
+            accountAvatarUrl?: string;
+            /**
+             * Format: date-time
+             * @description When the installation was created
+             */
+            createdAt: string;
+            /** @description Whether the installation is suspended */
+            isSuspended: boolean;
+        };
+        GitHubAppInstallUrlResponse: {
+            /**
+             * Format: uri
+             * @description URL to install the GitHub App
+             */
+            installUrl: string;
         };
         /** @description GitHub webhook payload. The structure varies by event type.
          *     This schema represents the common fields; specific event handling uses raw JSON.
@@ -1404,6 +1488,50 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             429: components["responses"]["TooManyRequests"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getUserGitHubAppInstallations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description GitHub App installations retrieved */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GitHubAppInstallationsResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getGitHubAppInstallUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Installation URL generated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GitHubAppInstallUrlResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
             500: components["responses"]["InternalError"];
         };
     };

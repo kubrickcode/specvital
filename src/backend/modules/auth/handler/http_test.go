@@ -168,7 +168,7 @@ func createTestHandler(
 
 func setupTestRouter(handler *Handler) *chi.Mux {
 	r := chi.NewRouter()
-	apiHandlers := api.NewAPIHandlers(&mockAnalyzerHandler{}, user.NewMockHandler(), handler, user.NewMockHandler(), &mockGitHubHandler{}, &mockRepositoryHandler{}, nil)
+	apiHandlers := api.NewAPIHandlers(&mockAnalyzerHandler{}, user.NewMockHandler(), handler, user.NewMockHandler(), &mockGitHubHandler{}, &mockGitHubAppHandler{}, &mockRepositoryHandler{}, nil)
 	strictHandler := api.NewStrictHandler(apiHandlers, nil)
 	api.HandlerFromMux(strictHandler, r)
 	return r
@@ -214,6 +214,16 @@ func (m *mockGitHubHandler) GetUserGitHubOrganizations(_ context.Context, _ api.
 
 func (m *mockGitHubHandler) GetUserGitHubRepositories(_ context.Context, _ api.GetUserGitHubRepositoriesRequestObject) (api.GetUserGitHubRepositoriesResponseObject, error) {
 	return nil, nil
+}
+
+type mockGitHubAppHandler struct{}
+
+func (m *mockGitHubAppHandler) GetGitHubAppInstallURL(_ context.Context, _ api.GetGitHubAppInstallURLRequestObject) (api.GetGitHubAppInstallURLResponseObject, error) {
+	return api.GetGitHubAppInstallURL200JSONResponse{InstallURL: ""}, nil
+}
+
+func (m *mockGitHubAppHandler) GetUserGitHubAppInstallations(_ context.Context, _ api.GetUserGitHubAppInstallationsRequestObject) (api.GetUserGitHubAppInstallationsResponseObject, error) {
+	return api.GetUserGitHubAppInstallations200JSONResponse{Data: []api.GitHubAppInstallation{}}, nil
 }
 
 func createDefaultUseCases() (*usecase.GetCurrentUserUseCase, *usecase.HandleOAuthCallbackUseCase, *usecase.InitiateOAuthUseCase, *mockRepository, *mockOAuthClient, *mockStateStore) {

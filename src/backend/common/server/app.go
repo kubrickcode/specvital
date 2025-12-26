@@ -153,9 +153,10 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 		return nil, fmt.Errorf("create github handler: %w", err)
 	}
 
+	ghAppRepo := ghappadapter.NewPostgresRepository(queries)
+
 	var webhookHandler api.WebhookHandlers
 	if container.GitHubAppWebhookSecret != "" {
-		ghAppRepo := ghappadapter.NewPostgresRepository(queries)
 		handleWebhookUC := ghappusecase.NewHandleWebhookUseCase(ghAppRepo)
 		webhookVerifier, err := ghappadapter.NewWebhookVerifier(container.GitHubAppWebhookSecret)
 		if err != nil {
@@ -172,7 +173,22 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 		}
 	}
 
-	apiHandlers := api.NewAPIHandlers(analyzerHandler, userHandler, authHandler, userHandler, githubHandler, analyzerHandler, webhookHandler)
+	var ghAppAPIHandler api.GitHubAppHandlers
+	if container.GitHubAppClient != nil {
+		listInstallationsUC := ghappusecase.NewListInstallationsUseCase(ghAppRepo)
+		getInstallURLUC := ghappusecase.NewGetInstallURLUseCase(container.GitHubAppClient)
+
+		ghAppAPIHandler, err = ghapphandler.NewAPIHandler(&ghapphandler.APIHandlerConfig{
+			GetInstallURL:     getInstallURLUC,
+			ListInstallations: listInstallationsUC,
+			Logger:            log,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("create github-app api handler: %w", err)
+		}
+	}
+
+	apiHandlers := api.NewAPIHandlers(analyzerHandler, userHandler, authHandler, userHandler, githubHandler, ghAppAPIHandler, analyzerHandler, webhookHandler)
 
 	return &Handlers{
 		API:     apiHandlers,

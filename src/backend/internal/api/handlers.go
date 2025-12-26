@@ -44,12 +44,18 @@ type RepositoryHandlers interface {
 	ReanalyzeRepository(ctx context.Context, request ReanalyzeRepositoryRequestObject) (ReanalyzeRepositoryResponseObject, error)
 }
 
+type GitHubAppHandlers interface {
+	GetGitHubAppInstallURL(ctx context.Context, request GetGitHubAppInstallURLRequestObject) (GetGitHubAppInstallURLResponseObject, error)
+	GetUserGitHubAppInstallations(ctx context.Context, request GetUserGitHubAppInstallationsRequestObject) (GetUserGitHubAppInstallationsResponseObject, error)
+}
+
 type APIHandlers struct {
 	analyzer        AnalyzerHandlers
 	analysisHistory AnalysisHistoryHandlers
 	auth            AuthHandlers
 	bookmark        BookmarkHandlers
 	github          GitHubHandlers
+	githubApp       GitHubAppHandlers
 	repository      RepositoryHandlers
 	webhook         WebhookHandlers
 }
@@ -62,6 +68,7 @@ func NewAPIHandlers(
 	auth AuthHandlers,
 	bookmark BookmarkHandlers,
 	github GitHubHandlers,
+	githubApp GitHubAppHandlers,
 	repository RepositoryHandlers,
 	webhook WebhookHandlers,
 ) *APIHandlers {
@@ -71,6 +78,7 @@ func NewAPIHandlers(
 		auth:            auth,
 		bookmark:        bookmark,
 		github:          github,
+		githubApp:       githubApp,
 		repository:      repository,
 		webhook:         webhook,
 	}
@@ -148,6 +156,24 @@ func (h *APIHandlers) HandleGitHubAppWebhook(_ context.Context, _ HandleGitHubAp
 	return HandleGitHubAppWebhook500ApplicationProblemPlusJSONResponse{
 		InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("use raw handler instead"),
 	}, nil
+}
+
+func (h *APIHandlers) GetGitHubAppInstallURL(ctx context.Context, request GetGitHubAppInstallURLRequestObject) (GetGitHubAppInstallURLResponseObject, error) {
+	if h.githubApp == nil {
+		return GetGitHubAppInstallURL500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("GitHub App not configured"),
+		}, nil
+	}
+	return h.githubApp.GetGitHubAppInstallURL(ctx, request)
+}
+
+func (h *APIHandlers) GetUserGitHubAppInstallations(ctx context.Context, request GetUserGitHubAppInstallationsRequestObject) (GetUserGitHubAppInstallationsResponseObject, error) {
+	if h.githubApp == nil {
+		return GetUserGitHubAppInstallations500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("GitHub App not configured"),
+		}, nil
+	}
+	return h.githubApp.GetUserGitHubAppInstallations(ctx, request)
 }
 
 func (h *APIHandlers) WebhookHandler() WebhookHandlers {

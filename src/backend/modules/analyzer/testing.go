@@ -178,11 +178,27 @@ func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gi
 	)
 
 	r := chi.NewRouter()
-	apiHandlers := api.NewAPIHandlers(h, user.NewMockHandler(), authhandler.NewMockHandler(), user.NewMockHandler(), NewMockGitHubHandler(), h, nil)
+	apiHandlers := api.NewAPIHandlers(h, user.NewMockHandler(), authhandler.NewMockHandler(), user.NewMockHandler(), NewMockGitHubHandler(), NewMockGitHubAppHandler(), h, nil)
 	strictHandler := api.NewStrictHandler(apiHandlers, nil)
 	api.HandlerFromMux(strictHandler, r)
 
 	return h, r
+}
+
+type mockGitHubAppHandler struct{}
+
+var _ api.GitHubAppHandlers = (*mockGitHubAppHandler)(nil)
+
+func NewMockGitHubAppHandler() *mockGitHubAppHandler {
+	return &mockGitHubAppHandler{}
+}
+
+func (m *mockGitHubAppHandler) GetGitHubAppInstallURL(_ context.Context, _ api.GetGitHubAppInstallURLRequestObject) (api.GetGitHubAppInstallURLResponseObject, error) {
+	return api.GetGitHubAppInstallURL200JSONResponse{InstallURL: ""}, nil
+}
+
+func (m *mockGitHubAppHandler) GetUserGitHubAppInstallations(_ context.Context, _ api.GetUserGitHubAppInstallationsRequestObject) (api.GetUserGitHubAppInstallationsResponseObject, error) {
+	return api.GetUserGitHubAppInstallations200JSONResponse{Data: []api.GitHubAppInstallation{}}, nil
 }
 
 type mockGitHubHandler struct{}
