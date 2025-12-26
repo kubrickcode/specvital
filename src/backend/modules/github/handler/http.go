@@ -1,4 +1,4 @@
-package github
+package handler
 
 import (
 	"context"
@@ -9,18 +9,23 @@ import (
 	"github.com/specvital/web/src/backend/common/logger"
 	"github.com/specvital/web/src/backend/common/middleware"
 	"github.com/specvital/web/src/backend/internal/api"
+	"github.com/specvital/web/src/backend/modules/github/adapter/mapper"
 	"github.com/specvital/web/src/backend/modules/github/domain"
-	"github.com/specvital/web/src/backend/modules/github/mapper"
+	"github.com/specvital/web/src/backend/modules/github/usecase"
 )
 
 type Handler struct {
-	logger  *logger.Logger
-	service Service
+	listOrgRepos  *usecase.ListOrgReposUseCase
+	listUserOrgs  *usecase.ListUserOrgsUseCase
+	listUserRepos *usecase.ListUserReposUseCase
+	logger        *logger.Logger
 }
 
 type HandlerConfig struct {
-	Logger  *logger.Logger
-	Service Service
+	ListOrgRepos  *usecase.ListOrgReposUseCase
+	ListUserOrgs  *usecase.ListUserOrgsUseCase
+	ListUserRepos *usecase.ListUserReposUseCase
+	Logger        *logger.Logger
 }
 
 var _ api.GitHubHandlers = (*Handler)(nil)
@@ -32,12 +37,20 @@ func NewHandler(cfg *HandlerConfig) (*Handler, error) {
 	if cfg.Logger == nil {
 		return nil, errors.New("logger is required")
 	}
-	if cfg.Service == nil {
-		return nil, errors.New("service is required")
+	if cfg.ListUserRepos == nil {
+		return nil, errors.New("listUserRepos usecase is required")
+	}
+	if cfg.ListUserOrgs == nil {
+		return nil, errors.New("listUserOrgs usecase is required")
+	}
+	if cfg.ListOrgRepos == nil {
+		return nil, errors.New("listOrgRepos usecase is required")
 	}
 	return &Handler{
-		logger:  cfg.Logger,
-		service: cfg.Service,
+		listOrgRepos:  cfg.ListOrgRepos,
+		listUserOrgs:  cfg.ListUserOrgs,
+		listUserRepos: cfg.ListUserRepos,
+		logger:        cfg.Logger,
 	}, nil
 }
 
@@ -50,7 +63,10 @@ func (h *Handler) GetUserGitHubRepositories(ctx context.Context, request api.Get
 	}
 
 	refresh := request.Params.Refresh != nil && *request.Params.Refresh
-	repos, err := h.service.ListUserRepositories(ctx, userID, refresh)
+	repos, err := h.listUserRepos.Execute(ctx, usecase.ListUserReposInput{
+		Refresh: refresh,
+		UserID:  userID,
+	})
 	if err != nil {
 		return h.handleReposError(ctx, err, "list user repositories")
 	}
@@ -69,7 +85,10 @@ func (h *Handler) GetUserGitHubOrganizations(ctx context.Context, request api.Ge
 	}
 
 	refresh := request.Params.Refresh != nil && *request.Params.Refresh
-	orgs, err := h.service.ListUserOrganizations(ctx, userID, refresh)
+	orgs, err := h.listUserOrgs.Execute(ctx, usecase.ListUserOrgsInput{
+		Refresh: refresh,
+		UserID:  userID,
+	})
 	if err != nil {
 		return h.handleOrgsError(ctx, err, "list user organizations")
 	}
@@ -88,7 +107,11 @@ func (h *Handler) GetOrganizationRepositories(ctx context.Context, request api.G
 	}
 
 	refresh := request.Params.Refresh != nil && *request.Params.Refresh
-	repos, err := h.service.ListOrganizationRepositories(ctx, userID, request.Org, refresh)
+	repos, err := h.listOrgRepos.Execute(ctx, usecase.ListOrgReposInput{
+		OrgLogin: request.Org,
+		Refresh:  refresh,
+		UserID:   userID,
+	})
 	if err != nil {
 		return h.handleOrgReposError(ctx, err, "list organization repositories")
 	}

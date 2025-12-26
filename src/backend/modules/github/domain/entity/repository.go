@@ -1,10 +1,6 @@
-package domain
+package entity
 
-import (
-	"time"
-
-	"github.com/jackc/pgx/v5/pgtype"
-)
+import "time"
 
 type Repository struct {
 	Archived      bool
@@ -22,14 +18,4 @@ type Repository struct {
 	PushedAt      *time.Time
 	StarCount     int
 	Visibility    string
-}
-
-type Organization struct {
-	AvatarURL   string
-	Description string
-	HTMLURL     string
-	ID          int64
-	Login       string
-	OrgID       pgtype.UUID
-	Role        string
 }

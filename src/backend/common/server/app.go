@@ -18,7 +18,9 @@ import (
 	authadapter "github.com/specvital/web/src/backend/modules/auth/adapter"
 	authhandler "github.com/specvital/web/src/backend/modules/auth/handler"
 	authusecase "github.com/specvital/web/src/backend/modules/auth/usecase"
-	"github.com/specvital/web/src/backend/modules/github"
+	githubadapter "github.com/specvital/web/src/backend/modules/github/adapter"
+	githubhandler "github.com/specvital/web/src/backend/modules/github/handler"
+	githubusecase "github.com/specvital/web/src/backend/modules/github/usecase"
 	"github.com/specvital/web/src/backend/modules/user"
 )
 
@@ -128,11 +130,18 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 		reanalyzeRepositoryUC,
 	)
 
-	githubRepo := github.NewRepository(container.DB, queries)
-	githubService := github.NewService(tokenProvider, githubRepo, client.NewGitHubClientFactory())
-	githubHandler, err := github.NewHandler(&github.HandlerConfig{
-		Logger:  log,
-		Service: githubService,
+	githubRepo := githubadapter.NewPostgresRepository(container.DB, queries)
+	githubClientFactory := githubadapter.NewGitHubClientFactory(client.NewGitHubClientFactory())
+
+	listUserReposUC := githubusecase.NewListUserReposUseCase(githubClientFactory, githubRepo, tokenProvider)
+	listUserOrgsUC := githubusecase.NewListUserOrgsUseCase(githubClientFactory, githubRepo, tokenProvider)
+	listOrgReposUC := githubusecase.NewListOrgReposUseCase(githubClientFactory, githubRepo, tokenProvider)
+
+	githubHandler, err := githubhandler.NewHandler(&githubhandler.HandlerConfig{
+		ListOrgRepos:  listOrgReposUC,
+		ListUserOrgs:  listUserOrgsUC,
+		ListUserRepos: listUserReposUC,
+		Logger:        log,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create github handler: %w", err)
