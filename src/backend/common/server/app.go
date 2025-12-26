@@ -12,7 +12,9 @@ import (
 	"github.com/specvital/web/src/backend/internal/client"
 	"github.com/specvital/web/src/backend/internal/db"
 	"github.com/specvital/web/src/backend/internal/infra"
-	"github.com/specvital/web/src/backend/modules/analyzer"
+	analyzeradapter "github.com/specvital/web/src/backend/modules/analyzer/adapter"
+	analyzerhandler "github.com/specvital/web/src/backend/modules/analyzer/handler"
+	analyzerusecase "github.com/specvital/web/src/backend/modules/analyzer/usecase"
 	"github.com/specvital/web/src/backend/modules/auth"
 	"github.com/specvital/web/src/backend/modules/github"
 	"github.com/specvital/web/src/backend/modules/user"
@@ -95,13 +97,26 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 		return nil, fmt.Errorf("create analysis history handler: %w", err)
 	}
 
-	analyzerRepo := analyzer.NewRepository(queries)
-	queueSvc := analyzer.NewQueueService(container.River.Client(), analyzerRepo)
-	analyzerService := analyzer.NewAnalyzerService(log, analyzerRepo, queueSvc, container.GitClient, authService)
-	analyzerHandler := analyzer.NewAnalyzerHandler(log, analyzerService)
+	analyzerRepo := analyzeradapter.NewPostgresRepository(queries)
+	analyzerQueue := analyzeradapter.NewRiverQueueService(container.River.Client(), analyzerRepo)
+	analyzerGitClient := analyzeradapter.NewGitClientAdapter(container.GitClient)
 
-	repoService := analyzer.NewRepositoryService(log, analyzerRepo, container.GitClient, authService)
-	repoHandler := analyzer.NewRepositoryHandler(log, repoService, analyzerService)
+	analyzeRepositoryUC := analyzerusecase.NewAnalyzeRepositoryUseCase(analyzerGitClient, analyzerQueue, analyzerRepo, authService)
+	getAnalysisUC := analyzerusecase.NewGetAnalysisUseCase(analyzerQueue, analyzerRepo)
+	listRepositoryCardsUC := analyzerusecase.NewListRepositoryCardsUseCase(analyzerRepo)
+	getUpdateStatusUC := analyzerusecase.NewGetUpdateStatusUseCase(analyzerGitClient, analyzerRepo, authService)
+	getRepositoryStatsUC := analyzerusecase.NewGetRepositoryStatsUseCase(analyzerRepo)
+	reanalyzeRepositoryUC := analyzerusecase.NewReanalyzeRepositoryUseCase(analyzerGitClient, analyzerQueue, analyzerRepo, authService)
+
+	analyzerHandler := analyzerhandler.NewHandler(
+		log,
+		analyzeRepositoryUC,
+		getAnalysisUC,
+		listRepositoryCardsUC,
+		getUpdateStatusUC,
+		getRepositoryStatsUC,
+		reanalyzeRepositoryUC,
+	)
 
 	githubRepo := github.NewRepository(container.DB, queries)
 	githubService := github.NewService(authService, githubRepo, client.NewGitHubClientFactory())
@@ -113,7 +128,7 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 		return nil, fmt.Errorf("create github handler: %w", err)
 	}
 
-	apiHandlers := api.NewAPIHandlers(analyzerHandler, analysisHistoryHandler, authHandler, bookmarkHandler, githubHandler, repoHandler)
+	apiHandlers := api.NewAPIHandlers(analyzerHandler, analysisHistoryHandler, authHandler, bookmarkHandler, githubHandler, analyzerHandler)
 
 	return &Handlers{
 		API:    apiHandlers,

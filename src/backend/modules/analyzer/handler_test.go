@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/specvital/web/src/backend/internal/api"
+	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
 )
 
 func TestAnalyzeRepository(t *testing.T) {
@@ -73,7 +74,7 @@ func TestAnalyzeRepository(t *testing.T) {
 	t.Run("returns 200 with completed analysis when exists", func(t *testing.T) {
 		queue := &mockQueueService{}
 		repo := &mockRepository{
-			completedAnalysis: &CompletedAnalysis{
+			completedAnalysis: &port.CompletedAnalysis{
 				ID:          "test-id",
 				Owner:       "owner",
 				Repo:        "repo",
@@ -138,7 +139,7 @@ func TestGetAnalysisStatus(t *testing.T) {
 
 	t.Run("returns 200 with analyzing status when in progress", func(t *testing.T) {
 		queue := &mockQueueService{
-			findTaskInfo: &TaskInfo{
+			findTaskInfo: &port.TaskInfo{
 				CommitSHA: "test-commit-sha",
 				State:     "running",
 			},
@@ -176,7 +177,7 @@ func TestGetAnalysisStatus(t *testing.T) {
 	t.Run("updates last_viewed_at when returning completed analysis", func(t *testing.T) {
 		queue := &mockQueueService{}
 		repo := &mockRepository{
-			completedAnalysis: &CompletedAnalysis{
+			completedAnalysis: &port.CompletedAnalysis{
 				ID:          "test-id",
 				Owner:       "testowner",
 				Repo:        "testrepo",

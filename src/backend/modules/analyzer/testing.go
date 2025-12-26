@@ -7,23 +7,28 @@ import (
 
 	"github.com/specvital/web/src/backend/common/logger"
 	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/internal/client"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
+	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
+	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
+	"github.com/specvital/web/src/backend/modules/analyzer/handler"
+	"github.com/specvital/web/src/backend/modules/analyzer/usecase"
 	"github.com/specvital/web/src/backend/modules/auth"
 	"github.com/specvital/web/src/backend/modules/user"
 )
 
-// mockRepository is a test double for Repository.
+// mockRepository is a test double for port.Repository.
 type mockRepository struct {
-	completedAnalysis *CompletedAnalysis
+	completedAnalysis *port.CompletedAnalysis
 	err               error
 	lastViewedCalled  bool
 	lastViewedOwner   string
 	lastViewedRepo    string
-	suitesWithCases   []TestSuiteWithCases
+	suitesWithCases   []port.TestSuiteWithCases
 }
 
-func (m *mockRepository) GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error) {
+var _ port.Repository = (*mockRepository)(nil)
+
+func (m *mockRepository) GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*port.CompletedAnalysis, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
@@ -33,9 +38,9 @@ func (m *mockRepository) GetLatestCompletedAnalysis(ctx context.Context, owner, 
 	return m.completedAnalysis, nil
 }
 
-func (m *mockRepository) GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error) {
+func (m *mockRepository) GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]port.TestSuiteWithCases, error) {
 	if m.suitesWithCases == nil {
-		return []TestSuiteWithCases{}, nil
+		return []port.TestSuiteWithCases{}, nil
 	}
 	return m.suitesWithCases, nil
 }
@@ -47,7 +52,7 @@ func (m *mockRepository) UpdateLastViewed(ctx context.Context, owner, repo strin
 	return nil
 }
 
-func (m *mockRepository) FindActiveRiverJobByRepo(ctx context.Context, kind, owner, repo string) (*RiverJobInfo, error) {
+func (m *mockRepository) FindActiveRiverJobByRepo(ctx context.Context, kind, owner, repo string) (*port.RiverJobInfo, error) {
 	return nil, nil
 }
 
@@ -55,19 +60,19 @@ func (m *mockRepository) GetCodebaseID(ctx context.Context, owner, repo string) 
 	return "test-codebase-id", nil
 }
 
-func (m *mockRepository) GetRecentRepositories(ctx context.Context, limit int) ([]RecentRepository, error) {
+func (m *mockRepository) GetRecentRepositories(ctx context.Context, limit int) ([]port.RecentRepository, error) {
 	return nil, nil
 }
 
-func (m *mockRepository) GetRepositoryStats(ctx context.Context) (*domain.RepositoryStats, error) {
-	return &domain.RepositoryStats{}, nil
+func (m *mockRepository) GetRepositoryStats(ctx context.Context) (*entity.RepositoryStats, error) {
+	return &entity.RepositoryStats{}, nil
 }
 
-func (m *mockRepository) GetPreviousAnalysis(ctx context.Context, codebaseID, currentAnalysisID string) (*PreviousAnalysis, error) {
+func (m *mockRepository) GetPreviousAnalysis(ctx context.Context, codebaseID, currentAnalysisID string) (*port.PreviousAnalysis, error) {
 	return nil, nil
 }
 
-// mockQueueService is a test double for QueueService.
+// mockQueueService is a test double for port.QueueService.
 type mockQueueService struct {
 	enqueueCalled     bool
 	enqueuedOwner     string
@@ -75,8 +80,10 @@ type mockQueueService struct {
 	enqueuedCommitSHA string
 	enqueuedUserID    *string
 	err               error
-	findTaskInfo      *TaskInfo
+	findTaskInfo      *port.TaskInfo
 }
+
+var _ port.QueueService = (*mockQueueService)(nil)
 
 func (m *mockQueueService) Enqueue(ctx context.Context, owner, repo, commitSHA string, userID *string) error {
 	m.enqueueCalled = true
@@ -87,7 +94,7 @@ func (m *mockQueueService) Enqueue(ctx context.Context, owner, repo, commitSHA s
 	return m.err
 }
 
-func (m *mockQueueService) FindTaskByRepo(ctx context.Context, owner, repo string) (*TaskInfo, error) {
+func (m *mockQueueService) FindTaskByRepo(ctx context.Context, owner, repo string) (*port.TaskInfo, error) {
 	return m.findTaskInfo, nil
 }
 
@@ -95,13 +102,15 @@ func (m *mockQueueService) Close() error {
 	return nil
 }
 
-// mockGitClient is a test double for client.GitClient.
+// mockGitClient is a test double for port.GitClient.
 type mockGitClient struct {
 	commitSHA      string
 	commitSHAToken string
 	err            error
 	errToken       error
 }
+
+var _ port.GitClient = (*mockGitClient)(nil)
 
 func (m *mockGitClient) GetLatestCommitSHA(ctx context.Context, owner, repo string) (string, error) {
 	if m.err != nil {
@@ -123,14 +132,13 @@ func (m *mockGitClient) GetLatestCommitSHAWithToken(ctx context.Context, owner, 
 	return m.commitSHAToken, nil
 }
 
-// Ensure mockGitClient implements client.GitClient.
-var _ client.GitClient = (*mockGitClient)(nil)
-
-// mockTokenProvider is a test double for TokenProvider.
+// mockTokenProvider is a test double for port.TokenProvider.
 type mockTokenProvider struct {
 	token string
 	err   error
 }
+
+var _ port.TokenProvider = (*mockTokenProvider)(nil)
 
 func (m *mockTokenProvider) GetUserGitHubToken(ctx context.Context, userID string) (string, error) {
 	if m.err != nil {
@@ -139,8 +147,8 @@ func (m *mockTokenProvider) GetUserGitHubToken(ctx context.Context, userID strin
 	return m.token, nil
 }
 
-// setupTestHandler creates a new AnalyzerHandler with mock dependencies and chi router.
-func setupTestHandler() (*AnalyzerHandler, *chi.Mux) {
+// setupTestHandler creates a new Handler with mock dependencies and chi router.
+func setupTestHandler() (*handler.Handler, *chi.Mux) {
 	repo := &mockRepository{}
 	queue := &mockQueueService{}
 	gitClient := &mockGitClient{}
@@ -148,45 +156,33 @@ func setupTestHandler() (*AnalyzerHandler, *chi.Mux) {
 	return setupTestHandlerWithMocks(repo, queue, gitClient, tokenProvider)
 }
 
-// setupTestHandlerWithMocks creates an AnalyzerHandler with provided mocks for more control in tests.
-func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gitClient *mockGitClient, tokenProvider TokenProvider) (*AnalyzerHandler, *chi.Mux) {
+// setupTestHandlerWithMocks creates a Handler with provided mocks for more control in tests.
+func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gitClient *mockGitClient, tokenProvider port.TokenProvider) (*handler.Handler, *chi.Mux) {
 	log := logger.New()
-	service := NewAnalyzerService(log, repo, queue, gitClient, tokenProvider)
-	handler := NewAnalyzerHandler(log, service)
+
+	analyzeRepositoryUC := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, tokenProvider)
+	getAnalysisUC := usecase.NewGetAnalysisUseCase(queue, repo)
+	listRepositoryCardsUC := usecase.NewListRepositoryCardsUseCase(repo)
+	getUpdateStatusUC := usecase.NewGetUpdateStatusUseCase(gitClient, repo, tokenProvider)
+	getRepositoryStatsUC := usecase.NewGetRepositoryStatsUseCase(repo)
+	reanalyzeRepositoryUC := usecase.NewReanalyzeRepositoryUseCase(gitClient, queue, repo, tokenProvider)
+
+	h := handler.NewHandler(
+		log,
+		analyzeRepositoryUC,
+		getAnalysisUC,
+		listRepositoryCardsUC,
+		getUpdateStatusUC,
+		getRepositoryStatsUC,
+		reanalyzeRepositoryUC,
+	)
 
 	r := chi.NewRouter()
-	repoHandler := NewMockRepositoryHandler()
-	apiHandlers := api.NewAPIHandlers(handler, user.NewMockAnalysisHistoryHandler(), auth.NewMockHandler(), auth.NewMockBookmarkHandler(), NewMockGitHubHandler(), repoHandler)
+	apiHandlers := api.NewAPIHandlers(h, user.NewMockAnalysisHistoryHandler(), auth.NewMockHandler(), auth.NewMockBookmarkHandler(), NewMockGitHubHandler(), h)
 	strictHandler := api.NewStrictHandler(apiHandlers, nil)
 	api.HandlerFromMux(strictHandler, r)
 
-	return handler, r
-}
-
-type mockRepositoryHandler struct{}
-
-var _ api.RepositoryHandlers = (*mockRepositoryHandler)(nil)
-
-func NewMockRepositoryHandler() *mockRepositoryHandler {
-	return &mockRepositoryHandler{}
-}
-
-func (m *mockRepositoryHandler) GetRecentRepositories(ctx context.Context, request api.GetRecentRepositoriesRequestObject) (api.GetRecentRepositoriesResponseObject, error) {
-	return api.GetRecentRepositories200JSONResponse{Data: []api.RepositoryCard{}}, nil
-}
-
-func (m *mockRepositoryHandler) GetRepositoryStats(ctx context.Context, request api.GetRepositoryStatsRequestObject) (api.GetRepositoryStatsResponseObject, error) {
-	return api.GetRepositoryStats200JSONResponse{TotalRepositories: 0, TotalTests: 0}, nil
-}
-
-func (m *mockRepositoryHandler) GetUpdateStatus(ctx context.Context, request api.GetUpdateStatusRequestObject) (api.GetUpdateStatusResponseObject, error) {
-	return api.GetUpdateStatus200JSONResponse{Status: api.Unknown}, nil
-}
-
-func (m *mockRepositoryHandler) ReanalyzeRepository(ctx context.Context, request api.ReanalyzeRepositoryRequestObject) (api.ReanalyzeRepositoryResponseObject, error) {
-	return api.ReanalyzeRepository500ApplicationProblemPlusJSONResponse{
-		InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("mock"),
-	}, nil
+	return h, r
 }
 
 type mockGitHubHandler struct{}

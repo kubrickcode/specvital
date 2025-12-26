@@ -2,11 +2,47 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
+
+	authdomain "github.com/specvital/web/src/backend/modules/auth/domain"
 )
+
+func getLatestCommitWithAuth(
+	ctx context.Context,
+	gitClient port.GitClient,
+	tokenProvider port.TokenProvider,
+	owner, repo, userID string,
+) (string, error) {
+	token, err := getUserToken(ctx, tokenProvider, userID)
+	if err != nil && !errors.Is(err, authdomain.ErrNoGitHubToken) && !errors.Is(err, authdomain.ErrUserNotFound) {
+		return "", fmt.Errorf("get user token: %w", err)
+	}
+
+	if token != "" {
+		sha, err := gitClient.GetLatestCommitSHAWithToken(ctx, owner, repo, token)
+		if err == nil {
+			return sha, nil
+		}
+	}
+
+	return gitClient.GetLatestCommitSHA(ctx, owner, repo)
+}
+
+func getUserToken(ctx context.Context, tokenProvider port.TokenProvider, userID string) (string, error) {
+	if tokenProvider == nil {
+		return "", authdomain.ErrNoGitHubToken
+	}
+
+	if userID == "" {
+		return "", authdomain.ErrNoGitHubToken
+	}
+
+	return tokenProvider.GetUserGitHubToken(ctx, userID)
+}
 
 func buildAnalysisFromCompleted(ctx context.Context, repository port.Repository, completed *port.CompletedAnalysis) (*entity.Analysis, error) {
 	suitesWithCases, err := repository.GetTestSuitesWithCases(ctx, completed.ID)

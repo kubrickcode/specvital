@@ -9,9 +9,6 @@ import (
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
-
-	// Cross-module import: auth domain errors for token handling (intentional coupling)
-	authdomain "github.com/specvital/web/src/backend/modules/auth/domain"
 )
 
 type AnalyzeRepositoryInput struct {
@@ -48,7 +45,7 @@ func (uc *AnalyzeRepositoryUseCase) Execute(ctx context.Context, input AnalyzeRe
 
 	now := time.Now()
 
-	latestSHA, err := uc.getLatestCommitWithAuth(ctx, input.Owner, input.Repo, input.UserID)
+	latestSHA, err := getLatestCommitWithAuth(ctx, uc.gitClient, uc.tokenProvider, input.Owner, input.Repo, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("get latest commit for %s/%s: %w", input.Owner, input.Repo, err)
 	}
@@ -97,32 +94,4 @@ func (uc *AnalyzeRepositoryUseCase) Execute(ctx context.Context, input AnalyzeRe
 		Status:    entity.AnalysisStatusPending,
 	}
 	return &AnalyzeResult{Progress: progress}, nil
-}
-
-func (uc *AnalyzeRepositoryUseCase) getLatestCommitWithAuth(ctx context.Context, owner, repo, userID string) (string, error) {
-	token, err := uc.getUserToken(ctx, userID)
-	if err != nil && !errors.Is(err, authdomain.ErrNoGitHubToken) && !errors.Is(err, authdomain.ErrUserNotFound) {
-		return "", fmt.Errorf("get user token: %w", err)
-	}
-
-	if token != "" {
-		sha, err := uc.gitClient.GetLatestCommitSHAWithToken(ctx, owner, repo, token)
-		if err == nil {
-			return sha, nil
-		}
-	}
-
-	return uc.gitClient.GetLatestCommitSHA(ctx, owner, repo)
-}
-
-func (uc *AnalyzeRepositoryUseCase) getUserToken(ctx context.Context, userID string) (string, error) {
-	if uc.tokenProvider == nil {
-		return "", authdomain.ErrNoGitHubToken
-	}
-
-	if userID == "" {
-		return "", authdomain.ErrNoGitHubToken
-	}
-
-	return uc.tokenProvider.GetUserGitHubToken(ctx, userID)
 }
