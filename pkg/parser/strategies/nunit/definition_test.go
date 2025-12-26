@@ -246,7 +246,7 @@ public class CalculatorTests
 		}
 	})
 
-	t.Run("[TestCase] parameterized tests", func(t *testing.T) {
+	t.Run("[TestCase] parameterized tests count each attribute", func(t *testing.T) {
 		source := `
 using NUnit.Framework;
 
@@ -270,12 +270,15 @@ public class MathTests
 		}
 
 		suite := testFile.Suites[0]
-		if len(suite.Tests) != 1 {
-			t.Fatalf("expected 1 Test, got %d", len(suite.Tests))
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests (one per [TestCase]), got %d", len(suite.Tests))
 		}
 
 		if suite.Tests[0].Name != "Add_WithValues_ReturnsSum" {
 			t.Errorf("expected Name='Add_WithValues_ReturnsSum', got '%s'", suite.Tests[0].Name)
+		}
+		if suite.Tests[1].Name != "Add_WithValues_ReturnsSum" {
+			t.Errorf("expected Name='Add_WithValues_ReturnsSum', got '%s'", suite.Tests[1].Name)
 		}
 	})
 
@@ -532,6 +535,130 @@ public class SecondTests
 		}
 		if testFile.Suites[1].Name != "SecondTests" {
 			t.Errorf("expected Suites[1].Name='SecondTests', got '%s'", testFile.Suites[1].Name)
+		}
+	})
+
+	t.Run("[Theory] attribute recognized as test", func(t *testing.T) {
+		source := `
+using NUnit.Framework;
+
+public class TheoryTests
+{
+    [Theory]
+    public void TheoryTest(int value)
+    {
+        Assert.Pass();
+    }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "TheoryTests.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 1 {
+			t.Fatalf("expected 1 Test, got %d", len(suite.Tests))
+		}
+
+		if suite.Tests[0].Name != "TheoryTest" {
+			t.Errorf("expected Name='TheoryTest', got '%s'", suite.Tests[0].Name)
+		}
+	})
+
+	t.Run("[TestCase(TestName = ...)] uses custom test name", func(t *testing.T) {
+		source := `
+using NUnit.Framework;
+
+public class CustomNameTests
+{
+    [TestCase(1, 2, TestName = "Adding one and two")]
+    [TestCase(3, 4, TestName = "Adding three and four")]
+    public void Add(int a, int b)
+    {
+    }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "CustomNameTests.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests, got %d", len(suite.Tests))
+		}
+
+		if suite.Tests[0].Name != "Adding one and two" {
+			t.Errorf("expected Name='Adding one and two', got '%s'", suite.Tests[0].Name)
+		}
+		if suite.Tests[1].Name != "Adding three and four" {
+			t.Errorf("expected Name='Adding three and four', got '%s'", suite.Tests[1].Name)
+		}
+	})
+
+	t.Run("multiple [TestCase] with [Ignore] marks all as skipped", func(t *testing.T) {
+		source := `
+using NUnit.Framework;
+
+public class IgnoredTestCases
+{
+    [TestCase(1)]
+    [TestCase(2)]
+    [Ignore("Not ready")]
+    public void IgnoredMethod(int value)
+    {
+    }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "IgnoredTestCases.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests, got %d", len(suite.Tests))
+		}
+
+		for i, test := range suite.Tests {
+			if test.Status != domain.TestStatusSkipped {
+				t.Errorf("expected Tests[%d].Status='skipped', got '%s'", i, test.Status)
+			}
+		}
+	})
+
+	t.Run("[Test] + [TestCase] together uses only [TestCase] count", func(t *testing.T) {
+		// NUnit runtime ignores [Test] when [TestCase] is present
+		source := `
+using NUnit.Framework;
+
+public class MixedAttributeTests
+{
+    [Test]
+    [TestCase(1)]
+    [TestCase(2)]
+    public void MixedMethod(int value)
+    {
+    }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "MixedAttributeTests.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests (from [TestCase] only, [Test] ignored), got %d", len(suite.Tests))
 		}
 	})
 }

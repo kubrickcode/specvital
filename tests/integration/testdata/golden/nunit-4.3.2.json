@@ -3,7 +3,7 @@
   "ref": "4.3.2",
   "expectedFrameworks": ["nunit"],
   "fileCount": 376,
-  "testCount": 3902,
+  "testCount": 4928,
   "frameworkCounts": {
     "nunit": 376
   },
@@ -18,7 +18,7 @@
       "path": "CakeScripts.Tests/VersionParsersTests.cs",
       "framework": "nunit",
       "suiteCount": 1,
-      "testCount": 1
+      "testCount": 2
     },
     {
       "path": "src/NUnitFramework/benchmarks/nunit.framework.benchmarks/CompositeWorkItemBenchmark.cs",
@@ -48,7 +48,7 @@
       "path": "src/NUnitFramework/mock-assembly/MockAssembly.cs",
       "framework": "nunit",
       "suiteCount": 9,
-      "testCount": 25
+      "testCount": 27
     },
     {
       "path": "src/NUnitFramework/nunit.framework.legacy.tests/ArrayNotEqualFixture.cs",
@@ -78,7 +78,7 @@
       "path": "src/NUnitFramework/nunit.framework.legacy.tests/ConditionAssertTests.cs",
       "framework": "nunit",
       "suiteCount": 1,
-      "testCount": 38
+      "testCount": 43
     },
     {
       "path": "src/NUnitFramework/nunit.framework.legacy.tests/ContainsFixture.cs",

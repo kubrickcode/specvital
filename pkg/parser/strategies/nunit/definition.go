@@ -65,6 +65,7 @@ var nunitPatterns = []struct {
 	{regexp.MustCompile(`\[TestCase\(`), "[TestCase] attribute"},
 	{regexp.MustCompile(`\[TestFixture\]`), "[TestFixture] attribute"},
 	{regexp.MustCompile(`\[TestCaseSource\(`), "[TestCaseSource] attribute"},
+	{regexp.MustCompile(`\[Theory\]`), "[Theory] attribute"},
 	{regexp.MustCompile(`using\s+NUnit\.Framework\s*;`), "using NUnit.Framework"},
 	{regexp.MustCompile(`\[Ignore\(`), "[Ignore] attribute"},
 }
@@ -124,8 +125,9 @@ func getClassStatusAndModifier(attrLists []*sitter.Node, source []byte) (domain.
 	return domain.TestStatusActive, ""
 }
 
-// getDescriptionFromAttribute extracts Description from [Test(Description = "...")] or [TestCase(Description = "...")].
-func getDescriptionFromAttribute(attr *sitter.Node, source []byte) string {
+// getNamedParameterFromAttribute extracts a named parameter value from an attribute.
+// Used for Description from [Test(Description = "...")] or TestName from [TestCase(TestName = "...")].
+func getNamedParameterFromAttribute(attr *sitter.Node, source []byte, paramName string) string {
 	argList := dotnetast.FindAttributeArgumentList(attr)
 	if argList == nil {
 		return ""
@@ -135,24 +137,12 @@ func getDescriptionFromAttribute(attr *sitter.Node, source []byte) string {
 		arg := argList.Child(i)
 		if arg.Type() == dotnetast.NodeAttributeArgument {
 			name, value := dotnetast.ParseAssignmentExpression(arg, source)
-			if name == "Description" {
+			if name == paramName {
 				return value
 			}
 		}
 	}
 	return ""
-}
-
-// isIgnoredWithModifier checks if [Ignore] or [IgnoreAttribute] is applied to the test method.
-// Unlike xUnit's Skip parameter, NUnit uses a separate attribute: [Ignore("reason")].
-func isIgnoredWithModifier(attrLists []*sitter.Node, source []byte) (bool, string) {
-	for _, attr := range dotnetast.GetAttributes(attrLists) {
-		name := dotnetast.GetAttributeName(attr, source)
-		if name == "Ignore" || name == "IgnoreAttribute" {
-			return true, "[Ignore]"
-		}
-	}
-	return false, ""
 }
 
 func parseTestClasses(root *sitter.Node, source []byte, filename string) []domain.TestSuite {
@@ -195,9 +185,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	for _, child := range dotnetast.GetDeclarationChildren(body) {
 		switch child.Type() {
 		case dotnetast.NodeMethodDeclaration:
-			if test := parseTestMethod(child, source, filename, classStatus, classModifier); test != nil {
-				tests = append(tests, *test)
-			}
+			tests = append(tests, parseTestMethod(child, source, filename, classStatus, classModifier)...)
 
 		case dotnetast.NodeClassDeclaration:
 			if nested := parseTestClassWithDepth(child, source, filename, depth+1); nested != nil {
@@ -220,41 +208,10 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	}
 }
 
-func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string) *domain.Test {
+func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string) []domain.Test {
 	attrLists := dotnetast.GetAttributeLists(node)
 	if len(attrLists) == 0 {
 		return nil
-	}
-
-	attributes := dotnetast.GetAttributes(attrLists)
-	isTest := false
-	status := classStatus
-	modifier := classModifier
-	var description string
-
-	for _, attr := range attributes {
-		name := dotnetast.GetAttributeName(attr, source)
-
-		switch name {
-		case "Test", "TestAttribute":
-			isTest = true
-			description = getDescriptionFromAttribute(attr, source)
-		case "TestCase", "TestCaseAttribute":
-			isTest = true
-			description = getDescriptionFromAttribute(attr, source)
-		case "TestCaseSource", "TestCaseSourceAttribute":
-			isTest = true
-		}
-	}
-
-	if !isTest {
-		return nil
-	}
-
-	// Check for [Ignore] attribute
-	if ignored, mod := isIgnoredWithModifier(attrLists, source); ignored {
-		status = domain.TestStatusSkipped
-		modifier = mod
 	}
 
 	methodName := dotnetast.GetMethodName(node, source)
@@ -262,15 +219,65 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 		return nil
 	}
 
-	testName := methodName
-	if description != "" {
-		testName = description
+	attributes := dotnetast.GetAttributes(attrLists)
+	status := classStatus
+	modifier := classModifier
+
+	// Check for [Ignore] attribute (reuses class-level check)
+	if methodStatus, methodModifier := getClassStatusAndModifier(attrLists, source); methodStatus == domain.TestStatusSkipped {
+		status = methodStatus
+		modifier = methodModifier
 	}
 
-	return &domain.Test{
-		Name:     testName,
-		Status:   status,
-		Modifier: modifier,
-		Location: parser.GetLocation(node, filename),
+	location := parser.GetLocation(node, filename)
+	var tests []domain.Test
+	hasSimpleTest := false
+	hasTestCaseSource := false
+	var testDescription string
+
+	for _, attr := range attributes {
+		name := dotnetast.GetAttributeName(attr, source)
+
+		switch name {
+		case "Test", "TestAttribute", "Theory", "TheoryAttribute":
+			hasSimpleTest = true
+			testDescription = getNamedParameterFromAttribute(attr, source, "Description")
+
+		case "TestCase", "TestCaseAttribute":
+			testName := getNamedParameterFromAttribute(attr, source, "TestName")
+			if testName == "" {
+				testName = methodName
+			}
+			tests = append(tests, domain.Test{
+				Name:     testName,
+				Status:   status,
+				Modifier: modifier,
+				Location: location,
+			})
+
+		case "TestCaseSource", "TestCaseSourceAttribute":
+			hasTestCaseSource = true
+		}
 	}
+
+	// If [TestCase] attributes were found, return them
+	if len(tests) > 0 {
+		return tests
+	}
+
+	// [Test], [Theory], or [TestCaseSource] - count as single test
+	if hasSimpleTest || hasTestCaseSource {
+		testName := methodName
+		if testDescription != "" {
+			testName = testDescription
+		}
+		return []domain.Test{{
+			Name:     testName,
+			Status:   status,
+			Modifier: modifier,
+			Location: location,
+		}}
+	}
+
+	return nil
 }

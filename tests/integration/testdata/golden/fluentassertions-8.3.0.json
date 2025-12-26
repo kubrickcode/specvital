@@ -3,7 +3,7 @@
   "ref": "8.3.0",
   "expectedFrameworks": ["mstest", "nunit", "xunit"],
   "fileCount": 331,
-  "testCount": 4893,
+  "testCount": 5823,
   "frameworkCounts": {
     "mstest": 2,
     "nunit": 3,
@@ -62,7 +62,7 @@
       "path": "Tests/FluentAssertions.Equivalency.Specs/ExtensibilitySpecs.cs",
       "framework": "xunit",
       "suiteCount": 1,
-      "testCount": 43
+      "testCount": 46
     },
     {
       "path": "Tests/FluentAssertions.Equivalency.Specs/MemberConversionSpecs.cs",
@@ -98,7 +98,7 @@
       "path": "Tests/FluentAssertions.Equivalency.Specs/ObjectReferenceSpecs.cs",
       "framework": "xunit",
       "suiteCount": 1,
-      "testCount": 1
+      "testCount": 7
     },
     {
       "path": "Tests/FluentAssertions.Equivalency.Specs/RecordSpecs.cs",

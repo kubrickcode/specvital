@@ -231,7 +231,7 @@ public class CalculatorTests
 		}
 	})
 
-	t.Run("[Theory] with [InlineData]", func(t *testing.T) {
+	t.Run("[Theory] with [InlineData] counts each attribute", func(t *testing.T) {
 		source := `
 using Xunit;
 
@@ -256,12 +256,15 @@ public class MathTests
 		}
 
 		suite := testFile.Suites[0]
-		if len(suite.Tests) != 1 {
-			t.Fatalf("expected 1 Test, got %d", len(suite.Tests))
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests (one per [InlineData]), got %d", len(suite.Tests))
 		}
 
 		if suite.Tests[0].Name != "Add_WithValues_ReturnsSum" {
 			t.Errorf("expected Name='Add_WithValues_ReturnsSum', got '%s'", suite.Tests[0].Name)
+		}
+		if suite.Tests[1].Name != "Add_WithValues_ReturnsSum" {
+			t.Errorf("expected Name='Add_WithValues_ReturnsSum', got '%s'", suite.Tests[1].Name)
 		}
 	})
 
@@ -342,7 +345,7 @@ public class DisplayNameTests
 		}
 	})
 
-	t.Run("[Theory(Skip = ...)] marks theory as skipped", func(t *testing.T) {
+	t.Run("[Theory(Skip = ...)] with [InlineData] marks all as skipped", func(t *testing.T) {
 		source := `
 using Xunit;
 
@@ -350,6 +353,7 @@ public class SkippedTheoryTests
 {
     [Theory(Skip = "Database not available")]
     [InlineData(1)]
+    [InlineData(2)]
     public void SkippedTheory(int value)
     {
     }
@@ -365,12 +369,14 @@ public class SkippedTheoryTests
 		}
 
 		suite := testFile.Suites[0]
-		if len(suite.Tests) != 1 {
-			t.Fatalf("expected 1 Test, got %d", len(suite.Tests))
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests, got %d", len(suite.Tests))
 		}
 
-		if suite.Tests[0].Status != domain.TestStatusSkipped {
-			t.Errorf("expected Status='skipped', got '%s'", suite.Tests[0].Status)
+		for i, test := range suite.Tests {
+			if test.Status != domain.TestStatusSkipped {
+				t.Errorf("expected Tests[%d].Status='skipped', got '%s'", i, test.Status)
+			}
 		}
 	})
 
@@ -663,6 +669,72 @@ public class MultiConditionTests
 		suite := testFile.Suites[0]
 		if len(suite.Tests) != 3 {
 			t.Fatalf("expected 3 tests, got %d", len(suite.Tests))
+		}
+	})
+
+	t.Run("[Theory] with [MemberData] counts as single test", func(t *testing.T) {
+		source := `
+using Xunit;
+
+public class MemberDataTests
+{
+    public static IEnumerable<object[]> TestData => new[] { new object[] { 1 }, new object[] { 2 } };
+
+    [Theory]
+    [MemberData(nameof(TestData))]
+    public void TestWithMemberData(int value)
+    {
+    }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "MemberDataTests.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 1 {
+			t.Fatalf("expected 1 Test (MemberData is runtime-expanded), got %d", len(suite.Tests))
+		}
+
+		if suite.Tests[0].Name != "TestWithMemberData" {
+			t.Errorf("expected Name='TestWithMemberData', got '%s'", suite.Tests[0].Name)
+		}
+	})
+
+	t.Run("[Theory] with [ClassData] counts as single test", func(t *testing.T) {
+		source := `
+using Xunit;
+
+public class ClassDataTests
+{
+    [Theory]
+    [ClassData(typeof(TestDataClass))]
+    public void TestWithClassData(int value)
+    {
+    }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "ClassDataTests.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 1 {
+			t.Fatalf("expected 1 Test (ClassData is runtime-expanded), got %d", len(suite.Tests))
+		}
+
+		if suite.Tests[0].Name != "TestWithClassData" {
+			t.Errorf("expected Name='TestWithClassData', got '%s'", suite.Tests[0].Name)
 		}
 	})
 }

@@ -125,8 +125,9 @@ func getClassStatusAndModifier(attrLists []*sitter.Node, source []byte) (domain.
 	return domain.TestStatusActive, ""
 }
 
-// getDisplayNameFromAttribute extracts DisplayName from [Fact(DisplayName = "...")] or [Theory(DisplayName = "...")].
-func getDisplayNameFromAttribute(attr *sitter.Node, source []byte) string {
+// getNamedParameterFromAttribute extracts a named parameter value from an attribute.
+// Used for DisplayName from [Fact(DisplayName = "...")] or [Theory(DisplayName = "...")].
+func getNamedParameterFromAttribute(attr *sitter.Node, source []byte, paramName string) string {
 	argList := dotnetast.FindAttributeArgumentList(attr)
 	if argList == nil {
 		return ""
@@ -136,7 +137,7 @@ func getDisplayNameFromAttribute(attr *sitter.Node, source []byte) string {
 		arg := argList.Child(i)
 		if arg.Type() == dotnetast.NodeAttributeArgument {
 			name, value := dotnetast.ParseAssignmentExpression(arg, source)
-			if name == "DisplayName" {
+			if name == paramName {
 				return value
 			}
 		}
@@ -203,9 +204,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	for _, child := range dotnetast.GetDeclarationChildren(body) {
 		switch child.Type() {
 		case dotnetast.NodeMethodDeclaration:
-			if test := parseTestMethod(child, source, filename, classStatus, classModifier); test != nil {
-				tests = append(tests, *test)
-			}
+			tests = append(tests, parseTestMethod(child, source, filename, classStatus, classModifier)...)
 
 		case dotnetast.NodeClassDeclaration:
 			if nested := parseTestClassWithDepth(child, source, filename, depth+1); nested != nil {
@@ -228,40 +227,9 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	}
 }
 
-func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string) *domain.Test {
+func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string) []domain.Test {
 	attrLists := dotnetast.GetAttributeLists(node)
 	if len(attrLists) == 0 {
-		return nil
-	}
-
-	attributes := dotnetast.GetAttributes(attrLists)
-	isTest := false
-	status := classStatus
-	modifier := classModifier
-	var displayName string
-
-	for _, attr := range attributes {
-		name := dotnetast.GetAttributeName(attr, source)
-
-		switch name {
-		case "Fact", "FactAttribute":
-			isTest = true
-			displayName = getDisplayNameFromAttribute(attr, source)
-			if isSkipped(attr, source) {
-				status = domain.TestStatusSkipped
-				modifier = "Skip"
-			}
-		case "Theory", "TheoryAttribute":
-			isTest = true
-			displayName = getDisplayNameFromAttribute(attr, source)
-			if isSkipped(attr, source) {
-				status = domain.TestStatusSkipped
-				modifier = "Skip"
-			}
-		}
-	}
-
-	if !isTest {
 		return nil
 	}
 
@@ -270,15 +238,92 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 		return nil
 	}
 
-	testName := methodName
-	if displayName != "" {
-		testName = displayName
+	attributes := dotnetast.GetAttributes(attrLists)
+	status := classStatus
+	modifier := classModifier
+	location := parser.GetLocation(node, filename)
+
+	var tests []domain.Test
+	hasFact := false
+	hasTheory := false
+	var displayName string
+	var theorySkipped bool
+
+	for _, attr := range attributes {
+		name := dotnetast.GetAttributeName(attr, source)
+
+		switch name {
+		case "Fact", "FactAttribute":
+			hasFact = true
+			displayName = getNamedParameterFromAttribute(attr, source, "DisplayName")
+			if isSkipped(attr, source) {
+				status = domain.TestStatusSkipped
+				modifier = "Skip"
+			}
+
+		case "Theory", "TheoryAttribute":
+			hasTheory = true
+			displayName = getNamedParameterFromAttribute(attr, source, "DisplayName")
+			if isSkipped(attr, source) {
+				theorySkipped = true
+			}
+
+		case "InlineData", "InlineDataAttribute":
+			testStatus := status
+			testModifier := modifier
+			if theorySkipped {
+				testStatus = domain.TestStatusSkipped
+				testModifier = "Skip"
+			}
+			tests = append(tests, domain.Test{
+				Name:     methodName,
+				Status:   testStatus,
+				Modifier: testModifier,
+				Location: location,
+			})
+
+		}
 	}
 
-	return &domain.Test{
-		Name:     testName,
-		Status:   status,
-		Modifier: modifier,
-		Location: parser.GetLocation(node, filename),
+	// If [InlineData] attributes were found, return them
+	if len(tests) > 0 {
+		return tests
 	}
+
+	// [Fact] - count as single test
+	if hasFact {
+		testName := methodName
+		if displayName != "" {
+			testName = displayName
+		}
+		return []domain.Test{{
+			Name:     testName,
+			Status:   status,
+			Modifier: modifier,
+			Location: location,
+		}}
+	}
+
+	// [Theory] without [InlineData] - count as single test
+	// (includes [MemberData]/[ClassData] which expand at runtime)
+	if hasTheory {
+		testName := methodName
+		if displayName != "" {
+			testName = displayName
+		}
+		testStatus := status
+		testModifier := modifier
+		if theorySkipped {
+			testStatus = domain.TestStatusSkipped
+			testModifier = "Skip"
+		}
+		return []domain.Test{{
+			Name:     testName,
+			Status:   testStatus,
+			Modifier: testModifier,
+			Location: location,
+		}}
+	}
+
+	return nil
 }
