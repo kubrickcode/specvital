@@ -3,7 +3,7 @@
   "ref": "v4.0.2",
   "expectedFrameworks": ["mstest"],
   "fileCount": 1487,
-  "testCount": 112802,
+  "testCount": 112824,
   "frameworkCounts": {
     "mstest": 1487
   },

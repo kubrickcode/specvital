@@ -3,7 +3,7 @@
   "ref": "8.3.0",
   "expectedFrameworks": ["mstest", "nunit", "xunit"],
   "fileCount": 331,
-  "testCount": 4868,
+  "testCount": 4893,
   "frameworkCounts": {
     "mstest": 2,
     "nunit": 3,
@@ -44,7 +44,7 @@
       "path": "Tests/FluentAssertions.Equivalency.Specs/DateTimePropertiesSpecs.cs",
       "framework": "xunit",
       "suiteCount": 1,
-      "testCount": 10
+      "testCount": 16
     },
     {
       "path": "Tests/FluentAssertions.Equivalency.Specs/DictionarySpecs.cs",
@@ -116,7 +116,7 @@
       "path": "Tests/FluentAssertions.Equivalency.Specs/SelectionRulesSpecs.Basic.cs",
       "framework": "xunit",
       "suiteCount": 1,
-      "testCount": 10
+      "testCount": 11
     },
     {
       "path": "Tests/FluentAssertions.Equivalency.Specs/SelectionRulesSpecs.Browsability.cs",

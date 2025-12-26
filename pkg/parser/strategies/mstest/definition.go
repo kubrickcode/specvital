@@ -190,9 +190,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	var tests []domain.Test
 	var nestedSuites []domain.TestSuite
 
-	for i := 0; i < int(body.ChildCount()); i++ {
-		child := body.Child(i)
-
+	for _, child := range dotnetast.GetDeclarationChildren(body) {
 		switch child.Type() {
 		case dotnetast.NodeMethodDeclaration:
 			if test := parseTestMethod(child, source, filename, classStatus, classModifier); test != nil {
@@ -200,9 +198,6 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 			}
 
 		case dotnetast.NodeClassDeclaration:
-			// MSTest discovers nested classes containing test methods, regardless of [TestClass] attribute.
-			// The [TestClass] attribute is optional but commonly used for clarity.
-			// Nested classes inherit parent's [Ignore] status through classStatus propagation.
 			if nested := parseTestClassWithDepth(child, source, filename, depth+1); nested != nil {
 				nestedSuites = append(nestedSuites, *nested)
 			}

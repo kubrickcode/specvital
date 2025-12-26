@@ -146,3 +146,136 @@ func walkTree(node *sitter.Node, visitor func(*sitter.Node) bool) {
 		walkTree(node.Child(i), visitor)
 	}
 }
+
+func TestGetDeclarationChildren(t *testing.T) {
+	tests := []struct {
+		name           string
+		source         string
+		expectedTypes  []string
+		expectedNames  []string
+	}{
+		{
+			name: "simple class with methods",
+			source: `public class C {
+    public void Test1() { }
+    public void Test2() { }
+}`,
+			expectedTypes: []string{"method_declaration", "method_declaration"},
+			expectedNames: []string{"Test1", "Test2"},
+		},
+		{
+			name: "class with preprocessor #if directive",
+			source: `public class C {
+#if NET6_0
+    public void Net6Test() { }
+#endif
+    public void CommonTest() { }
+}`,
+			expectedTypes: []string{"method_declaration", "method_declaration"},
+			expectedNames: []string{"Net6Test", "CommonTest"},
+		},
+		{
+			name: "nested class inside preprocessor",
+			source: `public class C {
+#if NET6_0
+    public class Nested {
+        public void Test() { }
+    }
+#endif
+    public void CommonTest() { }
+}`,
+			expectedTypes: []string{"class_declaration", "method_declaration"},
+			expectedNames: []string{"Nested", "CommonTest"},
+		},
+		{
+			name: "preprocessor #if with #else",
+			source: `public class C {
+#if NETFRAMEWORK
+    public void FrameworkTest() { }
+#else
+    public void CoreTest() { }
+#endif
+}`,
+			expectedTypes: []string{"method_declaration", "method_declaration"},
+			expectedNames: []string{"FrameworkTest", "CoreTest"},
+		},
+		{
+			name: "preprocessor #if with #elif and #else",
+			source: `public class C {
+#if NET8_0
+    public void Net8Test() { }
+#elif NET6_0
+    public void Net6Test() { }
+#else
+    public void LegacyTest() { }
+#endif
+}`,
+			expectedTypes: []string{"method_declaration", "method_declaration", "method_declaration"},
+			expectedNames: []string{"Net8Test", "Net6Test", "LegacyTest"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			root := parseCS(t, tt.source)
+
+			var body *sitter.Node
+			walkTree(root, func(n *sitter.Node) bool {
+				if n.Type() == NodeClassDeclaration {
+					body = GetDeclarationList(n)
+					return false
+				}
+				return true
+			})
+
+			if body == nil {
+				t.Fatal("expected non-nil declaration list")
+			}
+
+			children := GetDeclarationChildren(body)
+			if len(children) != len(tt.expectedTypes) {
+				t.Fatalf("expected %d children, got %d", len(tt.expectedTypes), len(children))
+			}
+
+			for i, child := range children {
+				if child.Type() != tt.expectedTypes[i] {
+					t.Errorf("child[%d]: expected type '%s', got '%s'", i, tt.expectedTypes[i], child.Type())
+				}
+
+				var name string
+				switch child.Type() {
+				case NodeMethodDeclaration:
+					name = GetMethodName(child, []byte(tt.source))
+				case NodeClassDeclaration:
+					name = GetClassName(child, []byte(tt.source))
+				}
+				if name != tt.expectedNames[i] {
+					t.Errorf("child[%d]: expected name '%s', got '%s'", i, tt.expectedNames[i], name)
+				}
+			}
+		})
+	}
+}
+
+func TestIsPreprocessorDirective(t *testing.T) {
+	tests := []struct {
+		nodeType string
+		expected bool
+	}{
+		{"preproc_if", true},
+		{"preproc_else", true},
+		{"preproc_elif", true},
+		{"class_declaration", false},
+		{"method_declaration", false},
+		{"preproc_endif", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.nodeType, func(t *testing.T) {
+			result := IsPreprocessorDirective(tt.nodeType)
+			if result != tt.expected {
+				t.Errorf("expected %v, got %v", tt.expected, result)
+			}
+		})
+	}
+}

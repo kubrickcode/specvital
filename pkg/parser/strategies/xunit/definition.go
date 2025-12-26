@@ -200,9 +200,7 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 	var tests []domain.Test
 	var nestedSuites []domain.TestSuite
 
-	for i := 0; i < int(body.ChildCount()); i++ {
-		child := body.Child(i)
-
+	for _, child := range dotnetast.GetDeclarationChildren(body) {
 		switch child.Type() {
 		case dotnetast.NodeMethodDeclaration:
 			if test := parseTestMethod(child, source, filename, classStatus, classModifier); test != nil {
@@ -210,8 +208,6 @@ func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, 
 			}
 
 		case dotnetast.NodeClassDeclaration:
-			// xUnit automatically discovers nested classes without annotation.
-			// Unlike JUnit5's @Nested requirement, any nested class can contain test methods.
 			if nested := parseTestClassWithDepth(child, source, filename, depth+1); nested != nil {
 				nestedSuites = append(nestedSuites, *nested)
 			}

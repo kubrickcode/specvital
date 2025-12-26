@@ -28,6 +28,9 @@ const (
 	NodeModifier              = "modifier"
 	NodeGenericName           = "generic_name"
 	NodeAssignmentExpression  = "assignment_expression"
+	NodePreprocIf             = "preproc_if"
+	NodePreprocElse           = "preproc_else"
+	NodePreprocElif           = "preproc_elif"
 )
 
 // GetClassName extracts the class name from a class_declaration node.
@@ -233,4 +236,37 @@ func IsCSharpTestFileName(filename string) bool {
 	}
 
 	return false
+}
+
+// IsPreprocessorDirective checks if the node is a C# preprocessor directive.
+func IsPreprocessorDirective(nodeType string) bool {
+	return nodeType == NodePreprocIf || nodeType == NodePreprocElse || nodeType == NodePreprocElif
+}
+
+// GetDeclarationChildren returns all declarations from a declaration_list,
+// including those inside preprocessor directives (#if, #else, #elif).
+// This handles C# conditional compilation where tests may be wrapped in
+// #if NET6_0_OR_GREATER or similar directives.
+func GetDeclarationChildren(body *sitter.Node) []*sitter.Node {
+	if body == nil {
+		return nil
+	}
+
+	var children []*sitter.Node
+	collectDeclarations(body, &children)
+	return children
+}
+
+func collectDeclarations(node *sitter.Node, result *[]*sitter.Node) {
+	for i := 0; i < int(node.ChildCount()); i++ {
+		child := node.Child(i)
+		nodeType := child.Type()
+
+		switch nodeType {
+		case NodeClassDeclaration, NodeMethodDeclaration:
+			*result = append(*result, child)
+		case NodePreprocIf, NodePreprocElse, NodePreprocElif:
+			collectDeclarations(child, result)
+		}
+	}
 }

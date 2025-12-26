@@ -500,4 +500,169 @@ public class SecondTests
 			t.Errorf("expected Suites[1].Name='SecondTests', got '%s'", testFile.Suites[1].Name)
 		}
 	})
+
+	t.Run("preprocessor directive #if wrapping nested class", func(t *testing.T) {
+		source := `
+using Xunit;
+
+public class TaskCompletionSourceAssertionSpecs
+{
+#if NET6_0_OR_GREATER
+    public class NonGeneric
+    {
+        [Fact]
+        public void Test1() { }
+
+        [Fact]
+        public void Test2() { }
+    }
+#endif
+
+    public class Generic
+    {
+        [Fact]
+        public void Test3() { }
+    }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "TaskCompletionSourceAssertionSpecs.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if suite.Name != "TaskCompletionSourceAssertionSpecs" {
+			t.Errorf("expected Suite.Name='TaskCompletionSourceAssertionSpecs', got '%s'", suite.Name)
+		}
+
+		if len(suite.Suites) != 2 {
+			t.Fatalf("expected 2 nested Suites, got %d", len(suite.Suites))
+		}
+
+		nonGeneric := suite.Suites[0]
+		if nonGeneric.Name != "NonGeneric" {
+			t.Errorf("expected nested[0].Name='NonGeneric', got '%s'", nonGeneric.Name)
+		}
+		if len(nonGeneric.Tests) != 2 {
+			t.Errorf("expected 2 tests in NonGeneric, got %d", len(nonGeneric.Tests))
+		}
+
+		generic := suite.Suites[1]
+		if generic.Name != "Generic" {
+			t.Errorf("expected nested[1].Name='Generic', got '%s'", generic.Name)
+		}
+		if len(generic.Tests) != 1 {
+			t.Errorf("expected 1 test in Generic, got %d", len(generic.Tests))
+		}
+	})
+
+	t.Run("preprocessor directive #if wrapping test methods", func(t *testing.T) {
+		source := `
+using Xunit;
+
+public class DateTimePropertiesSpecs
+{
+    [Fact]
+    public void CommonTest1() { }
+
+#if NET6_0_OR_GREATER
+    [Fact]
+    public void Net6Test1() { }
+
+    [Fact]
+    public void Net6Test2() { }
+#endif
+
+    [Fact]
+    public void CommonTest2() { }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "DateTimePropertiesSpecs.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 4 {
+			t.Fatalf("expected 4 tests, got %d", len(suite.Tests))
+		}
+
+		expectedNames := []string{"CommonTest1", "Net6Test1", "Net6Test2", "CommonTest2"}
+		for i, name := range expectedNames {
+			if suite.Tests[i].Name != name {
+				t.Errorf("expected Tests[%d].Name='%s', got '%s'", i, name, suite.Tests[i].Name)
+			}
+		}
+	})
+
+	t.Run("preprocessor directive #if with #else", func(t *testing.T) {
+		source := `
+using Xunit;
+
+public class ConditionalTests
+{
+#if NETFRAMEWORK
+    [Fact]
+    public void FrameworkOnlyTest() { }
+#else
+    [Fact]
+    public void CoreOnlyTest() { }
+#endif
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "ConditionalTests.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 tests, got %d", len(suite.Tests))
+		}
+	})
+
+	t.Run("preprocessor directive #if with #elif", func(t *testing.T) {
+		source := `
+using Xunit;
+
+public class MultiConditionTests
+{
+#if NET8_0
+    [Fact]
+    public void Net8Test() { }
+#elif NET6_0
+    [Fact]
+    public void Net6Test() { }
+#else
+    [Fact]
+    public void LegacyTest() { }
+#endif
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "MultiConditionTests.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 3 {
+			t.Fatalf("expected 3 tests, got %d", len(suite.Tests))
+		}
+	})
 }

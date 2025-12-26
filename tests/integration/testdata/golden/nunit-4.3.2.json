@@ -3,7 +3,7 @@
   "ref": "4.3.2",
   "expectedFrameworks": ["nunit"],
   "fileCount": 376,
-  "testCount": 3868,
+  "testCount": 3902,
   "frameworkCounts": {
     "nunit": 376
   },
