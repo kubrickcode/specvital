@@ -828,13 +828,24 @@ func isRubyTestFile(path string) bool {
 		return true
 	}
 
-	// Files in spec/ directory (excluding spec/support/ subdirectory)
+	// Minitest convention: *_test.rb
+	if strings.HasSuffix(base, "_test.rb") {
+		return true
+	}
+
 	normalizedPath := filepath.ToSlash(path)
+
+	// Files in spec/ directory (excluding spec/support/ subdirectory)
 	if strings.Contains(normalizedPath, "/spec/") || strings.HasPrefix(normalizedPath, "spec/") {
 		// Exclude spec/support/ directory (helpers, not tests)
 		if strings.Contains(normalizedPath, "/spec/support/") || strings.HasPrefix(normalizedPath, "spec/support/") {
 			return false
 		}
+		return strings.HasSuffix(base, ".rb")
+	}
+
+	// Minitest convention: Files in test/ directory
+	if strings.Contains(normalizedPath, "/test/") || strings.HasPrefix(normalizedPath, "test/") {
 		return strings.HasSuffix(base, ".rb")
 	}
 

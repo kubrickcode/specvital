@@ -99,6 +99,16 @@ var rspecSharedPatterns = []struct {
 	{regexp.MustCompile(`\bexpect\s*\(`), "expect assertion"},
 }
 
+// minitestExclusivePatterns are patterns unique to Minitest.
+// If any of these are found, do not match as RSpec (let Minitest matcher handle it).
+var minitestExclusivePatterns = []*regexp.Regexp{
+	regexp.MustCompile(`class\s+\w+\s*<\s*Minitest::(Test|Spec)\b`),
+	regexp.MustCompile(`\bextend\s+Minitest::Spec::DSL\b`),
+	regexp.MustCompile(`\bdef\s+test_\w+`),
+	regexp.MustCompile(`\.(must|wont)_\w+\b`),
+	regexp.MustCompile(`_\s*\([^)]*\)\s*\.(?:must|wont)_`),
+}
+
 func (m *RSpecContentMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
 	if signal.Type != framework.SignalFileContent {
 		return framework.NoMatch()
@@ -107,6 +117,14 @@ func (m *RSpecContentMatcher) Match(ctx context.Context, signal framework.Signal
 	content, ok := signal.Context.([]byte)
 	if !ok {
 		content = []byte(signal.Value)
+	}
+
+	// Check for Minitest-exclusive patterns first.
+	// If found, do not match as RSpec (let Minitest handle it).
+	for _, p := range minitestExclusivePatterns {
+		if p.Match(content) {
+			return framework.NoMatch()
+		}
 	}
 
 	// Check exclusive patterns first (higher confidence)
