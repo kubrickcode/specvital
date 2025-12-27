@@ -66,7 +66,7 @@ export const DiscoveryListSheet = ({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 px-4 pb-4">
           {accessStatus && accessStatus !== "accessible" && (
             <OrgConnectionBanner accessStatus={accessStatus} orgLogin={title} />
           )}
