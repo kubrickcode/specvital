@@ -2,7 +2,7 @@
 
 import { RefreshCw, Star } from "lucide-react";
 import Link from "next/link";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,6 +21,7 @@ type RepositoryCardProps = {
 
 export const RepositoryCard = ({ onBookmarkToggle, onReanalyze, repo }: RepositoryCardProps) => {
   const format = useFormatter();
+  const now = useNow({ updateInterval: 60_000 });
   const t = useTranslations("dashboard.card");
   const { fullName, isBookmarked, latestAnalysis, name, owner, updateStatus } = repo;
   const hasNewCommits = updateStatus === "new-commits";
@@ -97,7 +98,7 @@ export const RepositoryCard = ({ onBookmarkToggle, onReanalyze, repo }: Reposito
                     className="text-xs text-muted-foreground"
                     dateTime={latestAnalysis.analyzedAt}
                   >
-                    {format.relativeTime(new Date(latestAnalysis.analyzedAt))}
+                    {format.relativeTime(new Date(latestAnalysis.analyzedAt), now)}
                   </time>
                 </TooltipTrigger>
                 <TooltipContent>
