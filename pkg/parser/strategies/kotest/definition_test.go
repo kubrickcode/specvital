@@ -391,3 +391,162 @@ class RegularClass {
 		t.Errorf("expected 0 suites for non-kotest class, got %d", len(result.Suites))
 	}
 }
+
+func TestKotestParser_WordSpec(t *testing.T) {
+	source := `
+package com.example
+
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.shouldBe
+
+class WordSpecTest : WordSpec({
+    "String.length" should {
+        "return the length of the string" {
+            "hello".length shouldBe 5
+        }
+        "return zero for empty string" {
+            "".length shouldBe 0
+        }
+    }
+
+    "String.startsWith" should {
+        "return true for matching prefix" {
+            "hello".startsWith("hel") shouldBe true
+        }
+    }
+})
+`
+
+	parser := &KotestParser{}
+	ctx := context.Background()
+
+	result, err := parser.Parse(ctx, []byte(source), "WordSpecTest.kt")
+	if err != nil {
+		t.Fatalf("parse failed: %v", err)
+	}
+
+	if len(result.Suites) != 1 {
+		t.Fatalf("expected 1 suite, got %d", len(result.Suites))
+	}
+
+	suite := result.Suites[0]
+	if suite.Name != "WordSpecTest" {
+		t.Errorf("expected suite name WordSpecTest, got %s", suite.Name)
+	}
+
+	// Should have 2 nested suites (String.length and String.startsWith)
+	if len(suite.Suites) != 2 {
+		t.Fatalf("expected 2 nested suites, got %d", len(suite.Suites))
+	}
+
+	// First nested suite should have 2 tests
+	lengthSuite := suite.Suites[0]
+	if lengthSuite.Name != "String.length" {
+		t.Errorf("expected first nested suite 'String.length', got %s", lengthSuite.Name)
+	}
+	if len(lengthSuite.Tests) != 2 {
+		t.Errorf("expected 2 tests in String.length suite, got %d", len(lengthSuite.Tests))
+	}
+
+	// Second nested suite should have 1 test
+	startsWithSuite := suite.Suites[1]
+	if startsWithSuite.Name != "String.startsWith" {
+		t.Errorf("expected second nested suite 'String.startsWith', got %s", startsWithSuite.Name)
+	}
+	if len(startsWithSuite.Tests) != 1 {
+		t.Errorf("expected 1 test in String.startsWith suite, got %d", len(startsWithSuite.Tests))
+	}
+}
+
+func TestKotestParser_FreeSpec(t *testing.T) {
+	source := `
+package com.example
+
+import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.shouldBe
+
+class FreeSpecTest : FreeSpec({
+    "String.length" - {
+        "should return the length" {
+            "hello".length shouldBe 5
+        }
+        "should return zero for empty" {
+            "".length shouldBe 0
+        }
+    }
+
+    "deeply nested" - {
+        "level 2" - {
+            "actual test" {
+                1 + 1 shouldBe 2
+            }
+        }
+    }
+})
+`
+
+	parser := &KotestParser{}
+	ctx := context.Background()
+
+	result, err := parser.Parse(ctx, []byte(source), "FreeSpecTest.kt")
+	if err != nil {
+		t.Fatalf("parse failed: %v", err)
+	}
+
+	if len(result.Suites) != 1 {
+		t.Fatalf("expected 1 suite, got %d", len(result.Suites))
+	}
+
+	suite := result.Suites[0]
+	if suite.Name != "FreeSpecTest" {
+		t.Errorf("expected suite name FreeSpecTest, got %s", suite.Name)
+	}
+
+	// Should have 2 nested suites
+	if len(suite.Suites) < 1 {
+		t.Fatalf("expected at least 1 nested suite, got %d", len(suite.Suites))
+	}
+}
+
+func TestKotestParser_ShouldSpec(t *testing.T) {
+	source := `
+package com.example
+
+import io.kotest.core.spec.style.ShouldSpec
+import io.kotest.matchers.shouldBe
+
+class ShouldSpecTest : ShouldSpec({
+    should("return the length of a string") {
+        "hello".length shouldBe 5
+    }
+
+    context("String operations") {
+        should("concatenate strings") {
+            ("hello" + " world") shouldBe "hello world"
+        }
+    }
+})
+`
+
+	parser := &KotestParser{}
+	ctx := context.Background()
+
+	result, err := parser.Parse(ctx, []byte(source), "ShouldSpecTest.kt")
+	if err != nil {
+		t.Fatalf("parse failed: %v", err)
+	}
+
+	if len(result.Suites) != 1 {
+		t.Fatalf("expected 1 suite, got %d", len(result.Suites))
+	}
+
+	suite := result.Suites[0]
+	if suite.Name != "ShouldSpecTest" {
+		t.Errorf("expected suite name ShouldSpecTest, got %s", suite.Name)
+	}
+
+	// Should have at least 1 test at top level
+	if len(suite.Tests) < 1 {
+		t.Errorf("expected at least 1 test, got %d", len(suite.Tests))
+	}
+}

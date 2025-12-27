@@ -37,6 +37,7 @@ const (
 	NodeAnnotatedLambda        = "annotated_lambda"
 	NodeInfixExpression        = "infix_expression"
 	NodePostfixExpression      = "postfix_expression"
+	NodeAdditiveExpression     = "additive_expression"
 )
 
 // Kotest spec styles (alphabetically ordered).
@@ -337,6 +338,25 @@ func getLambdaFromAnnotated(node *sitter.Node) *sitter.Node {
 		child := node.Child(i)
 		if child.Type() == NodeLambdaLiteral {
 			return child
+		}
+	}
+	return nil
+}
+
+// GetLambdaFromAnnotatedLambda extracts lambda_literal from an annotated_lambda node.
+func GetLambdaFromAnnotatedLambda(node *sitter.Node) *sitter.Node {
+	return getLambdaFromAnnotated(node)
+}
+
+// GetLambdaFromCallSuffix extracts lambda from a call_suffix node.
+func GetLambdaFromCallSuffix(node *sitter.Node) *sitter.Node {
+	for i := 0; i < int(node.ChildCount()); i++ {
+		child := node.Child(i)
+		if child.Type() == NodeLambdaLiteral {
+			return child
+		}
+		if child.Type() == NodeAnnotatedLambda {
+			return getLambdaFromAnnotated(child)
 		}
 	}
 	return nil

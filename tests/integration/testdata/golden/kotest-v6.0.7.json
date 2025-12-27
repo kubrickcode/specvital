@@ -3,7 +3,7 @@
   "ref": "v6.0.7",
   "expectedFrameworks": ["kotest"],
   "fileCount": 982,
-  "testCount": 1729,
+  "testCount": 2050,
   "frameworkCounts": {
     "kotest": 982
   },
@@ -101,8 +101,8 @@
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AssertionCounterFreeSpecTest.kt",
       "framework": "kotest",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 1
     },
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AssertionCounterFunSpecTest.kt",
@@ -119,8 +119,8 @@
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/ClueTest.kt",
       "framework": "kotest",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 23
     },
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/IntelliErrorDiffTest.kt",

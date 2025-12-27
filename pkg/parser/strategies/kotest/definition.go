@@ -182,6 +182,12 @@ func parseTestClass(node *sitter.Node, source []byte, filename string) *domain.T
 			parseBehaviorSpecTests(lambda, source, filename, suite)
 		case kotlinast.SpecDescribeSpec:
 			parseDescribeSpecTests(lambda, source, filename, suite)
+		case kotlinast.SpecWordSpec:
+			parseWordSpecTests(lambda, source, filename, suite)
+		case kotlinast.SpecFreeSpec:
+			parseFreeSpecTests(lambda, source, filename, suite)
+		case kotlinast.SpecShouldSpec:
+			parseShouldSpecTests(lambda, source, filename, suite)
 		default:
 			parseGenericSpecTests(lambda, source, filename, suite, specStyle)
 		}
@@ -328,8 +334,8 @@ func getFunctionName(node *sitter.Node, source []byte) string {
 	return ""
 }
 
-// Generic spec style parsing
-func parseGenericSpecTests(body *sitter.Node, source []byte, filename string, suite *domain.TestSuite, specStyle string) {
+// Generic spec style parsing (fallback for unhandled spec styles)
+func parseGenericSpecTests(body *sitter.Node, source []byte, filename string, suite *domain.TestSuite, _ string) {
 	parseCallExpressions(body, source, filename, suite, func(name string, node *sitter.Node, source []byte) bool {
 		switch name {
 		case "test", "xtest", "it", "xit", "should", "xshould",
@@ -471,3 +477,244 @@ func getStatusAndModifier(funcName string) (domain.TestStatus, string) {
 	}
 	return domain.TestStatusActive, ""
 }
+
+// WordSpec: "context" should { "test" { } } or "context" When { "test" { } }
+// Uses infix_expression for should/When containers, call_expression for leaf tests
+func parseWordSpecTests(body *sitter.Node, source []byte, filename string, suite *domain.TestSuite) {
+	parser.WalkTree(body, func(n *sitter.Node) bool {
+		if n.Type() == kotlinast.NodeInfixExpression {
+			if processed := processWordSpecInfix(n, source, filename, suite); processed {
+				return false
+			}
+		}
+		return true
+	})
+}
+
+func processWordSpecInfix(node *sitter.Node, source []byte, filename string, suite *domain.TestSuite) bool {
+	var contextName string
+	var operator string
+	var lambda *sitter.Node
+
+	for i := 0; i < int(node.ChildCount()); i++ {
+		child := node.Child(i)
+		switch child.Type() {
+		case kotlinast.NodeStringLiteral, kotlinast.NodeLineStringLiteral:
+			contextName = kotlinast.ExtractStringContent(child, source)
+		case kotlinast.NodeIdentifier:
+			operator = child.Content(source)
+		case kotlinast.NodeCallSuffix:
+			lambda = kotlinast.GetLambdaFromCallSuffix(child)
+		case kotlinast.NodeLambdaLiteral:
+			lambda = child
+		case kotlinast.NodeAnnotatedLambda:
+			lambda = kotlinast.GetLambdaFromAnnotatedLambda(child)
+		}
+	}
+
+	if !isWordSpecOperator(operator) {
+		return false
+	}
+
+	if contextName == "" || lambda == nil {
+		return false
+	}
+
+	status, modifier := getStatusAndModifier(operator)
+
+	nestedSuite := domain.TestSuite{
+		Name:     contextName,
+		Status:   status,
+		Modifier: modifier,
+		Location: parser.GetLocation(node, filename),
+	}
+
+	parseWordSpecNestedContent(lambda, source, filename, &nestedSuite)
+
+	if len(nestedSuite.Tests) > 0 || len(nestedSuite.Suites) > 0 {
+		suite.Suites = append(suite.Suites, nestedSuite)
+	}
+
+	return true
+}
+
+func isWordSpecOperator(op string) bool {
+	switch op {
+	case "should", "xshould", "Should", "xShould",
+		"When", "xWhen", "`when`", "x`when`":
+		return true
+	}
+	return false
+}
+
+func parseWordSpecNestedContent(body *sitter.Node, source []byte, filename string, suite *domain.TestSuite) {
+	parser.WalkTree(body, func(n *sitter.Node) bool {
+		if n.Type() == kotlinast.NodeInfixExpression {
+			if processed := processWordSpecInfix(n, source, filename, suite); processed {
+				return false
+			}
+		}
+		if n.Type() == kotlinast.NodeCallExpression {
+			if processed := processStringCallTest(n, source, filename, suite); processed {
+				return false
+			}
+		}
+
+		return true
+	})
+}
+
+func processStringCallTest(node *sitter.Node, source []byte, filename string, suite *domain.TestSuite) bool {
+	var testName string
+	var hasLambda bool
+
+	for i := 0; i < int(node.ChildCount()); i++ {
+		child := node.Child(i)
+		switch child.Type() {
+		case kotlinast.NodeStringLiteral, kotlinast.NodeLineStringLiteral:
+			testName = kotlinast.ExtractStringContent(child, source)
+		case kotlinast.NodeCallSuffix:
+			if kotlinast.GetLambdaFromCallSuffix(child) != nil {
+				hasLambda = true
+			}
+		}
+	}
+
+	if testName == "" || !hasLambda {
+		return false
+	}
+
+	status := domain.TestStatusActive
+	modifier := ""
+
+	test := domain.Test{
+		Name:     testName,
+		Status:   status,
+		Modifier: modifier,
+		Location: parser.GetLocation(node, filename),
+	}
+	suite.Tests = append(suite.Tests, test)
+
+	return true
+}
+
+// FreeSpec: "context" - { "test" { } }
+// Uses additive_expression (minus operator) for containers, call_expression for leaf tests
+func parseFreeSpecTests(body *sitter.Node, source []byte, filename string, suite *domain.TestSuite) {
+	parser.WalkTree(body, func(n *sitter.Node) bool {
+		if n.Type() == kotlinast.NodeAdditiveExpression {
+			if processed := processFreeSpecContainer(n, source, filename, suite); processed {
+				return false
+			}
+		}
+		if n.Type() == kotlinast.NodeInfixExpression {
+			if processed := processFreeSpecInfix(n, source, filename, suite); processed {
+				return false
+			}
+		}
+		if n.Type() == kotlinast.NodeCallExpression {
+			if processed := processStringCallTest(n, source, filename, suite); processed {
+				return false
+			}
+		}
+
+		return true
+	})
+}
+
+func processFreeSpecContainer(node *sitter.Node, source []byte, filename string, suite *domain.TestSuite) bool {
+	var contextName string
+	var lambda *sitter.Node
+	var hasMinus bool
+
+	for i := 0; i < int(node.ChildCount()); i++ {
+		child := node.Child(i)
+		switch child.Type() {
+		case kotlinast.NodeStringLiteral, kotlinast.NodeLineStringLiteral:
+			contextName = kotlinast.ExtractStringContent(child, source)
+		case kotlinast.NodeLambdaLiteral:
+			lambda = child
+		case kotlinast.NodeAnnotatedLambda:
+			lambda = kotlinast.GetLambdaFromAnnotatedLambda(child)
+		case kotlinast.NodeCallSuffix:
+			lambda = kotlinast.GetLambdaFromCallSuffix(child)
+		}
+		if child.Content(source) == "-" {
+			hasMinus = true
+		}
+	}
+
+	if !hasMinus || contextName == "" || lambda == nil {
+		return false
+	}
+
+	nestedSuite := domain.TestSuite{
+		Name:     contextName,
+		Status:   domain.TestStatusActive,
+		Location: parser.GetLocation(node, filename),
+	}
+	parseFreeSpecTests(lambda, source, filename, &nestedSuite)
+
+	if len(nestedSuite.Tests) > 0 || len(nestedSuite.Suites) > 0 {
+		suite.Suites = append(suite.Suites, nestedSuite)
+	}
+
+	return true
+}
+
+func processFreeSpecInfix(node *sitter.Node, source []byte, filename string, suite *domain.TestSuite) bool {
+	var contextName string
+	var operator string
+	var lambda *sitter.Node
+
+	for i := 0; i < int(node.ChildCount()); i++ {
+		child := node.Child(i)
+		switch child.Type() {
+		case kotlinast.NodeStringLiteral, kotlinast.NodeLineStringLiteral:
+			contextName = kotlinast.ExtractStringContent(child, source)
+		case kotlinast.NodeIdentifier:
+			operator = child.Content(source)
+		case kotlinast.NodeCallSuffix:
+			lambda = kotlinast.GetLambdaFromCallSuffix(child)
+		case kotlinast.NodeLambdaLiteral:
+			lambda = child
+		case kotlinast.NodeAnnotatedLambda:
+			lambda = kotlinast.GetLambdaFromAnnotatedLambda(child)
+		}
+	}
+
+	// FreeSpec uses "minus" as the operator name for "-"
+	if operator != "minus" {
+		return false
+	}
+
+	if contextName == "" || lambda == nil {
+		return false
+	}
+
+	nestedSuite := domain.TestSuite{
+		Name:     contextName,
+		Status:   domain.TestStatusActive,
+		Location: parser.GetLocation(node, filename),
+	}
+
+	parseFreeSpecTests(lambda, source, filename, &nestedSuite)
+
+	if len(nestedSuite.Tests) > 0 || len(nestedSuite.Suites) > 0 {
+		suite.Suites = append(suite.Suites, nestedSuite)
+	}
+
+	return true
+}
+
+// ShouldSpec: should("test") { } and context("context") { }
+func parseShouldSpecTests(body *sitter.Node, source []byte, filename string, suite *domain.TestSuite) {
+	parseCallExpressions(body, source, filename, suite, func(name string, node *sitter.Node, source []byte) bool {
+		switch name {
+		case "should", "xshould", "context", "xcontext":
+			return true
+		}
+		return false
+	})
+}
+
