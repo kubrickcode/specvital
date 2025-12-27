@@ -1,1 +1,1 @@
-export { fetchCurrentUser, fetchLogin, fetchLogout } from "./auth";
+export { fetchCurrentUser, fetchLogin, fetchLogout, fetchRefresh } from "./auth";

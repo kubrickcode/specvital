@@ -30,6 +30,7 @@ export type RateLimitInfo = components["schemas"]["RateLimitInfo"];
 // Auth types
 export type LoginResponse = components["schemas"]["LoginResponse"];
 export type LogoutResponse = components["schemas"]["LogoutResponse"];
+export type RefreshResponse = components["schemas"]["RefreshResponse"];
 export type UserInfo = components["schemas"]["UserInfo"];
 
 // Convenience type for analysis status
