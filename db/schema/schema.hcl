@@ -354,6 +354,11 @@ table "users" {
     default = sql("now()")
   }
 
+  column "token_version" {
+    type    = int
+    default = 1
+  }
+
   primary_key {
     columns = [column.id]
   }
@@ -366,6 +371,80 @@ table "users" {
 
   index "idx_users_username" {
     columns = [column.username]
+  }
+}
+
+table "refresh_tokens" {
+  schema = schema.public
+
+  column "id" {
+    type    = uuid
+    default = sql("gen_random_uuid()")
+  }
+
+  column "user_id" {
+    type = uuid
+  }
+
+  column "token_hash" {
+    type = text
+  }
+
+  column "family_id" {
+    type = uuid
+  }
+
+  column "expires_at" {
+    type = timestamptz
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  column "revoked_at" {
+    type = timestamptz
+    null = true
+  }
+
+  column "replaces" {
+    type = uuid
+    null = true
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  foreign_key "fk_refresh_tokens_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete   = CASCADE
+  }
+
+  foreign_key "fk_refresh_tokens_replaces" {
+    columns     = [column.replaces]
+    ref_columns = [table.refresh_tokens.column.id]
+    on_delete   = SET_NULL
+  }
+
+  unique "uq_refresh_tokens_hash" {
+    columns = [column.token_hash]
+  }
+
+  index "idx_refresh_tokens_user" {
+    columns = [column.user_id]
+  }
+
+  index "idx_refresh_tokens_family_active" {
+    columns = [column.family_id, column.created_at]
+    where   = "revoked_at IS NULL"
+  }
+
+  index "idx_refresh_tokens_expires" {
+    columns = [column.expires_at]
+    where   = "revoked_at IS NULL"
   }
 }
 

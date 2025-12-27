@@ -1,4 +1,4 @@
-h1:aTMWlwOO1koaOBUTdco3B905JtpLwh9huu53cy7QiPQ=
+h1:cTr6dLT6W1Xdlu9RkQ7tOoylGXcdAAIBL9vMqARcUVw=
 20251208122222_init.sql h1:4hgvsY53Nx2aws2BPLM/x4kV27qXTRYTAKd/GlGciis=
 20251209084551_add_test_status_focused_xfail_modifier.sql h1:+pY+6sow5rDMVE7Nbl0OLatQfVtHF9YH9Cr621wP+Uc=
 20251211134507_test_case_length.sql h1:Nbzl0u5eBOLpsLhZlfx4MGb6nY4P9e0136YaQYZwvvE=
@@ -14,3 +14,4 @@ h1:aTMWlwOO1koaOBUTdco3B905JtpLwh9huu53cy7QiPQ=
 20251224152608_add_github_cache_tables.sql h1:aRw64ddHHuJrvcPFAhDdCLiUg4TdxLMktvBbWWrl9Jc=
 20251224170707_add-cursor-index.sql h1:xD4ieVhR6cvv1dfQG3HdJK/+0GIWR7ikukkYQY/a22g=
 20251226154124_github_app_installations.sql h1:1TP4Auh8U0NDjRS+tad8ircicn3QVyie0z43tonEmaU=
+20251227092840_add-refresh-tokens.sql h1:dICj7oADpwEHDd1XD+Bs8k56A7HlURhZlYsiFGyp8Cg=
