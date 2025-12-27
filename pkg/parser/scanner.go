@@ -453,7 +453,18 @@ func (s *Scanner) discoverTestFiles(ctx context.Context, src source.Source) ([]s
 			return nil
 		}
 
-		if !isTestFileCandidate(path) {
+		// Compute relative path early for consistent path matching
+		relPath, err := filepath.Rel(rootPath, path)
+		if err != nil {
+			mu.Lock()
+			errs = append(errs, fmt.Errorf("compute relative path for %s: %w", path, err))
+			mu.Unlock()
+			return nil
+		}
+
+		// Use relative path for test file detection to avoid false positives
+		// from parent directory names (e.g., /tests/integration/testdata/cache/)
+		if !isTestFileCandidate(relPath) {
 			return nil
 		}
 
@@ -474,14 +485,6 @@ func (s *Scanner) discoverTestFiles(ctx context.Context, src source.Source) ([]s
 			if info.Size() > s.options.MaxFileSize {
 				return nil
 			}
-		}
-
-		relPath, err := filepath.Rel(rootPath, path)
-		if err != nil {
-			mu.Lock()
-			errs = append(errs, fmt.Errorf("compute relative path for %s: %w", path, err))
-			mu.Unlock()
-			return nil
 		}
 
 		mu.Lock()
@@ -869,6 +872,12 @@ func isRustTestFile(path string) bool {
 
 	// src/ directory: Rust places unit tests inline with #[cfg(test)] modules
 	if strings.Contains(normalizedPath, "/src/") || strings.HasPrefix(normalizedPath, "src/") {
+		return strings.HasSuffix(base, ".rs")
+	}
+
+	// crates/ directory: Cargo workspaces often use crates/ for sub-crates
+	// Each sub-crate may have inline tests with #[cfg(test)] modules
+	if strings.Contains(normalizedPath, "/crates/") || strings.HasPrefix(normalizedPath, "crates/") {
 		return strings.HasSuffix(base, ".rs")
 	}
 

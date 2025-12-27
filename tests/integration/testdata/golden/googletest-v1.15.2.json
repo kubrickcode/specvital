@@ -2,37 +2,13 @@
   "repository": "googletest",
   "ref": "v1.15.2",
   "expectedFrameworks": ["gtest", "unittest"],
-  "fileCount": 111,
-  "testCount": 2566,
+  "fileCount": 86,
+  "testCount": 2476,
   "frameworkCounts": {
-    "gtest": 87,
-    "unittest": 24
+    "gtest": 79,
+    "unittest": 7
   },
   "sampleFiles": [
-    {
-      "path": "googlemock/src/gmock-cardinalities.cc",
-      "framework": "gtest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "googlemock/src/gmock-internal-utils.cc",
-      "framework": "gtest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "googlemock/src/gmock-spec-builders.cc",
-      "framework": "gtest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "googlemock/src/gmock_main.cc",
-      "framework": "gtest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
     {
       "path": "googlemock/test/gmock-actions_test.cc",
       "framework": "gtest",
@@ -128,10 +104,34 @@
       "framework": "gtest",
       "suiteCount": 1,
       "testCount": 3
+    },
+    {
+      "path": "googlemock/test/gmock_output_test.py",
+      "framework": "unittest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "googlemock/test/gmock_output_test_.cc",
+      "framework": "gtest",
+      "suiteCount": 1,
+      "testCount": 23
+    },
+    {
+      "path": "googlemock/test/gmock_stress_test.cc",
+      "framework": "gtest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "googlemock/test/gmock_test.cc",
+      "framework": "gtest",
+      "suiteCount": 3,
+      "testCount": 13
     }
   ],
   "stats": {
-    "filesMatched": 111,
-    "filesScanned": 136
+    "filesMatched": 86,
+    "filesScanned": 92
   }
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/specvital/core/pkg/source"
 
 	// Import frameworks to register them via init()
+	_ "github.com/specvital/core/pkg/parser/strategies/cargotest"
 	_ "github.com/specvital/core/pkg/parser/strategies/gtest"
 	_ "github.com/specvital/core/pkg/parser/strategies/jest"
 	_ "github.com/specvital/core/pkg/parser/strategies/phpunit"
@@ -942,4 +943,156 @@ func TestScan_FixtureExclusion(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestScan_CargoTest(t *testing.T) {
+	t.Run("should scan Rust test files in crates/ directory", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		// Create crates/core/flags/defs.rs with #[test] functions
+		cratesDir := filepath.Join(tmpDir, "crates", "core", "flags")
+		if err := os.MkdirAll(cratesDir, 0755); err != nil {
+			t.Fatalf("failed to create crates dir: %v", err)
+		}
+
+		testContent := []byte(`
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_addition() {
+        assert_eq!(2 + 2, 4);
+    }
+
+    #[test]
+    fn test_subtraction() {
+        assert_eq!(5 - 3, 2);
+    }
+}
+`)
+		testFile := filepath.Join(cratesDir, "defs.rs")
+		if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Fatalf("expected 1 file, got %d", len(result.Inventory.Files))
+		}
+
+		file := result.Inventory.Files[0]
+		if file.Framework != "cargo-test" {
+			t.Errorf("expected framework 'cargo-test', got %q", file.Framework)
+		}
+		if file.Language != "rust" {
+			t.Errorf("expected language 'rust', got %q", file.Language)
+		}
+
+		// Verify tests are detected
+		totalTests := len(file.Tests)
+		for _, suite := range file.Suites {
+			totalTests += len(suite.Tests)
+		}
+		if totalTests != 2 {
+			t.Errorf("expected 2 tests, got %d", totalTests)
+		}
+	})
+
+	t.Run("should scan Rust test files in src/ directory", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		srcDir := filepath.Join(tmpDir, "src")
+		if err := os.MkdirAll(srcDir, 0755); err != nil {
+			t.Fatalf("failed to create src dir: %v", err)
+		}
+
+		testContent := []byte(`
+pub fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add() {
+        assert_eq!(add(2, 2), 4);
+    }
+}
+`)
+		testFile := filepath.Join(srcDir, "lib.rs")
+		if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Fatalf("expected 1 file, got %d", len(result.Inventory.Files))
+		}
+
+		file := result.Inventory.Files[0]
+		if file.Framework != "cargo-test" {
+			t.Errorf("expected framework 'cargo-test', got %q", file.Framework)
+		}
+	})
+
+	t.Run("should scan Rust test files in tests/ directory", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		testsDir := filepath.Join(tmpDir, "tests")
+		if err := os.MkdirAll(testsDir, 0755); err != nil {
+			t.Fatalf("failed to create tests dir: %v", err)
+		}
+
+		testContent := []byte(`
+#[test]
+fn integration_test() {
+    assert!(true);
+}
+`)
+		testFile := filepath.Join(testsDir, "integration.rs")
+		if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Fatalf("expected 1 file, got %d", len(result.Inventory.Files))
+		}
+
+		file := result.Inventory.Files[0]
+		if file.Framework != "cargo-test" {
+			t.Errorf("expected framework 'cargo-test', got %q", file.Framework)
+		}
+	})
 }

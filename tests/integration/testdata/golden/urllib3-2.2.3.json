@@ -2,36 +2,12 @@
   "repository": "urllib3",
   "ref": "2.2.3",
   "expectedFrameworks": ["pytest"],
-  "fileCount": 37,
+  "fileCount": 30,
   "testCount": 717,
   "frameworkCounts": {
-    "pytest": 37
+    "pytest": 30
   },
   "sampleFiles": [
-    {
-      "path": "dummyserver/testcase.py",
-      "framework": "pytest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "test/__init__.py",
-      "framework": "pytest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "test/contrib/__init__.py",
-      "framework": "pytest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "test/contrib/emscripten/__init__.py",
-      "framework": "pytest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
     {
       "path": "test/contrib/emscripten/test_emscripten.py",
       "framework": "pytest",
@@ -55,12 +31,6 @@
       "framework": "pytest",
       "suiteCount": 4,
       "testCount": 19
-    },
-    {
-      "path": "test/port_helpers.py",
-      "framework": "pytest",
-      "suiteCount": 0,
-      "testCount": 0
     },
     {
       "path": "test/test_collections.py",
@@ -127,10 +97,40 @@
       "framework": "pytest",
       "suiteCount": 1,
       "testCount": 5
+    },
+    {
+      "path": "test/test_queue_monkeypatch.py",
+      "framework": "pytest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "test/test_response.py",
+      "framework": "pytest",
+      "suiteCount": 3,
+      "testCount": 100
+    },
+    {
+      "path": "test/test_retry.py",
+      "framework": "pytest",
+      "suiteCount": 1,
+      "testCount": 28
+    },
+    {
+      "path": "test/test_ssl.py",
+      "framework": "pytest",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "test/test_ssltransport.py",
+      "framework": "pytest",
+      "suiteCount": 1,
+      "testCount": 4
     }
   ],
   "stats": {
-    "filesMatched": 37,
-    "filesScanned": 79
+    "filesMatched": 30,
+    "filesScanned": 30
   }
 }

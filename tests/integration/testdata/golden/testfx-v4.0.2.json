@@ -2,30 +2,12 @@
   "repository": "testfx",
   "ref": "v4.0.2",
   "expectedFrameworks": ["mstest"],
-  "fileCount": 1487,
-  "testCount": 112824,
+  "fileCount": 264,
+  "testCount": 1668,
   "frameworkCounts": {
-    "mstest": 1487
+    "mstest": 264
   },
   "sampleFiles": [
-    {
-      "path": "samples/FxExtensibility/AssertEx.cs",
-      "framework": "mstest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "samples/FxExtensibility/AssertIs.cs",
-      "framework": "mstest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "samples/Playground/Program.cs",
-      "framework": "mstest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
     {
       "path": "samples/Playground/Tests.cs",
       "framework": "mstest",
@@ -45,46 +27,10 @@
       "testCount": 1
     },
     {
-      "path": "samples/public/DemoMSTestSdk/ProjectUsingAspire/IntegrationTest1.cs",
-      "framework": "mstest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "samples/public/DemoMSTestSdk/ProjectUsingMSTestRunner/UnitTest1.cs",
-      "framework": "mstest",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "samples/public/DemoMSTestSdk/ProjectUsingPlaywright/UnitTest1.cs",
-      "framework": "mstest",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "samples/public/DemoMSTestSdk/ProjectUsingVSTest/UnitTest1.cs",
-      "framework": "mstest",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "samples/public/DemoMSTestSdk/ProjectWithNativeAOT/UnitTest1.cs",
-      "framework": "mstest",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
       "path": "samples/public/TestingPlatformExamples/TestingPlatformExplorer/UnitTests.cs",
       "framework": "mstest",
       "suiteCount": 1,
       "testCount": 4
-    },
-    {
-      "path": "samples/public/mstest-runner/CustomReportExtension/CustomReportExtension/UnitTest1.cs",
-      "framework": "mstest",
-      "suiteCount": 1,
-      "testCount": 2
     },
     {
       "path": "samples/public/mstest-runner/MSTestProjectWithExplicitMain/MSTestProjectWithExplicitMain/Test1.cs",
@@ -93,22 +39,10 @@
       "testCount": 1
     },
     {
-      "path": "samples/public/mstest-runner/MSTestRunnerWinUI/UnitTest/App.xaml.cs",
-      "framework": "mstest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
       "path": "samples/public/mstest-runner/MSTestRunnerWinUI/UnitTest/TestClass.cs",
       "framework": "mstest",
       "suiteCount": 0,
       "testCount": 0
-    },
-    {
-      "path": "samples/public/mstest-runner/NativeAotRunner/TestProject1/UnitTest1.cs",
-      "framework": "mstest",
-      "suiteCount": 1,
-      "testCount": 4
     },
     {
       "path": "samples/public/mstest-runner/RunInDocker/MyServer.Tests/UnitTest1.cs",
@@ -117,20 +51,86 @@
       "testCount": 1
     },
     {
-      "path": "samples/public/mstest-runner/Simple1/UnitTest1.cs",
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Data/TestDataConnection.cs",
       "framework": "mstest",
-      "suiteCount": 1,
-      "testCount": 1
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
-      "path": "samples/public/mstest-runner/runner_vs_vstest/1000C_100M/MSTestConfiguration.cs",
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Data/TestDataConnectionFactory.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Data/TestDataConnectionSql.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Deployment/TestRunDirectories.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Discovery/TestMethodValidator.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestAssemblyInfo.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestAssemblySettingsProvider.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestClassInfo.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestExecutionManager.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestMethodInfo.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestMethodRunner.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Extensions/TestCaseExtensions.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Extensions/TestResultExtensions.cs",
       "framework": "mstest",
       "suiteCount": 0,
       "testCount": 0
     }
   ],
   "stats": {
-    "filesMatched": 1487,
-    "filesScanned": 2649
+    "filesMatched": 264,
+    "filesScanned": 509
   }
 }

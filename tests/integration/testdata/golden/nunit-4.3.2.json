@@ -2,10 +2,10 @@
   "repository": "nunit",
   "ref": "4.3.2",
   "expectedFrameworks": ["nunit"],
-  "fileCount": 376,
-  "testCount": 4928,
+  "fileCount": 313,
+  "testCount": 4330,
   "frameworkCounts": {
-    "nunit": 376
+    "nunit": 313
   },
   "sampleFiles": [
     {
@@ -21,40 +21,10 @@
       "testCount": 2
     },
     {
-      "path": "src/NUnitFramework/benchmarks/nunit.framework.benchmarks/CompositeWorkItemBenchmark.cs",
-      "framework": "nunit",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "src/NUnitFramework/benchmarks/nunit.framework.benchmarks/Program.cs",
-      "framework": "nunit",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
       "path": "src/NUnitFramework/framework/Attributes/TestAttribute.cs",
       "framework": "nunit",
       "suiteCount": 0,
       "testCount": 0
-    },
-    {
-      "path": "src/NUnitFramework/framework/Attributes/TheoryAttribute.cs",
-      "framework": "nunit",
-      "suiteCount": 0,
-      "testCount": 0
-    },
-    {
-      "path": "src/NUnitFramework/mock-assembly/MockAssembly.cs",
-      "framework": "nunit",
-      "suiteCount": 9,
-      "testCount": 27
-    },
-    {
-      "path": "src/NUnitFramework/nunit.framework.legacy.tests/ArrayNotEqualFixture.cs",
-      "framework": "nunit",
-      "suiteCount": 1,
-      "testCount": 3
     },
     {
       "path": "src/NUnitFramework/nunit.framework.legacy.tests/Assert.Types.Tests.cs",
@@ -81,12 +51,6 @@
       "testCount": 43
     },
     {
-      "path": "src/NUnitFramework/nunit.framework.legacy.tests/ContainsFixture.cs",
-      "framework": "nunit",
-      "suiteCount": 1,
-      "testCount": 2
-    },
-    {
       "path": "src/NUnitFramework/nunit.framework.legacy.tests/DirectoryAssertTests.cs",
       "framework": "nunit",
       "suiteCount": 1,
@@ -99,38 +63,74 @@
       "testCount": 39
     },
     {
-      "path": "src/NUnitFramework/nunit.framework.legacy.tests/GreaterEqualFixture.cs",
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/StringAssertTests.cs",
       "framework": "nunit",
       "suiteCount": 1,
-      "testCount": 12
+      "testCount": 23
     },
     {
-      "path": "src/NUnitFramework/nunit.framework.legacy.tests/GreaterFixture.cs",
+      "path": "src/NUnitFramework/nunitlite.tests/CommandLineTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 115
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/CreateTestFilterTests.cs",
       "framework": "nunit",
       "suiteCount": 1,
       "testCount": 8
     },
     {
-      "path": "src/NUnitFramework/nunit.framework.legacy.tests/LessEqualFixture.cs",
+      "path": "src/NUnitFramework/nunitlite.tests/DefaultOptionsProviderTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/ExtendedTextWrapperTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/MakeRunSettingsTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/NUnit2XmlOutputWriterTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 37
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/NUnit3XmlOutputWriterTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 37
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/OutputSpecificationTests.cs",
       "framework": "nunit",
       "suiteCount": 1,
       "testCount": 6
     },
     {
-      "path": "src/NUnitFramework/nunit.framework.legacy.tests/LessFixture.cs",
+      "path": "src/NUnitFramework/nunitlite.tests/SchemaTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/TeamCityEventListenerTests.cs",
       "framework": "nunit",
       "suiteCount": 1,
       "testCount": 7
-    },
-    {
-      "path": "src/NUnitFramework/nunit.framework.legacy.tests/NegativeFixture.cs",
-      "framework": "nunit",
-      "suiteCount": 1,
-      "testCount": 3
     }
   ],
   "stats": {
-    "filesMatched": 376,
-    "filesScanned": 946
+    "filesMatched": 313,
+    "filesScanned": 418
   }
 }
