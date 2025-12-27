@@ -3,7 +3,7 @@
   "ref": "v2.3.3",
   "expectedFrameworks": ["cargo-test", "jest", "vitest"],
   "fileCount": 230,
-  "testCount": 772,
+  "testCount": 774,
   "frameworkCounts": {
     "cargo-test": 164,
     "jest": 62,

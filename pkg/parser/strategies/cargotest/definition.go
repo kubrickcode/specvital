@@ -19,12 +19,15 @@ const frameworkName = "cargo-test"
 
 // Tree-sitter node types for Rust
 const (
-	nodeAttributeItem = "attribute_item"
-	nodeAttribute     = "attribute"
-	nodeFunctionItem  = "function_item"
-	nodeModItem       = "mod_item"
-	nodeIdentifier    = "identifier"
-	nodeMetaItem      = "meta_item"
+	nodeAttributeItem    = "attribute_item"
+	nodeAttribute        = "attribute"
+	nodeFunctionItem     = "function_item"
+	nodeModItem          = "mod_item"
+	nodeIdentifier       = "identifier"
+	nodeMetaItem         = "meta_item"
+	nodeMacroInvocation  = "macro_invocation"
+	nodeTokenTree        = "token_tree"
+	nodeScopedIdentifier = "scoped_identifier"
 )
 
 func init() {
@@ -80,6 +83,7 @@ var cargoTestPatterns = []struct {
 	{regexp.MustCompile(`#\[cfg\(test\)\]`), "#[cfg(test)] attribute"},
 	{regexp.MustCompile(`#\[ignore\]`), "#[ignore] attribute"},
 	{regexp.MustCompile(`#\[should_panic`), "#[should_panic] attribute"},
+	{regexp.MustCompile(`\w*test\w*!\s*\(`), "macro-based test pattern"},
 }
 
 func (m *CargoTestContentMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
@@ -167,6 +171,32 @@ func parseRustAST(root *sitter.Node, source []byte, filename string, file *domai
 				file.Tests = append(file.Tests, test)
 			}
 			return false // No need to traverse into function body
+
+		case nodeMacroInvocation:
+			macroName, testName := extractMacroTest(node, source)
+			if macroName == "" || testName == "" {
+				return true // Continue traversal
+			}
+
+			if !isTestMacro(macroName) {
+				return true // Not a test macro, continue
+			}
+
+			test := domain.Test{
+				Name:     testName,
+				Status:   domain.TestStatusActive,
+				Modifier: macroName + "!",
+				Location: parser.GetLocation(node, filename),
+			}
+
+			// Find parent test module, if any
+			parentSuite := findParentTestSuite(node, testModules)
+			if parentSuite != nil {
+				parentSuite.Tests = append(parentSuite.Tests, test)
+			} else {
+				file.Tests = append(file.Tests, test)
+			}
+			return false // No need to traverse into macro body
 		}
 
 		return true // Continue traversal for other node types
@@ -325,4 +355,69 @@ func isTestModule(modNode *sitter.Node, source []byte) bool {
 
 	name := extractModuleName(modNode, source)
 	return name == "tests"
+}
+
+// extractMacroTest extracts macro name and test name from a macro invocation.
+// For patterns like `rgtest!(test_name, ...)`, returns ("rgtest", "test_name").
+func extractMacroTest(node *sitter.Node, source []byte) (macroName, testName string) {
+	if node.Type() != nodeMacroInvocation {
+		return "", ""
+	}
+
+	// Extract macro name from the "macro" field or first child
+	macroField := node.ChildByFieldName("macro")
+	if macroField != nil {
+		macroName = extractMacroName(macroField, source)
+	} else if node.ChildCount() > 0 {
+		firstChild := node.Child(0)
+		if firstChild != nil {
+			macroName = extractMacroName(firstChild, source)
+		}
+	}
+
+	if macroName == "" {
+		return "", ""
+	}
+
+	// Extract test name from first identifier in token_tree
+	tokenTree := parser.FindChildByType(node, nodeTokenTree)
+	if tokenTree == nil {
+		return macroName, ""
+	}
+
+	testNameIdent := parser.FindChildByType(tokenTree, nodeIdentifier)
+	if testNameIdent != nil {
+		testName = parser.GetNodeText(testNameIdent, source)
+	}
+
+	return macroName, testName
+}
+
+// extractMacroName handles both simple identifiers and scoped identifiers.
+// For `crate::macros::rgtest`, returns "rgtest" (last segment).
+func extractMacroName(node *sitter.Node, source []byte) string {
+	switch node.Type() {
+	case nodeIdentifier:
+		return parser.GetNodeText(node, source)
+	case nodeScopedIdentifier:
+		// For scoped identifiers, get the last segment (name field)
+		name := node.ChildByFieldName("name")
+		if name != nil {
+			return parser.GetNodeText(name, source)
+		}
+		// Fallback: get last child identifier
+		for i := int(node.ChildCount()) - 1; i >= 0; i-- {
+			child := node.Child(i)
+			if child.Type() == nodeIdentifier {
+				return parser.GetNodeText(child, source)
+			}
+		}
+	}
+	return ""
+}
+
+// isTestMacro checks if a macro name indicates a test macro.
+// Returns true for names containing "test" (case-insensitive).
+func isTestMacro(macroName string) bool {
+	return strings.Contains(strings.ToLower(macroName), "test")
 }

@@ -364,6 +364,105 @@ fn test_basic() {
 				}
 			},
 		},
+		{
+			name: "macro-based test with test in name",
+			source: `
+rgtest!(basic_rgtest, |dir, cmd| {
+    dir.create("test.txt", "hello");
+    cmd.arg("--help");
+});
+
+rgtest!(another_test, |dir, cmd| {
+    assert!(true);
+});
+`,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Tests) != 2 {
+					t.Errorf("expected 2 tests, got %d", len(file.Tests))
+					return
+				}
+				if file.Tests[0].Name != "basic_rgtest" {
+					t.Errorf("expected test name 'basic_rgtest', got %q", file.Tests[0].Name)
+				}
+				if file.Tests[0].Modifier != "rgtest!" {
+					t.Errorf("expected modifier 'rgtest!', got %q", file.Tests[0].Modifier)
+				}
+				if file.Tests[1].Name != "another_test" {
+					t.Errorf("expected test name 'another_test', got %q", file.Tests[1].Name)
+				}
+			},
+		},
+		{
+			name: "macro-based test mixed with attribute-based test",
+			source: `
+#[test]
+fn regular_test() {
+    assert!(true);
+}
+
+rgtest!(macro_test, |dir, cmd| {
+    cmd.arg("--version");
+});
+
+#[test]
+fn another_regular() {
+    assert_eq!(1, 1);
+}
+`,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Tests) != 3 {
+					t.Errorf("expected 3 tests, got %d", len(file.Tests))
+					return
+				}
+				names := make(map[string]bool)
+				for _, test := range file.Tests {
+					names[test.Name] = true
+				}
+				if !names["regular_test"] || !names["macro_test"] || !names["another_regular"] {
+					t.Errorf("expected all tests to be detected, got %v", names)
+				}
+			},
+		},
+		{
+			name: "non-test macro is ignored",
+			source: `
+println!("hello world");
+
+assert_eq!(1, 1);
+
+format!("test: {}", value);
+`,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Tests) != 0 {
+					t.Errorf("expected 0 tests, got %d", len(file.Tests))
+				}
+			},
+		},
+		{
+			name: "test macro in test module",
+			source: `
+#[cfg(test)]
+mod tests {
+    rgtest!(module_test, |dir, cmd| {
+        assert!(true);
+    });
+}
+`,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Suites) != 1 {
+					t.Errorf("expected 1 suite, got %d", len(file.Suites))
+					return
+				}
+				suite := file.Suites[0]
+				if len(suite.Tests) != 1 {
+					t.Errorf("expected 1 test in suite, got %d", len(suite.Tests))
+					return
+				}
+				if suite.Tests[0].Name != "module_test" {
+					t.Errorf("expected test name 'module_test', got %q", suite.Tests[0].Name)
+				}
+			},
+		},
 	}
 
 	parser := &CargoTestParser{}
@@ -434,6 +533,9 @@ func TestCargoTestContentMatcher_Match(t *testing.T) {
 		{"should_panic attribute", "#[should_panic]\nfn panic_test() {}", true},
 		{"plain rust code", "fn main() { println!(\"hello\"); }", false},
 		{"struct definition", "struct Foo { bar: i32 }", false},
+		{"macro-based test rgtest", "rgtest!(my_test, |dir| {});", true},
+		{"macro-based test quicktest", "quicktest!(test_case, || {});", true},
+		{"non-test macro", "println!(\"test\");", false},
 	}
 
 	matcher := &CargoTestContentMatcher{}

@@ -2,10 +2,10 @@
   "repository": "ripgrep",
   "ref": "14.1.1",
   "expectedFrameworks": ["cargo-test"],
-  "fileCount": 47,
-  "testCount": 427,
+  "fileCount": 53,
+  "testCount": 727,
   "frameworkCounts": {
-    "cargo-test": 47
+    "cargo-test": 53
   },
   "sampleFiles": [
     {
@@ -130,7 +130,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 47,
+    "filesMatched": 53,
     "filesScanned": 97
   }
 }
