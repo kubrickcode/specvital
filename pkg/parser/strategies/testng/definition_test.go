@@ -384,11 +384,190 @@ class AllTestsClass {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		// Note: TestNG class-level @Test makes all public methods tests,
-		// but we only detect method-level @Test annotations
-		if len(testFile.Suites) != 0 {
-			// This is expected since we don't detect class-level @Test for test methods
-			t.Logf("Note: Class-level @Test not supported yet")
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests, got %d", len(suite.Tests))
+		}
+		if suite.Tests[0].Name != "testOne" {
+			t.Errorf("expected Tests[0].Name='testOne', got '%s'", suite.Tests[0].Name)
+		}
+		if suite.Tests[1].Name != "testTwo" {
+			t.Errorf("expected Tests[1].Name='testTwo', got '%s'", suite.Tests[1].Name)
+		}
+	})
+
+	t.Run("class-level @Test excludes config methods", func(t *testing.T) {
+		source := `
+package com.example;
+
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.DataProvider;
+
+@Test
+class ConfigMethodsTest {
+    public void testMethod() {}
+
+    @BeforeMethod
+    public void setup() {}
+
+    @AfterMethod
+    public void teardown() {}
+
+    @DataProvider
+    public Object[][] data() { return null; }
+
+    private void helper() {}
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "ConfigMethodsTest.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 1 {
+			t.Fatalf("expected 1 Test (testMethod only), got %d", len(suite.Tests))
+		}
+		if suite.Tests[0].Name != "testMethod" {
+			t.Errorf("expected Tests[0].Name='testMethod', got '%s'", suite.Tests[0].Name)
+		}
+	})
+
+	t.Run("class-level @Test with method-level @Test mixed", func(t *testing.T) {
+		source := `
+package com.example;
+
+import org.testng.annotations.Test;
+
+@Test
+class MixedTest {
+    @Test(description = "explicit test")
+    public void explicitTest() {}
+
+    public void implicitTest() {}
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "MixedTest.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests, got %d", len(suite.Tests))
+		}
+		if suite.Tests[0].Name != "explicit test" {
+			t.Errorf("expected Tests[0].Name='explicit test', got '%s'", suite.Tests[0].Name)
+		}
+		if suite.Tests[1].Name != "implicitTest" {
+			t.Errorf("expected Tests[1].Name='implicitTest', got '%s'", suite.Tests[1].Name)
+		}
+	})
+
+	t.Run("class-level @Test(enabled=false) marks all methods skipped", func(t *testing.T) {
+		source := `
+package com.example;
+
+import org.testng.annotations.Test;
+
+@Test(enabled = false)
+class SkippedClassTest {
+    public void testOne() {}
+    public void testTwo() {}
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "SkippedClassTest.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests, got %d", len(suite.Tests))
+		}
+		for i, test := range suite.Tests {
+			if test.Status != domain.TestStatusSkipped {
+				t.Errorf("expected Tests[%d].Status='skipped', got '%s'", i, test.Status)
+			}
+		}
+	})
+
+	t.Run("class-level @Test with groups attribute", func(t *testing.T) {
+		source := `
+package com.example;
+
+import org.testng.annotations.Test;
+
+@Test(groups = "issue2195")
+public class TestClass {
+    public void someMethod() {}
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "TestClass.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 1 {
+			t.Fatalf("expected 1 Test, got %d", len(suite.Tests))
+		}
+		if suite.Tests[0].Name != "someMethod" {
+			t.Errorf("expected Tests[0].Name='someMethod', got '%s'", suite.Tests[0].Name)
+		}
+	})
+
+	t.Run("class-level @Test excludes non-public methods", func(t *testing.T) {
+		source := `
+package com.example;
+
+import org.testng.annotations.Test;
+
+@Test
+class VisibilityTest {
+    public void publicTest() {}
+    protected void protectedMethod() {}
+    void defaultMethod() {}
+    private void privateMethod() {}
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "VisibilityTest.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 1 {
+			t.Fatalf("expected 1 Test (publicTest only), got %d", len(suite.Tests))
+		}
+		if suite.Tests[0].Name != "publicTest" {
+			t.Errorf("expected Tests[0].Name='publicTest', got '%s'", suite.Tests[0].Name)
 		}
 	})
 

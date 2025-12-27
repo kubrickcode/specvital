@@ -101,6 +101,23 @@ var testngPatterns = []struct {
 	{regexp.MustCompile(`@AfterMethod`), "@AfterMethod annotation"},
 }
 
+// configAnnotations defines TestNG configuration annotations that exclude a method from being a test.
+// When a class has @Test annotation, all public methods become tests EXCEPT those with config annotations.
+var configAnnotations = map[string]bool{
+	"BeforeMethod": true,
+	"AfterMethod":  true,
+	"BeforeClass":  true,
+	"AfterClass":   true,
+	"BeforeSuite":  true,
+	"AfterSuite":   true,
+	"BeforeTest":   true,
+	"AfterTest":    true,
+	"BeforeGroups": true,
+	"AfterGroups":  true,
+	"DataProvider": true,
+	"Factory":      true,
+}
+
 func (m *TestNGContentMatcher) Match(ctx context.Context, signal framework.Signal) framework.MatchResult {
 	if signal.Type != framework.SignalFileContent {
 		return framework.NoMatch()
@@ -165,6 +182,7 @@ func parseTestClass(node *sitter.Node, source []byte, filename string) *domain.T
 
 	modifiers := javaast.GetModifiers(node)
 	classStatus, classModifier := getClassStatusAndModifier(modifiers, source)
+	hasClassLevelTest := javaast.HasAnnotation(modifiers, source, "Test")
 
 	body := javaast.GetClassBody(node)
 	if body == nil {
@@ -177,7 +195,7 @@ func parseTestClass(node *sitter.Node, source []byte, filename string) *domain.T
 		child := body.Child(i)
 
 		if child.Type() == javaast.NodeMethodDeclaration {
-			if test := parseTestMethod(child, source, filename, classStatus, classModifier); test != nil {
+			if test := parseTestMethod(child, source, filename, classStatus, classModifier, hasClassLevelTest); test != nil {
 				tests = append(tests, *test)
 			}
 		}
@@ -196,14 +214,11 @@ func parseTestClass(node *sitter.Node, source []byte, filename string) *domain.T
 	}
 }
 
-func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string) *domain.Test {
+func parseTestMethod(node *sitter.Node, source []byte, filename string, classStatus domain.TestStatus, classModifier string, hasClassLevelTest bool) *domain.Test {
 	modifiers := javaast.GetModifiers(node)
-	if modifiers == nil {
-		return nil
-	}
 
 	annotations := javaast.GetAnnotations(modifiers)
-	isTest := false
+	hasMethodTest := false
 	var description string
 	status := classStatus
 	modifier := classModifier
@@ -211,15 +226,23 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	for _, ann := range annotations {
 		name := javaast.GetAnnotationName(ann, source)
 
-		switch name {
-		case "Test":
-			isTest = true
+		if configAnnotations[name] {
+			return nil
+		}
+
+		if name == "Test" {
+			hasMethodTest = true
 			if hasEnabledFalse(ann, source) {
 				status = domain.TestStatusSkipped
 				modifier = "@Test(enabled=false)"
 			}
 			description = getTestDescription(ann, source)
 		}
+	}
+
+	isTest := hasMethodTest
+	if !isTest && hasClassLevelTest {
+		isTest = isPublicMethod(modifiers)
 	}
 
 	if !isTest {
@@ -242,6 +265,21 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 		Modifier: modifier,
 		Location: parser.GetLocation(node, filename),
 	}
+}
+
+// isPublicMethod checks if a method has the public modifier.
+func isPublicMethod(modifiers *sitter.Node) bool {
+	if modifiers == nil {
+		return false
+	}
+
+	for i := 0; i < int(modifiers.ChildCount()); i++ {
+		child := modifiers.Child(i)
+		if child.Type() == "public" {
+			return true
+		}
+	}
+	return false
 }
 
 // hasEnabledFalse checks if the @Test annotation has enabled=false.

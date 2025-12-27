@@ -3,7 +3,7 @@
   "ref": "7.10.2",
   "expectedFrameworks": ["testng"],
   "fileCount": 1710,
-  "testCount": 3042,
+  "testCount": 3136,
   "frameworkCounts": {
     "testng": 1710
   },
@@ -54,7 +54,7 @@
       "path": "testng-core/src/test/groovy/test/groovy/Issue2360Sample.java",
       "framework": "testng",
       "suiteCount": 1,
-      "testCount": 1
+      "testCount": 4
     },
     {
       "path": "testng-core/src/test/java/NoPackageTest.java",
