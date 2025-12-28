@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-// GitHub naming rules:
-// - Owner: 1-39 chars, alphanumeric or hyphen, cannot start/end with hyphen
-// - Repo: 1-100 chars, alphanumeric, hyphen, underscore, dot, cannot be ".." or end with ".git"
 const OWNER_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
 const REPO_PATTERN = /^(?!\.\.)[a-zA-Z0-9._-]{1,100}(?<!\.git)$/;
-const GITHUB_URL_PATTERN = /^https?:\/\/github\.com\/([^/]+)\/([^/]+?)\/?$/;
+
+const SHORTHAND_PATTERN = /^([^/]+)\/([^/]+)$/;
+const GITHUB_URL_PATTERN = /^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?(?:\/.*)?$/;
+const GITHUB_DOMAIN_PATTERN = /^github\.com\/([^/]+)\/([^/]+?)(?:\.git)?(?:\/.*)?$/;
 
 export type ParsedGitHubUrl = {
   owner: string;
@@ -16,22 +16,52 @@ export type ParseGitHubUrlResult =
   | { data: ParsedGitHubUrl; success: true }
   | { error: string; success: false };
 
-const gitHubUrlSchema = z
+type NormalizeResult = { owner: string; repo: string; success: true } | { success: false };
+
+const extractOwnerRepo = (input: string): NormalizeResult => {
+  const trimmed = input.trim();
+  if (!trimmed) return { success: false };
+
+  let match = trimmed.match(GITHUB_URL_PATTERN);
+  if (match) {
+    return { owner: match[1], repo: match[2], success: true };
+  }
+
+  match = trimmed.match(GITHUB_DOMAIN_PATTERN);
+  if (match) {
+    return { owner: match[1], repo: match[2], success: true };
+  }
+
+  match = trimmed.match(SHORTHAND_PATTERN);
+  if (match) {
+    return { owner: match[1], repo: match[2], success: true };
+  }
+
+  return { success: false };
+};
+
+export const normalizeGitHubInput = (input: string): string | null => {
+  const result = extractOwnerRepo(input);
+  if (!result.success) return null;
+  return `${result.owner}/${result.repo}`;
+};
+
+const gitHubInputSchema = z
   .string()
   .trim()
   .min(1, "URL is required")
-  .superRefine((url, ctx) => {
-    const match = url.match(GITHUB_URL_PATTERN);
+  .superRefine((input, ctx) => {
+    const result = extractOwnerRepo(input);
 
-    if (!match) {
+    if (!result.success) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Invalid GitHub repository URL (e.g., https://github.com/owner/repo)",
+        message: "Invalid GitHub repository (e.g., owner/repo or https://github.com/owner/repo)",
       });
       return z.NEVER;
     }
 
-    const [, owner, repo] = match;
+    const { owner, repo } = result;
 
     if (!OWNER_PATTERN.test(owner)) {
       ctx.addIssue({
@@ -57,13 +87,14 @@ const gitHubUrlSchema = z
       return z.NEVER;
     }
   })
-  .transform((url) => {
-    const match = url.match(GITHUB_URL_PATTERN)!;
-    return { owner: match[1], repo: match[2] };
+  .transform((input) => {
+    const result = extractOwnerRepo(input);
+    if (!result.success) throw new Error("Unexpected parse failure");
+    return { owner: result.owner, repo: result.repo };
   });
 
-export const parseGitHubUrl = (url: string): ParseGitHubUrlResult => {
-  const result = gitHubUrlSchema.safeParse(url);
+export const parseGitHubUrl = (input: string): ParseGitHubUrlResult => {
+  const result = gitHubInputSchema.safeParse(input);
 
   if (!result.success) {
     return {
@@ -78,6 +109,6 @@ export const parseGitHubUrl = (url: string): ParseGitHubUrlResult => {
   };
 };
 
-export const isValidGitHubUrl = (url: string): boolean => {
-  return gitHubUrlSchema.safeParse(url).success;
+export const isValidGitHubUrl = (input: string): boolean => {
+  return gitHubInputSchema.safeParse(input).success;
 };

@@ -22,7 +22,7 @@ export const UrlInputForm = () => {
 
   const validationState = useDebouncedValidation(url, isValidGitHubUrl, {
     delay: 500,
-    minLength: 10,
+    minLength: 3,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -96,7 +96,7 @@ export const UrlInputForm = () => {
             id="github-url"
             onChange={handleChange}
             placeholder={t("inputPlaceholder")}
-            type="url"
+            type="text"
             value={url}
           />
           {renderValidationIcon()}

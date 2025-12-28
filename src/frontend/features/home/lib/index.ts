@@ -1,1 +1,1 @@
-export { isValidGitHubUrl, parseGitHubUrl } from "./github-url";
+export { isValidGitHubUrl, normalizeGitHubInput, parseGitHubUrl } from "./github-url";
