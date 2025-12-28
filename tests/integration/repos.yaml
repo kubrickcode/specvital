@@ -19,6 +19,12 @@ repositories:
       - unittest
     nondeterministic: true
 
+  - name: flask
+    url: https://github.com/pallets/flask
+    ref: 3.1.2
+    frameworks:
+      - pytest
+
   - name: python-unittest-tutorial
     url: https://github.com/cgoldberg/python-unittest-tutorial
     ref: master
