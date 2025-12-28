@@ -1,1 +1,7 @@
-export { isValidGitHubUrl, normalizeGitHubInput, parseGitHubUrl } from "./github-url";
+export {
+  getInputFeedback,
+  isValidGitHubUrl,
+  normalizeGitHubInput,
+  parseGitHubUrl,
+  type InputFeedback,
+} from "./github-url";

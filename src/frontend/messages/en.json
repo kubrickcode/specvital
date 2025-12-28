@@ -29,6 +29,11 @@
     "helperText": "",
     "inputLabel": "GitHub Repository URL",
     "demoLink": "See example",
+    "supportedFormats": {
+      "label": "View supported formats",
+      "title": "Supported formats",
+      "note": "Branch/file paths are automatically extracted"
+    },
     "trustBadges": {
       "instant": "Instant analysis",
       "multiFramework": "20+ frameworks",

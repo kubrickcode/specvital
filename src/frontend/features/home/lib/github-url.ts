@@ -112,3 +112,43 @@ export const parseGitHubUrl = (input: string): ParseGitHubUrlResult => {
 export const isValidGitHubUrl = (input: string): boolean => {
   return gitHubInputSchema.safeParse(input).success;
 };
+
+export type InputFeedback =
+  | { type: "empty" }
+  | { normalized: string; type: "shorthand" }
+  | { normalized: string; type: "deeplink" }
+  | { type: "url" }
+  | { type: "invalid" };
+
+const DEEPLINK_SUFFIX_PATTERN =
+  /\/(?:tree|blob|issues|pull|pulls|actions|releases|commits|branches|tags)\b/;
+
+export const getInputFeedback = (input: string): InputFeedback => {
+  const trimmed = input.trim();
+  if (!trimmed) return { type: "empty" };
+
+  if (GITHUB_URL_PATTERN.test(trimmed) || GITHUB_DOMAIN_PATTERN.test(trimmed)) {
+    if (DEEPLINK_SUFFIX_PATTERN.test(trimmed)) {
+      const result = parseGitHubUrl(trimmed);
+      if (result.success) {
+        return {
+          normalized: `${result.data.owner}/${result.data.repo}`,
+          type: "deeplink",
+        };
+      }
+    }
+    return { type: "url" };
+  }
+
+  if (SHORTHAND_PATTERN.test(trimmed)) {
+    const result = parseGitHubUrl(trimmed);
+    if (result.success) {
+      return {
+        normalized: `github.com/${result.data.owner}/${result.data.repo}`,
+        type: "shorthand",
+      };
+    }
+  }
+
+  return { type: "invalid" };
+};

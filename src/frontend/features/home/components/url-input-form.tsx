@@ -1,17 +1,18 @@
 "use client";
 
-import { AlertCircle, ArrowRight, CheckCircle, Github, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle, Github, HelpCircle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import { useDebouncedValidation } from "../hooks/use-debounced-validation";
-import { isValidGitHubUrl, parseGitHubUrl } from "../lib";
+import { getInputFeedback, isValidGitHubUrl, parseGitHubUrl } from "../lib";
 
 export const UrlInputForm = () => {
   const router = useRouter();
@@ -50,23 +51,17 @@ export const UrlInputForm = () => {
     }
   };
 
-  const renderValidationIcon = () => {
-    if (validationState === "valid") {
+  const renderInputHint = () => {
+    const feedback = getInputFeedback(url);
+
+    if (feedback.type === "shorthand" || feedback.type === "deeplink") {
       return (
-        <CheckCircle
-          aria-hidden="true"
-          className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500"
-        />
+        <p aria-live="polite" className="text-xs text-muted-foreground" id="url-hint">
+          → {feedback.normalized}
+        </p>
       );
     }
-    if (validationState === "invalid") {
-      return (
-        <AlertCircle
-          aria-hidden="true"
-          className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500"
-        />
-      );
-    }
+
     return null;
   };
 
@@ -88,7 +83,7 @@ export const UrlInputForm = () => {
             aria-invalid={!!error || validationState === "invalid"}
             aria-label={t("inputLabel")}
             className={cn(
-              "pl-10 pr-10 h-11 sm:h-10",
+              "pl-10 pr-16 h-11 sm:h-10",
               validationState === "valid" && "border-green-500/50 focus-visible:ring-green-500/20",
               validationState === "invalid" && "border-amber-500/50 focus-visible:ring-amber-500/20"
             )}
@@ -99,7 +94,36 @@ export const UrlInputForm = () => {
             type="text"
             value={url}
           />
-          {renderValidationIcon()}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  aria-label={t("supportedFormats.label")}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  type="button"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs" side="top" sideOffset={8}>
+                <div className="space-y-2">
+                  <p className="font-medium text-sm">{t("supportedFormats.title")}</p>
+                  <ul className="text-xs space-y-1 list-disc list-inside">
+                    <li>https://github.com/owner/repo</li>
+                    <li>github.com/owner/repo</li>
+                    <li>owner/repo</li>
+                  </ul>
+                  <p className="text-xs text-muted-foreground">{t("supportedFormats.note")}</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+            {validationState === "valid" && (
+              <CheckCircle aria-hidden="true" className="h-4 w-4 text-green-500" />
+            )}
+            {validationState === "invalid" && (
+              <AlertCircle aria-hidden="true" className="h-4 w-4 text-amber-500" />
+            )}
+          </div>
           {validationState !== "idle" && (
             <span aria-live="polite" className="sr-only" id="url-validation-status">
               {validationState === "valid" ? "Valid GitHub URL" : "Invalid GitHub URL format"}
@@ -126,6 +150,7 @@ export const UrlInputForm = () => {
           )}
         </Button>
       </div>
+      {renderInputHint()}
       {error && (
         <Alert id="url-error" variant="destructive">
           <AlertCircle className="h-4 w-4" />

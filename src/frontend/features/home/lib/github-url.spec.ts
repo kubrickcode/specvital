@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { isValidGitHubUrl, normalizeGitHubInput, parseGitHubUrl } from "./github-url";
+import {
+  getInputFeedback,
+  isValidGitHubUrl,
+  normalizeGitHubInput,
+  parseGitHubUrl,
+} from "./github-url";
 
 describe("parseGitHubUrl", () => {
   describe("valid URLs", () => {
@@ -253,5 +258,65 @@ describe("isValidGitHubUrl", () => {
 
   it("returns false for invalid input", () => {
     expect(isValidGitHubUrl("invalid")).toBe(false);
+  });
+});
+
+describe("getInputFeedback", () => {
+  it("returns empty for empty input", () => {
+    expect(getInputFeedback("")).toEqual({ type: "empty" });
+    expect(getInputFeedback("   ")).toEqual({ type: "empty" });
+  });
+
+  it("returns url for full URL", () => {
+    expect(getInputFeedback("https://github.com/facebook/react")).toEqual({ type: "url" });
+    expect(getInputFeedback("http://github.com/owner/repo")).toEqual({ type: "url" });
+  });
+
+  it("returns url for github.com format without extra path", () => {
+    expect(getInputFeedback("github.com/facebook/react")).toEqual({ type: "url" });
+  });
+
+  it("returns deeplink for URLs with extra path", () => {
+    expect(getInputFeedback("https://github.com/facebook/react/tree/main")).toEqual({
+      normalized: "facebook/react",
+      type: "deeplink",
+    });
+    expect(getInputFeedback("github.com/owner/repo/tree/main")).toEqual({
+      normalized: "owner/repo",
+      type: "deeplink",
+    });
+    expect(getInputFeedback("https://github.com/vercel/next.js/blob/main/README.md")).toEqual({
+      normalized: "vercel/next.js",
+      type: "deeplink",
+    });
+    expect(getInputFeedback("https://github.com/owner/repo/issues/123")).toEqual({
+      normalized: "owner/repo",
+      type: "deeplink",
+    });
+    expect(getInputFeedback("https://github.com/owner/repo/pull/456")).toEqual({
+      normalized: "owner/repo",
+      type: "deeplink",
+    });
+  });
+
+  it("returns shorthand with normalized URL", () => {
+    expect(getInputFeedback("facebook/react")).toEqual({
+      normalized: "github.com/facebook/react",
+      type: "shorthand",
+    });
+    expect(getInputFeedback("vercel/next.js")).toEqual({
+      normalized: "github.com/vercel/next.js",
+      type: "shorthand",
+    });
+  });
+
+  it("returns invalid for invalid shorthand", () => {
+    expect(getInputFeedback("-owner/repo")).toEqual({ type: "invalid" });
+    expect(getInputFeedback("owner-/repo")).toEqual({ type: "invalid" });
+  });
+
+  it("returns invalid for non-matching input", () => {
+    expect(getInputFeedback("react")).toEqual({ type: "invalid" });
+    expect(getInputFeedback("not a url")).toEqual({ type: "invalid" });
   });
 });

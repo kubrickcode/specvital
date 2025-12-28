@@ -29,6 +29,11 @@
     "helperText": "",
     "inputLabel": "GitHub 저장소 URL",
     "demoLink": "예시 보기",
+    "supportedFormats": {
+      "label": "지원 형식 보기",
+      "title": "지원 형식",
+      "note": "branch/file 경로도 자동 추출됩니다"
+    },
     "trustBadges": {
       "instant": "즉시 분석",
       "multiFramework": "20+ 프레임워크",
