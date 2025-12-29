@@ -83,6 +83,7 @@ XX-brief-decision-title.md
 | 11  | [Integration Testing with Golden Snapshots](./core/11-integration-testing-golden-snapshots.md) | Testing | 2024-12-23 |
 | 12  | [Parallel Scanning with Worker Pool](./core/12-parallel-scanning-worker-pool.md)               | Perf    | 2024-12-23 |
 | 13  | [NaCl SecretBox Encryption](./core/13-nacl-secretbox-encryption.md)                            | Crypto  | 2024-12-23 |
+| 14  | [Indirect Import Alias Detection Unsupported](./core/14-indirect-import-unsupported.md)        | Parser  | 2025-12-29 |
 
 ### Collector Repository
 

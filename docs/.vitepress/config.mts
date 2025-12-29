@@ -94,6 +94,7 @@ export default defineConfig({
                     { text: "Golden Snapshot Testing", link: "/en/adr/core/11-integration-testing-golden-snapshots" },
                     { text: "Parallel Scanning", link: "/en/adr/core/12-parallel-scanning-worker-pool" },
                     { text: "NaCl SecretBox Encryption", link: "/en/adr/core/13-nacl-secretbox-encryption" },
+                    { text: "Indirect Import Unsupported", link: "/en/adr/core/14-indirect-import-unsupported" },
                   ],
                 },
                 {
@@ -206,6 +207,7 @@ export default defineConfig({
                     { text: "골든 스냅샷 테스트", link: "/ko/adr/core/11-integration-testing-golden-snapshots" },
                     { text: "병렬 스캐닝", link: "/ko/adr/core/12-parallel-scanning-worker-pool" },
                     { text: "NaCl SecretBox 암호화", link: "/ko/adr/core/13-nacl-secretbox-encryption" },
+                    { text: "간접 Import 미지원", link: "/ko/adr/core/14-indirect-import-unsupported" },
                   ],
                 },
                 {

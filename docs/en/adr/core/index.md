@@ -26,6 +26,7 @@ Architecture Decision Records for the [specvital/core](https://github.com/specvi
 | 11  | [Integration Testing with Golden Snapshots](./11-integration-testing-golden-snapshots.md) | 2024-12-23 |
 | 12  | [Parallel Scanning with Worker Pool](./12-parallel-scanning-worker-pool.md)               | 2024-12-23 |
 | 13  | [NaCl SecretBox Encryption](./13-nacl-secretbox-encryption.md)                            | 2024-12-23 |
+| 14  | [Indirect Import Alias Detection Unsupported](./14-indirect-import-unsupported.md)        | 2025-12-29 |
 
 ## Related
 

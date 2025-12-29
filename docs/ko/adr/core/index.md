@@ -26,6 +26,7 @@ description: 코어 라이브러리(테스트 파서 엔진) 아키텍처 의사
 | 11  | [골든 스냅샷 통합 테스트](./11-integration-testing-golden-snapshots.md)  | 2024-12-23 |
 | 12  | [Worker Pool 병렬 스캔](./12-parallel-scanning-worker-pool.md)           | 2024-12-23 |
 | 13  | [NaCl SecretBox 암호화](./13-nacl-secretbox-encryption.md)               | 2024-12-23 |
+| 14  | [간접 Import Alias 감지 미지원](./14-indirect-import-unsupported.md)     | 2025-12-29 |
 
 ## 관련 문서
 

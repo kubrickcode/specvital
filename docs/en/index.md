@@ -54,6 +54,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [Integration Testing with Golden Snapshots](./adr/core/11-integration-testing-golden-snapshots.md)
 - [Parallel Scanning with Worker Pool](./adr/core/12-parallel-scanning-worker-pool.md)
 - [NaCl SecretBox Encryption](./adr/core/13-nacl-secretbox-encryption.md)
+- [Indirect Import Alias Detection Unsupported](./adr/core/14-indirect-import-unsupported.md)
 
 **[Collector](./adr/collector/)**
 
