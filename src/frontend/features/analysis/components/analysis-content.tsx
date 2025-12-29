@@ -2,13 +2,18 @@
 
 import { ExternalLink, GitCommit } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 
 import type { AnalysisResult } from "@/lib/api";
 import { formatAnalysisDate, SHORT_SHA_LENGTH } from "@/lib/utils";
 
+import { FilterEmptyState } from "./filter-empty-state";
+import { SearchInput } from "./search-input";
 import { ShareButton } from "./share-button";
 import { StatsCard } from "./stats-card";
 import { TestList } from "./test-list";
+import { useFilterState } from "../hooks/use-filter-state";
+import { filterSuites } from "../utils/filter-suites";
 
 type AnalysisContentProps = {
   result: AnalysisResult;
@@ -16,6 +21,15 @@ type AnalysisContentProps = {
 
 export const AnalysisContent = ({ result }: AnalysisContentProps) => {
   const t = useTranslations("analyze");
+  const { query, setQuery } = useFilterState();
+
+  const filteredSuites = useMemo(
+    () => filterSuites(result.suites, { query }),
+    [result.suites, query]
+  );
+
+  const hasFilter = query.trim().length > 0;
+  const hasResults = filteredSuites.length > 0;
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -50,8 +64,13 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
         <StatsCard summary={result.summary} />
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">{t("testSuites")}</h2>
-          <TestList suites={result.suites} />
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold">{t("testSuites")}</h2>
+            <div className="w-full max-w-sm">
+              <SearchInput onChange={setQuery} value={query} />
+            </div>
+          </div>
+          {hasFilter && !hasResults ? <FilterEmptyState /> : <TestList suites={filteredSuites} />}
         </section>
       </div>
     </main>

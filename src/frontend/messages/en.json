@@ -46,6 +46,12 @@
     "testSuites": "Test Suites",
     "noTestSuites": "No test suites found in this repository.",
     "retry": "Try Again",
+    "filter": {
+      "clearSearch": "Clear search",
+      "noResults": "No matching tests found",
+      "noResultsDescription": "Try adjusting your search query",
+      "searchPlaceholder": "Search tests or files..."
+    },
     "status": {
       "loading": "Loading...",
       "loadingTitle": "Preparing",

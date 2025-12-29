@@ -46,6 +46,12 @@
     "testSuites": "테스트 스위트",
     "noTestSuites": "이 저장소에서 테스트 스위트를 찾을 수 없습니다.",
     "retry": "다시 시도",
+    "filter": {
+      "clearSearch": "검색 지우기",
+      "noResults": "일치하는 테스트가 없습니다",
+      "noResultsDescription": "검색어를 조정해보세요",
+      "searchPlaceholder": "테스트 또는 파일 검색..."
+    },
     "status": {
       "loading": "로딩 중...",
       "loadingTitle": "준비 중",
