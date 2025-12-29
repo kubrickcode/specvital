@@ -96,11 +96,11 @@ Execute tests to get exact counts.
 | ------------------------- | --------------------------- | --------------- | --------------------- |
 | **JavaScript/TypeScript** |                             |                 |                       |
 | Jest                      | `it.each([...])`            | Partial         | 1 + `(dynamic cases)` |
-| Jest                      | `forEach` + `it`            | ❌ Bug          | 1                     |
+| Jest                      | `forEach` + `it`            | ✅              | 1 + `(dynamic cases)` |
 | Vitest                    | `it.each([...])`            | Partial         | 1 + `(dynamic cases)` |
-| Vitest                    | `forEach` + `it`            | ❌ Bug          | 1                     |
-| Mocha                     | `forEach` + `it`            | ❌ Bug          | 1                     |
-| Cypress                   | `forEach` + `it`            | ❌ Bug          | 1                     |
+| Vitest                    | `forEach` + `it`            | ✅              | 1 + `(dynamic cases)` |
+| Mocha                     | `forEach` + `it`            | ✅              | 1 + `(dynamic cases)` |
+| Cypress                   | `forEach` + `it`            | ✅              | 1 + `(dynamic cases)` |
 | Playwright                | loop + `test`               | ❌              | 1                     |
 | **Python**                |                             |                 |                       |
 | pytest                    | `@pytest.mark.parametrize`  | ❌              | 1                     |
@@ -160,12 +160,12 @@ Execute tests to get exact counts.
 
 ## Implementation
 
-### Phase 1: Bug Fixes (Required)
+### Phase 1: Bug Fixes (Completed ✅)
 
-Fix patterns that should detect tests but currently return 0:
+~~Fix patterns that should detect tests but currently return 0:~~
 
-1. **JS/TS**: `forEach`/`map` callback containing `it`/`test`
-2. **JS/TS**: `it.each([{...}])` with object array (currently 0, should be 1)
+1. ~~**JS/TS**: `forEach`/`map` callback containing `it`/`test`~~ → **Fixed (2025-12-22)**
+2. ~~**JS/TS**: `it.each([{...}])` with object array (currently 0, should be 1)~~ → **Fixed (2025-12-22)**
 
 ### Phase 2: Enhancement (Optional)
 

@@ -54,6 +54,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [골든 스냅샷 통합 테스트](./adr/core/11-integration-testing-golden-snapshots.md)
 - [Worker Pool 병렬 스캔](./adr/core/12-parallel-scanning-worker-pool.md)
 - [NaCl SecretBox 암호화](./adr/core/13-nacl-secretbox-encryption.md)
+- [간접 Import Alias 감지 미지원](./adr/core/14-indirect-import-unsupported.md)
 
 **[Collector](./adr/collector/)**
 

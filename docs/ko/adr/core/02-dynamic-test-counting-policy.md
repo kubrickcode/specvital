@@ -96,11 +96,11 @@ SpecVital Core 파서는 정적 AST 분석 기반 테스트 카운트 수행. �
 | ------------------------- | --------------------------- | --------- | --------------------- |
 | **JavaScript/TypeScript** |                             |           |                       |
 | Jest                      | `it.each([...])`            | 부분      | 1 + `(dynamic cases)` |
-| Jest                      | `forEach` + `it`            | ❌ 버그   | 1                     |
+| Jest                      | `forEach` + `it`            | ✅        | 1 + `(dynamic cases)` |
 | Vitest                    | `it.each([...])`            | 부분      | 1 + `(dynamic cases)` |
-| Vitest                    | `forEach` + `it`            | ❌ 버그   | 1                     |
-| Mocha                     | `forEach` + `it`            | ❌ 버그   | 1                     |
-| Cypress                   | `forEach` + `it`            | ❌ 버그   | 1                     |
+| Vitest                    | `forEach` + `it`            | ✅        | 1 + `(dynamic cases)` |
+| Mocha                     | `forEach` + `it`            | ✅        | 1 + `(dynamic cases)` |
+| Cypress                   | `forEach` + `it`            | ✅        | 1 + `(dynamic cases)` |
 | Playwright                | loop + `test`               | ❌        | 1                     |
 | **Python**                |                             |           |                       |
 | pytest                    | `@pytest.mark.parametrize`  | ❌        | 1                     |
@@ -160,12 +160,12 @@ SpecVital Core 파서는 정적 AST 분석 기반 테스트 카운트 수행. �
 
 ## Implementation
 
-### Phase 1: 버그 수정 (필수)
+### Phase 1: 버그 수정 (완료 ✅)
 
-테스트 감지 필요하나 현재 0 반환하는 패턴 수정:
+~~테스트 감지 필요하나 현재 0 반환하는 패턴 수정:~~
 
-1. **JS/TS**: `forEach`/`map` 콜백 내 `it`/`test`
-2. **JS/TS**: 객체 배열이 있는 `it.each([{...}])` (현재 0, 1이어야 함)
+1. ~~**JS/TS**: `forEach`/`map` 콜백 내 `it`/`test`~~ → **수정 완료 (2025-12-22)**
+2. ~~**JS/TS**: 객체 배열이 있는 `it.each([{...}])` (현재 0, 1이어야 함)~~ → **수정 완료 (2025-12-22)**
 
 ### Phase 2: 개선 (선택)
 

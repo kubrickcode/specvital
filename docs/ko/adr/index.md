@@ -83,6 +83,7 @@ XX-brief-decision-title.md
 | 11  | [골든 스냅샷 통합 테스트](./core/11-integration-testing-golden-snapshots.md)  | Testing | 2024-12-23 |
 | 12  | [Worker Pool 병렬 스캔](./core/12-parallel-scanning-worker-pool.md)           | Perf    | 2024-12-23 |
 | 13  | [NaCl SecretBox 암호화](./core/13-nacl-secretbox-encryption.md)               | Crypto  | 2024-12-23 |
+| 14  | [간접 Import Alias 감지 미지원](./core/14-indirect-import-unsupported.md)     | Parser  | 2025-12-29 |
 
 ### Collector 리포지토리
 
