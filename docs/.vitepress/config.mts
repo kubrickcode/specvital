@@ -77,6 +77,10 @@ export default defineConfig({
                   link: "/en/adr/08-external-repo-id-integrity",
                 },
                 {
+                  text: "GitHub App Integration",
+                  link: "/en/adr/09-github-app-integration",
+                },
+                {
                   text: "Core",
                   collapsed: true,
                   items: [
@@ -189,6 +193,7 @@ export default defineConfig({
                 { text: "PaaS 우선 인프라", link: "/ko/adr/06-paas-first-infrastructure" },
                 { text: "공유 인프라", link: "/ko/adr/07-shared-infrastructure" },
                 { text: "External Repo ID 무결성", link: "/ko/adr/08-external-repo-id-integrity" },
+                { text: "GitHub App 통합", link: "/ko/adr/09-github-app-integration" },
                 {
                   text: "Core",
                   collapsed: true,

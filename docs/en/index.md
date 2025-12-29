@@ -38,6 +38,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [PaaS-First Infrastructure](./adr/06-paas-first-infrastructure.md)
 - [Shared Infrastructure](./adr/07-shared-infrastructure.md)
 - [External Repo ID Integrity](./adr/08-external-repo-id-integrity.md)
+- [GitHub App Integration](./adr/09-github-app-integration.md)
 
 **[Core](./adr/core/)**
 

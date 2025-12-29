@@ -38,6 +38,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [PaaS 우선 인프라](./adr/06-paas-first-infrastructure.md)
 - [공유 인프라](./adr/07-shared-infrastructure.md)
 - [External Repo ID 무결성](./adr/08-external-repo-id-integrity.md)
+- [GitHub App 통합](./adr/09-github-app-integration.md)
 
 **[Core](./adr/core/)**
 
