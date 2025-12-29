@@ -10,7 +10,8 @@
     "analyzeAnother": "Analyze Another",
     "goToHomepage": "Go to homepage",
     "selectLanguage": "Select language",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "toggleTheme": "Toggle theme"
   },
   "analyzeDialog": {
     "title": "Analyze Repository",
