@@ -48,7 +48,7 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
             <NextIntlClientProvider messages={messages}>
               <ThemeProvider>
                 <Header />
-                {children}
+                <main id="main-content">{children}</main>
                 <Toaster richColors />
               </ThemeProvider>
             </NextIntlClientProvider>

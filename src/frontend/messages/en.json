@@ -8,7 +8,9 @@
   },
   "header": {
     "analyzeAnother": "Analyze Another",
-    "selectLanguage": "Select language"
+    "goToHomepage": "Go to homepage",
+    "selectLanguage": "Select language",
+    "skipToContent": "Skip to content"
   },
   "analyzeDialog": {
     "title": "Analyze Repository",

@@ -8,7 +8,9 @@
   },
   "header": {
     "analyzeAnother": "다른 분석",
-    "selectLanguage": "언어 선택"
+    "goToHomepage": "홈페이지로 이동",
+    "selectLanguage": "언어 선택",
+    "skipToContent": "본문으로 바로가기"
   },
   "analyzeDialog": {
     "title": "리포지토리 분석",
