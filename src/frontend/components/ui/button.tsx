@@ -19,7 +19,7 @@ const buttonVariants = cva(
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
       },
       variant: {
-        cta: "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-sm hover:shadow-md hover:shadow-primary/20 active:scale-[0.98] motion-reduce:active:scale-100 transition-[transform,box-shadow,background-color] duration-200",
+        cta: "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-sm hover:shadow-md hover:shadow-primary/20 hover:from-primary/90 hover:to-primary/70 active:scale-[0.98] motion-reduce:active:scale-100 transition-[transform,box-shadow,background-color] duration-200",
         default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
         destructive:
           "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
