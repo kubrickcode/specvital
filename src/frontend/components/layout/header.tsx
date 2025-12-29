@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import { AuthErrorBoundary } from "@/components/feedback";
@@ -16,14 +17,13 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4">
-        <div className="flex items-center gap-6">
-          <Link
-            className="flex items-center space-x-2 text-lg font-semibold hover:opacity-80 transition-opacity"
-            href="/"
-          >
-            <span>{tCommon("appName")}</span>
-          </Link>
-        </div>
+        <Link
+          className="flex items-center gap-2.5 text-lg font-semibold transition-all duration-200 hover:opacity-90"
+          href="/"
+        >
+          <Image alt={tCommon("appName")} height={28} src="/logo.png" width={28} />
+          <span>{tCommon("appName")}</span>
+        </Link>
 
         <div className="flex items-center gap-2">
           {!isHomePage && <AnalyzeDialog variant="header" />}
