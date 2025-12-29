@@ -66,6 +66,7 @@ XX-brief-decision-title.md
 | 07  | [공유 인프라 전략](./07-shared-infrastructure.md)                               | Infrastructure | 2024-12-17 |
 | 08  | [External Repository ID 기반 데이터 무결성](./08-external-repo-id-integrity.md) | Data Integrity | 2024-12-22 |
 | 09  | [GitHub App 통합 인증 전략](./09-github-app-integration.md)                     | Authentication | 2024-12-29 |
+| 10  | [TestStatus 데이터 계약](./10-test-status-data-contract.md)                     | Data Integrity | 2024-12-29 |
 
 ### Core 리포지토리
 

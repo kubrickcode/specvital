@@ -81,6 +81,10 @@ export default defineConfig({
                   link: "/en/adr/09-github-app-integration",
                 },
                 {
+                  text: "TestStatus Data Contract",
+                  link: "/en/adr/10-test-status-data-contract",
+                },
+                {
                   text: "Core",
                   collapsed: true,
                   items: [
@@ -194,6 +198,7 @@ export default defineConfig({
                 { text: "공유 인프라", link: "/ko/adr/07-shared-infrastructure" },
                 { text: "External Repo ID 무결성", link: "/ko/adr/08-external-repo-id-integrity" },
                 { text: "GitHub App 통합", link: "/ko/adr/09-github-app-integration" },
+                { text: "TestStatus 데이터 계약", link: "/ko/adr/10-test-status-data-contract" },
                 {
                   text: "Core",
                   collapsed: true,

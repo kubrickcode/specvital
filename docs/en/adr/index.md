@@ -66,6 +66,7 @@ XX-brief-decision-title.md
 | 07  | [Shared Infrastructure Strategy](./07-shared-infrastructure.md)                   | Infrastructure | 2024-12-17 |
 | 08  | [External Repository ID-Based Data Integrity](./08-external-repo-id-integrity.md) | Data Integrity | 2024-12-22 |
 | 09  | [GitHub App Integration Strategy](./09-github-app-integration.md)                 | Authentication | 2024-12-29 |
+| 10  | [TestStatus Data Contract](./10-test-status-data-contract.md)                     | Data Integrity | 2024-12-29 |
 
 ### Core Repository
 
