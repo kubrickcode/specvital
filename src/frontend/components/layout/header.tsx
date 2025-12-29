@@ -15,7 +15,9 @@ export const Header = () => {
   const isHomePage = pathname === "/";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-background/50">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
       <div className="container mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4">
         <Link
           className="flex items-center gap-2.5 text-lg font-semibold transition-all duration-200 hover:opacity-90"
@@ -25,7 +27,7 @@ export const Header = () => {
           <span>{tCommon("appName")}</span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {!isHomePage && <AnalyzeDialog variant="header" />}
           <LanguageSelector />
           <ThemeToggle />
