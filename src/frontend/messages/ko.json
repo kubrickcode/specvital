@@ -48,9 +48,17 @@
     "retry": "다시 시도",
     "filter": {
       "clearSearch": "검색 지우기",
+      "frameworkFilter": "프레임워크",
       "noResults": "일치하는 테스트가 없습니다",
       "noResultsDescription": "검색어를 조정해보세요",
-      "searchPlaceholder": "테스트 또는 파일 검색..."
+      "searchPlaceholder": "테스트 또는 파일 검색...",
+      "statusActive": "활성",
+      "statusFilter": "상태",
+      "statusFocused": "집중",
+      "statusSkipped": "건너뜀",
+      "statusTodo": "할 일",
+      "statusXfail": "예상 실패",
+      "resultSummary": "{total}개 중 {filtered}개 테스트"
     },
     "status": {
       "loading": "로딩 중...",

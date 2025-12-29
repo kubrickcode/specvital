@@ -1,10 +1,13 @@
 export { AnalysisContent } from "./analysis-content";
 export { AnalysisSkeleton } from "./analysis-skeleton";
 export { EmptyState } from "./empty-state";
+export { FilterBar, FilterSummary } from "./filter-bar";
 export { FilterEmptyState } from "./filter-empty-state";
 export { FrameworkBadge } from "./framework-badge";
+export { FrameworkFilter } from "./framework-filter";
 export { SearchInput } from "./search-input";
 export { ShareButton } from "./share-button";
+export { StatusFilter } from "./status-filter";
 export { StatsCard } from "./stats-card";
 export { StatsCardSkeleton } from "./stats-card-skeleton";
 export { TestItem } from "./test-item";

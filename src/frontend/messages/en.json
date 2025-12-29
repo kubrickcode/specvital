@@ -48,9 +48,17 @@
     "retry": "Try Again",
     "filter": {
       "clearSearch": "Clear search",
+      "frameworkFilter": "Framework",
       "noResults": "No matching tests found",
       "noResultsDescription": "Try adjusting your search query",
-      "searchPlaceholder": "Search tests or files..."
+      "searchPlaceholder": "Search tests or files...",
+      "statusActive": "Active",
+      "statusFilter": "Status",
+      "statusFocused": "Focused",
+      "statusSkipped": "Skipped",
+      "statusTodo": "Todo",
+      "statusXfail": "Expected Fail",
+      "resultSummary": "{filtered} of {total} tests"
     },
     "status": {
       "loading": "Loading...",

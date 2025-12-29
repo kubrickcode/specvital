@@ -7,8 +7,8 @@ import { useMemo } from "react";
 import type { AnalysisResult } from "@/lib/api";
 import { formatAnalysisDate, SHORT_SHA_LENGTH } from "@/lib/utils";
 
+import { FilterBar, FilterSummary } from "./filter-bar";
 import { FilterEmptyState } from "./filter-empty-state";
-import { SearchInput } from "./search-input";
 import { ShareButton } from "./share-button";
 import { StatsCard } from "./stats-card";
 import { TestList } from "./test-list";
@@ -21,14 +21,24 @@ type AnalysisContentProps = {
 
 export const AnalysisContent = ({ result }: AnalysisContentProps) => {
   const t = useTranslations("analyze");
-  const { query, setQuery } = useFilterState();
+  const { frameworks, query, setFrameworks, setQuery, setStatuses, statuses } = useFilterState();
 
-  const filteredSuites = useMemo(
-    () => filterSuites(result.suites, { query }),
-    [result.suites, query]
+  const availableFrameworks = useMemo(
+    () => result.summary.frameworks.map((f) => f.framework),
+    [result.summary.frameworks]
   );
 
-  const hasFilter = query.trim().length > 0;
+  const filteredSuites = useMemo(
+    () => filterSuites(result.suites, { frameworks, query, statuses }),
+    [result.suites, frameworks, query, statuses]
+  );
+
+  const filteredTestCount = useMemo(
+    () => filteredSuites.reduce((acc, suite) => acc + suite.tests.length, 0),
+    [filteredSuites]
+  );
+
+  const hasFilter = query.trim().length > 0 || frameworks.length > 0 || statuses.length > 0;
   const hasResults = filteredSuites.length > 0;
 
   return (
@@ -65,11 +75,24 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
 
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-xl font-semibold">{t("testSuites")}</h2>
-            <div className="w-full max-w-sm">
-              <SearchInput onChange={setQuery} value={query} />
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold">{t("testSuites")}</h2>
+              <FilterSummary
+                filteredCount={filteredTestCount}
+                hasFilter={hasFilter}
+                totalCount={result.summary.total}
+              />
             </div>
           </div>
+          <FilterBar
+            availableFrameworks={availableFrameworks}
+            frameworks={frameworks}
+            onFrameworksChange={setFrameworks}
+            onQueryChange={setQuery}
+            onStatusesChange={setStatuses}
+            query={query}
+            statuses={statuses}
+          />
           {hasFilter && !hasResults ? <FilterEmptyState /> : <TestList suites={filteredSuites} />}
         </section>
       </div>
