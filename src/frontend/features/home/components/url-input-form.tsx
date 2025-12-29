@@ -136,6 +136,7 @@ export const UrlInputForm = () => {
           disabled={isPending}
           size="lg"
           type="submit"
+          variant="cta"
         >
           {isPending ? (
             <>

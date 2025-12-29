@@ -33,7 +33,7 @@ export const AnalyzeDialog = ({ children, variant = "header" }: AnalyzeDialogPro
         <span className="hidden sm:inline">{t("trigger")}</span>
       </Button>
     ) : (
-      <Button size="lg">
+      <Button size="lg" variant="cta">
         <Search aria-hidden="true" className="size-4 mr-2" />
         {t("ctaTrigger")}
       </Button>

@@ -47,7 +47,7 @@ export const EmptyState = () => {
           </ul>
         </div>
 
-        <Button className="mt-4" onClick={handleAnalyzeAnother} size="lg">
+        <Button className="mt-4" onClick={handleAnalyzeAnother} size="lg" variant="cta">
           {t("analyzeAnother")}
         </Button>
       </div>

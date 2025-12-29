@@ -103,7 +103,7 @@ export const DiscoveryListSheet = ({
                     )}
                   </div>
                   <div className="flex flex-col gap-1 shrink-0">
-                    <Button asChild size="sm" variant="default">
+                    <Button asChild size="sm" variant="cta">
                       <Link href={`/analyze/${repo.owner}/${repo.name}`}>{t("analyze")}</Link>
                     </Button>
                     <Button asChild className="h-7" size="sm" variant="ghost">
