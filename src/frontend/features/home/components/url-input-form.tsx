@@ -132,7 +132,7 @@ export const UrlInputForm = () => {
         </div>
         <Button
           aria-label={t("analyzeButton")}
-          className="min-w-[120px]"
+          className="min-w-[120px] h-11 sm:h-10"
           disabled={isPending}
           size="lg"
           type="submit"
