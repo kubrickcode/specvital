@@ -65,6 +65,8 @@ XX-brief-decision-title.md
 | 06  | [PaaS 우선 인프라 전략](./06-paas-first-infrastructure.md)                      | Infrastructure | 2024-12-17 |
 | 07  | [공유 인프라 전략](./07-shared-infrastructure.md)                               | Infrastructure | 2024-12-17 |
 | 08  | [External Repository ID 기반 데이터 무결성](./08-external-repo-id-integrity.md) | Data Integrity | 2024-12-22 |
+| 09  | [GitHub App 통합 인증 전략](./09-github-app-integration.md)                     | Authentication | 2024-12-29 |
+| 10  | [TestStatus 데이터 계약](./10-test-status-data-contract.md)                     | Data Integrity | 2024-12-29 |
 
 ### Core 리포지토리
 
@@ -83,6 +85,7 @@ XX-brief-decision-title.md
 | 11  | [골든 스냅샷 통합 테스트](./core/11-integration-testing-golden-snapshots.md)  | Testing | 2024-12-23 |
 | 12  | [Worker Pool 병렬 스캔](./core/12-parallel-scanning-worker-pool.md)           | Perf    | 2024-12-23 |
 | 13  | [NaCl SecretBox 암호화](./core/13-nacl-secretbox-encryption.md)               | Crypto  | 2024-12-23 |
+| 14  | [간접 Import Alias 감지 미지원](./core/14-indirect-import-unsupported.md)     | Parser  | 2025-12-29 |
 
 ### Collector 리포지토리
 
