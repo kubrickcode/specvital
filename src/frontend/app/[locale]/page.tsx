@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { OAuthErrorHandler } from "@/features/auth";
-import { TrustBadges, UrlInputForm } from "@/features/home";
+import { TrustBadgesWithDialog, UrlInputForm } from "@/features/home";
 
 export const dynamic = "force-static";
 
@@ -32,11 +32,12 @@ export const HomePage = async ({ params }: HomePageProps) => {
         </div>
 
         <Card className="mx-auto w-full max-w-xl" depth="elevated">
-          <CardContent className="space-y-4">
+          <CardContent>
             <UrlInputForm />
-            <TrustBadges />
           </CardContent>
         </Card>
+
+        <TrustBadgesWithDialog />
       </div>
     </main>
   );

@@ -41,6 +41,21 @@
       "instant": "Instant analysis",
       "multiFramework": "20+ frameworks",
       "free": "Free"
+    },
+    "frameworks": {
+      "title": "Supported Frameworks",
+      "description": "List of supported testing frameworks and their file patterns",
+      "javascript": "JavaScript / TypeScript",
+      "python": "Python",
+      "go": "Go",
+      "java": "Java",
+      "kotlin": "Kotlin",
+      "csharp": "C#",
+      "ruby": "Ruby",
+      "php": "PHP",
+      "rust": "Rust",
+      "cpp": "C++",
+      "swift": "Swift"
     }
   },
   "analyze": {

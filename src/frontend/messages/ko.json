@@ -41,6 +41,21 @@
       "instant": "즉시 분석",
       "multiFramework": "20+ 프레임워크",
       "free": "무료"
+    },
+    "frameworks": {
+      "title": "지원 프레임워크",
+      "description": "지원하는 테스트 프레임워크와 파일 패턴 목록",
+      "javascript": "JavaScript / TypeScript",
+      "python": "Python",
+      "go": "Go",
+      "java": "Java",
+      "kotlin": "Kotlin",
+      "csharp": "C#",
+      "ruby": "Ruby",
+      "php": "PHP",
+      "rust": "Rust",
+      "cpp": "C++",
+      "swift": "Swift"
     }
   },
   "analyze": {
