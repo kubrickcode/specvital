@@ -14,26 +14,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnalyzeDialog } from "@/features/home";
 
 import {
   useAddBookmark,
-  useBookmarkedRepositories,
-  useMyAnalyses,
-  useOwnershipFilter,
   useReanalyze,
   useRecentRepositories,
   useRemoveBookmark,
   useRepositorySearch,
-  useTabState,
 } from "../hooks";
-import type { TabValue } from "../hooks";
 import type { SortOption } from "../types";
 import { DiscoveryErrorFallback } from "./discovery-error-fallback";
 import { DiscoverySection } from "./discovery-section";
 import { EmptyStateVariant } from "./empty-state-variant";
-import { OwnershipFilter } from "./ownership-filter";
 import { RepositoryList } from "./repository-list";
 
 const SORT_OPTIONS: SortOption[] = ["name", "recent", "tests"];
@@ -107,47 +100,16 @@ const SearchSortControls = ({
 };
 
 export const DashboardContent = () => {
-  const t = useTranslations("dashboard");
   const queryClient = useQueryClient();
 
-  const { setTab, tab } = useTabState();
-  const { ownership, setOwnership } = useOwnershipFilter();
-
-  const { data: bookmarked = [], isLoading: isLoadingBookmarked } = useBookmarkedRepositories();
-  const { data: recent = [], isLoading: isLoadingRecent } = useRecentRepositories();
-  const { data: myAnalyses = [], isLoading: isLoadingMyAnalyses } = useMyAnalyses({ ownership });
+  const { data: repositories = [], isLoading } = useRecentRepositories();
 
   const { addBookmark } = useAddBookmark();
   const { removeBookmark } = useRemoveBookmark();
   const { reanalyze } = useReanalyze();
 
-  const {
-    filteredRepositories: filteredBookmarked,
-    searchQuery: bookmarkedSearchQuery,
-    setSearchQuery: setBookmarkedSearchQuery,
-    setSortBy: setBookmarkedSortBy,
-    sortBy: bookmarkedSortBy,
-  } = useRepositorySearch(bookmarked);
-
-  const {
-    filteredRepositories: filteredMyAnalyses,
-    searchQuery: myAnalysesSearchQuery,
-    setSearchQuery: setMyAnalysesSearchQuery,
-    setSortBy: setMyAnalysesSortBy,
-    sortBy: myAnalysesSortBy,
-  } = useRepositorySearch(myAnalyses);
-
-  const {
-    filteredRepositories: filteredAll,
-    searchQuery: allSearchQuery,
-    setSearchQuery: setAllSearchQuery,
-    setSortBy: setAllSortBy,
-    sortBy: allSortBy,
-  } = useRepositorySearch(recent);
-
-  const handleTabChange = (value: string) => {
-    setTab(value as TabValue);
-  };
+  const { filteredRepositories, searchQuery, setSearchQuery, setSortBy, sortBy } =
+    useRepositorySearch(repositories);
 
   const handleBookmarkToggle = (owner: string, repo: string, isBookmarked: boolean) => {
     if (isBookmarked) {
@@ -165,116 +127,42 @@ export const DashboardContent = () => {
     queryClient.resetQueries({ exact: false, queryKey: ["dashboard"] });
   };
 
-  const hasNoRepositories = !isLoadingRecent && recent.length === 0;
-  const hasNoMyAnalyses = !isLoadingMyAnalyses && myAnalyses.length === 0;
+  const hasNoRepositories = !isLoading && repositories.length === 0;
 
   return (
     <div className="space-y-8">
-      <Tabs onValueChange={handleTabChange} value={tab}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList>
-            <TabsTrigger value="bookmarked">{t("tabs.bookmarked")}</TabsTrigger>
-            <TabsTrigger value="my-analyses">{t("tabs.myAnalyses")}</TabsTrigger>
-            <TabsTrigger value="all">{t("tabs.all")}</TabsTrigger>
-          </TabsList>
+      <SearchSortControls
+        onSearchChange={setSearchQuery}
+        onSortChange={setSortBy}
+        searchQuery={searchQuery}
+        sortBy={sortBy}
+      />
 
-          {tab === "my-analyses" && <OwnershipFilter onChange={setOwnership} value={ownership} />}
-        </div>
+      {isLoading ? (
+        <RepositoryList
+          isLoading
+          onBookmarkToggle={handleBookmarkToggle}
+          onReanalyze={handleReanalyze}
+          repositories={[]}
+        />
+      ) : hasNoRepositories ? (
+        <EmptyStateVariant action={<AnalyzeDialog variant="empty-state" />} variant="no-repos" />
+      ) : filteredRepositories.length === 0 ? (
+        <EmptyStateVariant searchQuery={searchQuery} variant="no-search-results" />
+      ) : (
+        <RepositoryList
+          onBookmarkToggle={handleBookmarkToggle}
+          onReanalyze={handleReanalyze}
+          repositories={filteredRepositories}
+        />
+      )}
 
-        <TabsContent className="mt-6" value="bookmarked">
-          <SearchSortControls
-            onSearchChange={setBookmarkedSearchQuery}
-            onSortChange={setBookmarkedSortBy}
-            searchQuery={bookmarkedSearchQuery}
-            sortBy={bookmarkedSortBy}
-          />
-          {isLoadingBookmarked ? (
-            <RepositoryList
-              isLoading
-              onBookmarkToggle={handleBookmarkToggle}
-              onReanalyze={handleReanalyze}
-              repositories={[]}
-            />
-          ) : bookmarked.length === 0 ? (
-            <EmptyStateVariant variant="no-bookmarks" />
-          ) : filteredBookmarked.length === 0 ? (
-            <EmptyStateVariant searchQuery={bookmarkedSearchQuery} variant="no-search-results" />
-          ) : (
-            <RepositoryList
-              onBookmarkToggle={handleBookmarkToggle}
-              onReanalyze={handleReanalyze}
-              repositories={filteredBookmarked}
-            />
-          )}
-        </TabsContent>
-
-        <TabsContent className="mt-6" value="my-analyses">
-          <SearchSortControls
-            onSearchChange={setMyAnalysesSearchQuery}
-            onSortChange={setMyAnalysesSortBy}
-            searchQuery={myAnalysesSearchQuery}
-            sortBy={myAnalysesSortBy}
-          />
-          {isLoadingMyAnalyses ? (
-            <RepositoryList
-              isLoading
-              onBookmarkToggle={handleBookmarkToggle}
-              onReanalyze={handleReanalyze}
-              repositories={[]}
-            />
-          ) : hasNoMyAnalyses ? (
-            <EmptyStateVariant
-              action={<AnalyzeDialog variant="empty-state" />}
-              variant="no-repos"
-            />
-          ) : filteredMyAnalyses.length === 0 ? (
-            <EmptyStateVariant searchQuery={myAnalysesSearchQuery} variant="no-search-results" />
-          ) : (
-            <RepositoryList
-              onBookmarkToggle={handleBookmarkToggle}
-              onReanalyze={handleReanalyze}
-              repositories={filteredMyAnalyses}
-            />
-          )}
-
-          <AuthErrorBoundary
-            fallback={<DiscoveryErrorFallback resetErrorBoundary={handleDiscoveryReset} />}
-            onReset={handleDiscoveryReset}
-          >
-            <DiscoverySection analyzedRepositories={recent} />
-          </AuthErrorBoundary>
-        </TabsContent>
-
-        <TabsContent className="mt-6" value="all">
-          <SearchSortControls
-            onSearchChange={setAllSearchQuery}
-            onSortChange={setAllSortBy}
-            searchQuery={allSearchQuery}
-            sortBy={allSortBy}
-          />
-          {isLoadingRecent ? (
-            <RepositoryList
-              isLoading
-              onBookmarkToggle={handleBookmarkToggle}
-              onReanalyze={handleReanalyze}
-              repositories={[]}
-            />
-          ) : hasNoRepositories ? (
-            <EmptyStateVariant
-              action={<AnalyzeDialog variant="empty-state" />}
-              variant="no-repos"
-            />
-          ) : filteredAll.length === 0 ? (
-            <EmptyStateVariant searchQuery={allSearchQuery} variant="no-search-results" />
-          ) : (
-            <RepositoryList
-              onBookmarkToggle={handleBookmarkToggle}
-              onReanalyze={handleReanalyze}
-              repositories={filteredAll}
-            />
-          )}
-        </TabsContent>
-      </Tabs>
+      <AuthErrorBoundary
+        fallback={<DiscoveryErrorFallback resetErrorBoundary={handleDiscoveryReset} />}
+        onReset={handleDiscoveryReset}
+      >
+        <DiscoverySection analyzedRepositories={repositories} />
+      </AuthErrorBoundary>
     </div>
   );
 };

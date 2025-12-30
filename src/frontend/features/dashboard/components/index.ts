@@ -1,6 +1,5 @@
 export { BookmarkedSection } from "./bookmarked-section";
 export { DashboardContent } from "./dashboard-content";
-export { DashboardTabs } from "./dashboard-tabs";
 export { DiscoveryCard } from "./discovery-card";
 export { DiscoveryErrorFallback } from "./discovery-error-fallback";
 export { DiscoveryListSheet } from "./discovery-list-sheet";
