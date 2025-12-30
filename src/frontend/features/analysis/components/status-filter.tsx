@@ -74,8 +74,8 @@ export const StatusFilter = ({ onChange, value }: StatusFilterProps) => {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          className={cn("gap-2 min-h-[44px] sm:min-h-0", selectedCount > 0 && "border-primary/50")}
-          size="sm"
+          className={cn("gap-2", selectedCount > 0 && "border-primary/50")}
+          size="default"
           variant="outline"
         >
           <Filter className="h-4 w-4" />
