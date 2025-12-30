@@ -4,6 +4,7 @@ import { ExternalLink, GitCommit } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
+import { Button } from "@/components/ui/button";
 import type { AnalysisResult } from "@/lib/api";
 import { formatAnalysisDate, SHORT_SHA_LENGTH } from "@/lib/utils";
 
@@ -48,21 +49,22 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
     <main className="container mx-auto px-4 py-8">
       <div className="space-y-6">
         <header className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-xl font-bold sm:text-2xl truncate min-w-0">
               {result.owner}/{result.repo}
             </h1>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <ShareButton />
-              <a
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                href={`https://github.com/${result.owner}/${result.repo}`}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                {t("viewOnGitHub")}
-                <ExternalLink className="h-4 w-4" />
-              </a>
+              <Button asChild size="sm" variant="ghost">
+                <a
+                  href={`https://github.com/${result.owner}/${result.repo}`}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  {t("viewOnGitHub")}
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
             </div>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
