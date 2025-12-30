@@ -1,5 +1,4 @@
 export {
-  BookmarkedSection,
   DashboardContent,
   EmptyState,
   RepositoryCard,

@@ -52,7 +52,13 @@ export const RepositoryCard = ({ onBookmarkToggle, onReanalyze, repo }: Reposito
         )}
       >
         <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 flex items-center gap-1.5">
+            {isBookmarked && (
+              <Star
+                aria-label={t("bookmarked")}
+                className="size-4 shrink-0 text-amber-500 fill-amber-500"
+              />
+            )}
             <h3 className="font-semibold text-sm truncate" title={fullName}>
               {fullName}
             </h3>

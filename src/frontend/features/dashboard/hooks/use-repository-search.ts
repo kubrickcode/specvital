@@ -30,6 +30,11 @@ export const useRepositorySearch = (repositories: RepositoryCard[]): UseReposito
     }
 
     result.sort((a, b) => {
+      // Bookmarked repos always come first
+      if (a.isBookmarked !== b.isBookmarked) {
+        return a.isBookmarked ? -1 : 1;
+      }
+
       switch (sortBy) {
         case "name":
           return `${a.owner}/${a.name}`.localeCompare(`${b.owner}/${b.name}`);

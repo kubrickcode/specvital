@@ -163,6 +163,7 @@
     "card": {
       "addBookmark": "Add bookmark",
       "analyzeLatest": "Analyze latest commits",
+      "bookmarked": "Bookmarked",
       "noAnalysis": "No analysis yet",
       "reanalyze": "Reanalyze repository",
       "removeBookmark": "Remove bookmark",

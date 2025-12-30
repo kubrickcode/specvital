@@ -1,4 +1,3 @@
-export { BookmarkedSection } from "./bookmarked-section";
 export { DashboardContent } from "./dashboard-content";
 export { DiscoveryCard } from "./discovery-card";
 export { DiscoveryErrorFallback } from "./discovery-error-fallback";
