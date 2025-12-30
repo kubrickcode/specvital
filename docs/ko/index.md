@@ -38,6 +38,8 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [PaaS 우선 인프라](./adr/06-paas-first-infrastructure.md)
 - [공유 인프라](./adr/07-shared-infrastructure.md)
 - [External Repo ID 무결성](./adr/08-external-repo-id-integrity.md)
+- [GitHub App 통합](./adr/09-github-app-integration.md)
+- [TestStatus 데이터 계약](./adr/10-test-status-data-contract.md)
 
 **[Core](./adr/core/)**
 
@@ -54,6 +56,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [골든 스냅샷 통합 테스트](./adr/core/11-integration-testing-golden-snapshots.md)
 - [Worker Pool 병렬 스캔](./adr/core/12-parallel-scanning-worker-pool.md)
 - [NaCl SecretBox 암호화](./adr/core/13-nacl-secretbox-encryption.md)
+- [간접 Import Alias 감지 미지원](./adr/core/14-indirect-import-unsupported.md)
 
 **[Collector](./adr/collector/)**
 

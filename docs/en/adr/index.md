@@ -65,6 +65,8 @@ XX-brief-decision-title.md
 | 06  | [PaaS-First Infrastructure Strategy](./06-paas-first-infrastructure.md)           | Infrastructure | 2024-12-17 |
 | 07  | [Shared Infrastructure Strategy](./07-shared-infrastructure.md)                   | Infrastructure | 2024-12-17 |
 | 08  | [External Repository ID-Based Data Integrity](./08-external-repo-id-integrity.md) | Data Integrity | 2024-12-22 |
+| 09  | [GitHub App Integration Strategy](./09-github-app-integration.md)                 | Authentication | 2024-12-29 |
+| 10  | [TestStatus Data Contract](./10-test-status-data-contract.md)                     | Data Integrity | 2024-12-29 |
 
 ### Core Repository
 
@@ -83,6 +85,7 @@ XX-brief-decision-title.md
 | 11  | [Integration Testing with Golden Snapshots](./core/11-integration-testing-golden-snapshots.md) | Testing | 2024-12-23 |
 | 12  | [Parallel Scanning with Worker Pool](./core/12-parallel-scanning-worker-pool.md)               | Perf    | 2024-12-23 |
 | 13  | [NaCl SecretBox Encryption](./core/13-nacl-secretbox-encryption.md)                            | Crypto  | 2024-12-23 |
+| 14  | [Indirect Import Alias Detection Unsupported](./core/14-indirect-import-unsupported.md)        | Parser  | 2025-12-29 |
 
 ### Collector Repository
 
