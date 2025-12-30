@@ -124,6 +124,11 @@ table "analyses" {
     null = true
   }
 
+  column "committed_at" {
+    type = timestamptz
+    null = true
+  }
+
   column "status" {
     type    = enum.analysis_status
     default = "pending"
