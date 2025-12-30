@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 // GitCredentials contains authentication information for Git operations.
@@ -35,12 +36,13 @@ const defaultCloneDepth = 1
 // It clones the repository to a temporary directory and provides
 // filesystem-like access to its contents.
 type GitSource struct {
-	closeErr  error
-	closeOnce sync.Once
-	commitSHA string
-	branch    string
-	local     *LocalSource
-	tempDir   string
+	branch      string
+	closeErr    error
+	closeOnce   sync.Once
+	committedAt time.Time
+	commitSHA   string
+	local       *LocalSource
+	tempDir     string
 }
 
 // NewGitSource clones a Git repository and returns a Source for accessing its files.
@@ -87,6 +89,15 @@ func NewGitSource(ctx context.Context, repoURL string, opts *GitOptions) (*GitSo
 		)
 	}
 
+	committedAt, err := getCommitTime(ctx, tempDir)
+	if err != nil {
+		os.RemoveAll(tempDir)
+		return nil, sanitizeError(
+			fmt.Errorf("%w: %v", ErrGitCloneFailed, err),
+			repoURL, opts.Credentials,
+		)
+	}
+
 	local, err := NewLocalSource(tempDir)
 	if err != nil {
 		os.RemoveAll(tempDir)
@@ -109,10 +120,11 @@ func NewGitSource(ctx context.Context, repoURL string, opts *GitOptions) (*GitSo
 	}
 
 	return &GitSource{
-		commitSHA: commitSHA,
-		branch:    branch,
-		local:     local,
-		tempDir:   tempDir,
+		branch:      branch,
+		committedAt: committedAt,
+		commitSHA:   commitSHA,
+		local:       local,
+		tempDir:     tempDir,
 	}, nil
 }
 
@@ -124,6 +136,11 @@ func (s *GitSource) Root() string {
 // CommitSHA returns the HEAD commit SHA of the cloned repository.
 func (s *GitSource) CommitSHA() string {
 	return s.commitSHA
+}
+
+// CommittedAt returns the commit timestamp of the HEAD commit.
+func (s *GitSource) CommittedAt() time.Time {
+	return s.committedAt
 }
 
 // Branch returns the branch name of the cloned repository.
@@ -306,6 +323,27 @@ func getCommitSHA(ctx context.Context, repoDir string) (string, error) {
 	}
 
 	return strings.TrimSpace(stdout.String()), nil
+}
+
+// getCommitTime retrieves the commit timestamp of HEAD from the given repository directory.
+func getCommitTime(ctx context.Context, repoDir string) (time.Time, error) {
+	cmd := exec.CommandContext(ctx, "git", "log", "-1", "--format=%cI", "HEAD")
+	cmd.Dir = repoDir
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return time.Time{}, fmt.Errorf("failed to get commit time: %v: %s", err, stderr.String())
+	}
+
+	timeStr := strings.TrimSpace(stdout.String())
+	committedAt, err := time.Parse(time.RFC3339, timeStr)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to parse commit time %q: %v", timeStr, err)
+	}
+
+	return committedAt, nil
 }
 
 // getBranchName retrieves the current branch name from the given repository directory.

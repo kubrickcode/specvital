@@ -266,6 +266,60 @@ func TestGitSource_CommitSHA(t *testing.T) {
 	})
 }
 
+func TestGitSource_CommittedAt(t *testing.T) {
+	if !isGitInstalled() {
+		t.Skip("git not installed")
+	}
+
+	t.Run("should return valid commit timestamp", func(t *testing.T) {
+		// Given
+		repoDir := createLocalGitRepo(t)
+		ctx := context.Background()
+
+		src, err := NewGitSource(ctx, repoDir, nil)
+		if err != nil {
+			t.Fatalf("failed to create git source: %v", err)
+		}
+		defer src.Close()
+
+		// When
+		committedAt := src.CommittedAt()
+
+		// Then
+		if committedAt.IsZero() {
+			t.Error("expected non-zero commit timestamp")
+		}
+		if committedAt.After(time.Now()) {
+			t.Error("commit timestamp should not be in the future")
+		}
+		if committedAt.Before(time.Now().Add(-1 * time.Hour)) {
+			t.Errorf("commit timestamp too old for just-created repo: %v", committedAt)
+		}
+	})
+
+	t.Run("should return consistent timestamp on multiple calls", func(t *testing.T) {
+		// Given
+		repoDir := createLocalGitRepo(t)
+		ctx := context.Background()
+
+		src, err := NewGitSource(ctx, repoDir, nil)
+		if err != nil {
+			t.Fatalf("failed to create git source: %v", err)
+		}
+		defer src.Close()
+
+		// When
+		t1 := src.CommittedAt()
+		t2 := src.CommittedAt()
+		t3 := src.CommittedAt()
+
+		// Then
+		if !t1.Equal(t2) || !t2.Equal(t3) {
+			t.Errorf("expected consistent timestamp, got %v, %v, %v", t1, t2, t3)
+		}
+	})
+}
+
 func TestGitSource_Close(t *testing.T) {
 	if !isGitInstalled() {
 		t.Skip("git not installed")
