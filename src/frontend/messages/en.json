@@ -152,6 +152,7 @@
     "linkCopiedDescription": "Share this analysis with your team"
   },
   "dashboard": {
+    "title": "Dashboard",
     "card": {
       "addBookmark": "Add bookmark",
       "analyzeLatest": "Analyze latest commits",
