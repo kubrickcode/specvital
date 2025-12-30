@@ -1,11 +1,13 @@
 "use client";
 
 import { ExternalLink, GitCommit } from "lucide-react";
+import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { AnalysisResult } from "@/lib/api";
+import { createStaggerContainer, fadeInUp, useReducedMotion } from "@/lib/motion";
 import { formatAnalysisDate, SHORT_SHA_LENGTH } from "@/lib/utils";
 
 import { FilterBar, FilterSummary } from "./filter-bar";
@@ -22,10 +24,16 @@ type AnalysisContentProps = {
   result: AnalysisResult;
 };
 
+const pageStaggerContainer = createStaggerContainer(0.1, 0);
+
 export const AnalysisContent = ({ result }: AnalysisContentProps) => {
   const t = useTranslations("analyze");
   const { frameworks, query, setFrameworks, setQuery, setStatuses, statuses } = useFilterState();
   const { setViewMode, viewMode } = useViewMode();
+  const shouldReduceMotion = useReducedMotion();
+
+  const containerVariants = shouldReduceMotion ? {} : pageStaggerContainer;
+  const itemVariants = shouldReduceMotion ? {} : fadeInUp;
 
   const availableFrameworks = useMemo(
     () => result.summary.frameworks.map((f) => f.framework),
@@ -46,9 +54,14 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
   const hasResults = filteredSuites.length > 0;
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <motion.main
+      animate="visible"
+      className="container mx-auto px-4 py-8"
+      initial={shouldReduceMotion ? false : "hidden"}
+      variants={containerVariants}
+    >
       <div className="space-y-6">
-        <header className="space-y-2">
+        <motion.header className="space-y-2" variants={itemVariants}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-xl font-bold sm:text-2xl truncate min-w-0">
               {result.owner}/{result.repo}
@@ -74,11 +87,13 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
             </span>
             <span>{t("analyzedAt", { date: formatAnalysisDate(result.analyzedAt) })}</span>
           </div>
-        </header>
+        </motion.header>
 
-        <StatsCard summary={result.summary} />
+        <motion.div variants={itemVariants}>
+          <StatsCard summary={result.summary} />
+        </motion.div>
 
-        <section className="space-y-4">
+        <motion.section className="space-y-4" variants={itemVariants}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-semibold">{t("testSuites")}</h2>
@@ -107,8 +122,8 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
           ) : (
             <TestList suites={filteredSuites} />
           )}
-        </section>
+        </motion.section>
       </div>
-    </main>
+    </motion.main>
   );
 };

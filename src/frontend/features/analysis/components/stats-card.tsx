@@ -1,9 +1,11 @@
 "use client";
 
+import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 import { Card, CardContent } from "@/components/ui/card";
 import type { Summary } from "@/lib/api/types";
+import { easeOutTransition, useReducedMotion } from "@/lib/motion";
 import { getFrameworkColor } from "@/lib/styles";
 
 type StatsCardProps = {
@@ -13,6 +15,7 @@ type StatsCardProps = {
 export const StatsCard = ({ summary }: StatsCardProps) => {
   const t = useTranslations("stats");
   const { active, frameworks, skipped, todo, total } = summary;
+  const shouldReduceMotion = useReducedMotion();
 
   const showFrameworkBreakdown = frameworks.length > 1;
 
@@ -67,12 +70,16 @@ export const StatsCard = ({ summary }: StatsCardProps) => {
                       className="h-2 w-full rounded-full bg-muted overflow-hidden"
                       role="progressbar"
                     >
-                      <div
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{
-                          backgroundColor: getFrameworkColor(index, fw.framework),
-                          width: `${percentage}%`,
-                        }}
+                      <motion.div
+                        animate={{ width: `${percentage}%` }}
+                        className="h-full rounded-full"
+                        initial={shouldReduceMotion ? false : { width: 0 }}
+                        style={{ backgroundColor: getFrameworkColor(index, fw.framework) }}
+                        transition={
+                          shouldReduceMotion
+                            ? undefined
+                            : { ...easeOutTransition, delay: 0.2 + index * 0.1 }
+                        }
                       />
                     </div>
                     <div className="text-sm text-muted-foreground">
