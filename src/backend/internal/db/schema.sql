@@ -112,7 +112,8 @@ CREATE TABLE public.analyses (
     completed_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     total_suites integer DEFAULT 0 NOT NULL,
-    total_tests integer DEFAULT 0 NOT NULL
+    total_tests integer DEFAULT 0 NOT NULL,
+    committed_at timestamp with time zone
 );
 
 
