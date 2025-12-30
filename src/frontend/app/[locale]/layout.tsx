@@ -42,13 +42,15 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-dvh flex-col font-sans antialiased`}
+      >
         <NuqsAdapter>
           <QueryProvider>
             <NextIntlClientProvider messages={messages}>
               <ThemeProvider>
                 <Header />
-                <main className="pb-16 md:pb-0" id="main-content">
+                <main className="flex flex-1 flex-col pb-16 md:pb-0" id="main-content">
                   {children}
                 </main>
                 <MobileBottomBar />
