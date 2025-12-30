@@ -82,7 +82,10 @@ export const FrameworkFilter = ({ availableFrameworks, onChange, value }: Framew
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          className={cn(selectedCount > 0 && "border-primary/50 bg-primary/5")}
+          className={cn(
+            "min-h-[44px] sm:min-h-0",
+            selectedCount > 0 && "border-primary/50 bg-primary/5"
+          )}
           size="sm"
           variant="outline"
         >

@@ -23,16 +23,17 @@ export const ViewModeToggle = ({ onChange, value }: ViewModeToggleProps) => {
 
   return (
     <ToggleGroup
+      className="min-h-[44px] sm:min-h-0"
       onValueChange={handleValueChange}
       size="sm"
       type="single"
       value={value}
       variant="outline"
     >
-      <ToggleGroupItem aria-label={t("list")} value="list">
+      <ToggleGroupItem aria-label={t("list")} className="min-h-[44px] sm:min-h-0" value="list">
         <List className="h-4 w-4" />
       </ToggleGroupItem>
-      <ToggleGroupItem aria-label={t("tree")} value="tree">
+      <ToggleGroupItem aria-label={t("tree")} className="min-h-[44px] sm:min-h-0" value="tree">
         <GitBranch className="h-4 w-4" />
       </ToggleGroupItem>
     </ToggleGroup>
