@@ -72,11 +72,13 @@ func ToCompletedResponse(analysis *entity.Analysis) (api.AnalysisResponse, error
 	})
 
 	result := api.AnalysisResult{
-		AnalyzedAt: analysis.CompletedAt,
-		CommitSHA:  analysis.CommitSHA,
-		Owner:      analysis.Owner,
-		Repo:       analysis.Repo,
-		Suites:     suites,
+		AnalyzedAt:  analysis.CompletedAt,
+		BranchName:  analysis.BranchName,
+		CommitSHA:   analysis.CommitSHA,
+		CommittedAt: analysis.CommittedAt,
+		Owner:       analysis.Owner,
+		Repo:        analysis.Repo,
+		Suites:      suites,
 		Summary: api.Summary{
 			Active:     totalActive,
 			Focused:    totalFocused,

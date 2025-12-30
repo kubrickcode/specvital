@@ -60,7 +60,9 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
       <div className="space-y-6">
         <AnalysisHeader
           analyzedAt={result.analyzedAt}
+          branchName={result.branchName}
           commitSha={result.commitSha}
+          committedAt={result.committedAt}
           owner={result.owner}
           repo={result.repo}
         />

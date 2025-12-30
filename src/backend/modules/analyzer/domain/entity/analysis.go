@@ -3,7 +3,9 @@ package entity
 import "time"
 
 type Analysis struct {
+	BranchName  *string
 	CommitSHA   string
+	CommittedAt *time.Time
 	CompletedAt time.Time
 	ID          string
 	Owner       string

@@ -243,6 +243,7 @@ type Analysis struct {
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	TotalSuites  int32              `json:"total_suites"`
 	TotalTests   int32              `json:"total_tests"`
+	CommittedAt  pgtype.Timestamptz `json:"committed_at"`
 }
 
 type AtlasSchemaRevision struct {

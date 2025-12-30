@@ -3,6 +3,7 @@ package adapter
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/jackc/pgx/v5"
@@ -72,8 +73,20 @@ func (r *PostgresRepository) GetLatestCompletedAnalysis(ctx context.Context, own
 		return nil, fmt.Errorf("get latest completed analysis for %s/%s: %w", owner, repo, err)
 	}
 
+	var branchName *string
+	if row.BranchName.Valid {
+		branchName = &row.BranchName.String
+	}
+	var committedAt *time.Time
+	if row.CommittedAt.Valid {
+		t := row.CommittedAt.Time
+		committedAt = &t
+	}
+
 	return &port.CompletedAnalysis{
+		BranchName:  branchName,
 		CommitSHA:   row.CommitSha,
+		CommittedAt: committedAt,
 		CompletedAt: row.CompletedAt.Time,
 		ID:          uuidToString(row.ID),
 		Owner:       row.Owner,

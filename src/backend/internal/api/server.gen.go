@@ -73,8 +73,14 @@ type AnalysisResult struct {
 	// AnalyzedAt ISO 8601 timestamp of analysis completion
 	AnalyzedAt time.Time `json:"analyzedAt"`
 
+	// BranchName Branch name that was analyzed
+	BranchName *string `json:"branchName,omitempty"`
+
 	// CommitSHA Git commit SHA that was analyzed
 	CommitSHA string `json:"commitSha"`
+
+	// CommittedAt ISO 8601 timestamp of the commit
+	CommittedAt *time.Time `json:"committedAt,omitempty"`
 
 	// Owner Repository owner
 	Owner string `json:"owner"`

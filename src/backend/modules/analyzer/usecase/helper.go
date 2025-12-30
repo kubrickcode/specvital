@@ -71,7 +71,9 @@ func buildAnalysisFromCompleted(ctx context.Context, repository port.Repository,
 	}
 
 	return &entity.Analysis{
+		BranchName:  completed.BranchName,
 		CommitSHA:   completed.CommitSHA,
+		CommittedAt: completed.CommittedAt,
 		CompletedAt: completed.CompletedAt,
 		ID:          completed.ID,
 		Owner:       completed.Owner,

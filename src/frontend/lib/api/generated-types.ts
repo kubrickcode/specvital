@@ -527,10 +527,21 @@ export interface components {
              */
             analyzedAt: string;
             /**
+             * @description Branch name that was analyzed
+             * @example main
+             */
+            branchName?: string;
+            /**
              * @description Git commit SHA that was analyzed
              * @example abc123def456
              */
             commitSha: string;
+            /**
+             * Format: date-time
+             * @description ISO 8601 timestamp of the commit
+             * @example 2024-01-14T09:00:00Z
+             */
+            committedAt?: string;
             /**
              * @description Repository owner
              * @example facebook

@@ -67,6 +67,9 @@
   "analyze": {
     "viewOnGitHub": "GitHub에서 보기",
     "analyzedAt": "분석 시각: {date}",
+    "branch": "브랜치",
+    "commitDetails": "커밋 상세",
+    "committedAt": "커밋 시각: {date}",
     "testSuites": "테스트 스위트",
     "noTestSuites": "이 저장소에서 테스트 스위트를 찾을 수 없습니다.",
     "retry": "다시 시도",

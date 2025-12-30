@@ -93,6 +93,8 @@ const getLatestCompletedAnalysis = `-- name: GetLatestCompletedAnalysis :one
 SELECT
     a.id,
     a.commit_sha,
+    a.branch_name,
+    a.committed_at,
     a.completed_at,
     a.total_suites,
     a.total_tests,
@@ -115,6 +117,8 @@ type GetLatestCompletedAnalysisParams struct {
 type GetLatestCompletedAnalysisRow struct {
 	ID          pgtype.UUID        `json:"id"`
 	CommitSha   string             `json:"commit_sha"`
+	BranchName  pgtype.Text        `json:"branch_name"`
+	CommittedAt pgtype.Timestamptz `json:"committed_at"`
 	CompletedAt pgtype.Timestamptz `json:"completed_at"`
 	TotalSuites int32              `json:"total_suites"`
 	TotalTests  int32              `json:"total_tests"`
@@ -128,6 +132,8 @@ func (q *Queries) GetLatestCompletedAnalysis(ctx context.Context, arg GetLatestC
 	err := row.Scan(
 		&i.ID,
 		&i.CommitSha,
+		&i.BranchName,
+		&i.CommittedAt,
 		&i.CompletedAt,
 		&i.TotalSuites,
 		&i.TotalTests,

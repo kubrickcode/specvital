@@ -2,6 +2,8 @@
 SELECT
     a.id,
     a.commit_sha,
+    a.branch_name,
+    a.committed_at,
     a.completed_at,
     a.total_suites,
     a.total_tests,
