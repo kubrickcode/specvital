@@ -45,9 +45,10 @@
       "note": "Branch/file paths are automatically extracted"
     },
     "trustBadges": {
+      "accurate": "AST-powered",
+      "free": "Free to start",
       "instant": "Instant analysis",
-      "multiFramework": "20+ frameworks",
-      "free": "Free"
+      "multiFramework": "20+ frameworks"
     },
     "frameworks": {
       "title": "Supported Frameworks",

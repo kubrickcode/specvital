@@ -45,9 +45,10 @@
       "note": "branch/file 경로도 자동 추출됩니다"
     },
     "trustBadges": {
+      "accurate": "AST 기반",
+      "free": "무료로 시작",
       "instant": "즉시 분석",
-      "multiFramework": "20+ 프레임워크",
-      "free": "무료"
+      "multiFramework": "20+ 프레임워크"
     },
     "frameworks": {
       "title": "지원 프레임워크",

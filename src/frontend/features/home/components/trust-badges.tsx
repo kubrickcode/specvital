@@ -1,6 +1,6 @@
 "use client";
 
-import { Gift, Layers, Zap } from "lucide-react";
+import { Gift, Layers, Target, Zap } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 
@@ -23,6 +23,12 @@ export const TrustBadges = ({ onFrameworkClick }: TrustBadgesProps) => {
       label: t("instant"),
     },
     {
+      icon: Target,
+      isClickable: false,
+      key: "accurate",
+      label: t("accurate"),
+    },
+    {
       icon: Layers,
       isClickable: true,
       key: "multiFramework",
@@ -42,7 +48,7 @@ export const TrustBadges = ({ onFrameworkClick }: TrustBadgesProps) => {
   return (
     <motion.div
       animate="visible"
-      className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2"
+      className="grid grid-cols-2 gap-2 md:grid-cols-4"
       initial={shouldReduceMotion ? false : "hidden"}
       variants={containerVariants}
     >
@@ -52,13 +58,13 @@ export const TrustBadges = ({ onFrameworkClick }: TrustBadgesProps) => {
 
         const badgeContent = (
           <>
-            <Icon aria-hidden="true" className="size-4" />
-            <span className="text-sm">{badge.label}</span>
+            <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+            <span className="whitespace-nowrap text-xs">{badge.label}</span>
           </>
         );
 
         const badgeClassName = cn(
-          "flex items-center gap-2 rounded-full px-3 py-1.5 text-muted-foreground transition-all",
+          "flex items-center justify-center gap-2 rounded-full px-3 py-1.5 text-muted-foreground transition-all",
           "bg-gradient-to-b from-white/80 to-secondary/60 border border-border/40 shadow-sm",
           "dark:from-white/[0.08] dark:to-white/[0.03] dark:border-white/10",
           isClickable
