@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 
 export const ThemeToggle = () => {
   const { resolvedTheme, setTheme } = useTheme();
@@ -54,30 +54,25 @@ export const ThemeToggle = () => {
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          aria-label={t("toggleTheme")}
-          onClick={toggleTheme}
-          size="header-icon"
-          variant="header-action"
-        >
-          <div className="relative size-4">
-            <Sun
-              className={`absolute size-4 transition-[scale,rotate,opacity] duration-300 ease-out ${isDark ? "rotate-0 scale-100 opacity-100" : "rotate-90 scale-0 opacity-0"}`}
-              ref={sunRef}
-            />
-            <Moon
-              className={`absolute size-4 transition-[scale,rotate,opacity] duration-300 ease-out ${isDark ? "-rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"}`}
-              ref={moonRef}
-            />
-          </div>
-          <span className="sr-only">{t("toggleTheme")}</span>
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom" sideOffset={8}>
-        {t("toggleTheme")}
-      </TooltipContent>
-    </Tooltip>
+    <ResponsiveTooltip content={t("toggleTheme")} side="bottom" sideOffset={8}>
+      <Button
+        aria-label={t("toggleTheme")}
+        onClick={toggleTheme}
+        size="header-icon"
+        variant="header-action"
+      >
+        <div className="relative size-4">
+          <Sun
+            className={`absolute size-4 transition-[scale,rotate,opacity] duration-300 ease-out ${isDark ? "rotate-0 scale-100 opacity-100" : "rotate-90 scale-0 opacity-0"}`}
+            ref={sunRef}
+          />
+          <Moon
+            className={`absolute size-4 transition-[scale,rotate,opacity] duration-300 ease-out ${isDark ? "-rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"}`}
+            ref={moonRef}
+          />
+        </div>
+        <span className="sr-only">{t("toggleTheme")}</span>
+      </Button>
+    </ResponsiveTooltip>
   );
 };

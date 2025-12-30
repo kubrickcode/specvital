@@ -6,7 +6,7 @@ import { useFormatter, useNow, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import type { RepositoryCard as RepositoryCardType } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
@@ -57,24 +57,21 @@ export const RepositoryCard = ({ onBookmarkToggle, onReanalyze, repo }: Reposito
               {fullName}
             </h3>
           </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                aria-label={isBookmarked ? t("removeBookmark") : t("addBookmark")}
-                aria-pressed={isBookmarked}
-                className={cn(
-                  "size-8 shrink-0",
-                  isBookmarked && "text-amber-500 hover:text-amber-600"
-                )}
-                onClick={handleBookmarkClick}
-                size="icon"
-                variant="ghost"
-              >
-                <Star aria-hidden="true" className={cn("size-4", isBookmarked && "fill-current")} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{isBookmarked ? t("removeBookmark") : t("addBookmark")}</TooltipContent>
-          </Tooltip>
+          <ResponsiveTooltip content={isBookmarked ? t("removeBookmark") : t("addBookmark")}>
+            <Button
+              aria-label={isBookmarked ? t("removeBookmark") : t("addBookmark")}
+              aria-pressed={isBookmarked}
+              className={cn(
+                "size-8 shrink-0",
+                isBookmarked && "text-amber-500 hover:text-amber-600"
+              )}
+              onClick={handleBookmarkClick}
+              size="icon"
+              variant="ghost"
+            >
+              <Star aria-hidden="true" className={cn("size-4", isBookmarked && "fill-current")} />
+            </Button>
+          </ResponsiveTooltip>
         </div>
 
         {hasAnalysis && latestAnalysis ? (
@@ -92,39 +89,33 @@ export const RepositoryCard = ({ onBookmarkToggle, onReanalyze, repo }: Reposito
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <time
-                    className="text-xs text-muted-foreground"
-                    dateTime={latestAnalysis.analyzedAt}
-                  >
-                    {format.relativeTime(new Date(latestAnalysis.analyzedAt), now)}
-                  </time>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {format.dateTime(new Date(latestAnalysis.analyzedAt), {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
-                </TooltipContent>
-              </Tooltip>
+              <ResponsiveTooltip
+                content={format.dateTime(new Date(latestAnalysis.analyzedAt), {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              >
+                <time
+                  className="text-xs text-muted-foreground"
+                  dateTime={latestAnalysis.analyzedAt}
+                >
+                  {format.relativeTime(new Date(latestAnalysis.analyzedAt), now)}
+                </time>
+              </ResponsiveTooltip>
 
               {hasNewCommits && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      aria-label={t("reanalyze")}
-                      className="h-7 px-2 text-xs"
-                      onClick={handleReanalyzeClick}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <RefreshCw aria-hidden="true" className="size-3 mr-1" />
-                      {t("update")}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("analyzeLatest")}</TooltipContent>
-                </Tooltip>
+                <ResponsiveTooltip content={t("analyzeLatest")}>
+                  <Button
+                    aria-label={t("reanalyze")}
+                    className="h-7 px-2 text-xs"
+                    onClick={handleReanalyzeClick}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <RefreshCw aria-hidden="true" className="size-3 mr-1" />
+                    {t("update")}
+                  </Button>
+                </ResponsiveTooltip>
               )}
             </div>
           </div>

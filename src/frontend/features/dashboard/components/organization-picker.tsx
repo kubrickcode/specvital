@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import {
   Sheet,
   SheetContent,
@@ -14,7 +15,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { GitHubOrganization } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
@@ -171,26 +171,23 @@ export const OrganizationPicker = ({
                             </Button>
                           ) : (
                             <>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    aria-label={t("refresh")}
-                                    className="size-8"
-                                    disabled={isRefreshing}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onRefreshOrg(org.login);
-                                    }}
-                                    size="icon"
-                                    variant="ghost"
-                                  >
-                                    <RefreshCw
-                                      className={cn("size-4", isRefreshing && "animate-spin")}
-                                    />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>{t("refresh")}</TooltipContent>
-                              </Tooltip>
+                              <ResponsiveTooltip content={t("refresh")}>
+                                <Button
+                                  aria-label={t("refresh")}
+                                  className="size-8"
+                                  disabled={isRefreshing}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onRefreshOrg(org.login);
+                                  }}
+                                  size="icon"
+                                  variant="ghost"
+                                >
+                                  <RefreshCw
+                                    className={cn("size-4", isRefreshing && "animate-spin")}
+                                  />
+                                </Button>
+                              </ResponsiveTooltip>
 
                               {!isDisabled && (
                                 <ChevronRight className="size-4 text-muted-foreground" />

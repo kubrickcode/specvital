@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { isValidLocale, LANGUAGE_NAMES } from "@/i18n/config";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -40,24 +40,24 @@ export const LanguageSelector = () => {
 
   return (
     <DropdownMenu onOpenChange={setIsDropdownOpen} open={isDropdownOpen}>
-      <Tooltip open={isDropdownOpen ? false : undefined}>
-        <TooltipTrigger asChild>
-          <DropdownMenuTrigger asChild id={id}>
-            <Button
-              aria-label={t("selectLanguage")}
-              disabled={isPending}
-              size="header-icon"
-              variant="header-action"
-            >
-              <Globe className="size-4" />
-              <span className="sr-only">{t("selectLanguage")}</span>
-            </Button>
-          </DropdownMenuTrigger>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" sideOffset={8}>
-          {t("selectLanguage")}
-        </TooltipContent>
-      </Tooltip>
+      <ResponsiveTooltip
+        content={t("selectLanguage")}
+        open={isDropdownOpen ? false : undefined}
+        side="bottom"
+        sideOffset={8}
+      >
+        <DropdownMenuTrigger asChild id={id}>
+          <Button
+            aria-label={t("selectLanguage")}
+            disabled={isPending}
+            size="header-icon"
+            variant="header-action"
+          >
+            <Globe className="size-4" />
+            <span className="sr-only">{t("selectLanguage")}</span>
+          </Button>
+        </DropdownMenuTrigger>
+      </ResponsiveTooltip>
       <DropdownMenuContent align="end">
         {routing.locales.map((locale) => (
           <DropdownMenuItem

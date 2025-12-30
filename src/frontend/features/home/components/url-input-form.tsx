@@ -7,7 +7,7 @@ import { useState, useTransition } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { useRouter } from "@/i18n/navigation";
 import { useMediaQuery } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
@@ -99,17 +99,8 @@ export const UrlInputForm = () => {
             value={url}
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  aria-label={t("supportedFormats.label")}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  type="button"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs" side="top" sideOffset={8}>
+            <ResponsiveTooltip
+              content={
                 <div className="space-y-2">
                   <p className="font-medium text-sm">{t("supportedFormats.title")}</p>
                   <ul className="text-xs space-y-1 list-disc list-inside">
@@ -119,8 +110,19 @@ export const UrlInputForm = () => {
                   </ul>
                   <p className="text-xs text-muted-foreground">{t("supportedFormats.note")}</p>
                 </div>
-              </TooltipContent>
-            </Tooltip>
+              }
+              contentClassName="max-w-xs"
+              side="top"
+              sideOffset={8}
+            >
+              <button
+                aria-label={t("supportedFormats.label")}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                type="button"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </button>
+            </ResponsiveTooltip>
             {validationState === "valid" && (
               <CheckCircle aria-hidden="true" className="h-4 w-4 text-green-500" />
             )}

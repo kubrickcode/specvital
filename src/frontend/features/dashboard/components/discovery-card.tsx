@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { cn } from "@/lib/utils";
 
 type DiscoveryCardProps = {
@@ -78,21 +78,18 @@ export const DiscoveryCard = ({
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                aria-label={t("refresh")}
-                className="size-8"
-                disabled={isRefreshing}
-                onClick={handleRefreshClick}
-                size="icon"
-                variant="ghost"
-              >
-                <RefreshCw className={cn("size-4", isRefreshing && "animate-spin")} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t("refresh")}</TooltipContent>
-          </Tooltip>
+          <ResponsiveTooltip content={t("refresh")}>
+            <Button
+              aria-label={t("refresh")}
+              className="size-8"
+              disabled={isRefreshing}
+              onClick={handleRefreshClick}
+              size="icon"
+              variant="ghost"
+            >
+              <RefreshCw className={cn("size-4", isRefreshing && "animate-spin")} />
+            </Button>
+          </ResponsiveTooltip>
 
           {!isDisabled && <ChevronRight className="size-4 text-muted-foreground" />}
         </div>

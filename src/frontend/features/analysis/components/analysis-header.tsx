@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { fadeInUp } from "@/lib/motion";
 import { formatAnalysisDate, SHORT_SHA_LENGTH } from "@/lib/utils";
 
@@ -45,26 +45,26 @@ export const AnalysisHeader = ({
                 <span className="font-medium text-foreground">{branchName}</span>
               </span>
             )}
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-                  type="button"
-                >
-                  <GitCommit className="size-4" />
-                  <span>{commitSha.slice(0, SHORT_SHA_LENGTH)}</span>
-                  <Info className="size-3.5 opacity-50" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-3 text-sm" side="bottom">
-                <div className="space-y-1.5">
+            <ResponsiveTooltip
+              content={
+                <div className="space-y-1">
                   {committedAt && (
                     <div>{t("committedAt", { date: formatAnalysisDate(committedAt) })}</div>
                   )}
                   <div>{t("analyzedAt", { date: formatAnalysisDate(analyzedAt) })}</div>
                 </div>
-              </PopoverContent>
-            </Popover>
+              }
+              side="bottom"
+            >
+              <button
+                className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                type="button"
+              >
+                <GitCommit className="size-4" />
+                <span>{commitSha.slice(0, SHORT_SHA_LENGTH)}</span>
+                <Info className="size-3.5 opacity-50" />
+              </button>
+            </ResponsiveTooltip>
           </div>
         </div>
 
