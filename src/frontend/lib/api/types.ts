@@ -45,6 +45,10 @@ export type BookmarkResponse = components["schemas"]["BookmarkResponse"];
 export type BookmarkedRepositoriesResponse =
   components["schemas"]["BookmarkedRepositoriesResponse"];
 export type RecentRepositoriesResponse = components["schemas"]["RecentRepositoriesResponse"];
+export type PaginatedRepositoriesResponse = components["schemas"]["PaginatedRepositoriesResponse"];
+export type SortByParam = components["schemas"]["SortByParam"];
+export type SortOrderParam = components["schemas"]["SortOrderParam"];
+export type ViewFilterParam = components["schemas"]["ViewFilterParam"];
 export type RepositoryStatsResponse = components["schemas"]["RepositoryStatsResponse"];
 export type UserAnalyzedRepositoriesResponse =
   components["schemas"]["UserAnalyzedRepositoriesResponse"];

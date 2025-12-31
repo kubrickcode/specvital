@@ -1,10 +1,40 @@
 import { apiFetch, parseJsonResponse } from "@/lib/api/client";
 import type {
   AnalyzingResponse,
+  PaginatedRepositoriesResponse,
   QueuedResponse,
   RecentRepositoriesResponse,
+  SortByParam,
+  SortOrderParam,
   UpdateStatusResponse,
+  ViewFilterParam,
 } from "@/lib/api/types";
+
+export type PaginatedRepositoriesParams = {
+  cursor?: string;
+  limit?: number;
+  sortBy?: SortByParam;
+  sortOrder?: SortOrderParam;
+  view?: ViewFilterParam;
+};
+
+export const fetchPaginatedRepositories = async (
+  params: PaginatedRepositoriesParams = {}
+): Promise<PaginatedRepositoriesResponse> => {
+  const searchParams = new URLSearchParams();
+
+  if (params.cursor) searchParams.set("cursor", params.cursor);
+  if (params.limit) searchParams.set("limit", String(params.limit));
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
+  if (params.view) searchParams.set("view", params.view);
+
+  const queryString = searchParams.toString();
+  const url = queryString ? `/api/repositories/recent?${queryString}` : "/api/repositories/recent";
+
+  const response = await apiFetch(url);
+  return parseJsonResponse(response);
+};
 
 export const fetchRecentRepositories = async (
   limit?: number

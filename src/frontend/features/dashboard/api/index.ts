@@ -6,4 +6,10 @@ export {
   fetchUserGitHubOrganizations,
   fetchUserGitHubRepositories,
 } from "./github";
-export { checkUpdateStatus, fetchRecentRepositories, triggerReanalyze } from "./repositories";
+export {
+  checkUpdateStatus,
+  fetchPaginatedRepositories,
+  fetchRecentRepositories,
+  triggerReanalyze,
+} from "./repositories";
+export type { PaginatedRepositoriesParams } from "./repositories";
