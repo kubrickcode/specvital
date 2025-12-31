@@ -3,10 +3,12 @@ package domain
 import (
 	"errors"
 	"fmt"
+
+	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
 )
 
 var (
-	ErrInvalidCursor = errors.New("invalid cursor format")
+	ErrInvalidCursor = entity.ErrInvalidCursor
 	ErrNotFound      = errors.New("analysis not found")
 )
 
