@@ -143,6 +143,321 @@ func (q *Queries) GetLatestCompletedAnalysis(ctx context.Context, arg GetLatestC
 	return i, err
 }
 
+const getPaginatedRepositoriesByName = `-- name: GetPaginatedRepositoriesByName :many
+SELECT
+    c.id AS codebase_id,
+    c.owner,
+    c.name,
+    a.id AS analysis_id,
+    a.commit_sha,
+    a.completed_at AS analyzed_at,
+    a.total_tests,
+    EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
+    ) AS is_analyzed_by_me
+FROM codebases c
+JOIN LATERAL (
+    SELECT id, commit_sha, completed_at, total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL
+  AND c.is_stale = false
+  AND (
+    $2::text = 'all'
+    OR ($2::text = 'my' AND EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
+    ))
+    OR ($2::text = 'community' AND NOT EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
+    ))
+  )
+  AND (
+    $3::text IS NULL
+    OR (
+      ($4::text = 'asc' AND (c.name, c.id) > ($3::text, $5::uuid))
+      OR ($4::text = 'desc' AND (c.name, c.id) < ($3::text, $5::uuid))
+    )
+  )
+ORDER BY
+  CASE WHEN $4::text = 'asc' THEN c.name END ASC,
+  CASE WHEN $4::text = 'desc' THEN c.name END DESC,
+  CASE WHEN $4::text = 'asc' THEN c.id END ASC,
+  CASE WHEN $4::text = 'desc' THEN c.id END DESC
+LIMIT $6
+`
+
+type GetPaginatedRepositoriesByNameParams struct {
+	UserID     pgtype.UUID `json:"user_id"`
+	ViewFilter string      `json:"view_filter"`
+	CursorName string      `json:"cursor_name"`
+	SortOrder  string      `json:"sort_order"`
+	CursorID   pgtype.UUID `json:"cursor_id"`
+	PageLimit  int32       `json:"page_limit"`
+}
+
+type GetPaginatedRepositoriesByNameRow struct {
+	CodebaseID     pgtype.UUID        `json:"codebase_id"`
+	Owner          string             `json:"owner"`
+	Name           string             `json:"name"`
+	AnalysisID     pgtype.UUID        `json:"analysis_id"`
+	CommitSha      string             `json:"commit_sha"`
+	AnalyzedAt     pgtype.Timestamptz `json:"analyzed_at"`
+	TotalTests     int32              `json:"total_tests"`
+	IsAnalyzedByMe bool               `json:"is_analyzed_by_me"`
+}
+
+func (q *Queries) GetPaginatedRepositoriesByName(ctx context.Context, arg GetPaginatedRepositoriesByNameParams) ([]GetPaginatedRepositoriesByNameRow, error) {
+	rows, err := q.db.Query(ctx, getPaginatedRepositoriesByName,
+		arg.UserID,
+		arg.ViewFilter,
+		arg.CursorName,
+		arg.SortOrder,
+		arg.CursorID,
+		arg.PageLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPaginatedRepositoriesByNameRow
+	for rows.Next() {
+		var i GetPaginatedRepositoriesByNameRow
+		if err := rows.Scan(
+			&i.CodebaseID,
+			&i.Owner,
+			&i.Name,
+			&i.AnalysisID,
+			&i.CommitSha,
+			&i.AnalyzedAt,
+			&i.TotalTests,
+			&i.IsAnalyzedByMe,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPaginatedRepositoriesByRecent = `-- name: GetPaginatedRepositoriesByRecent :many
+SELECT
+    c.id AS codebase_id,
+    c.owner,
+    c.name,
+    a.id AS analysis_id,
+    a.commit_sha,
+    a.completed_at AS analyzed_at,
+    a.total_tests,
+    EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
+    ) AS is_analyzed_by_me
+FROM codebases c
+JOIN LATERAL (
+    SELECT id, commit_sha, completed_at, total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL
+  AND c.is_stale = false
+  AND (
+    $2::text = 'all'
+    OR ($2::text = 'my' AND EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
+    ))
+    OR ($2::text = 'community' AND NOT EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
+    ))
+  )
+  AND (
+    $3::timestamptz IS NULL
+    OR (
+      ($4::text = 'desc' AND (a.completed_at, c.id) < ($3::timestamptz, $5::uuid))
+      OR ($4::text = 'asc' AND (a.completed_at, c.id) > ($3::timestamptz, $5::uuid))
+    )
+  )
+ORDER BY
+  CASE WHEN $4::text = 'desc' THEN a.completed_at END DESC,
+  CASE WHEN $4::text = 'asc' THEN a.completed_at END ASC,
+  CASE WHEN $4::text = 'desc' THEN c.id END DESC,
+  CASE WHEN $4::text = 'asc' THEN c.id END ASC
+LIMIT $6
+`
+
+type GetPaginatedRepositoriesByRecentParams struct {
+	UserID           pgtype.UUID        `json:"user_id"`
+	ViewFilter       string             `json:"view_filter"`
+	CursorAnalyzedAt pgtype.Timestamptz `json:"cursor_analyzed_at"`
+	SortOrder        string             `json:"sort_order"`
+	CursorID         pgtype.UUID        `json:"cursor_id"`
+	PageLimit        int32              `json:"page_limit"`
+}
+
+type GetPaginatedRepositoriesByRecentRow struct {
+	CodebaseID     pgtype.UUID        `json:"codebase_id"`
+	Owner          string             `json:"owner"`
+	Name           string             `json:"name"`
+	AnalysisID     pgtype.UUID        `json:"analysis_id"`
+	CommitSha      string             `json:"commit_sha"`
+	AnalyzedAt     pgtype.Timestamptz `json:"analyzed_at"`
+	TotalTests     int32              `json:"total_tests"`
+	IsAnalyzedByMe bool               `json:"is_analyzed_by_me"`
+}
+
+func (q *Queries) GetPaginatedRepositoriesByRecent(ctx context.Context, arg GetPaginatedRepositoriesByRecentParams) ([]GetPaginatedRepositoriesByRecentRow, error) {
+	rows, err := q.db.Query(ctx, getPaginatedRepositoriesByRecent,
+		arg.UserID,
+		arg.ViewFilter,
+		arg.CursorAnalyzedAt,
+		arg.SortOrder,
+		arg.CursorID,
+		arg.PageLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPaginatedRepositoriesByRecentRow
+	for rows.Next() {
+		var i GetPaginatedRepositoriesByRecentRow
+		if err := rows.Scan(
+			&i.CodebaseID,
+			&i.Owner,
+			&i.Name,
+			&i.AnalysisID,
+			&i.CommitSha,
+			&i.AnalyzedAt,
+			&i.TotalTests,
+			&i.IsAnalyzedByMe,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPaginatedRepositoriesByTests = `-- name: GetPaginatedRepositoriesByTests :many
+SELECT
+    c.id AS codebase_id,
+    c.owner,
+    c.name,
+    a.id AS analysis_id,
+    a.commit_sha,
+    a.completed_at AS analyzed_at,
+    a.total_tests,
+    EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
+    ) AS is_analyzed_by_me
+FROM codebases c
+JOIN LATERAL (
+    SELECT id, commit_sha, completed_at, total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL
+  AND c.is_stale = false
+  AND (
+    $2::text = 'all'
+    OR ($2::text = 'my' AND EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
+    ))
+    OR ($2::text = 'community' AND NOT EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
+    ))
+  )
+  AND (
+    $3::int IS NULL
+    OR (
+      ($4::text = 'desc' AND (a.total_tests, c.id) < ($3::int, $5::uuid))
+      OR ($4::text = 'asc' AND (a.total_tests, c.id) > ($3::int, $5::uuid))
+    )
+  )
+ORDER BY
+  CASE WHEN $4::text = 'desc' THEN a.total_tests END DESC,
+  CASE WHEN $4::text = 'asc' THEN a.total_tests END ASC,
+  CASE WHEN $4::text = 'desc' THEN c.id END DESC,
+  CASE WHEN $4::text = 'asc' THEN c.id END ASC
+LIMIT $6
+`
+
+type GetPaginatedRepositoriesByTestsParams struct {
+	UserID          pgtype.UUID `json:"user_id"`
+	ViewFilter      string      `json:"view_filter"`
+	CursorTestCount int32       `json:"cursor_test_count"`
+	SortOrder       string      `json:"sort_order"`
+	CursorID        pgtype.UUID `json:"cursor_id"`
+	PageLimit       int32       `json:"page_limit"`
+}
+
+type GetPaginatedRepositoriesByTestsRow struct {
+	CodebaseID     pgtype.UUID        `json:"codebase_id"`
+	Owner          string             `json:"owner"`
+	Name           string             `json:"name"`
+	AnalysisID     pgtype.UUID        `json:"analysis_id"`
+	CommitSha      string             `json:"commit_sha"`
+	AnalyzedAt     pgtype.Timestamptz `json:"analyzed_at"`
+	TotalTests     int32              `json:"total_tests"`
+	IsAnalyzedByMe bool               `json:"is_analyzed_by_me"`
+}
+
+func (q *Queries) GetPaginatedRepositoriesByTests(ctx context.Context, arg GetPaginatedRepositoriesByTestsParams) ([]GetPaginatedRepositoriesByTestsRow, error) {
+	rows, err := q.db.Query(ctx, getPaginatedRepositoriesByTests,
+		arg.UserID,
+		arg.ViewFilter,
+		arg.CursorTestCount,
+		arg.SortOrder,
+		arg.CursorID,
+		arg.PageLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPaginatedRepositoriesByTestsRow
+	for rows.Next() {
+		var i GetPaginatedRepositoriesByTestsRow
+		if err := rows.Scan(
+			&i.CodebaseID,
+			&i.Owner,
+			&i.Name,
+			&i.AnalysisID,
+			&i.CommitSha,
+			&i.AnalyzedAt,
+			&i.TotalTests,
+			&i.IsAnalyzedByMe,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPreviousAnalysis = `-- name: GetPreviousAnalysis :one
 SELECT
     id,

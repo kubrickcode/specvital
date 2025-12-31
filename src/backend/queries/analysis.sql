@@ -128,3 +128,147 @@ LIMIT 1;
 SELECT id
 FROM codebases
 WHERE host = $1 AND owner = $2 AND name = $3 AND is_stale = false;
+
+-- name: GetPaginatedRepositoriesByRecent :many
+SELECT
+    c.id AS codebase_id,
+    c.owner,
+    c.name,
+    a.id AS analysis_id,
+    a.commit_sha,
+    a.completed_at AS analyzed_at,
+    a.total_tests,
+    EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+    ) AS is_analyzed_by_me
+FROM codebases c
+JOIN LATERAL (
+    SELECT id, commit_sha, completed_at, total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL
+  AND c.is_stale = false
+  AND (
+    sqlc.arg(view_filter)::text = 'all'
+    OR (sqlc.arg(view_filter)::text = 'my' AND EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+    ))
+    OR (sqlc.arg(view_filter)::text = 'community' AND NOT EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+    ))
+  )
+  AND (
+    sqlc.arg(cursor_analyzed_at)::timestamptz IS NULL
+    OR (
+      (sqlc.arg(sort_order)::text = 'desc' AND (a.completed_at, c.id) < (sqlc.arg(cursor_analyzed_at)::timestamptz, sqlc.arg(cursor_id)::uuid))
+      OR (sqlc.arg(sort_order)::text = 'asc' AND (a.completed_at, c.id) > (sqlc.arg(cursor_analyzed_at)::timestamptz, sqlc.arg(cursor_id)::uuid))
+    )
+  )
+ORDER BY
+  CASE WHEN sqlc.arg(sort_order)::text = 'desc' THEN a.completed_at END DESC,
+  CASE WHEN sqlc.arg(sort_order)::text = 'asc' THEN a.completed_at END ASC,
+  CASE WHEN sqlc.arg(sort_order)::text = 'desc' THEN c.id END DESC,
+  CASE WHEN sqlc.arg(sort_order)::text = 'asc' THEN c.id END ASC
+LIMIT sqlc.arg(page_limit);
+
+-- name: GetPaginatedRepositoriesByName :many
+SELECT
+    c.id AS codebase_id,
+    c.owner,
+    c.name,
+    a.id AS analysis_id,
+    a.commit_sha,
+    a.completed_at AS analyzed_at,
+    a.total_tests,
+    EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+    ) AS is_analyzed_by_me
+FROM codebases c
+JOIN LATERAL (
+    SELECT id, commit_sha, completed_at, total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL
+  AND c.is_stale = false
+  AND (
+    sqlc.arg(view_filter)::text = 'all'
+    OR (sqlc.arg(view_filter)::text = 'my' AND EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+    ))
+    OR (sqlc.arg(view_filter)::text = 'community' AND NOT EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+    ))
+  )
+  AND (
+    sqlc.arg(cursor_name)::text IS NULL
+    OR (
+      (sqlc.arg(sort_order)::text = 'asc' AND (c.name, c.id) > (sqlc.arg(cursor_name)::text, sqlc.arg(cursor_id)::uuid))
+      OR (sqlc.arg(sort_order)::text = 'desc' AND (c.name, c.id) < (sqlc.arg(cursor_name)::text, sqlc.arg(cursor_id)::uuid))
+    )
+  )
+ORDER BY
+  CASE WHEN sqlc.arg(sort_order)::text = 'asc' THEN c.name END ASC,
+  CASE WHEN sqlc.arg(sort_order)::text = 'desc' THEN c.name END DESC,
+  CASE WHEN sqlc.arg(sort_order)::text = 'asc' THEN c.id END ASC,
+  CASE WHEN sqlc.arg(sort_order)::text = 'desc' THEN c.id END DESC
+LIMIT sqlc.arg(page_limit);
+
+-- name: GetPaginatedRepositoriesByTests :many
+SELECT
+    c.id AS codebase_id,
+    c.owner,
+    c.name,
+    a.id AS analysis_id,
+    a.commit_sha,
+    a.completed_at AS analyzed_at,
+    a.total_tests,
+    EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+    ) AS is_analyzed_by_me
+FROM codebases c
+JOIN LATERAL (
+    SELECT id, commit_sha, completed_at, total_tests
+    FROM analyses
+    WHERE codebase_id = c.id AND status = 'completed'
+    ORDER BY created_at DESC
+    LIMIT 1
+) a ON true
+WHERE c.last_viewed_at IS NOT NULL
+  AND c.is_stale = false
+  AND (
+    sqlc.arg(view_filter)::text = 'all'
+    OR (sqlc.arg(view_filter)::text = 'my' AND EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+    ))
+    OR (sqlc.arg(view_filter)::text = 'community' AND NOT EXISTS(
+        SELECT 1 FROM user_analysis_history uah
+        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+    ))
+  )
+  AND (
+    sqlc.arg(cursor_test_count)::int IS NULL
+    OR (
+      (sqlc.arg(sort_order)::text = 'desc' AND (a.total_tests, c.id) < (sqlc.arg(cursor_test_count)::int, sqlc.arg(cursor_id)::uuid))
+      OR (sqlc.arg(sort_order)::text = 'asc' AND (a.total_tests, c.id) > (sqlc.arg(cursor_test_count)::int, sqlc.arg(cursor_id)::uuid))
+    )
+  )
+ORDER BY
+  CASE WHEN sqlc.arg(sort_order)::text = 'desc' THEN a.total_tests END DESC,
+  CASE WHEN sqlc.arg(sort_order)::text = 'asc' THEN a.total_tests END ASC,
+  CASE WHEN sqlc.arg(sort_order)::text = 'desc' THEN c.id END DESC,
+  CASE WHEN sqlc.arg(sort_order)::text = 'asc' THEN c.id END ASC
+LIMIT sqlc.arg(page_limit);

@@ -246,8 +246,131 @@ func (r *PostgresRepository) GetTestSuitesWithCases(ctx context.Context, analysi
 }
 
 func (r *PostgresRepository) GetPaginatedRepositories(ctx context.Context, params port.PaginationParams) ([]port.PaginatedRepository, error) {
-	// TODO: Implementation will be added in Commit 2
-	return nil, nil
+	userUUID, err := stringToUUID(params.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("parse user ID: %w", err)
+	}
+
+	var cursorID pgtype.UUID
+	if params.Cursor != nil {
+		cursorID, err = stringToUUID(params.Cursor.ID)
+		if err != nil {
+			return nil, fmt.Errorf("parse cursor ID: %w", err)
+		}
+	}
+
+	switch params.SortBy {
+	case entity.SortByRecent:
+		return r.getPaginatedByRecent(ctx, userUUID, cursorID, params)
+	case entity.SortByName:
+		return r.getPaginatedByName(ctx, userUUID, cursorID, params)
+	case entity.SortByTests:
+		return r.getPaginatedByTests(ctx, userUUID, cursorID, params)
+	default:
+		return r.getPaginatedByRecent(ctx, userUUID, cursorID, params)
+	}
+}
+
+func (r *PostgresRepository) getPaginatedByRecent(ctx context.Context, userUUID, cursorID pgtype.UUID, params port.PaginationParams) ([]port.PaginatedRepository, error) {
+	var cursorAnalyzedAt pgtype.Timestamptz
+	if params.Cursor != nil {
+		cursorAnalyzedAt = pgtype.Timestamptz{Time: params.Cursor.AnalyzedAt, Valid: true}
+	}
+
+	rows, err := r.queries.GetPaginatedRepositoriesByRecent(ctx, db.GetPaginatedRepositoriesByRecentParams{
+		UserID:           userUUID,
+		ViewFilter:       params.View.String(),
+		CursorAnalyzedAt: cursorAnalyzedAt,
+		SortOrder:        params.SortOrder.String(),
+		CursorID:         cursorID,
+		PageLimit:        int32(params.Limit),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get paginated repositories by recent: %w", err)
+	}
+
+	repos := make([]port.PaginatedRepository, len(rows))
+	for i, row := range rows {
+		repos[i] = port.PaginatedRepository{
+			AnalysisID:     uuidToString(row.AnalysisID),
+			AnalyzedAt:     row.AnalyzedAt.Time,
+			CodebaseID:     uuidToString(row.CodebaseID),
+			CommitSHA:      row.CommitSha,
+			IsAnalyzedByMe: row.IsAnalyzedByMe,
+			Name:           row.Name,
+			Owner:          row.Owner,
+			TotalTests:     int(row.TotalTests),
+		}
+	}
+	return repos, nil
+}
+
+func (r *PostgresRepository) getPaginatedByName(ctx context.Context, userUUID, cursorID pgtype.UUID, params port.PaginationParams) ([]port.PaginatedRepository, error) {
+	var cursorName string
+	if params.Cursor != nil {
+		cursorName = params.Cursor.Name
+	}
+
+	rows, err := r.queries.GetPaginatedRepositoriesByName(ctx, db.GetPaginatedRepositoriesByNameParams{
+		UserID:     userUUID,
+		ViewFilter: params.View.String(),
+		CursorName: cursorName,
+		SortOrder:  params.SortOrder.String(),
+		CursorID:   cursorID,
+		PageLimit:  int32(params.Limit),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get paginated repositories by name: %w", err)
+	}
+
+	repos := make([]port.PaginatedRepository, len(rows))
+	for i, row := range rows {
+		repos[i] = port.PaginatedRepository{
+			AnalysisID:     uuidToString(row.AnalysisID),
+			AnalyzedAt:     row.AnalyzedAt.Time,
+			CodebaseID:     uuidToString(row.CodebaseID),
+			CommitSHA:      row.CommitSha,
+			IsAnalyzedByMe: row.IsAnalyzedByMe,
+			Name:           row.Name,
+			Owner:          row.Owner,
+			TotalTests:     int(row.TotalTests),
+		}
+	}
+	return repos, nil
+}
+
+func (r *PostgresRepository) getPaginatedByTests(ctx context.Context, userUUID, cursorID pgtype.UUID, params port.PaginationParams) ([]port.PaginatedRepository, error) {
+	var cursorTestCount int32
+	if params.Cursor != nil {
+		cursorTestCount = int32(params.Cursor.TestCount)
+	}
+
+	rows, err := r.queries.GetPaginatedRepositoriesByTests(ctx, db.GetPaginatedRepositoriesByTestsParams{
+		UserID:          userUUID,
+		ViewFilter:      params.View.String(),
+		CursorTestCount: cursorTestCount,
+		SortOrder:       params.SortOrder.String(),
+		CursorID:        cursorID,
+		PageLimit:       int32(params.Limit),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get paginated repositories by tests: %w", err)
+	}
+
+	repos := make([]port.PaginatedRepository, len(rows))
+	for i, row := range rows {
+		repos[i] = port.PaginatedRepository{
+			AnalysisID:     uuidToString(row.AnalysisID),
+			AnalyzedAt:     row.AnalyzedAt.Time,
+			CodebaseID:     uuidToString(row.CodebaseID),
+			CommitSHA:      row.CommitSha,
+			IsAnalyzedByMe: row.IsAnalyzedByMe,
+			Name:           row.Name,
+			Owner:          row.Owner,
+			TotalTests:     int(row.TotalTests),
+		}
+	}
+	return repos, nil
 }
 
 func (r *PostgresRepository) UpdateLastViewed(ctx context.Context, owner, repo string) error {
