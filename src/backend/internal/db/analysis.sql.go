@@ -152,16 +152,41 @@ SELECT
     a.commit_sha,
     a.completed_at AS analyzed_at,
     a.total_tests,
+    a.active_count,
+    a.focused_count,
+    a.skipped_count,
+    a.todo_count,
+    a.xfail_count,
     EXISTS(
         SELECT 1 FROM user_analysis_history uah
         WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
     ) AS is_analyzed_by_me
 FROM codebases c
 JOIN LATERAL (
-    SELECT id, commit_sha, completed_at, total_tests
-    FROM analyses
-    WHERE codebase_id = c.id AND status = 'completed'
-    ORDER BY created_at DESC
+    SELECT
+        an.id,
+        an.commit_sha,
+        an.completed_at,
+        an.total_tests,
+        COALESCE(tc_summary.active_count, 0)::int AS active_count,
+        COALESCE(tc_summary.focused_count, 0)::int AS focused_count,
+        COALESCE(tc_summary.skipped_count, 0)::int AS skipped_count,
+        COALESCE(tc_summary.todo_count, 0)::int AS todo_count,
+        COALESCE(tc_summary.xfail_count, 0)::int AS xfail_count
+    FROM analyses an
+    LEFT JOIN LATERAL (
+        SELECT
+            COUNT(*) FILTER (WHERE tc.status = 'active') AS active_count,
+            COUNT(*) FILTER (WHERE tc.status = 'focused') AS focused_count,
+            COUNT(*) FILTER (WHERE tc.status = 'skipped') AS skipped_count,
+            COUNT(*) FILTER (WHERE tc.status = 'todo') AS todo_count,
+            COUNT(*) FILTER (WHERE tc.status = 'xfail') AS xfail_count
+        FROM test_cases tc
+        JOIN test_suites ts ON ts.id = tc.suite_id
+        WHERE ts.analysis_id = an.id
+    ) tc_summary ON true
+    WHERE an.codebase_id = c.id AND an.status = 'completed'
+    ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
 WHERE c.last_viewed_at IS NOT NULL
@@ -209,6 +234,11 @@ type GetPaginatedRepositoriesByNameRow struct {
 	CommitSha      string             `json:"commit_sha"`
 	AnalyzedAt     pgtype.Timestamptz `json:"analyzed_at"`
 	TotalTests     int32              `json:"total_tests"`
+	ActiveCount    int32              `json:"active_count"`
+	FocusedCount   int32              `json:"focused_count"`
+	SkippedCount   int32              `json:"skipped_count"`
+	TodoCount      int32              `json:"todo_count"`
+	XfailCount     int32              `json:"xfail_count"`
 	IsAnalyzedByMe bool               `json:"is_analyzed_by_me"`
 }
 
@@ -236,6 +266,11 @@ func (q *Queries) GetPaginatedRepositoriesByName(ctx context.Context, arg GetPag
 			&i.CommitSha,
 			&i.AnalyzedAt,
 			&i.TotalTests,
+			&i.ActiveCount,
+			&i.FocusedCount,
+			&i.SkippedCount,
+			&i.TodoCount,
+			&i.XfailCount,
 			&i.IsAnalyzedByMe,
 		); err != nil {
 			return nil, err
@@ -257,16 +292,41 @@ SELECT
     a.commit_sha,
     a.completed_at AS analyzed_at,
     a.total_tests,
+    a.active_count,
+    a.focused_count,
+    a.skipped_count,
+    a.todo_count,
+    a.xfail_count,
     EXISTS(
         SELECT 1 FROM user_analysis_history uah
         WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
     ) AS is_analyzed_by_me
 FROM codebases c
 JOIN LATERAL (
-    SELECT id, commit_sha, completed_at, total_tests
-    FROM analyses
-    WHERE codebase_id = c.id AND status = 'completed'
-    ORDER BY created_at DESC
+    SELECT
+        an.id,
+        an.commit_sha,
+        an.completed_at,
+        an.total_tests,
+        COALESCE(tc_summary.active_count, 0)::int AS active_count,
+        COALESCE(tc_summary.focused_count, 0)::int AS focused_count,
+        COALESCE(tc_summary.skipped_count, 0)::int AS skipped_count,
+        COALESCE(tc_summary.todo_count, 0)::int AS todo_count,
+        COALESCE(tc_summary.xfail_count, 0)::int AS xfail_count
+    FROM analyses an
+    LEFT JOIN LATERAL (
+        SELECT
+            COUNT(*) FILTER (WHERE tc.status = 'active') AS active_count,
+            COUNT(*) FILTER (WHERE tc.status = 'focused') AS focused_count,
+            COUNT(*) FILTER (WHERE tc.status = 'skipped') AS skipped_count,
+            COUNT(*) FILTER (WHERE tc.status = 'todo') AS todo_count,
+            COUNT(*) FILTER (WHERE tc.status = 'xfail') AS xfail_count
+        FROM test_cases tc
+        JOIN test_suites ts ON ts.id = tc.suite_id
+        WHERE ts.analysis_id = an.id
+    ) tc_summary ON true
+    WHERE an.codebase_id = c.id AND an.status = 'completed'
+    ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
 WHERE c.last_viewed_at IS NOT NULL
@@ -314,6 +374,11 @@ type GetPaginatedRepositoriesByRecentRow struct {
 	CommitSha      string             `json:"commit_sha"`
 	AnalyzedAt     pgtype.Timestamptz `json:"analyzed_at"`
 	TotalTests     int32              `json:"total_tests"`
+	ActiveCount    int32              `json:"active_count"`
+	FocusedCount   int32              `json:"focused_count"`
+	SkippedCount   int32              `json:"skipped_count"`
+	TodoCount      int32              `json:"todo_count"`
+	XfailCount     int32              `json:"xfail_count"`
 	IsAnalyzedByMe bool               `json:"is_analyzed_by_me"`
 }
 
@@ -341,6 +406,11 @@ func (q *Queries) GetPaginatedRepositoriesByRecent(ctx context.Context, arg GetP
 			&i.CommitSha,
 			&i.AnalyzedAt,
 			&i.TotalTests,
+			&i.ActiveCount,
+			&i.FocusedCount,
+			&i.SkippedCount,
+			&i.TodoCount,
+			&i.XfailCount,
 			&i.IsAnalyzedByMe,
 		); err != nil {
 			return nil, err
@@ -362,16 +432,41 @@ SELECT
     a.commit_sha,
     a.completed_at AS analyzed_at,
     a.total_tests,
+    a.active_count,
+    a.focused_count,
+    a.skipped_count,
+    a.todo_count,
+    a.xfail_count,
     EXISTS(
         SELECT 1 FROM user_analysis_history uah
         WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
     ) AS is_analyzed_by_me
 FROM codebases c
 JOIN LATERAL (
-    SELECT id, commit_sha, completed_at, total_tests
-    FROM analyses
-    WHERE codebase_id = c.id AND status = 'completed'
-    ORDER BY created_at DESC
+    SELECT
+        an.id,
+        an.commit_sha,
+        an.completed_at,
+        an.total_tests,
+        COALESCE(tc_summary.active_count, 0)::int AS active_count,
+        COALESCE(tc_summary.focused_count, 0)::int AS focused_count,
+        COALESCE(tc_summary.skipped_count, 0)::int AS skipped_count,
+        COALESCE(tc_summary.todo_count, 0)::int AS todo_count,
+        COALESCE(tc_summary.xfail_count, 0)::int AS xfail_count
+    FROM analyses an
+    LEFT JOIN LATERAL (
+        SELECT
+            COUNT(*) FILTER (WHERE tc.status = 'active') AS active_count,
+            COUNT(*) FILTER (WHERE tc.status = 'focused') AS focused_count,
+            COUNT(*) FILTER (WHERE tc.status = 'skipped') AS skipped_count,
+            COUNT(*) FILTER (WHERE tc.status = 'todo') AS todo_count,
+            COUNT(*) FILTER (WHERE tc.status = 'xfail') AS xfail_count
+        FROM test_cases tc
+        JOIN test_suites ts ON ts.id = tc.suite_id
+        WHERE ts.analysis_id = an.id
+    ) tc_summary ON true
+    WHERE an.codebase_id = c.id AND an.status = 'completed'
+    ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
 WHERE c.last_viewed_at IS NOT NULL
@@ -419,6 +514,11 @@ type GetPaginatedRepositoriesByTestsRow struct {
 	CommitSha      string             `json:"commit_sha"`
 	AnalyzedAt     pgtype.Timestamptz `json:"analyzed_at"`
 	TotalTests     int32              `json:"total_tests"`
+	ActiveCount    int32              `json:"active_count"`
+	FocusedCount   int32              `json:"focused_count"`
+	SkippedCount   int32              `json:"skipped_count"`
+	TodoCount      int32              `json:"todo_count"`
+	XfailCount     int32              `json:"xfail_count"`
 	IsAnalyzedByMe bool               `json:"is_analyzed_by_me"`
 }
 
@@ -446,6 +546,11 @@ func (q *Queries) GetPaginatedRepositoriesByTests(ctx context.Context, arg GetPa
 			&i.CommitSha,
 			&i.AnalyzedAt,
 			&i.TotalTests,
+			&i.ActiveCount,
+			&i.FocusedCount,
+			&i.SkippedCount,
+			&i.TodoCount,
+			&i.XfailCount,
 			&i.IsAnalyzedByMe,
 		); err != nil {
 			return nil, err

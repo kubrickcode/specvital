@@ -792,6 +792,34 @@ export interface components {
              * @example abc123def456
              */
             commitSha: string;
+            testSummary?: components["schemas"]["TestStatusSummary"];
+        };
+        TestStatusSummary: {
+            /**
+             * @description Number of active tests
+             * @example 280
+             */
+            active: number;
+            /**
+             * @description Number of focused tests (.only())
+             * @example 2
+             */
+            focused: number;
+            /**
+             * @description Number of skipped tests (.skip())
+             * @example 15
+             */
+            skipped: number;
+            /**
+             * @description Number of todo tests
+             * @example 10
+             */
+            todo: number;
+            /**
+             * @description Number of expected-to-fail tests
+             * @example 5
+             */
+            xfail: number;
         };
         /**
          * @description Repository update status:

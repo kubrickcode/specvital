@@ -262,14 +262,19 @@ func (r *PostgresRepository) getPaginatedByRecent(ctx context.Context, userUUID,
 	repos := make([]port.PaginatedRepository, len(rows))
 	for i, row := range rows {
 		repos[i] = port.PaginatedRepository{
+			ActiveCount:    int(row.ActiveCount),
 			AnalysisID:     uuidToString(row.AnalysisID),
 			AnalyzedAt:     row.AnalyzedAt.Time,
 			CodebaseID:     uuidToString(row.CodebaseID),
 			CommitSHA:      row.CommitSha,
+			FocusedCount:   int(row.FocusedCount),
 			IsAnalyzedByMe: row.IsAnalyzedByMe,
 			Name:           row.Name,
 			Owner:          row.Owner,
+			SkippedCount:   int(row.SkippedCount),
+			TodoCount:      int(row.TodoCount),
 			TotalTests:     int(row.TotalTests),
+			XfailCount:     int(row.XfailCount),
 		}
 	}
 	return repos, nil
@@ -296,14 +301,19 @@ func (r *PostgresRepository) getPaginatedByName(ctx context.Context, userUUID, c
 	repos := make([]port.PaginatedRepository, len(rows))
 	for i, row := range rows {
 		repos[i] = port.PaginatedRepository{
+			ActiveCount:    int(row.ActiveCount),
 			AnalysisID:     uuidToString(row.AnalysisID),
 			AnalyzedAt:     row.AnalyzedAt.Time,
 			CodebaseID:     uuidToString(row.CodebaseID),
 			CommitSHA:      row.CommitSha,
+			FocusedCount:   int(row.FocusedCount),
 			IsAnalyzedByMe: row.IsAnalyzedByMe,
 			Name:           row.Name,
 			Owner:          row.Owner,
+			SkippedCount:   int(row.SkippedCount),
+			TodoCount:      int(row.TodoCount),
 			TotalTests:     int(row.TotalTests),
+			XfailCount:     int(row.XfailCount),
 		}
 	}
 	return repos, nil
@@ -330,14 +340,19 @@ func (r *PostgresRepository) getPaginatedByTests(ctx context.Context, userUUID, 
 	repos := make([]port.PaginatedRepository, len(rows))
 	for i, row := range rows {
 		repos[i] = port.PaginatedRepository{
+			ActiveCount:    int(row.ActiveCount),
 			AnalysisID:     uuidToString(row.AnalysisID),
 			AnalyzedAt:     row.AnalyzedAt.Time,
 			CodebaseID:     uuidToString(row.CodebaseID),
 			CommitSHA:      row.CommitSha,
+			FocusedCount:   int(row.FocusedCount),
 			IsAnalyzedByMe: row.IsAnalyzedByMe,
 			Name:           row.Name,
 			Owner:          row.Owner,
+			SkippedCount:   int(row.SkippedCount),
+			TodoCount:      int(row.TodoCount),
 			TotalTests:     int(row.TotalTests),
+			XfailCount:     int(row.XfailCount),
 		}
 	}
 	return repos, nil

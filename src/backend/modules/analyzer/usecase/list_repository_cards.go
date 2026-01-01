@@ -136,14 +136,19 @@ func (uc *ListRepositoryCardsUseCase) loadBookmarkedIDs(ctx context.Context, use
 }
 
 type repoData struct {
+	ActiveCount    int
 	AnalysisID     string
 	AnalyzedAt     time.Time
 	CodebaseID     string
 	CommitSHA      string
+	FocusedCount   int
 	IsAnalyzedByMe bool
 	Name           string
 	Owner          string
+	SkippedCount   int
+	TodoCount      int
 	TotalTests     int
+	XfailCount     int
 }
 
 func (uc *ListRepositoryCardsUseCase) buildCard(ctx context.Context, r repoData, bookmarkedIDs map[string]bool) entity.RepositoryCard {
@@ -160,6 +165,13 @@ func (uc *ListRepositoryCardsUseCase) buildCard(ctx context.Context, r repoData,
 			Change:     change,
 			CommitSHA:  r.CommitSHA,
 			TestCount:  r.TotalTests,
+			TestSummary: &entity.TestStatusSummary{
+				Active:  r.ActiveCount,
+				Focused: r.FocusedCount,
+				Skipped: r.SkippedCount,
+				Todo:    r.TodoCount,
+				Xfail:   r.XfailCount,
+			},
 		}
 	}
 
@@ -179,14 +191,19 @@ func (uc *ListRepositoryCardsUseCase) buildCardsFromPaginated(ctx context.Contex
 	cards := make([]entity.RepositoryCard, len(repos))
 	for i, r := range repos {
 		cards[i] = uc.buildCard(ctx, repoData{
+			ActiveCount:    r.ActiveCount,
 			AnalysisID:     r.AnalysisID,
 			AnalyzedAt:     r.AnalyzedAt,
 			CodebaseID:     r.CodebaseID,
 			CommitSHA:      r.CommitSHA,
+			FocusedCount:   r.FocusedCount,
 			IsAnalyzedByMe: r.IsAnalyzedByMe,
 			Name:           r.Name,
 			Owner:          r.Owner,
+			SkippedCount:   r.SkippedCount,
+			TodoCount:      r.TodoCount,
 			TotalTests:     r.TotalTests,
+			XfailCount:     r.XfailCount,
 		}, bookmarkedIDs)
 	}
 	return cards

@@ -1201,6 +1201,43 @@ components:
           type: string
           description: Git commit SHA that was analyzed
           example: abc123def456
+        testSummary:
+          $ref: "#/components/schemas/TestStatusSummary"
+
+    TestStatusSummary:
+      type: object
+      required:
+        - active
+        - focused
+        - skipped
+        - todo
+        - xfail
+      properties:
+        active:
+          type: integer
+          minimum: 0
+          description: Number of active tests
+          example: 280
+        focused:
+          type: integer
+          minimum: 0
+          description: Number of focused tests (.only())
+          example: 2
+        skipped:
+          type: integer
+          minimum: 0
+          description: Number of skipped tests (.skip())
+          example: 15
+        todo:
+          type: integer
+          minimum: 0
+          description: Number of todo tests
+          example: 10
+        xfail:
+          type: integer
+          minimum: 0
+          description: Number of expected-to-fail tests
+          example: 5
 
     UpdateStatus:
       type: string

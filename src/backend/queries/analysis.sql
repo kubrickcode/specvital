@@ -112,16 +112,41 @@ SELECT
     a.commit_sha,
     a.completed_at AS analyzed_at,
     a.total_tests,
+    a.active_count,
+    a.focused_count,
+    a.skipped_count,
+    a.todo_count,
+    a.xfail_count,
     EXISTS(
         SELECT 1 FROM user_analysis_history uah
         WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
     ) AS is_analyzed_by_me
 FROM codebases c
 JOIN LATERAL (
-    SELECT id, commit_sha, completed_at, total_tests
-    FROM analyses
-    WHERE codebase_id = c.id AND status = 'completed'
-    ORDER BY created_at DESC
+    SELECT
+        an.id,
+        an.commit_sha,
+        an.completed_at,
+        an.total_tests,
+        COALESCE(tc_summary.active_count, 0)::int AS active_count,
+        COALESCE(tc_summary.focused_count, 0)::int AS focused_count,
+        COALESCE(tc_summary.skipped_count, 0)::int AS skipped_count,
+        COALESCE(tc_summary.todo_count, 0)::int AS todo_count,
+        COALESCE(tc_summary.xfail_count, 0)::int AS xfail_count
+    FROM analyses an
+    LEFT JOIN LATERAL (
+        SELECT
+            COUNT(*) FILTER (WHERE tc.status = 'active') AS active_count,
+            COUNT(*) FILTER (WHERE tc.status = 'focused') AS focused_count,
+            COUNT(*) FILTER (WHERE tc.status = 'skipped') AS skipped_count,
+            COUNT(*) FILTER (WHERE tc.status = 'todo') AS todo_count,
+            COUNT(*) FILTER (WHERE tc.status = 'xfail') AS xfail_count
+        FROM test_cases tc
+        JOIN test_suites ts ON ts.id = tc.suite_id
+        WHERE ts.analysis_id = an.id
+    ) tc_summary ON true
+    WHERE an.codebase_id = c.id AND an.status = 'completed'
+    ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
 WHERE c.last_viewed_at IS NOT NULL
@@ -160,16 +185,41 @@ SELECT
     a.commit_sha,
     a.completed_at AS analyzed_at,
     a.total_tests,
+    a.active_count,
+    a.focused_count,
+    a.skipped_count,
+    a.todo_count,
+    a.xfail_count,
     EXISTS(
         SELECT 1 FROM user_analysis_history uah
         WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
     ) AS is_analyzed_by_me
 FROM codebases c
 JOIN LATERAL (
-    SELECT id, commit_sha, completed_at, total_tests
-    FROM analyses
-    WHERE codebase_id = c.id AND status = 'completed'
-    ORDER BY created_at DESC
+    SELECT
+        an.id,
+        an.commit_sha,
+        an.completed_at,
+        an.total_tests,
+        COALESCE(tc_summary.active_count, 0)::int AS active_count,
+        COALESCE(tc_summary.focused_count, 0)::int AS focused_count,
+        COALESCE(tc_summary.skipped_count, 0)::int AS skipped_count,
+        COALESCE(tc_summary.todo_count, 0)::int AS todo_count,
+        COALESCE(tc_summary.xfail_count, 0)::int AS xfail_count
+    FROM analyses an
+    LEFT JOIN LATERAL (
+        SELECT
+            COUNT(*) FILTER (WHERE tc.status = 'active') AS active_count,
+            COUNT(*) FILTER (WHERE tc.status = 'focused') AS focused_count,
+            COUNT(*) FILTER (WHERE tc.status = 'skipped') AS skipped_count,
+            COUNT(*) FILTER (WHERE tc.status = 'todo') AS todo_count,
+            COUNT(*) FILTER (WHERE tc.status = 'xfail') AS xfail_count
+        FROM test_cases tc
+        JOIN test_suites ts ON ts.id = tc.suite_id
+        WHERE ts.analysis_id = an.id
+    ) tc_summary ON true
+    WHERE an.codebase_id = c.id AND an.status = 'completed'
+    ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
 WHERE c.last_viewed_at IS NOT NULL
@@ -208,16 +258,41 @@ SELECT
     a.commit_sha,
     a.completed_at AS analyzed_at,
     a.total_tests,
+    a.active_count,
+    a.focused_count,
+    a.skipped_count,
+    a.todo_count,
+    a.xfail_count,
     EXISTS(
         SELECT 1 FROM user_analysis_history uah
         WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
     ) AS is_analyzed_by_me
 FROM codebases c
 JOIN LATERAL (
-    SELECT id, commit_sha, completed_at, total_tests
-    FROM analyses
-    WHERE codebase_id = c.id AND status = 'completed'
-    ORDER BY created_at DESC
+    SELECT
+        an.id,
+        an.commit_sha,
+        an.completed_at,
+        an.total_tests,
+        COALESCE(tc_summary.active_count, 0)::int AS active_count,
+        COALESCE(tc_summary.focused_count, 0)::int AS focused_count,
+        COALESCE(tc_summary.skipped_count, 0)::int AS skipped_count,
+        COALESCE(tc_summary.todo_count, 0)::int AS todo_count,
+        COALESCE(tc_summary.xfail_count, 0)::int AS xfail_count
+    FROM analyses an
+    LEFT JOIN LATERAL (
+        SELECT
+            COUNT(*) FILTER (WHERE tc.status = 'active') AS active_count,
+            COUNT(*) FILTER (WHERE tc.status = 'focused') AS focused_count,
+            COUNT(*) FILTER (WHERE tc.status = 'skipped') AS skipped_count,
+            COUNT(*) FILTER (WHERE tc.status = 'todo') AS todo_count,
+            COUNT(*) FILTER (WHERE tc.status = 'xfail') AS xfail_count
+        FROM test_cases tc
+        JOIN test_suites ts ON ts.id = tc.suite_id
+        WHERE ts.analysis_id = an.id
+    ) tc_summary ON true
+    WHERE an.codebase_id = c.id AND an.status = 'completed'
+    ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
 WHERE c.last_viewed_at IS NOT NULL

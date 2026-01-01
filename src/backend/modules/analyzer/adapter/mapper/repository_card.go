@@ -8,11 +8,22 @@ import (
 func ToRepositoryCard(card entity.RepositoryCard) api.RepositoryCard {
 	var analysis *api.AnalysisSummary
 	if card.LatestAnalysis != nil {
+		var testSummary *api.TestStatusSummary
+		if card.LatestAnalysis.TestSummary != nil {
+			testSummary = &api.TestStatusSummary{
+				Active:  card.LatestAnalysis.TestSummary.Active,
+				Focused: card.LatestAnalysis.TestSummary.Focused,
+				Skipped: card.LatestAnalysis.TestSummary.Skipped,
+				Todo:    card.LatestAnalysis.TestSummary.Todo,
+				Xfail:   card.LatestAnalysis.TestSummary.Xfail,
+			}
+		}
 		analysis = &api.AnalysisSummary{
-			AnalyzedAt: card.LatestAnalysis.AnalyzedAt,
-			Change:     card.LatestAnalysis.Change,
-			CommitSHA:  card.LatestAnalysis.CommitSHA,
-			TestCount:  card.LatestAnalysis.TestCount,
+			AnalyzedAt:  card.LatestAnalysis.AnalyzedAt,
+			Change:      card.LatestAnalysis.Change,
+			CommitSHA:   card.LatestAnalysis.CommitSHA,
+			TestCount:   card.LatestAnalysis.TestCount,
+			TestSummary: testSummary,
 		}
 	}
 

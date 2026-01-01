@@ -14,10 +14,19 @@ type RepositoryCard struct {
 }
 
 type AnalysisSummary struct {
-	AnalyzedAt time.Time
-	Change     int
-	CommitSHA  string
-	TestCount  int
+	AnalyzedAt  time.Time
+	Change      int
+	CommitSHA   string
+	TestCount   int
+	TestSummary *TestStatusSummary
+}
+
+type TestStatusSummary struct {
+	Active  int
+	Focused int
+	Skipped int
+	Todo    int
+	Xfail   int
 }
 
 type RepositoryStats struct {

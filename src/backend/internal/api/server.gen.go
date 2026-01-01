@@ -123,7 +123,8 @@ type AnalysisSummary struct {
 	CommitSHA string `json:"commitSha"`
 
 	// TestCount Total number of tests in the latest analysis
-	TestCount int `json:"testCount"`
+	TestCount   int                `json:"testCount"`
+	TestSummary *TestStatusSummary `json:"testSummary,omitempty"`
 }
 
 // AnalyzingResponse defines model for AnalyzingResponse.
@@ -471,6 +472,24 @@ type TestCase struct {
 // - todo: Placeholder test to be implemented
 // - xfail: Expected to fail (pytest xfail)
 type TestStatus string
+
+// TestStatusSummary defines model for TestStatusSummary.
+type TestStatusSummary struct {
+	// Active Number of active tests
+	Active int `json:"active"`
+
+	// Focused Number of focused tests (.only())
+	Focused int `json:"focused"`
+
+	// Skipped Number of skipped tests (.skip())
+	Skipped int `json:"skipped"`
+
+	// Todo Number of todo tests
+	Todo int `json:"todo"`
+
+	// Xfail Number of expected-to-fail tests
+	Xfail int `json:"xfail"`
+}
 
 // TestSuite defines model for TestSuite.
 type TestSuite struct {

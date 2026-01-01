@@ -29,14 +29,19 @@ type PaginationParams struct {
 }
 
 type PaginatedRepository struct {
+	ActiveCount    int
 	AnalysisID     string
 	AnalyzedAt     time.Time
 	CodebaseID     string
 	CommitSHA      string
+	FocusedCount   int
 	IsAnalyzedByMe bool
 	Name           string
 	Owner          string
+	SkippedCount   int
+	TodoCount      int
 	TotalTests     int
+	XfailCount     int
 }
 
 type CompletedAnalysis struct {
