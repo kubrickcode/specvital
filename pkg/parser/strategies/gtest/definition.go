@@ -177,7 +177,9 @@ func (p *GTestParser) Parse(ctx context.Context, source []byte, filename string)
 		}
 
 		suite.Tests = append(suite.Tests, *test)
-		return false
+		// Continue traversing children to handle cases where tree-sitter ERROR nodes
+		// incorrectly nest sibling TEST macros as parent-child relationships
+		return true
 	})
 
 	// Collect suites in deterministic order (sorted by name)

@@ -447,6 +447,48 @@ TYPED_TEST(DisabledTypedTest, ActiveTest) {
 				}
 			},
 		},
+		{
+			name: "tests within tree-sitter ERROR node",
+			// Unknown macro causes tree-sitter to create ERROR node,
+			// incorrectly nesting sibling TEST macros as parent-child
+			source: `
+#include <gtest/gtest.h>
+
+UNKNOWN_MACRO(some, args)
+
+TEST(Suite, Test1) {
+    EXPECT_TRUE(true);
+}
+
+TEST(Suite, Test2) {
+    EXPECT_TRUE(true);
+}
+
+TEST(Suite, Test3) {
+    EXPECT_TRUE(true);
+}
+`,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Suites) != 1 {
+					t.Errorf("expected 1 suite, got %d", len(file.Suites))
+					return
+				}
+				suite := file.Suites[0]
+				if len(suite.Tests) != 3 {
+					t.Errorf("expected 3 tests (all siblings detected despite ERROR node), got %d", len(suite.Tests))
+					return
+				}
+				testNames := make(map[string]bool)
+				for _, test := range suite.Tests {
+					testNames[test.Name] = true
+				}
+				for _, name := range []string{"Test1", "Test2", "Test3"} {
+					if !testNames[name] {
+						t.Errorf("expected to find test %q", name)
+					}
+				}
+			},
+		},
 	}
 
 	parser := &GTestParser{}

@@ -3,7 +3,7 @@
   "ref": "v1.15.2",
   "expectedFrameworks": ["gtest", "unittest"],
   "fileCount": 86,
-  "testCount": 2565,
+  "testCount": 2670,
   "frameworkCounts": {
     "gtest": 79,
     "unittest": 7
@@ -42,8 +42,8 @@
     {
       "path": "googlemock/test/gmock-matchers-comparisons_test.cc",
       "framework": "gtest",
-      "suiteCount": 25,
-      "testCount": 73
+      "suiteCount": 59,
+      "testCount": 174
     },
     {
       "path": "googlemock/test/gmock-matchers-containers_test.cc",
