@@ -34,7 +34,8 @@ services:
 
 networks:
   specvital-network:
-    external: true
+    name: specvital-network
+    driver: bridge
 
 volumes:
   local-postgres-data:
