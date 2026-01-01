@@ -168,6 +168,11 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "summary": {
+      "activeRepos": "Active Repositories",
+      "loading": "Loading statistics...",
+      "totalTests": "Total Tests"
+    },
     "card": {
       "addBookmark": "Add bookmark",
       "analyzeLatest": "Analyze latest commits",

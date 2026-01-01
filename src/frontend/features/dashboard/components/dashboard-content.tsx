@@ -35,6 +35,7 @@ import { EmptyStateVariant } from "./empty-state-variant";
 import { LoadMoreButton } from "./load-more-button";
 import { PaginationStatus } from "./pagination-status";
 import { RepositoryList } from "./repository-list";
+import { SummarySection } from "./summary-section";
 import { ViewFilterDropdown } from "./view-filter-dropdown";
 
 const SORT_OPTIONS: SortOption[] = ["name", "recent", "tests"];
@@ -249,6 +250,8 @@ export const DashboardContent = () => {
 
   return (
     <div className="space-y-8">
+      <SummarySection />
+
       <SearchSortControls
         hasNextPage={hasNextPage && viewFilter !== "starred"}
         isLoading={isLoading}

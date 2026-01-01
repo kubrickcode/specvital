@@ -13,6 +13,7 @@ export { RepositoryCard } from "./repository-card";
 export { RepositoryGrid } from "./repository-grid";
 export { RepositoryList } from "./repository-list";
 export { RepositorySkeleton } from "./repository-skeleton";
+export { SummarySection } from "./summary-section";
 export { TestDeltaBadge } from "./test-delta-badge";
 export { UpdateStatusBadge } from "./update-status-badge";
 export { ViewFilterDropdown } from "./view-filter-dropdown";

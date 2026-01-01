@@ -8,6 +8,7 @@ export { organizationsKeys, useOrganizations } from "./use-organizations";
 export { paginatedRepositoriesKeys, usePaginatedRepositories } from "./use-paginated-repositories";
 export type { PaginatedRepositoriesOptions } from "./use-paginated-repositories";
 export { useReanalyze } from "./use-reanalyze";
+export { repositoryStatsKeys, useRepositoryStats } from "./use-repository-stats";
 export { useRepositorySearch } from "./use-repository-search";
 export { useUnanalyzedRepos } from "./use-unanalyzed-repos";
 export { useViewFilter } from "./use-view-filter";

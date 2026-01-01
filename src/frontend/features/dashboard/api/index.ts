@@ -8,3 +8,4 @@ export {
 } from "./github";
 export { checkUpdateStatus, fetchPaginatedRepositories, triggerReanalyze } from "./repositories";
 export type { PaginatedRepositoriesParams } from "./repositories";
+export { fetchRepositoryStats } from "./stats";
