@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 
 	sitter "github.com/smacker/go-tree-sitter"
 
@@ -252,8 +253,8 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	for _, attr := range attributes {
 		name := dotnetast.GetAttributeName(attr, source)
 
-		switch name {
-		case "Fact", "FactAttribute":
+		switch {
+		case isFactAttribute(name):
 			hasFact = true
 			displayName = getNamedParameterFromAttribute(attr, source, "DisplayName")
 			if isSkipped(attr, source) {
@@ -261,14 +262,14 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 				modifier = "Skip"
 			}
 
-		case "Theory", "TheoryAttribute":
+		case isTheoryAttribute(name):
 			hasTheory = true
 			displayName = getNamedParameterFromAttribute(attr, source, "DisplayName")
 			if isSkipped(attr, source) {
 				theorySkipped = true
 			}
 
-		case "InlineData", "InlineDataAttribute":
+		case name == "InlineData" || name == "InlineDataAttribute":
 			testStatus := status
 			testModifier := modifier
 			if theorySkipped {
@@ -281,7 +282,6 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 				Modifier: testModifier,
 				Location: location,
 			})
-
 		}
 	}
 
@@ -326,4 +326,20 @@ func parseTestMethod(node *sitter.Node, source []byte, filename string, classSta
 	}
 
 	return nil
+}
+
+// isFactAttribute checks if the attribute name represents a Fact-based test.
+// xUnit custom test attributes must inherit from FactAttribute and follow
+// the naming convention *Fact or *FactAttribute (e.g., UIFact, StaFact).
+func isFactAttribute(name string) bool {
+	return name == "Fact" || strings.HasSuffix(name, "Fact") ||
+		name == "FactAttribute" || strings.HasSuffix(name, "FactAttribute")
+}
+
+// isTheoryAttribute checks if the attribute name represents a Theory-based test.
+// xUnit custom test attributes must inherit from TheoryAttribute and follow
+// the naming convention *Theory or *TheoryAttribute (e.g., UITheory).
+func isTheoryAttribute(name string) bool {
+	return name == "Theory" || strings.HasSuffix(name, "Theory") ||
+		name == "TheoryAttribute" || strings.HasSuffix(name, "TheoryAttribute")
 }

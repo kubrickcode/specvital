@@ -737,4 +737,97 @@ public class ClassDataTests
 			t.Errorf("expected Name='TestWithClassData', got '%s'", suite.Tests[0].Name)
 		}
 	})
+
+	t.Run("custom xUnit attributes [UIFact] [StaFact] [UITheory]", func(t *testing.T) {
+		source := `
+using Xunit;
+
+public class CustomAttributeTests
+{
+    [UIFact]
+    public void UIFactTest() { }
+
+    [StaFact]
+    public void StaFactTest() { }
+
+    [WpfFact]
+    public void WpfFactTest() { }
+
+    [UITheory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void UITheoryTest(int value) { }
+
+    [Fact]
+    public void NormalFactTest() { }
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "CustomAttributeTests.cs")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if len(suite.Tests) != 6 {
+			t.Fatalf("expected 6 Tests (UIFact + StaFact + WpfFact + 2 InlineData + Fact), got %d", len(suite.Tests))
+		}
+
+		expectedNames := []string{"UIFactTest", "StaFactTest", "WpfFactTest", "UITheoryTest", "UITheoryTest", "NormalFactTest"}
+		for i, name := range expectedNames {
+			if suite.Tests[i].Name != name {
+				t.Errorf("expected Tests[%d].Name='%s', got '%s'", i, name, suite.Tests[i].Name)
+			}
+		}
+	})
+}
+
+func TestIsFactAttribute(t *testing.T) {
+	tests := []struct {
+		name     string
+		expected bool
+	}{
+		{"Fact", true},
+		{"FactAttribute", true},
+		{"UIFact", true},
+		{"UIFactAttribute", true},
+		{"StaFact", true},
+		{"WpfFact", true},
+		{"Theory", false},
+		{"Test", false},
+		{"Artifact", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isFactAttribute(tt.name); got != tt.expected {
+				t.Errorf("isFactAttribute(%q) = %v, want %v", tt.name, got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestIsTheoryAttribute(t *testing.T) {
+	tests := []struct {
+		name     string
+		expected bool
+	}{
+		{"Theory", true},
+		{"TheoryAttribute", true},
+		{"UITheory", true},
+		{"UITheoryAttribute", true},
+		{"Fact", false},
+		{"Test", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isTheoryAttribute(tt.name); got != tt.expected {
+				t.Errorf("isTheoryAttribute(%q) = %v, want %v", tt.name, got, tt.expected)
+			}
+		})
+	}
 }
