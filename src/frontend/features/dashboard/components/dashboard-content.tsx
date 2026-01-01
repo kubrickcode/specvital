@@ -18,7 +18,9 @@ import { Input } from "@/components/ui/input";
 import { AnalyzeDialog } from "@/features/home";
 import type { ViewFilterParam } from "@/lib/api/types";
 
+import { fetchPaginatedRepositories } from "../api";
 import {
+  paginatedRepositoriesKeys,
   useAddBookmark,
   usePaginatedRepositories,
   useReanalyze,
@@ -151,6 +153,7 @@ export const DashboardContent = () => {
     isError,
     isFetchingNextPage,
     isLoading,
+    refetch,
   } = usePaginatedRepositories({
     sortBy,
     sortOrder: "desc",
@@ -203,6 +206,41 @@ export const DashboardContent = () => {
     fetchNextPage();
   }, [fetchNextPage]);
 
+  const handlePrefetchNextPage = useCallback(() => {
+    if (!hasNextPage || isFetchingNextPage) return;
+
+    const lastPage = queryClient.getQueryData<{
+      pageParams: (string | undefined)[];
+      pages: { hasNext: boolean; nextCursor?: string | null }[];
+    }>(paginatedRepositoriesKeys.list({ limit: 10, sortBy, sortOrder: "desc", view: viewParam }));
+
+    const nextCursor = lastPage?.pages.at(-1)?.nextCursor;
+    if (!nextCursor) return;
+
+    queryClient.prefetchInfiniteQuery({
+      initialPageParam: undefined as string | undefined,
+      queryFn: () =>
+        fetchPaginatedRepositories({
+          cursor: nextCursor,
+          limit: 10,
+          sortBy,
+          sortOrder: "desc",
+          view: viewParam,
+        }),
+      queryKey: paginatedRepositoriesKeys.list({
+        limit: 10,
+        sortBy,
+        sortOrder: "desc",
+        view: viewParam,
+      }),
+      staleTime: 30 * 1000,
+    });
+  }, [hasNextPage, isFetchingNextPage, queryClient, sortBy, viewParam]);
+
+  const handleRetry = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
   const hasNoRepositories = !isLoading && repositories.length === 0 && !isError;
   const hasNoFilterResults =
     viewFilter === "starred" && filteredRepositories.length === 0 && repositories.length > 0;
@@ -248,6 +286,8 @@ export const DashboardContent = () => {
               hasNextPage={hasNextPage && !searchQuery.trim()}
               isFetchingNextPage={isFetchingNextPage}
               onLoadMore={handleLoadMore}
+              onPrefetch={handlePrefetchNextPage}
+              onRetry={handleRetry}
             />
           )}
         </>

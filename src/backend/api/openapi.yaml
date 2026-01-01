@@ -1045,17 +1045,6 @@ components:
             $ref: "#/components/schemas/RepositoryCard"
           description: Bookmarked repositories
 
-    RecentRepositoriesResponse:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/RepositoryCard"
-          description: Recently analyzed repositories
-
     PaginatedRepositoriesResponse:
       type: object
       required:

@@ -44,7 +44,6 @@ export type UpdateStatusResponse = components["schemas"]["UpdateStatusResponse"]
 export type BookmarkResponse = components["schemas"]["BookmarkResponse"];
 export type BookmarkedRepositoriesResponse =
   components["schemas"]["BookmarkedRepositoriesResponse"];
-export type RecentRepositoriesResponse = components["schemas"]["RecentRepositoriesResponse"];
 export type PaginatedRepositoriesResponse = components["schemas"]["PaginatedRepositoriesResponse"];
 export type SortByParam = components["schemas"]["SortByParam"];
 export type SortOrderParam = components["schemas"]["SortOrderParam"];

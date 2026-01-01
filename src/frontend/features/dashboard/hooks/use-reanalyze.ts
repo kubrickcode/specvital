@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { validateRepositoryIdentifiers } from "@/lib/validations/github";
 
 import { triggerReanalyze } from "../api";
-import { recentRepositoriesKeys } from "./use-recent-repositories";
+import { paginatedRepositoriesKeys } from "./use-paginated-repositories";
 
 type UseReanalyzeReturn = {
   isPending: boolean;
@@ -26,7 +26,7 @@ export const useReanalyze = (): UseReanalyzeReturn => {
         description: error instanceof Error ? error.message : String(error),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: recentRepositoriesKeys.all });
+      queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
       toast.success("Reanalysis queued");
     },
   });

@@ -3,7 +3,6 @@ import type {
   AnalyzingResponse,
   PaginatedRepositoriesResponse,
   QueuedResponse,
-  RecentRepositoriesResponse,
   SortByParam,
   SortOrderParam,
   UpdateStatusResponse,
@@ -33,14 +32,6 @@ export const fetchPaginatedRepositories = async (
   const url = queryString ? `/api/repositories/recent?${queryString}` : "/api/repositories/recent";
 
   const response = await apiFetch(url);
-  return parseJsonResponse(response);
-};
-
-export const fetchRecentRepositories = async (
-  limit?: number
-): Promise<RecentRepositoriesResponse> => {
-  const params = limit ? `?limit=${limit}` : "";
-  const response = await apiFetch(`/api/repositories/recent${params}`);
   return parseJsonResponse(response);
 };
 

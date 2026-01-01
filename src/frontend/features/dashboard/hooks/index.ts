@@ -7,7 +7,6 @@ export { organizationReposKeys, useOrganizationRepos } from "./use-organization-
 export { organizationsKeys, useOrganizations } from "./use-organizations";
 export { paginatedRepositoriesKeys, usePaginatedRepositories } from "./use-paginated-repositories";
 export type { PaginatedRepositoriesOptions } from "./use-paginated-repositories";
-export { recentRepositoriesKeys, useRecentRepositories } from "./use-recent-repositories";
 export { useReanalyze } from "./use-reanalyze";
 export { useRepositorySearch } from "./use-repository-search";
 export { useUnanalyzedRepos } from "./use-unanalyzed-repos";

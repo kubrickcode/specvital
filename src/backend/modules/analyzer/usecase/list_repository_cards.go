@@ -14,11 +14,6 @@ const (
 	maxLimit     = 100
 )
 
-type ListRepositoryCardsInput struct {
-	Limit  int
-	UserID string
-}
-
 type ListRepositoryCardsPaginatedInput struct {
 	Cursor    string
 	Limit     int
@@ -36,22 +31,6 @@ func NewListRepositoryCardsUseCase(repository port.Repository) *ListRepositoryCa
 	return &ListRepositoryCardsUseCase{
 		repository: repository,
 	}
-}
-
-func (uc *ListRepositoryCardsUseCase) Execute(ctx context.Context, input ListRepositoryCardsInput) ([]entity.RepositoryCard, error) {
-	limit := normalizeLimit(input.Limit)
-
-	repos, err := uc.repository.GetRecentRepositories(ctx, input.UserID, limit)
-	if err != nil {
-		return nil, fmt.Errorf("get recent repositories: %w", err)
-	}
-
-	bookmarkedIDs, err := uc.loadBookmarkedIDs(ctx, input.UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	return uc.buildCardsFromRecent(ctx, repos, bookmarkedIDs), nil
 }
 
 func (uc *ListRepositoryCardsUseCase) ExecutePaginated(ctx context.Context, input ListRepositoryCardsPaginatedInput) (entity.PaginatedRepositoryCards, error) {
@@ -194,23 +173,6 @@ func (uc *ListRepositoryCardsUseCase) buildCard(ctx context.Context, r repoData,
 		Owner:          r.Owner,
 		UpdateStatus:   entity.UpdateStatusUnknown,
 	}
-}
-
-func (uc *ListRepositoryCardsUseCase) buildCardsFromRecent(ctx context.Context, repos []port.RecentRepository, bookmarkedIDs map[string]bool) []entity.RepositoryCard {
-	cards := make([]entity.RepositoryCard, len(repos))
-	for i, r := range repos {
-		cards[i] = uc.buildCard(ctx, repoData{
-			AnalysisID:     r.AnalysisID,
-			AnalyzedAt:     r.AnalyzedAt,
-			CodebaseID:     r.CodebaseID,
-			CommitSHA:      r.CommitSHA,
-			IsAnalyzedByMe: r.IsAnalyzedByMe,
-			Name:           r.Name,
-			Owner:          r.Owner,
-			TotalTests:     r.TotalTests,
-		}, bookmarkedIDs)
-	}
-	return cards
 }
 
 func (uc *ListRepositoryCardsUseCase) buildCardsFromPaginated(ctx context.Context, repos []port.PaginatedRepository, bookmarkedIDs map[string]bool) []entity.RepositoryCard {

@@ -146,36 +146,6 @@ func (r *PostgresRepository) GetPreviousAnalysis(ctx context.Context, codebaseID
 	}, nil
 }
 
-func (r *PostgresRepository) GetRecentRepositories(ctx context.Context, userID string, limit int) ([]port.RecentRepository, error) {
-	userUUID, err := stringToUUID(userID)
-	if err != nil {
-		return nil, fmt.Errorf("parse user ID: %w", err)
-	}
-
-	rows, err := r.queries.GetRecentRepositories(ctx, db.GetRecentRepositoriesParams{
-		UserID:    userUUID,
-		PageLimit: int32(limit),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("get recent repositories: %w", err)
-	}
-
-	repos := make([]port.RecentRepository, len(rows))
-	for i, row := range rows {
-		repos[i] = port.RecentRepository{
-			AnalysisID:     uuidToString(row.AnalysisID),
-			AnalyzedAt:     row.AnalyzedAt.Time,
-			CodebaseID:     uuidToString(row.CodebaseID),
-			CommitSHA:      row.CommitSha,
-			IsAnalyzedByMe: row.IsAnalyzedByMe,
-			Name:           row.Name,
-			Owner:          row.Owner,
-			TotalTests:     int(row.TotalTests),
-		}
-	}
-	return repos, nil
-}
-
 func (r *PostgresRepository) GetRepositoryStats(ctx context.Context) (*entity.RepositoryStats, error) {
 	row, err := r.queries.GetRepositoryStats(ctx)
 	if err != nil {

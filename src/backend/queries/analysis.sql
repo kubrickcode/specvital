@@ -71,32 +71,6 @@ UPDATE codebases
 SET last_viewed_at = now()
 WHERE host = $1 AND owner = $2 AND name = $3;
 
--- name: GetRecentRepositories :many
-SELECT
-    c.id AS codebase_id,
-    c.owner,
-    c.name,
-    c.last_viewed_at,
-    a.id AS analysis_id,
-    a.commit_sha,
-    a.completed_at AS analyzed_at,
-    a.total_tests,
-    EXISTS(
-        SELECT 1 FROM user_analysis_history uah
-        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
-    ) AS is_analyzed_by_me
-FROM codebases c
-LEFT JOIN LATERAL (
-    SELECT id, commit_sha, completed_at, total_tests
-    FROM analyses
-    WHERE codebase_id = c.id AND status = 'completed'
-    ORDER BY created_at DESC
-    LIMIT 1
-) a ON true
-WHERE c.last_viewed_at IS NOT NULL AND c.is_stale = false
-ORDER BY c.last_viewed_at DESC
-LIMIT sqlc.arg(page_limit);
-
 -- name: GetRepositoryStats :one
 SELECT
     COUNT(DISTINCT c.id) AS total_repositories,

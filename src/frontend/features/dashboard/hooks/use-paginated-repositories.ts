@@ -24,6 +24,7 @@ type UsePaginatedRepositoriesReturn = {
   isError: boolean;
   isFetchingNextPage: boolean;
   isLoading: boolean;
+  refetch: () => void;
 };
 
 export const usePaginatedRepositories = (
@@ -57,5 +58,6 @@ export const usePaginatedRepositories = (
     isError: query.isError,
     isFetchingNextPage: query.isFetchingNextPage,
     isLoading: query.isPending,
+    refetch: query.refetch,
   };
 };

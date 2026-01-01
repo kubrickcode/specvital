@@ -685,10 +685,6 @@ export interface components {
             /** @description Bookmarked repositories */
             data: components["schemas"]["RepositoryCard"][];
         };
-        RecentRepositoriesResponse: {
-            /** @description Recently analyzed repositories */
-            data: components["schemas"]["RepositoryCard"][];
-        };
         PaginatedRepositoriesResponse: {
             /** @description Repositories in the current page */
             data: components["schemas"]["RepositoryCard"][];

@@ -14,7 +14,6 @@ type Repository interface {
 	GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error)
 	GetPaginatedRepositories(ctx context.Context, params PaginationParams) ([]PaginatedRepository, error)
 	GetPreviousAnalysis(ctx context.Context, codebaseID, currentAnalysisID string) (*PreviousAnalysis, error)
-	GetRecentRepositories(ctx context.Context, userID string, limit int) ([]RecentRepository, error)
 	GetRepositoryStats(ctx context.Context) (*entity.RepositoryStats, error)
 	GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error)
 	UpdateLastViewed(ctx context.Context, owner, repo string) error
@@ -69,17 +68,6 @@ type TestCaseRow struct {
 type RiverJobInfo struct {
 	CommitSHA string
 	State     string
-}
-
-type RecentRepository struct {
-	AnalysisID     string
-	AnalyzedAt     time.Time
-	CodebaseID     string
-	CommitSHA      string
-	IsAnalyzedByMe bool
-	Name           string
-	Owner          string
-	TotalTests     int
 }
 
 type PreviousAnalysis struct {

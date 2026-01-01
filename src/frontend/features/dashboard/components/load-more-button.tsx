@@ -13,6 +13,7 @@ type LoadMoreButtonProps = {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onLoadMore: () => void;
+  onPrefetch?: () => void;
   onRetry?: () => void;
 };
 
@@ -31,7 +32,7 @@ const getButtonState = ({
 };
 
 export const LoadMoreButton = forwardRef<HTMLButtonElement, LoadMoreButtonProps>(
-  ({ hasError = false, hasNextPage, isFetchingNextPage, onLoadMore, onRetry }, ref) => {
+  ({ hasError = false, hasNextPage, isFetchingNextPage, onLoadMore, onPrefetch, onRetry }, ref) => {
     const t = useTranslations("dashboard.pagination");
 
     const state = getButtonState({ hasError, hasNextPage, isFetchingNextPage });
@@ -67,6 +68,7 @@ export const LoadMoreButton = forwardRef<HTMLButtonElement, LoadMoreButtonProps>
           aria-busy={state === "loading"}
           disabled={state === "loading"}
           onClick={onLoadMore}
+          onMouseEnter={onPrefetch}
           ref={ref}
           variant="outline"
         >

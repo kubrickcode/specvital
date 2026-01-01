@@ -11,12 +11,11 @@ import (
 )
 
 type mockRepository struct {
-	paginatedRepos     []port.PaginatedRepository
-	recentRepos        []port.RecentRepository
 	bookmarkedIDs      []string
-	previousAnalysis   *port.PreviousAnalysis
 	getPaginatedCalled bool
+	paginatedRepos     []port.PaginatedRepository
 	paginationParams   port.PaginationParams
+	previousAnalysis   *port.PreviousAnalysis
 }
 
 func (m *mockRepository) FindActiveRiverJobByRepo(_ context.Context, _, _, _ string) (*port.RiverJobInfo, error) {
@@ -43,10 +42,6 @@ func (m *mockRepository) GetPaginatedRepositories(_ context.Context, params port
 
 func (m *mockRepository) GetPreviousAnalysis(_ context.Context, _, _ string) (*port.PreviousAnalysis, error) {
 	return m.previousAnalysis, nil
-}
-
-func (m *mockRepository) GetRecentRepositories(_ context.Context, _ string, _ int) ([]port.RecentRepository, error) {
-	return m.recentRepos, nil
 }
 
 func (m *mockRepository) GetRepositoryStats(_ context.Context) (*entity.RepositoryStats, error) {

@@ -7,13 +7,6 @@ export {
   UpdateStatusBadge,
 } from "./components";
 
-export {
-  recentRepositoriesKeys,
-  useAddBookmark,
-  useReanalyze,
-  useRecentRepositories,
-  useRemoveBookmark,
-  useRepositorySearch,
-} from "./hooks";
+export { useAddBookmark, useReanalyze, useRemoveBookmark, useRepositorySearch } from "./hooks";
 
 export type { SortOption } from "./types";
