@@ -208,6 +208,11 @@ func processCallExpression(node *sitter.Node, source []byte, filename string, fi
 		processTest(node, source, filename, file, currentSuite, status, modifier)
 	case modifierSkip, modifierPending:
 		processPendingBlock(node, source, filename, file, currentSuite, modifier)
+	default:
+		block := findBlock(node)
+		if block != nil {
+			parseNode(block, source, filename, file, currentSuite)
+		}
 	}
 }
 

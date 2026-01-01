@@ -304,3 +304,143 @@ func TestRSpecContentMatcher_Match(t *testing.T) {
 		})
 	}
 }
+
+func TestRSpecParser_LoopBlockDetection(t *testing.T) {
+	tests := []struct {
+		name      string
+		source    string
+		wantTests int
+		checkFunc func(t *testing.T, file *domain.TestFile)
+	}{
+		{
+			name: "times loop with it blocks",
+			source: `
+RSpec.describe "Group" do
+  3.times do |i|
+    it "test #{i}" do
+    end
+  end
+end
+`,
+			wantTests: 1,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Suites) != 1 {
+					t.Fatalf("expected 1 suite, got %d", len(file.Suites))
+				}
+				suite := file.Suites[0]
+				if len(suite.Tests) != 1 {
+					t.Errorf("expected 1 test inside times loop, got %d", len(suite.Tests))
+				}
+			},
+		},
+		{
+			name: "each loop with it blocks",
+			source: `
+RSpec.describe "Array tests" do
+  [1, 2, 3].each do |n|
+    it "handles #{n}" do
+      expect(n).to be > 0
+    end
+  end
+end
+`,
+			wantTests: 1,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Suites) != 1 {
+					t.Fatalf("expected 1 suite, got %d", len(file.Suites))
+				}
+				suite := file.Suites[0]
+				if len(suite.Tests) != 1 {
+					t.Errorf("expected 1 test inside each loop, got %d", len(suite.Tests))
+				}
+			},
+		},
+		{
+			name: "loop in nested describe",
+			source: `
+RSpec.describe "Outer" do
+  describe "Inner" do
+    2.times do |i|
+      it "nested test #{i}" do
+      end
+    end
+  end
+end
+`,
+			wantTests: 1,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Suites) != 1 {
+					t.Fatalf("expected 1 top-level suite, got %d", len(file.Suites))
+				}
+				outer := file.Suites[0]
+				if len(outer.Suites) != 1 {
+					t.Fatalf("expected 1 nested suite, got %d", len(outer.Suites))
+				}
+				inner := outer.Suites[0]
+				if len(inner.Tests) != 1 {
+					t.Errorf("expected 1 test in nested suite loop, got %d", len(inner.Tests))
+				}
+			},
+		},
+		{
+			name: "multiple tests in loop",
+			source: `
+RSpec.describe "Multiple" do
+  2.times do |i|
+    it "passes #{i}" do
+    end
+    it "fails #{i}" do
+    end
+  end
+end
+`,
+			wantTests: 2,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Suites) != 1 {
+					t.Fatalf("expected 1 suite, got %d", len(file.Suites))
+				}
+				suite := file.Suites[0]
+				if len(suite.Tests) != 2 {
+					t.Errorf("expected 2 tests inside loop, got %d", len(suite.Tests))
+				}
+			},
+		},
+		{
+			name: "upto loop with it blocks",
+			source: `
+RSpec.describe "Upto" do
+  1.upto(3) do |n|
+    it "test #{n}" do
+    end
+  end
+end
+`,
+			wantTests: 1,
+			checkFunc: func(t *testing.T, file *domain.TestFile) {
+				if len(file.Suites) != 1 {
+					t.Fatalf("expected 1 suite, got %d", len(file.Suites))
+				}
+				suite := file.Suites[0]
+				if len(suite.Tests) != 1 {
+					t.Errorf("expected 1 test inside upto loop, got %d", len(suite.Tests))
+				}
+			},
+		},
+	}
+
+	parser := &RSpecParser{}
+	ctx := context.Background()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			file, err := parser.Parse(ctx, []byte(tt.source), "loop_spec.rb")
+			if err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			if tt.checkFunc != nil {
+				tt.checkFunc(t, file)
+			}
+		})
+	}
+}
