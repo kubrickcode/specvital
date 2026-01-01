@@ -159,6 +159,36 @@
       "name": "이름순",
       "recent": "최신순",
       "tests": "테스트순"
+    },
+    "tabs": {
+      "community": "커뮤니티",
+      "myRepos": "내 저장소",
+      "organizations": "조직"
+    },
+    "myRepos": {
+      "title": "내 저장소",
+      "description": "내 GitHub 저장소 목록",
+      "analyze": "분석",
+      "view": "보기",
+      "lastPush": "마지막 푸시",
+      "noRepos": "저장소가 없습니다",
+      "noReposDescription": "아직 GitHub에 저장소가 없습니다.",
+      "noSearchResults": "검색 결과가 없습니다",
+      "refresh": "GitHub에서 새로고침",
+      "searchPlaceholder": "저장소 검색...",
+      "analyzed": "분석됨",
+      "notAnalyzed": "미분석"
+    },
+    "organizations": {
+      "title": "조직 저장소",
+      "description": "GitHub 조직의 저장소 목록",
+      "selectOrg": "조직 선택",
+      "noOrgs": "조직 없음",
+      "noOrgsDescription": "GitHub 조직에 가입되어 있지 않거나 접근 권한이 필요합니다.",
+      "connectRequired": "연결 필요",
+      "connectDescription": "이 조직의 저장소에 접근하려면 SpecVital GitHub 앱을 설치하세요.",
+      "connect": "연결",
+      "refresh": "새로고침"
     }
   },
   "navigation": {

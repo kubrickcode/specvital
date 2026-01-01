@@ -5,7 +5,6 @@ import { ArrowUpDown, Compass, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 
-import { AuthErrorBoundary } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -30,8 +29,6 @@ import {
 } from "../hooks";
 import type { SortOption } from "../types";
 import { AttentionZone } from "./attention-zone";
-import { DiscoveryErrorFallback } from "./discovery-error-fallback";
-import { DiscoverySection } from "./discovery-section";
 import { EmptyStateVariant } from "./empty-state-variant";
 import { LoadMoreButton } from "./load-more-button";
 import { PaginationStatus } from "./pagination-status";
@@ -200,10 +197,6 @@ export const DashboardContent = () => {
     [reanalyze]
   );
 
-  const handleDiscoveryReset = useCallback(() => {
-    queryClient.resetQueries({ exact: false, queryKey: ["dashboard"] });
-  }, [queryClient]);
-
   const handleLoadMore = useCallback(() => {
     fetchNextPage();
   }, [fetchNextPage]);
@@ -298,13 +291,6 @@ export const DashboardContent = () => {
           )}
         </>
       )}
-
-      <AuthErrorBoundary
-        fallback={<DiscoveryErrorFallback resetErrorBoundary={handleDiscoveryReset} />}
-        onReset={handleDiscoveryReset}
-      >
-        <DiscoverySection analyzedRepositories={repositories} />
-      </AuthErrorBoundary>
 
       <div className="flex justify-center pt-4 border-t">
         <Link href="/explore">

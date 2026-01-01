@@ -159,6 +159,36 @@
       "name": "Name",
       "recent": "Recent",
       "tests": "Tests"
+    },
+    "tabs": {
+      "community": "Community",
+      "myRepos": "My Repos",
+      "organizations": "Organizations"
+    },
+    "myRepos": {
+      "title": "My Repositories",
+      "description": "Your personal GitHub repositories",
+      "analyze": "Analyze",
+      "view": "View",
+      "lastPush": "Last push",
+      "noRepos": "No repositories found",
+      "noReposDescription": "You don't have any repositories on GitHub yet.",
+      "noSearchResults": "No repositories match your search",
+      "refresh": "Refresh from GitHub",
+      "searchPlaceholder": "Search repositories...",
+      "analyzed": "Analyzed",
+      "notAnalyzed": "Not analyzed"
+    },
+    "organizations": {
+      "title": "Organization Repositories",
+      "description": "Repositories from your GitHub organizations",
+      "selectOrg": "Select organization",
+      "noOrgs": "No organizations",
+      "noOrgsDescription": "You're not a member of any GitHub organizations, or you need to grant access.",
+      "connectRequired": "Connection required",
+      "connectDescription": "Install SpecVital GitHub App to access this organization's repositories.",
+      "connect": "Connect",
+      "refresh": "Refresh"
     }
   },
   "navigation": {

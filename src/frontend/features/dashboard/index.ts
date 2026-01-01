@@ -13,8 +13,10 @@ export {
 } from "./components";
 
 export {
+  myRepositoriesKeys,
   paginatedRepositoriesKeys,
   useAddBookmark,
+  useMyRepositories,
   usePaginatedRepositories,
   useReanalyze,
   useRemoveBookmark,
