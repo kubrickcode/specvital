@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowUpDown, Search } from "lucide-react";
+import { ArrowUpDown, Compass, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { AnalyzeDialog } from "@/features/home";
+import { Link } from "@/i18n/navigation";
 import type { ViewFilterParam } from "@/lib/api/types";
 
 import { fetchPaginatedRepositories } from "../api";
@@ -45,8 +46,6 @@ const mapViewFilterToParam = (view: string): ViewFilterParam | undefined => {
   switch (view) {
     case "mine":
       return "my";
-    case "community":
-      return "community";
     case "starred":
     case "all":
     default:
@@ -134,6 +133,7 @@ const SearchSortControls = ({
 };
 
 export const DashboardContent = () => {
+  const t = useTranslations("dashboard");
   const queryClient = useQueryClient();
 
   const { addBookmark } = useAddBookmark();
@@ -299,6 +299,15 @@ export const DashboardContent = () => {
       >
         <DiscoverySection analyzedRepositories={repositories} />
       </AuthErrorBoundary>
+
+      <div className="flex justify-center pt-4 border-t">
+        <Link href="/explore">
+          <Button className="gap-2" variant="ghost">
+            <Compass aria-hidden="true" className="size-4" />
+            {t("exploreCta")}
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 };

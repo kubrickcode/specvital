@@ -213,9 +213,9 @@
       "label": "View",
       "all": "All",
       "mine": "Mine",
-      "starred": "Starred",
-      "community": "Community"
+      "starred": "Starred"
     },
+    "exploreCta": "Browse other repositories",
     "status": {
       "newCommits": "New commits available",
       "unknown": "Status unknown",

@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Star, User, Users } from "lucide-react";
+import { List, Star, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,10 @@ import {
 import type { ViewFilter } from "../hooks/use-view-filter";
 import { useViewFilter } from "../hooks/use-view-filter";
 
-const VIEW_FILTER_OPTIONS: ViewFilter[] = ["all", "mine", "starred", "community"];
+const VIEW_FILTER_OPTIONS: ViewFilter[] = ["all", "mine", "starred"];
 
 const VIEW_FILTER_ICONS: Record<ViewFilter, React.ComponentType<{ className?: string }>> = {
   all: List,
-  community: Users,
   mine: User,
   starred: Star,
 };
@@ -33,7 +32,6 @@ export const ViewFilterDropdown = () => {
 
   const viewLabels: Record<ViewFilter, string> = {
     all: t("all"),
-    community: t("community"),
     mine: t("mine"),
     starred: t("starred"),
   };

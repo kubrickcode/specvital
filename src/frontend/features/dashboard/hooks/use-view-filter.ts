@@ -2,9 +2,9 @@
 
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 
-export type ViewFilter = "all" | "mine" | "starred" | "community";
+export type ViewFilter = "all" | "mine" | "starred";
 
-const VIEW_FILTER_OPTIONS: ViewFilter[] = ["all", "mine", "starred", "community"];
+const VIEW_FILTER_OPTIONS: ViewFilter[] = ["all", "mine", "starred"];
 
 const viewFilterParser = parseAsStringLiteral(VIEW_FILTER_OPTIONS).withDefault("all");
 
