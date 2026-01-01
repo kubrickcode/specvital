@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowUpDown, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useMemo, useState } from "react";
 
 import { AuthErrorBoundary } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
@@ -15,19 +16,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { AnalyzeDialog } from "@/features/home";
+import type { ViewFilterParam } from "@/lib/api/types";
 
 import {
   useAddBookmark,
+  usePaginatedRepositories,
   useReanalyze,
-  useRecentRepositories,
   useRemoveBookmark,
-  useRepositorySearch,
   useViewFilter,
 } from "../hooks";
 import type { SortOption } from "../types";
 import { DiscoveryErrorFallback } from "./discovery-error-fallback";
 import { DiscoverySection } from "./discovery-section";
 import { EmptyStateVariant } from "./empty-state-variant";
+import { LoadMoreButton } from "./load-more-button";
+import { PaginationStatus } from "./pagination-status";
 import { RepositoryList } from "./repository-list";
 import { ViewFilterDropdown } from "./view-filter-dropdown";
 
@@ -36,18 +39,37 @@ const SORT_OPTIONS: SortOption[] = ["name", "recent", "tests"];
 const isSortOption = (value: string): value is SortOption =>
   SORT_OPTIONS.includes(value as SortOption);
 
+const mapViewFilterToParam = (view: string): ViewFilterParam | undefined => {
+  switch (view) {
+    case "mine":
+      return "my";
+    case "community":
+      return "community";
+    case "starred":
+    case "all":
+    default:
+      return undefined;
+  }
+};
+
 type SearchSortControlsProps = {
+  hasNextPage: boolean;
+  isLoading: boolean;
   onSearchChange: (query: string) => void;
   onSortChange: (sort: SortOption) => void;
   searchQuery: string;
   sortBy: SortOption;
+  totalLoaded: number;
 };
 
 const SearchSortControls = ({
+  hasNextPage,
+  isLoading,
   onSearchChange,
   onSortChange,
   searchQuery,
   sortBy,
+  totalLoaded,
 }: SearchSortControlsProps) => {
   const t = useTranslations("dashboard");
 
@@ -64,43 +86,47 @@ const SearchSortControls = ({
   };
 
   return (
-    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="relative flex-1 sm:max-w-sm">
-        <Search
-          aria-hidden="true"
-          className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          aria-label={t("searchPlaceholder")}
-          className="h-11 pl-10 sm:h-9 sm:pl-9"
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder={t("searchPlaceholder")}
-          type="search"
-          value={searchQuery}
-        />
+    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-1">
+        <div className="relative flex-1 sm:max-w-sm">
+          <Search
+            aria-hidden="true"
+            className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            aria-label={t("searchPlaceholder")}
+            className="h-11 pl-10 sm:h-9 sm:pl-9"
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder={t("searchPlaceholder")}
+            type="search"
+            value={searchQuery}
+          />
+        </div>
+
+        <div className="flex w-full gap-2 sm:w-auto">
+          <ViewFilterDropdown />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="h-11 flex-1 sm:h-9 sm:flex-none" variant="outline">
+                <ArrowUpDown aria-hidden="true" />
+                <span>
+                  {t("sort.label")}: {sortLabels[sortBy]}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuRadioGroup onValueChange={handleSortChange} value={sortBy}>
+                <DropdownMenuRadioItem value="recent">{sortLabels.recent}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="name">{sortLabels.name}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="tests">{sortLabels.tests}</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <div className="flex w-full gap-2 sm:w-auto">
-        <ViewFilterDropdown />
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="h-11 flex-1 sm:h-9 sm:flex-none" variant="outline">
-              <ArrowUpDown aria-hidden="true" />
-              <span>
-                {t("sort.label")}: {sortLabels[sortBy]}
-              </span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuRadioGroup onValueChange={handleSortChange} value={sortBy}>
-              <DropdownMenuRadioItem value="recent">{sortLabels.recent}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="name">{sortLabels.name}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="tests">{sortLabels.tests}</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <PaginationStatus hasNextPage={hasNextPage} isLoading={isLoading} totalLoaded={totalLoaded} />
     </div>
   );
 };
@@ -108,59 +134,91 @@ const SearchSortControls = ({
 export const DashboardContent = () => {
   const queryClient = useQueryClient();
 
-  const { data: repositories = [], isLoading } = useRecentRepositories();
-
   const { addBookmark } = useAddBookmark();
   const { removeBookmark } = useRemoveBookmark();
   const { reanalyze } = useReanalyze();
   const { viewFilter } = useViewFilter();
 
-  const { filteredRepositories, searchQuery, setSearchQuery, setSortBy, sortBy } =
-    useRepositorySearch(repositories);
+  const [sortBy, setSortBy] = useState<SortOption>("recent");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const displayedRepositories = (() => {
-    switch (viewFilter) {
-      case "starred":
-        return filteredRepositories.filter((repo) => repo.isBookmarked);
-      case "mine":
-        return filteredRepositories.filter((repo) => repo.isAnalyzedByMe);
-      case "community":
-        return filteredRepositories.filter((repo) => !repo.isAnalyzedByMe);
-      case "all":
-      default:
-        return filteredRepositories;
+  const viewParam = mapViewFilterToParam(viewFilter);
+
+  const {
+    data: repositories,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    isFetchingNextPage,
+    isLoading,
+  } = usePaginatedRepositories({
+    sortBy,
+    sortOrder: "desc",
+    view: viewParam,
+  });
+
+  const filteredRepositories = useMemo(() => {
+    let result = repositories;
+
+    if (viewFilter === "starred") {
+      result = result.filter((repo) => repo.isBookmarked);
     }
-  })();
 
-  const handleBookmarkToggle = (owner: string, repo: string, isBookmarked: boolean) => {
-    if (isBookmarked) {
-      removeBookmark(owner, repo);
-    } else {
-      addBookmark(owner, repo);
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (repo) =>
+          repo.owner.toLowerCase().includes(query) ||
+          repo.name.toLowerCase().includes(query) ||
+          `${repo.owner}/${repo.name}`.toLowerCase().includes(query)
+      );
     }
-  };
 
-  const handleReanalyze = (owner: string, repo: string) => {
-    reanalyze(owner, repo);
-  };
+    return result;
+  }, [repositories, searchQuery, viewFilter]);
 
-  const handleDiscoveryReset = () => {
+  const handleBookmarkToggle = useCallback(
+    (owner: string, repo: string, isBookmarked: boolean) => {
+      if (isBookmarked) {
+        removeBookmark(owner, repo);
+      } else {
+        addBookmark(owner, repo);
+      }
+    },
+    [addBookmark, removeBookmark]
+  );
+
+  const handleReanalyze = useCallback(
+    (owner: string, repo: string) => {
+      reanalyze(owner, repo);
+    },
+    [reanalyze]
+  );
+
+  const handleDiscoveryReset = useCallback(() => {
     queryClient.resetQueries({ exact: false, queryKey: ["dashboard"] });
-  };
+  }, [queryClient]);
 
-  const hasNoRepositories = !isLoading && repositories.length === 0;
+  const handleLoadMore = useCallback(() => {
+    fetchNextPage();
+  }, [fetchNextPage]);
+
+  const hasNoRepositories = !isLoading && repositories.length === 0 && !isError;
   const hasNoFilterResults =
-    viewFilter === "starred" &&
-    displayedRepositories.length === 0 &&
-    filteredRepositories.length > 0;
+    viewFilter === "starred" && filteredRepositories.length === 0 && repositories.length > 0;
+  const hasNoSearchResults =
+    searchQuery.trim() !== "" && filteredRepositories.length === 0 && repositories.length > 0;
 
   return (
     <div className="space-y-8">
       <SearchSortControls
+        hasNextPage={hasNextPage && viewFilter !== "starred"}
+        isLoading={isLoading}
         onSearchChange={setSearchQuery}
         onSortChange={setSortBy}
         searchQuery={searchQuery}
         sortBy={sortBy}
+        totalLoaded={viewFilter === "starred" ? filteredRepositories.length : repositories.length}
       />
 
       {isLoading ? (
@@ -174,14 +232,25 @@ export const DashboardContent = () => {
         <EmptyStateVariant action={<AnalyzeDialog variant="empty-state" />} variant="no-repos" />
       ) : hasNoFilterResults ? (
         <EmptyStateVariant variant="no-bookmarks" />
-      ) : displayedRepositories.length === 0 ? (
+      ) : hasNoSearchResults ? (
         <EmptyStateVariant searchQuery={searchQuery} variant="no-search-results" />
       ) : (
-        <RepositoryList
-          onBookmarkToggle={handleBookmarkToggle}
-          onReanalyze={handleReanalyze}
-          repositories={displayedRepositories}
-        />
+        <>
+          <RepositoryList
+            onBookmarkToggle={handleBookmarkToggle}
+            onReanalyze={handleReanalyze}
+            repositories={filteredRepositories}
+          />
+
+          {viewFilter !== "starred" && (
+            <LoadMoreButton
+              hasError={isError}
+              hasNextPage={hasNextPage && !searchQuery.trim()}
+              isFetchingNextPage={isFetchingNextPage}
+              onLoadMore={handleLoadMore}
+            />
+          )}
+        </>
       )}
 
       <AuthErrorBoundary

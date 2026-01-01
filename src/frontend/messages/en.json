@@ -206,6 +206,15 @@
       "unknown": "Status unknown",
       "upToDate": "Up to date"
     },
+    "pagination": {
+      "allLoaded": "All repositories loaded",
+      "loadError": "Failed to load more repositories",
+      "loadMore": "Load More",
+      "loading": "Loading...",
+      "retry": "Retry",
+      "showingAll": "{count, plural, =0 {No repositories} =1 {Showing 1 repository} other {Showing all # repositories}}",
+      "showingWithMore": "{count, plural, =1 {Showing 1 repository} other {Showing # repositories}}"
+    },
     "discovery": {
       "title": "Discover New Repos",
       "description": "Find repositories you haven't analyzed yet and start tracking their test health.",

@@ -6,7 +6,7 @@ import type { RepositoryCard } from "@/lib/api/types";
 
 import { fetchPaginatedRepositories, type PaginatedRepositoriesParams } from "../api";
 
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 10;
 
 export type PaginatedRepositoriesOptions = Omit<PaginatedRepositoriesParams, "cursor">;
 
