@@ -565,7 +565,7 @@ type UserInfo struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// ViewFilterParam Filter repositories by view type (deprecated, use OwnershipFilterParam):
+// ViewFilterParam Filter repositories by analyzer (who analyzed):
 // - all: All analyzed repositories
 // - my: Only repositories analyzed by the current user
 // - community: Only repositories analyzed by other users
@@ -677,7 +677,7 @@ type GetRecentRepositoriesParams struct {
 	// SortOrder Sort direction (default depends on sortBy - desc for recent/tests, asc for name)
 	SortOrder *SortOrderParam `form:"sortOrder,omitempty" json:"sortOrder,omitempty"`
 
-	// View Filter repositories by view type (deprecated, use ownership instead)
+	// View Filter repositories by analyzer (who analyzed the repository)
 	View *ViewFilterParam `form:"view,omitempty" json:"view,omitempty"`
 
 	// Ownership Filter repositories by ownership type

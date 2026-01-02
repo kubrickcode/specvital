@@ -286,7 +286,7 @@ paths:
           required: false
           schema:
             $ref: "#/components/schemas/ViewFilterParam"
-          description: Filter repositories by view type (deprecated, use ownership instead)
+          description: Filter repositories by analyzer (who analyzed the repository)
         - name: ownership
           in: query
           required: false
@@ -1102,7 +1102,7 @@ components:
         - community
       default: all
       description: |
-        Filter repositories by view type (deprecated, use OwnershipFilterParam):
+        Filter repositories by analyzer (who analyzed):
         - all: All analyzed repositories
         - my: Only repositories analyzed by the current user
         - community: Only repositories analyzed by other users

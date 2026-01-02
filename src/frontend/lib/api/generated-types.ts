@@ -713,7 +713,7 @@ export interface components {
          */
         SortOrderParam: "asc" | "desc";
         /**
-         * @description Filter repositories by view type (deprecated, use OwnershipFilterParam):
+         * @description Filter repositories by analyzer (who analyzed):
          *     - all: All analyzed repositories
          *     - my: Only repositories analyzed by the current user
          *     - community: Only repositories analyzed by other users
@@ -1379,7 +1379,7 @@ export interface operations {
                 sortBy?: components["schemas"]["SortByParam"];
                 /** @description Sort direction (default depends on sortBy - desc for recent/tests, asc for name) */
                 sortOrder?: components["schemas"]["SortOrderParam"];
-                /** @description Filter repositories by view type (deprecated, use ownership instead) */
+                /** @description Filter repositories by analyzer (who analyzed the repository) */
                 view?: components["schemas"]["ViewFilterParam"];
                 /** @description Filter repositories by ownership type */
                 ownership?: components["schemas"]["OwnershipFilterParam"];
