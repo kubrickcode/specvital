@@ -251,9 +251,12 @@
       "starred": "즐겨찾기"
     },
     "filter": {
+      "apply": "적용",
+      "filterButton": "필터",
+      "label": "필터",
       "ownership": {
-        "label": "소유자별 필터",
         "all": "전체",
+        "label": "소유자별 필터",
         "mine": "내 분석",
         "organization": "조직"
       },

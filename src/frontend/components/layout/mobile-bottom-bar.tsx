@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Compass,
   Github,
   Globe,
   LayoutDashboard,
@@ -31,6 +32,7 @@ import { isValidLocale, LANGUAGE_NAMES } from "@/i18n/config";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { slideInUp, useReducedMotion } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 
 const MobileLanguageSelector = () => {
   const router = useRouter();
@@ -189,11 +191,38 @@ const MobileAuthAction = () => {
   );
 };
 
+type MobileNavItemProps = {
+  href: string;
+  icon: React.ReactNode;
+  isActive: boolean;
+  label: string;
+};
+
+const MobileNavItem = ({ href, icon, isActive, label }: MobileNavItemProps) => {
+  return (
+    <Link
+      aria-current={isActive ? "page" : undefined}
+      className={cn(
+        "flex h-full flex-col items-center justify-center gap-0.5 px-3 text-muted-foreground transition-colors",
+        isActive && "text-primary"
+      )}
+      href={href}
+    >
+      {icon}
+      <span className="text-[10px] font-normal">{label}</span>
+    </Link>
+  );
+};
+
 export const MobileBottomBar = () => {
   const t = useTranslations("header");
+  const tNav = useTranslations("navigation");
   const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
   const isHomePage = pathname === "/";
+
+  const isDashboardActive = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+  const isExploreActive = pathname === "/explore" || pathname.startsWith("/explore/");
 
   return (
     <motion.nav
@@ -203,18 +232,34 @@ export const MobileBottomBar = () => {
       initial={shouldReduceMotion ? false : "hidden"}
       variants={shouldReduceMotion ? undefined : slideInUp}
     >
-      <div className="flex h-16 items-center justify-around px-2">
-        {!isHomePage && (
-          <AnalyzeDialog variant="header">
-            <Button className="flex-col gap-0.5" size="mobile-nav" variant="mobile-nav">
-              <Plus className="size-5" />
-              <span className="text-[10px] font-normal">{t("analyze")}</span>
-            </Button>
-          </AnalyzeDialog>
-        )}
-        <MobileThemeToggle />
-        <MobileLanguageSelector />
-        <MobileAuthAction />
+      <div className="flex h-16 items-center justify-between px-2">
+        <div className="flex h-full items-center">
+          <MobileNavItem
+            href="/dashboard"
+            icon={<LayoutDashboard className="size-5" />}
+            isActive={isDashboardActive}
+            label={tNav("dashboard")}
+          />
+          <MobileNavItem
+            href="/explore"
+            icon={<Compass className="size-5" />}
+            isActive={isExploreActive}
+            label={tNav("explore")}
+          />
+        </div>
+        <div className="flex h-full items-center">
+          {!isHomePage && (
+            <AnalyzeDialog variant="header">
+              <Button className="flex-col gap-0.5" size="mobile-nav" variant="mobile-nav">
+                <Plus className="size-5" />
+                <span className="text-[10px] font-normal">{t("analyze")}</span>
+              </Button>
+            </AnalyzeDialog>
+          )}
+          <MobileThemeToggle />
+          <MobileLanguageSelector />
+          <MobileAuthAction />
+        </div>
       </div>
     </motion.nav>
   );

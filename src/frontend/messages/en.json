@@ -251,9 +251,12 @@
       "starred": "Starred"
     },
     "filter": {
+      "apply": "Apply",
+      "filterButton": "Filter",
+      "label": "Filters",
       "ownership": {
-        "label": "Filter by ownership",
         "all": "All",
+        "label": "Filter by ownership",
         "mine": "Mine",
         "organization": "Organization"
       },

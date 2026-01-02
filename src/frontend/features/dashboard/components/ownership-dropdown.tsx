@@ -1,6 +1,5 @@
 "use client";
 
-import { List, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -13,18 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import {
+  OWNERSHIP_FILTER_ICONS,
   OWNERSHIP_FILTER_OPTIONS,
   type OwnershipFilter,
   useOwnershipFilter,
 } from "../hooks/use-ownership-filter";
-
-const OWNERSHIP_FILTER_ICONS: Record<
-  OwnershipFilter,
-  React.ComponentType<{ className?: string }>
-> = {
-  all: List,
-  mine: User,
-};
 
 const isOwnershipFilter = (value: string): value is OwnershipFilter =>
   OWNERSHIP_FILTER_OPTIONS.includes(value as OwnershipFilter);

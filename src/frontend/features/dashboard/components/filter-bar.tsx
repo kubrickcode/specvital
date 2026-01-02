@@ -1,27 +1,16 @@
 "use client";
 
-import { ArrowUpDown, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 
 import type { SortOption } from "../types";
+import { MobileFilterDrawer } from "./mobile-filter-drawer";
 import { OwnershipDropdown } from "./ownership-dropdown";
 import { PaginationStatus } from "./pagination-status";
+import { SortDropdown } from "./sort-dropdown";
 import { StarredToggle } from "./starred-toggle";
-
-const SORT_OPTIONS: SortOption[] = ["name", "recent", "tests"];
-
-const isSortOption = (value: string): value is SortOption =>
-  SORT_OPTIONS.includes(value as SortOption);
 
 type FilterBarProps = {
   hasNextPage: boolean;
@@ -44,18 +33,6 @@ export const FilterBar = ({
 }: FilterBarProps) => {
   const t = useTranslations("dashboard");
 
-  const sortLabels: Record<SortOption, string> = {
-    name: t("sort.name"),
-    recent: t("sort.recent"),
-    tests: t("sort.tests"),
-  };
-
-  const handleSortChange = (value: string) => {
-    if (isSortOption(value)) {
-      onSortChange(value);
-    }
-  };
-
   return (
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-1">
@@ -74,32 +51,15 @@ export const FilterBar = ({
           />
         </div>
 
-        <div className="flex w-full gap-2 sm:w-auto">
+        <div className="flex w-full gap-2 sm:hidden">
+          <MobileFilterDrawer />
+          <SortDropdown isMobile onSortChange={onSortChange} sortBy={sortBy} />
+        </div>
+
+        <div className="hidden gap-2 sm:flex">
           <OwnershipDropdown />
-
           <StarredToggle />
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                aria-label={t("sort.label")}
-                className="h-11 flex-1 sm:h-9 sm:flex-none"
-                variant="outline"
-              >
-                <ArrowUpDown aria-hidden="true" />
-                <span>
-                  {t("sort.label")}: {sortLabels[sortBy]}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuRadioGroup onValueChange={handleSortChange} value={sortBy}>
-                <DropdownMenuRadioItem value="recent">{sortLabels.recent}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="name">{sortLabels.name}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="tests">{sortLabels.tests}</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SortDropdown onSortChange={onSortChange} sortBy={sortBy} />
         </div>
       </div>
 
