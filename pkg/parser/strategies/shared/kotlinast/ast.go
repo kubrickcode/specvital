@@ -39,6 +39,7 @@ const (
 	NodeInfixExpression        = "infix_expression"
 	NodePostfixExpression      = "postfix_expression"
 	NodeAdditiveExpression     = "additive_expression"
+	NodeAnonymousInitializer   = "anonymous_initializer"
 )
 
 // Kotest spec styles (alphabetically ordered).
@@ -75,6 +76,23 @@ func GetClassBody(node *sitter.Node) *sitter.Node {
 		}
 	}
 	return nil
+}
+
+// GetInitBlocks returns all anonymous_initializer (init block) nodes from a class_body.
+// Kotest specs can define tests in init blocks: class MyTest : FunSpec() { init { test("...") } }
+func GetInitBlocks(classBody *sitter.Node) []*sitter.Node {
+	if classBody == nil {
+		return nil
+	}
+
+	var initBlocks []*sitter.Node
+	for i := 0; i < int(classBody.ChildCount()); i++ {
+		child := classBody.Child(i)
+		if child.Type() == NodeAnonymousInitializer {
+			initBlocks = append(initBlocks, child)
+		}
+	}
+	return initBlocks
 }
 
 // GetConstructorLambda returns the lambda from a Kotest-style constructor invocation.

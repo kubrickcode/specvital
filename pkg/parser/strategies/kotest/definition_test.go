@@ -550,3 +550,153 @@ class ShouldSpecTest : ShouldSpec({
 		t.Errorf("expected at least 1 test, got %d", len(suite.Tests))
 	}
 }
+
+func TestKotestParser_FunSpec_InitBlock(t *testing.T) {
+	source := `
+package com.example
+
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+
+class CalculatorTest : FunSpec() {
+    init {
+        test("addition works") {
+            1 + 1 shouldBe 2
+        }
+
+        test("subtraction works") {
+            5 - 3 shouldBe 2
+        }
+
+        context("multiplication") {
+            test("basic multiplication") {
+                2 * 3 shouldBe 6
+            }
+        }
+    }
+}
+`
+
+	parser := &KotestParser{}
+	ctx := context.Background()
+
+	result, err := parser.Parse(ctx, []byte(source), "CalculatorTest.kt")
+	if err != nil {
+		t.Fatalf("parse failed: %v", err)
+	}
+
+	if len(result.Suites) != 1 {
+		t.Fatalf("expected 1 suite, got %d", len(result.Suites))
+	}
+
+	suite := result.Suites[0]
+	if suite.Name != "CalculatorTest" {
+		t.Errorf("expected suite name CalculatorTest, got %s", suite.Name)
+	}
+
+	// Validate top-level tests
+	if len(suite.Tests) < 2 {
+		t.Errorf("expected at least 2 top-level tests, got %d", len(suite.Tests))
+	}
+
+	// Validate nested context
+	if len(suite.Suites) < 1 {
+		t.Errorf("expected at least 1 nested suite, got %d", len(suite.Suites))
+	}
+}
+
+func TestKotestParser_WordSpec_InitBlock(t *testing.T) {
+	source := `
+package com.example
+
+import io.kotest.core.spec.style.WordSpec
+import io.kotest.matchers.shouldBe
+
+class WordSpecInitTest : WordSpec() {
+    init {
+        "String.length" should {
+            "return the length of the string" {
+                "hello".length shouldBe 5
+            }
+        }
+
+        "null checks" should {
+            "handle null" {
+                val x: String? = null
+                x shouldBe null
+            }
+        }
+    }
+}
+`
+
+	parser := &KotestParser{}
+	ctx := context.Background()
+
+	result, err := parser.Parse(ctx, []byte(source), "WordSpecInitTest.kt")
+	if err != nil {
+		t.Fatalf("parse failed: %v", err)
+	}
+
+	if len(result.Suites) != 1 {
+		t.Fatalf("expected 1 suite, got %d", len(result.Suites))
+	}
+
+	suite := result.Suites[0]
+	if suite.Name != "WordSpecInitTest" {
+		t.Errorf("expected suite name WordSpecInitTest, got %s", suite.Name)
+	}
+
+	// Should have 2 nested suites (String.length and null checks)
+	if len(suite.Suites) != 2 {
+		t.Errorf("expected 2 nested suites, got %d", len(suite.Suites))
+	}
+
+	// First nested suite should have 1 test
+	if len(suite.Suites) > 0 && len(suite.Suites[0].Tests) != 1 {
+		t.Errorf("expected 1 test in first nested suite, got %d", len(suite.Suites[0].Tests))
+	}
+}
+
+func TestKotestParser_StringSpec_InitBlock(t *testing.T) {
+	source := `
+package com.example
+
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
+
+class StringSpecInitTest : StringSpec() {
+    init {
+        "length of hello should be 5" {
+            "hello".length shouldBe 5
+        }
+
+        "startsWith should test for prefix" {
+            "world".startsWith("wor") shouldBe true
+        }
+    }
+}
+`
+
+	parser := &KotestParser{}
+	ctx := context.Background()
+
+	result, err := parser.Parse(ctx, []byte(source), "StringSpecInitTest.kt")
+	if err != nil {
+		t.Fatalf("parse failed: %v", err)
+	}
+
+	if len(result.Suites) != 1 {
+		t.Fatalf("expected 1 suite, got %d", len(result.Suites))
+	}
+
+	suite := result.Suites[0]
+	if suite.Name != "StringSpecInitTest" {
+		t.Errorf("expected suite name StringSpecInitTest, got %s", suite.Name)
+	}
+
+	// Should have 2 tests
+	if len(suite.Tests) != 2 {
+		t.Errorf("expected 2 tests, got %d", len(suite.Tests))
+	}
+}

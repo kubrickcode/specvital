@@ -175,30 +175,20 @@ func parseTestClass(node *sitter.Node, source []byte, filename string) *domain.T
 	// Try constructor lambda first (most common pattern)
 	lambda := kotlinast.GetConstructorLambda(node)
 	if lambda != nil {
-		switch specStyle {
-		case kotlinast.SpecStringSpec:
-			parseStringSpecTests(lambda, source, filename, suite)
-		case kotlinast.SpecFunSpec:
-			parseFunSpecTests(lambda, source, filename, suite)
-		case kotlinast.SpecBehaviorSpec:
-			parseBehaviorSpecTests(lambda, source, filename, suite)
-		case kotlinast.SpecDescribeSpec:
-			parseDescribeSpecTests(lambda, source, filename, suite)
-		case kotlinast.SpecWordSpec:
-			parseWordSpecTests(lambda, source, filename, suite)
-		case kotlinast.SpecFreeSpec:
-			parseFreeSpecTests(lambda, source, filename, suite)
-		case kotlinast.SpecShouldSpec:
-			parseShouldSpecTests(lambda, source, filename, suite)
-		default:
-			parseGenericSpecTests(lambda, source, filename, suite, specStyle)
-		}
+		parseSpecStyleTests(lambda, source, filename, suite, specStyle)
 	}
 
-	// Also check class body for AnnotationSpec style (uses methods with @Test)
+	// Also check init blocks in class body: class MyTest : FunSpec() { init { test("...") } }
 	body := kotlinast.GetClassBody(node)
-	if body != nil && specStyle == kotlinast.SpecAnnotationSpec {
-		parseAnnotationSpecTests(body, source, filename, suite)
+	if body != nil {
+		for _, initBlock := range kotlinast.GetInitBlocks(body) {
+			parseSpecStyleTests(initBlock, source, filename, suite, specStyle)
+		}
+
+		// Also check class body for AnnotationSpec style (uses methods with @Test)
+		if specStyle == kotlinast.SpecAnnotationSpec {
+			parseAnnotationSpecTests(body, source, filename, suite)
+		}
 	}
 
 	if len(suite.Tests) == 0 && len(suite.Suites) == 0 {
@@ -206,6 +196,28 @@ func parseTestClass(node *sitter.Node, source []byte, filename string) *domain.T
 	}
 
 	return suite
+}
+
+// parseSpecStyleTests dispatches to the appropriate parser based on spec style.
+func parseSpecStyleTests(body *sitter.Node, source []byte, filename string, suite *domain.TestSuite, specStyle string) {
+	switch specStyle {
+	case kotlinast.SpecStringSpec:
+		parseStringSpecTests(body, source, filename, suite)
+	case kotlinast.SpecFunSpec:
+		parseFunSpecTests(body, source, filename, suite)
+	case kotlinast.SpecBehaviorSpec:
+		parseBehaviorSpecTests(body, source, filename, suite)
+	case kotlinast.SpecDescribeSpec:
+		parseDescribeSpecTests(body, source, filename, suite)
+	case kotlinast.SpecWordSpec:
+		parseWordSpecTests(body, source, filename, suite)
+	case kotlinast.SpecFreeSpec:
+		parseFreeSpecTests(body, source, filename, suite)
+	case kotlinast.SpecShouldSpec:
+		parseShouldSpecTests(body, source, filename, suite)
+	default:
+		parseGenericSpecTests(body, source, filename, suite, specStyle)
+	}
 }
 
 // StringSpec: "test name" { ... }

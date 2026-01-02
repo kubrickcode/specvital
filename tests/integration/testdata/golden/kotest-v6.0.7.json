@@ -3,7 +3,7 @@
   "ref": "v6.0.7",
   "expectedFrameworks": ["junit5", "kotest"],
   "fileCount": 982,
-  "testCount": 2022,
+  "testCount": 5221,
   "frameworkCounts": {
     "junit5": 12,
     "kotest": 970
@@ -36,8 +36,8 @@
     {
       "path": "kotest-assertions/kotest-assertions-compiler/src/jvmTest/kotlin/io/kotest/matchers/compilation/CompilationsMatcherTest.kt",
       "framework": "kotest",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 11
     },
     {
       "path": "kotest-assertions/kotest-assertions-core/src/commonMain/kotlin/io/kotest/inspectors/runTests.kt",
@@ -60,8 +60,8 @@
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/ExtractTest.kt",
       "framework": "kotest",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 3
     },
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/FailuresTest.kt",
@@ -78,14 +78,14 @@
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/InspectorsTest.kt",
       "framework": "kotest",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 23
     },
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/NullTests.kt",
       "framework": "kotest",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 5
     },
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AnyTests.kt",
@@ -108,8 +108,8 @@
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AssertionCounterFunSpecTest.kt",
       "framework": "kotest",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 4
     },
     {
       "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AssertionCounterMultithreadingTests.kt",
