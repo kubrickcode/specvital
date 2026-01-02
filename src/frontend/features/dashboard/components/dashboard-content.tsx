@@ -1,19 +1,11 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowUpDown, Compass, Search } from "lucide-react";
+import { Compass } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { AnalyzeDialog } from "@/features/home";
 import { Link } from "@/i18n/navigation";
 import type { ViewFilterParam } from "@/lib/api/types";
@@ -25,110 +17,25 @@ import {
   usePaginatedRepositories,
   useReanalyze,
   useRemoveBookmark,
-  useViewFilter,
 } from "../hooks";
+import { type OwnershipFilter, useOwnershipFilter } from "../hooks/use-ownership-filter";
+import { useStarredFilter } from "../hooks/use-starred-filter";
 import type { SortOption } from "../types";
 import { AttentionZone } from "./attention-zone";
 import { EmptyStateVariant } from "./empty-state-variant";
+import { FilterBar } from "./filter-bar";
 import { LoadMoreButton } from "./load-more-button";
-import { PaginationStatus } from "./pagination-status";
 import { RepositoryList } from "./repository-list";
 import { SummarySection } from "./summary-section";
-import { ViewFilterDropdown } from "./view-filter-dropdown";
 
-const SORT_OPTIONS: SortOption[] = ["name", "recent", "tests"];
-
-const isSortOption = (value: string): value is SortOption =>
-  SORT_OPTIONS.includes(value as SortOption);
-
-const mapViewFilterToParam = (view: string): ViewFilterParam | undefined => {
-  switch (view) {
+const mapOwnershipToViewParam = (ownership: OwnershipFilter): ViewFilterParam | undefined => {
+  switch (ownership) {
     case "mine":
       return "my";
-    case "starred":
     case "all":
     default:
       return undefined;
   }
-};
-
-type SearchSortControlsProps = {
-  hasNextPage: boolean;
-  isLoading: boolean;
-  onSearchChange: (query: string) => void;
-  onSortChange: (sort: SortOption) => void;
-  searchQuery: string;
-  sortBy: SortOption;
-  totalLoaded: number;
-};
-
-const SearchSortControls = ({
-  hasNextPage,
-  isLoading,
-  onSearchChange,
-  onSortChange,
-  searchQuery,
-  sortBy,
-  totalLoaded,
-}: SearchSortControlsProps) => {
-  const t = useTranslations("dashboard");
-
-  const sortLabels: Record<SortOption, string> = {
-    name: t("sort.name"),
-    recent: t("sort.recent"),
-    tests: t("sort.tests"),
-  };
-
-  const handleSortChange = (value: string) => {
-    if (isSortOption(value)) {
-      onSortChange(value);
-    }
-  };
-
-  return (
-    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-1">
-        <div className="relative flex-1 sm:max-w-sm">
-          <Search
-            aria-hidden="true"
-            className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            aria-label={t("searchPlaceholder")}
-            className="h-11 pl-10 sm:h-9 sm:pl-9"
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t("searchPlaceholder")}
-            type="search"
-            value={searchQuery}
-          />
-        </div>
-
-        <div className="flex w-full gap-2 sm:w-auto">
-          <ViewFilterDropdown />
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="h-11 flex-1 sm:h-9 sm:flex-none" variant="outline">
-                <ArrowUpDown aria-hidden="true" />
-                <span>
-                  {t("sort.label")}: {sortLabels[sortBy]}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuRadioGroup onValueChange={handleSortChange} value={sortBy}>
-                <DropdownMenuRadioItem value="recent">{sortLabels.recent}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="name">{sortLabels.name}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="tests">{sortLabels.tests}</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      <PaginationStatus hasNextPage={hasNextPage} isLoading={isLoading} totalLoaded={totalLoaded} />
-    </div>
-  );
 };
 
 export const DashboardContent = () => {
@@ -138,12 +45,13 @@ export const DashboardContent = () => {
   const { addBookmark } = useAddBookmark();
   const { removeBookmark } = useRemoveBookmark();
   const { reanalyze } = useReanalyze();
-  const { viewFilter } = useViewFilter();
+  const { ownershipFilter } = useOwnershipFilter();
+  const { starredOnly } = useStarredFilter();
 
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const viewParam = mapViewFilterToParam(viewFilter);
+  const viewParam = mapOwnershipToViewParam(ownershipFilter);
 
   const {
     data: repositories,
@@ -162,7 +70,7 @@ export const DashboardContent = () => {
   const filteredRepositories = useMemo(() => {
     let result = repositories;
 
-    if (viewFilter === "starred") {
+    if (starredOnly) {
       result = result.filter((repo) => repo.isBookmarked);
     }
 
@@ -177,7 +85,7 @@ export const DashboardContent = () => {
     }
 
     return result;
-  }, [repositories, searchQuery, viewFilter]);
+  }, [repositories, searchQuery, starredOnly]);
 
   const handleBookmarkToggle = useCallback(
     (owner: string, repo: string, isBookmarked: boolean) => {
@@ -238,7 +146,7 @@ export const DashboardContent = () => {
 
   const hasNoRepositories = !isLoading && repositories.length === 0 && !isError;
   const hasNoFilterResults =
-    viewFilter === "starred" && filteredRepositories.length === 0 && repositories.length > 0;
+    starredOnly && filteredRepositories.length === 0 && repositories.length > 0;
   const hasNoSearchResults =
     searchQuery.trim() !== "" && filteredRepositories.length === 0 && repositories.length > 0;
 
@@ -248,14 +156,14 @@ export const DashboardContent = () => {
 
       <AttentionZone onReanalyze={handleReanalyze} repositories={repositories} />
 
-      <SearchSortControls
-        hasNextPage={hasNextPage && viewFilter !== "starred"}
+      <FilterBar
+        hasNextPage={hasNextPage && !starredOnly}
         isLoading={isLoading}
         onSearchChange={setSearchQuery}
         onSortChange={setSortBy}
         searchQuery={searchQuery}
         sortBy={sortBy}
-        totalLoaded={viewFilter === "starred" ? filteredRepositories.length : repositories.length}
+        totalLoaded={starredOnly ? filteredRepositories.length : repositories.length}
       />
 
       {isLoading ? (
@@ -279,7 +187,7 @@ export const DashboardContent = () => {
             repositories={filteredRepositories}
           />
 
-          {viewFilter !== "starred" && (
+          {!starredOnly && (
             <LoadMoreButton
               hasError={isError}
               hasNextPage={hasNextPage && !searchQuery.trim()}

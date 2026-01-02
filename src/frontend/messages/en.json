@@ -250,6 +250,16 @@
       "mine": "Mine",
       "starred": "Starred"
     },
+    "filter": {
+      "ownership": {
+        "label": "Filter by ownership",
+        "all": "All",
+        "mine": "Mine",
+        "organization": "Organization"
+      },
+      "starred": "Starred",
+      "starredLabel": "Show starred only"
+    },
     "exploreCta": "Browse other repositories",
     "attention": {
       "focused": "Focused tests",

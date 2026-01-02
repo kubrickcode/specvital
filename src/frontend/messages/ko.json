@@ -250,6 +250,16 @@
       "mine": "내 분석",
       "starred": "즐겨찾기"
     },
+    "filter": {
+      "ownership": {
+        "label": "소유자별 필터",
+        "all": "전체",
+        "mine": "내 분석",
+        "organization": "조직"
+      },
+      "starred": "즐겨찾기",
+      "starredLabel": "즐겨찾기만 보기"
+    },
     "exploreCta": "다른 저장소 둘러보기",
     "attention": {
       "focused": "집중 테스트",
