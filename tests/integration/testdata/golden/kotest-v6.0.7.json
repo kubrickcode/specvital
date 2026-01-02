@@ -3,7 +3,7 @@
   "ref": "v6.0.7",
   "expectedFrameworks": ["junit5", "kotest"],
   "fileCount": 982,
-  "testCount": 5221,
+  "testCount": 5296,
   "frameworkCounts": {
     "junit5": 12,
     "kotest": 970

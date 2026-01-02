@@ -393,6 +393,12 @@ func parseCallExpressions(node *sitter.Node, source []byte, filename string, sui
 func processCallExpression(node *sitter.Node, source []byte, filename string, suite *domain.TestSuite, matcher testMatcher) {
 	funcName, innerCall := getInnermostCallName(node, source)
 	if funcName == "" {
+		// funcName is empty for chained calls like setOf(...).forEach { }
+		// Still need to recurse into lambda to find tests inside
+		lambda := kotlinast.GetLambdaFromCall(node)
+		if lambda != nil {
+			parseCallExpressions(lambda, source, filename, suite, matcher)
+		}
 		return
 	}
 

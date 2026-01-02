@@ -700,3 +700,102 @@ class StringSpecInitTest : StringSpec() {
 		t.Errorf("expected 2 tests, got %d", len(suite.Tests))
 	}
 }
+
+func TestKotestParser_FunSpec_ForEach(t *testing.T) {
+	source := `
+package com.example
+
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+
+class ForEachTest : FunSpec({
+    setOf("a", "b").forEach { item ->
+        test("test for $item") {
+            item.length shouldBe 1
+        }
+    }
+
+    listOf(1, 2, 3).map { num ->
+        test("number $num test") {
+            num shouldBe num
+        }
+    }
+
+    test("regular test outside forEach") {
+        1 + 1 shouldBe 2
+    }
+})
+`
+
+	parser := &KotestParser{}
+	ctx := context.Background()
+
+	result, err := parser.Parse(ctx, []byte(source), "ForEachTest.kt")
+	if err != nil {
+		t.Fatalf("parse failed: %v", err)
+	}
+
+	if len(result.Suites) != 1 {
+		t.Fatalf("expected 1 suite, got %d", len(result.Suites))
+	}
+
+	suite := result.Suites[0]
+	if suite.Name != "ForEachTest" {
+		t.Errorf("expected suite name ForEachTest, got %s", suite.Name)
+	}
+
+	// Should detect tests inside forEach and map lambdas
+	// Each forEach/map call generates tests dynamically, we detect the test declarations
+	// setOf(...).forEach has 1 test, listOf(...).map has 1 test, plus 1 regular test = 3 tests
+	if len(suite.Tests) < 3 {
+		t.Errorf("expected at least 3 tests (including tests inside forEach/map), got %d", len(suite.Tests))
+	}
+}
+
+func TestKotestParser_FunSpec_NestedForEach(t *testing.T) {
+	source := `
+package com.example
+
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+
+class NestedForEachTest : FunSpec({
+    context("outer context") {
+        listOf("x", "y").forEach { item ->
+            test("nested test for $item") {
+                item.length shouldBe 1
+            }
+        }
+    }
+})
+`
+
+	parser := &KotestParser{}
+	ctx := context.Background()
+
+	result, err := parser.Parse(ctx, []byte(source), "NestedForEachTest.kt")
+	if err != nil {
+		t.Fatalf("parse failed: %v", err)
+	}
+
+	if len(result.Suites) != 1 {
+		t.Fatalf("expected 1 suite, got %d", len(result.Suites))
+	}
+
+	suite := result.Suites[0]
+
+	// Should have nested suite "outer context"
+	if len(suite.Suites) < 1 {
+		t.Fatalf("expected at least 1 nested suite, got %d", len(suite.Suites))
+	}
+
+	nestedSuite := suite.Suites[0]
+	if nestedSuite.Name != "outer context" {
+		t.Errorf("expected nested suite name 'outer context', got %s", nestedSuite.Name)
+	}
+
+	// Should detect test inside nested forEach
+	if len(nestedSuite.Tests) < 1 {
+		t.Errorf("expected at least 1 test in nested suite (from forEach), got %d", len(nestedSuite.Tests))
+	}
+}
