@@ -206,7 +206,7 @@ const proxy = async (request: NextRequest) => {
     }
 
     if (authResult.newTokens) {
-      const response = intlMiddleware(request);
+      const response = NextResponse.next();
       setTokenCookies(response, authResult.newTokens);
       return response;
     }
