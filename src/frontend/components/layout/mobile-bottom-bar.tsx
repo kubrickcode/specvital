@@ -218,6 +218,7 @@ export const MobileBottomBar = () => {
   const tNav = useTranslations("navigation");
   const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
+  const { isAuthenticated } = useAuth();
   const isHomePage = pathname === "/";
 
   const isDashboardActive = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
@@ -233,12 +234,14 @@ export const MobileBottomBar = () => {
     >
       <div className="flex h-16 items-center justify-between px-2">
         <div className="flex h-full items-center">
-          <MobileNavItem
-            href="/dashboard"
-            icon={<LayoutDashboard className="size-5" />}
-            isActive={isDashboardActive}
-            label={tNav("dashboard")}
-          />
+          {isAuthenticated && (
+            <MobileNavItem
+              href="/dashboard"
+              icon={<LayoutDashboard className="size-5" />}
+              isActive={isDashboardActive}
+              label={tNav("dashboard")}
+            />
+          )}
           <MobileNavItem
             href="/explore"
             icon={<Compass className="size-5" />}
