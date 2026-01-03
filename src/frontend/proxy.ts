@@ -23,7 +23,7 @@ const intlMiddleware = createIntlMiddleware(routing);
  * Routes that require authentication.
  * Unauthenticated users will be redirected to home.
  */
-const PROTECTED_ROUTES = ["dashboard", "explore"] as const;
+const PROTECTED_ROUTES = ["dashboard"] as const;
 
 const isHomePage = (pathname: string): boolean => {
   if (pathname === "/") return true;
