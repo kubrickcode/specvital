@@ -5,7 +5,12 @@ import { useTranslations } from "next-intl";
 
 import { ErrorFallback } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
-import { AnalysisContent, AnalysisSkeleton, useAnalysis } from "@/features/analysis";
+import {
+  AnalysisContent,
+  AnalysisSkeleton,
+  useAnalysis,
+  useAutoTrackHistory,
+} from "@/features/analysis";
 
 type AnalysisPageProps = {
   owner: string;
@@ -57,6 +62,8 @@ const getDisplayErrorMessage = (
 export const AnalysisPage = ({ owner, repo }: AnalysisPageProps) => {
   const t = useTranslations("analyze");
   const { data, error, isLoading, refetch, status } = useAnalysis(owner, repo);
+
+  useAutoTrackHistory(owner, repo, status === "completed");
 
   if (isLoading) {
     return <AnalysisSkeleton {...getSkeletonProps(status, t)} />;

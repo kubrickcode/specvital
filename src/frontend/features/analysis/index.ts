@@ -12,4 +12,4 @@ export {
   TestSuiteAccordion,
 } from "./components";
 
-export { analysisKeys, useAnalysis } from "./hooks";
+export { analysisKeys, useAnalysis, useAutoTrackHistory } from "./hooks";
