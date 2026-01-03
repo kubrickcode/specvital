@@ -35,11 +35,46 @@ func TestGitVCS_GetHeadCommit_EmptyURL(t *testing.T) {
 	}
 }
 
+func TestGitVCS_GetHeadCommit_PublicRepo(t *testing.T) {
+	vcs := NewGitVCS()
+	info, err := vcs.GetHeadCommit(context.Background(), "https://github.com/octocat/Hello-World", nil)
+	if err != nil {
+		t.Skipf("skipping test due to network error: %v", err)
+	}
+	if info.SHA == "" {
+		t.Error("expected non-empty SHA for public repo")
+	}
+	if info.IsPrivate {
+		t.Error("expected IsPrivate=false for public repo")
+	}
+}
+
 func TestGitVCS_GetHeadCommit_InvalidURL(t *testing.T) {
 	vcs := NewGitVCS()
 	_, err := vcs.GetHeadCommit(context.Background(), "not-a-valid-url", nil)
 	if err == nil {
 		t.Fatal("expected error for invalid URL")
+	}
+}
+
+func TestGitVCS_GetHeadCommit_PrivateRepoWithoutToken(t *testing.T) {
+	vcs := NewGitVCS()
+	_, err := vcs.GetHeadCommit(context.Background(), "https://github.com/octocat/private-nonexistent-repo-12345", nil)
+	if err == nil {
+		t.Fatal("expected error for inaccessible repo without token")
+	}
+}
+
+func TestGitVCS_GetHeadCommit_PrivateRepoWithToken(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test in short mode")
+	}
+
+	vcs := NewGitVCS()
+	invalidToken := "invalid-token"
+	_, err := vcs.GetHeadCommit(context.Background(), "https://github.com/octocat/private-nonexistent-repo-12345", &invalidToken)
+	if err == nil {
+		t.Fatal("expected error for invalid token")
 	}
 }
 

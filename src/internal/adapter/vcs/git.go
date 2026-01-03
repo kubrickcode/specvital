@@ -46,37 +46,56 @@ func (v *GitVCS) Clone(ctx context.Context, url string, token *string) (analysis
 	return &gitSourceAdapter{gitSrc: gitSrc}, nil
 }
 
-// GetHeadCommit returns the HEAD commit SHA of the default branch using git ls-remote.
-func (v *GitVCS) GetHeadCommit(ctx context.Context, url string, token *string) (string, error) {
+// GetHeadCommit returns the HEAD commit info (SHA and visibility) using git ls-remote.
+// It determines visibility by trying unauthenticated access first:
+// - Success without token = public repository (IsPrivate=false)
+// - Failure without token, success with token = private repository (IsPrivate=true)
+func (v *GitVCS) GetHeadCommit(ctx context.Context, url string, token *string) (analysis.CommitInfo, error) {
 	if url == "" {
-		return "", fmt.Errorf("get head commit: URL is required")
+		return analysis.CommitInfo{}, fmt.Errorf("get head commit: URL is required")
 	}
 
-	args := []string{"ls-remote", url, "HEAD"}
+	sha, err := v.lsRemote(ctx, url, nil)
+	if err == nil {
+		return analysis.CommitInfo{SHA: sha, IsPrivate: false}, nil
+	}
 
-	cmd := exec.CommandContext(ctx, "git", args...)
+	if token == nil {
+		return analysis.CommitInfo{}, fmt.Errorf("git ls-remote %q: %w", url, err)
+	}
+
+	sha, err = v.lsRemote(ctx, url, token)
+	if err != nil {
+		return analysis.CommitInfo{}, fmt.Errorf("git ls-remote %q: %w", url, err)
+	}
+
+	return analysis.CommitInfo{SHA: sha, IsPrivate: true}, nil
+}
+
+func (v *GitVCS) lsRemote(ctx context.Context, url string, token *string) (string, error) {
+	targetURL := url
 	if token != nil {
-		authURL := strings.Replace(url, "https://", fmt.Sprintf("https://x-access-token:%s@", *token), 1)
-		cmd.Args = []string{"git", "ls-remote", authURL, "HEAD"}
+		targetURL = strings.Replace(url, "https://", fmt.Sprintf("https://x-access-token:%s@", *token), 1)
 	}
+
+	cmd := exec.CommandContext(ctx, "git", "ls-remote", targetURL, "HEAD")
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("git ls-remote %q: %s: %w", url, stderr.String(), err)
+		return "", fmt.Errorf("%s: %w", stderr.String(), err)
 	}
 
-	// Output format: "<sha>\tHEAD\n"
 	output := strings.TrimSpace(stdout.String())
 	if output == "" {
-		return "", fmt.Errorf("git ls-remote %q: empty response", url)
+		return "", fmt.Errorf("empty response")
 	}
 
 	parts := strings.Fields(output)
 	if len(parts) < 1 {
-		return "", fmt.Errorf("git ls-remote %q: unexpected output format: %s", url, output)
+		return "", fmt.Errorf("unexpected output format: %s", output)
 	}
 
 	return parts[0], nil

@@ -5,10 +5,19 @@ import (
 	"time"
 )
 
+// CommitInfo contains commit SHA and visibility information.
+type CommitInfo struct {
+	IsPrivate bool
+	SHA       string
+}
+
 type VCS interface {
 	Clone(ctx context.Context, url string, token *string) (Source, error)
-	// GetHeadCommit returns the HEAD commit SHA of the default branch without cloning.
-	GetHeadCommit(ctx context.Context, url string, token *string) (string, error)
+	// GetHeadCommit returns the HEAD commit info (SHA and visibility) of the default branch.
+	// It determines visibility by trying unauthenticated access first:
+	// - Success without token = public repository (IsPrivate=false)
+	// - Failure without token, success with token = private repository (IsPrivate=true)
+	GetHeadCommit(ctx context.Context, url string, token *string) (CommitInfo, error)
 }
 
 type Source interface {

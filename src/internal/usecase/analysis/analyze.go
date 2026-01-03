@@ -110,13 +110,18 @@ func (uc *AnalyzeUseCase) Execute(ctx context.Context, req analysis.AnalyzeReque
 		return fmt.Errorf("%w: %w", ErrTokenLookupFailed, err)
 	}
 
+	commitInfo, err := uc.vcs.GetHeadCommit(timeoutCtx, repoURL, token)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrHeadCommitFailed, err)
+	}
+
 	src, err := uc.cloneWithSemaphore(timeoutCtx, repoURL, token)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrCloneFailed, err)
 	}
 	defer uc.closeSource(src, req.Owner, req.Repo)
 
-	codebase, err := uc.resolveCodebase(timeoutCtx, req, src, token)
+	codebase, err := uc.resolveCodebase(timeoutCtx, req, src, token, commitInfo.IsPrivate)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrCodebaseResolutionFailed, err)
 	}
@@ -197,6 +202,7 @@ func (uc *AnalyzeUseCase) resolveCodebase(
 	req analysis.AnalyzeRequest,
 	src analysis.Source,
 	token *string,
+	isPrivate bool,
 ) (*analysis.Codebase, error) {
 	host := DefaultHost
 
@@ -227,7 +233,7 @@ func (uc *AnalyzeUseCase) resolveCodebase(
 		}
 	}
 
-	return uc.resolveCodebaseWithAPI(ctx, host, req, codebase, token)
+	return uc.resolveCodebaseWithAPI(ctx, host, req, codebase, token, isPrivate)
 }
 
 func (uc *AnalyzeUseCase) resolveCodebaseWithAPI(
@@ -236,6 +242,7 @@ func (uc *AnalyzeUseCase) resolveCodebaseWithAPI(
 	req analysis.AnalyzeRequest,
 	codebaseByName *analysis.Codebase,
 	token *string,
+	isPrivate bool,
 ) (*analysis.Codebase, error) {
 	repoInfo, err := uc.vcsAPIClient.GetRepoInfo(ctx, host, req.Owner, req.Repo, token)
 	if err != nil {
@@ -309,6 +316,7 @@ func (uc *AnalyzeUseCase) resolveCodebaseWithAPI(
 		Owner:          req.Owner,
 		Name:           req.Repo,
 		ExternalRepoID: externalRepoID,
+		IsPrivate:      isPrivate,
 	}
 
 	if codebaseByName != nil && codebaseByName.ExternalRepoID != externalRepoID {

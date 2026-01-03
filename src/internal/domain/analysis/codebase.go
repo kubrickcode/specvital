@@ -22,6 +22,7 @@ type UpsertCodebaseParams struct {
 	DefaultBranch  string
 	ExternalRepoID string
 	Host           string
+	IsPrivate      bool
 	Name           string
 	Owner          string
 }

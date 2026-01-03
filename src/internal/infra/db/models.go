@@ -272,6 +272,7 @@ type Codebasis struct {
 	LastViewedAt   pgtype.Timestamptz `json:"last_viewed_at"`
 	ExternalRepoID string             `json:"external_repo_id"`
 	IsStale        bool               `json:"is_stale"`
+	IsPrivate      bool               `json:"is_private"`
 }
 
 type GithubAppInstallation struct {

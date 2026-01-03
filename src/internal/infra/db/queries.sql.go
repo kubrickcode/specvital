@@ -131,7 +131,7 @@ func (q *Queries) CreateTestSuite(ctx context.Context, arg CreateTestSuiteParams
 }
 
 const findCodebaseByExternalID = `-- name: FindCodebaseByExternalID :one
-SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale FROM codebases
+SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale, is_private FROM codebases
 WHERE host = $1 AND external_repo_id = $2
 `
 
@@ -154,12 +154,13 @@ func (q *Queries) FindCodebaseByExternalID(ctx context.Context, arg FindCodebase
 		&i.LastViewedAt,
 		&i.ExternalRepoID,
 		&i.IsStale,
+		&i.IsPrivate,
 	)
 	return i, err
 }
 
 const findCodebaseByOwnerName = `-- name: FindCodebaseByOwnerName :one
-SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale FROM codebases
+SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale, is_private FROM codebases
 WHERE host = $1 AND owner = $2 AND name = $3 AND is_stale = false
 `
 
@@ -183,13 +184,14 @@ func (q *Queries) FindCodebaseByOwnerName(ctx context.Context, arg FindCodebaseB
 		&i.LastViewedAt,
 		&i.ExternalRepoID,
 		&i.IsStale,
+		&i.IsPrivate,
 	)
 	return i, err
 }
 
 const findCodebaseWithLastCommitByOwnerName = `-- name: FindCodebaseWithLastCommitByOwnerName :one
 SELECT
-    c.id, c.host, c.owner, c.name, c.default_branch, c.created_at, c.updated_at, c.last_viewed_at, c.external_repo_id, c.is_stale,
+    c.id, c.host, c.owner, c.name, c.default_branch, c.created_at, c.updated_at, c.last_viewed_at, c.external_repo_id, c.is_stale, c.is_private,
     COALESCE(a.commit_sha, '') as last_commit_sha
 FROM codebases c
 LEFT JOIN (
@@ -218,6 +220,7 @@ type FindCodebaseWithLastCommitByOwnerNameRow struct {
 	LastViewedAt   pgtype.Timestamptz `json:"last_viewed_at"`
 	ExternalRepoID string             `json:"external_repo_id"`
 	IsStale        bool               `json:"is_stale"`
+	IsPrivate      bool               `json:"is_private"`
 	LastCommitSha  string             `json:"last_commit_sha"`
 }
 
@@ -235,13 +238,14 @@ func (q *Queries) FindCodebaseWithLastCommitByOwnerName(ctx context.Context, arg
 		&i.LastViewedAt,
 		&i.ExternalRepoID,
 		&i.IsStale,
+		&i.IsPrivate,
 		&i.LastCommitSha,
 	)
 	return i, err
 }
 
 const getCodebaseByID = `-- name: GetCodebaseByID :one
-SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale FROM codebases WHERE id = $1
+SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale, is_private FROM codebases WHERE id = $1
 `
 
 func (q *Queries) GetCodebaseByID(ctx context.Context, id pgtype.UUID) (Codebasis, error) {
@@ -258,6 +262,7 @@ func (q *Queries) GetCodebaseByID(ctx context.Context, id pgtype.UUID) (Codebasi
 		&i.LastViewedAt,
 		&i.ExternalRepoID,
 		&i.IsStale,
+		&i.IsPrivate,
 	)
 	return i, err
 }
@@ -293,6 +298,7 @@ LEFT JOIN failure_counts fc ON c.id = fc.codebase_id
 WHERE c.last_viewed_at IS NOT NULL
   AND c.last_viewed_at > now() - interval '90 days'
   AND c.is_stale = false
+  AND c.is_private = false
 `
 
 type GetCodebasesForAutoRefreshRow struct {
@@ -456,7 +462,7 @@ const unmarkCodebaseStale = `-- name: UnmarkCodebaseStale :one
 UPDATE codebases
 SET is_stale = false, owner = $2, name = $3, updated_at = now()
 WHERE id = $1
-RETURNING id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale
+RETURNING id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale, is_private
 `
 
 type UnmarkCodebaseStaleParams struct {
@@ -479,6 +485,7 @@ func (q *Queries) UnmarkCodebaseStale(ctx context.Context, arg UnmarkCodebaseSta
 		&i.LastViewedAt,
 		&i.ExternalRepoID,
 		&i.IsStale,
+		&i.IsPrivate,
 	)
 	return i, err
 }
@@ -529,7 +536,7 @@ const updateCodebaseOwnerName = `-- name: UpdateCodebaseOwnerName :one
 UPDATE codebases
 SET owner = $2, name = $3, updated_at = now()
 WHERE id = $1
-RETURNING id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale
+RETURNING id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale, is_private
 `
 
 type UpdateCodebaseOwnerNameParams struct {
@@ -552,21 +559,23 @@ func (q *Queries) UpdateCodebaseOwnerName(ctx context.Context, arg UpdateCodebas
 		&i.LastViewedAt,
 		&i.ExternalRepoID,
 		&i.IsStale,
+		&i.IsPrivate,
 	)
 	return i, err
 }
 
 const upsertCodebase = `-- name: UpsertCodebase :one
-INSERT INTO codebases (host, owner, name, default_branch, external_repo_id)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO codebases (host, owner, name, default_branch, external_repo_id, is_private)
+VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (host, external_repo_id)
 DO UPDATE SET
     owner = EXCLUDED.owner,
     name = EXCLUDED.name,
     default_branch = COALESCE(EXCLUDED.default_branch, codebases.default_branch),
     is_stale = false,
+    is_private = EXCLUDED.is_private,
     updated_at = now()
-RETURNING id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale
+RETURNING id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale, is_private
 `
 
 type UpsertCodebaseParams struct {
@@ -575,6 +584,7 @@ type UpsertCodebaseParams struct {
 	Name           string      `json:"name"`
 	DefaultBranch  pgtype.Text `json:"default_branch"`
 	ExternalRepoID string      `json:"external_repo_id"`
+	IsPrivate      bool        `json:"is_private"`
 }
 
 func (q *Queries) UpsertCodebase(ctx context.Context, arg UpsertCodebaseParams) (Codebasis, error) {
@@ -584,6 +594,7 @@ func (q *Queries) UpsertCodebase(ctx context.Context, arg UpsertCodebaseParams) 
 		arg.Name,
 		arg.DefaultBranch,
 		arg.ExternalRepoID,
+		arg.IsPrivate,
 	)
 	var i Codebasis
 	err := row.Scan(
@@ -597,6 +608,7 @@ func (q *Queries) UpsertCodebase(ctx context.Context, arg UpsertCodebaseParams) 
 		&i.LastViewedAt,
 		&i.ExternalRepoID,
 		&i.IsStale,
+		&i.IsPrivate,
 	)
 	return i, err
 }

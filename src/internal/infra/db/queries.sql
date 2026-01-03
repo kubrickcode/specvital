@@ -1,12 +1,13 @@
 -- name: UpsertCodebase :one
-INSERT INTO codebases (host, owner, name, default_branch, external_repo_id)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO codebases (host, owner, name, default_branch, external_repo_id, is_private)
+VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (host, external_repo_id)
 DO UPDATE SET
     owner = EXCLUDED.owner,
     name = EXCLUDED.name,
     default_branch = COALESCE(EXCLUDED.default_branch, codebases.default_branch),
     is_stale = false,
+    is_private = EXCLUDED.is_private,
     updated_at = now()
 RETURNING *;
 
@@ -113,7 +114,8 @@ LEFT JOIN latest_completions lc ON c.id = lc.codebase_id
 LEFT JOIN failure_counts fc ON c.id = fc.codebase_id
 WHERE c.last_viewed_at IS NOT NULL
   AND c.last_viewed_at > now() - interval '90 days'
-  AND c.is_stale = false;
+  AND c.is_stale = false
+  AND c.is_private = false;
 
 -- name: RecordUserAnalysisHistory :exec
 INSERT INTO user_analysis_history (user_id, analysis_id)

@@ -70,19 +70,19 @@ func enqueue(databaseURL, owner, repo string) error {
 
 	gitVCS := vcs.NewGitVCS()
 	repoURL := fmt.Sprintf("https://github.com/%s/%s", owner, repo)
-	commitSHA, err := gitVCS.GetHeadCommit(ctx, repoURL, nil)
+	commitInfo, err := gitVCS.GetHeadCommit(ctx, repoURL, nil)
 	if err != nil {
 		return fmt.Errorf("get head commit for %s/%s: %w", owner, repo, err)
 	}
 
-	if err := client.EnqueueAnalysis(ctx, owner, repo, commitSHA); err != nil {
+	if err := client.EnqueueAnalysis(ctx, owner, repo, commitInfo.SHA); err != nil {
 		return fmt.Errorf("enqueue task: %w", err)
 	}
 
 	slog.Info("task enqueued",
 		"owner", owner,
 		"repo", repo,
-		"commit", commitSHA,
+		"commit", commitInfo.SHA,
 	)
 	return nil
 }

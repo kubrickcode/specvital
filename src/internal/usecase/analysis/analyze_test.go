@@ -12,7 +12,8 @@ import (
 // Mock implementations
 
 type mockVCS struct {
-	cloneFn func(ctx context.Context, url string, token *string) (analysis.Source, error)
+	cloneFn         func(ctx context.Context, url string, token *string) (analysis.Source, error)
+	getHeadCommitFn func(ctx context.Context, url string, token *string) (analysis.CommitInfo, error)
 }
 
 func (m *mockVCS) Clone(ctx context.Context, url string, token *string) (analysis.Source, error) {
@@ -22,8 +23,11 @@ func (m *mockVCS) Clone(ctx context.Context, url string, token *string) (analysi
 	return nil, nil
 }
 
-func (m *mockVCS) GetHeadCommit(ctx context.Context, url string, token *string) (string, error) {
-	return "test-commit-sha", nil
+func (m *mockVCS) GetHeadCommit(ctx context.Context, url string, token *string) (analysis.CommitInfo, error) {
+	if m.getHeadCommitFn != nil {
+		return m.getHeadCommitFn(ctx, url, token)
+	}
+	return analysis.CommitInfo{SHA: "test-commit-sha", IsPrivate: false}, nil
 }
 
 type mockSource struct {

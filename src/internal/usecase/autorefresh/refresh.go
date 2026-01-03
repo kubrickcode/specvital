@@ -71,7 +71,7 @@ func (uc *AutoRefreshUseCase) Execute(ctx context.Context) error {
 		}
 
 		repoURL := fmt.Sprintf("https://%s/%s/%s", codebase.Host, codebase.Owner, codebase.Name)
-		commitSHA, err := uc.vcs.GetHeadCommit(ctx, repoURL, nil)
+		commitInfo, err := uc.vcs.GetHeadCommit(ctx, repoURL, nil)
 		if err != nil {
 			consecutiveFailures++
 			slog.ErrorContext(ctx, "failed to get head commit for auto-refresh",
@@ -83,16 +83,16 @@ func (uc *AutoRefreshUseCase) Execute(ctx context.Context) error {
 			continue
 		}
 
-		if codebase.LastCommitSHA == commitSHA {
+		if codebase.LastCommitSHA == commitInfo.SHA {
 			slog.DebugContext(ctx, "skipping auto-refresh: no new commits",
 				"owner", codebase.Owner,
 				"repo", codebase.Name,
-				"commit", commitSHA,
+				"commit", commitInfo.SHA,
 			)
 			continue
 		}
 
-		if err := uc.taskQueue.EnqueueAnalysis(ctx, codebase.Owner, codebase.Name, commitSHA); err != nil {
+		if err := uc.taskQueue.EnqueueAnalysis(ctx, codebase.Owner, codebase.Name, commitInfo.SHA); err != nil {
 			consecutiveFailures++
 			slog.ErrorContext(ctx, "failed to enqueue auto-refresh task",
 				"owner", codebase.Owner,

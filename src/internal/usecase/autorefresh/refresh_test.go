@@ -48,11 +48,11 @@ func (m *mockVCS) Clone(ctx context.Context, url string, token *string) (analysi
 	return nil, nil
 }
 
-func (m *mockVCS) GetHeadCommit(ctx context.Context, url string, token *string) (string, error) {
+func (m *mockVCS) GetHeadCommit(ctx context.Context, url string, token *string) (analysis.CommitInfo, error) {
 	if m.err != nil {
-		return "", m.err
+		return analysis.CommitInfo{}, m.err
 	}
-	return m.commitSHA, nil
+	return analysis.CommitInfo{SHA: m.commitSHA, IsPrivate: false}, nil
 }
 
 func TestAutoRefreshUseCase_Execute_NoCodebases(t *testing.T) {

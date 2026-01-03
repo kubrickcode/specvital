@@ -102,6 +102,7 @@ func (r *CodebaseRepository) MarkStaleAndUpsert(ctx context.Context, staleID ana
 		Name:           params.Name,
 		DefaultBranch:  pgtype.Text{String: params.DefaultBranch, Valid: params.DefaultBranch != ""},
 		ExternalRepoID: params.ExternalRepoID,
+		IsPrivate:      params.IsPrivate,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("upsert codebase: %w", err)
@@ -189,6 +190,7 @@ func (r *CodebaseRepository) Upsert(ctx context.Context, params analysis.UpsertC
 		Name:           params.Name,
 		DefaultBranch:  pgtype.Text{String: params.DefaultBranch, Valid: params.DefaultBranch != ""},
 		ExternalRepoID: params.ExternalRepoID,
+		IsPrivate:      params.IsPrivate,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("upsert codebase: %w", err)
