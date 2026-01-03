@@ -6,18 +6,26 @@ import { RepositoryCard } from "./repository-card";
 import { RepositoryGrid } from "./repository-grid";
 import { RepositorySkeleton } from "./repository-skeleton";
 
+type RepositoryListVariant = "dashboard" | "explore";
+
 type RepositoryListProps = {
+  dashboardRepoIds?: Set<string>;
   isLoading?: boolean;
+  onAddToDashboard?: (owner: string, repo: string) => void;
   onBookmarkToggle?: (owner: string, repo: string, isBookmarked: boolean) => void;
   onReanalyze?: (owner: string, repo: string) => void;
   repositories: RepositoryCardType[];
+  variant?: RepositoryListVariant;
 };
 
 export const RepositoryList = ({
+  dashboardRepoIds,
   isLoading = false,
+  onAddToDashboard,
   onBookmarkToggle,
   onReanalyze,
   repositories,
+  variant = "dashboard",
 }: RepositoryListProps) => {
   if (isLoading) {
     return (
@@ -40,9 +48,12 @@ export const RepositoryList = ({
       {repositories.map((repo) => (
         <li key={repo.id}>
           <RepositoryCard
+            isInDashboard={dashboardRepoIds?.has(repo.id)}
+            onAddToDashboard={onAddToDashboard}
             onBookmarkToggle={onBookmarkToggle}
             onReanalyze={onReanalyze}
             repo={repo}
+            variant={variant}
           />
         </li>
       ))}

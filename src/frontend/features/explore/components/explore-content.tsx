@@ -10,13 +10,11 @@ import {
   EmptyStateVariant,
   InfiniteScrollLoader,
   RepositoryList,
-  useAddBookmark,
   useReanalyze,
-  useRemoveBookmark,
   type SortOption,
 } from "@/features/dashboard";
 
-import { useExploreRepositories } from "../hooks";
+import { useAddToDashboard, useDashboardRepoIds, useExploreRepositories } from "../hooks";
 import { LoginRequiredState } from "./login-required-state";
 import { MyReposTab } from "./my-repos-tab";
 import { OrgReposTab } from "./org-repos-tab";
@@ -28,8 +26,7 @@ export const ExploreContent = () => {
   const t = useTranslations("explore");
   const { isAuthenticated } = useAuth();
 
-  const { addBookmark } = useAddBookmark();
-  const { removeBookmark } = useRemoveBookmark();
+  const { addToDashboard } = useAddToDashboard();
   const { reanalyze } = useReanalyze();
 
   const [activeTab, setActiveTab] = useState<ExploreTab>("community");
@@ -49,6 +46,8 @@ export const ExploreContent = () => {
     sortOrder: "desc",
   });
 
+  const dashboardRepoIds = useDashboardRepoIds();
+
   const filteredRepositories = useMemo(() => {
     if (!searchQuery.trim()) {
       return communityRepositories;
@@ -63,15 +62,11 @@ export const ExploreContent = () => {
     );
   }, [communityRepositories, searchQuery]);
 
-  const handleBookmarkToggle = useCallback(
-    (owner: string, repo: string, isBookmarked: boolean) => {
-      if (isBookmarked) {
-        removeBookmark(owner, repo);
-      } else {
-        addBookmark(owner, repo);
-      }
+  const handleAddToDashboard = useCallback(
+    (owner: string, repo: string) => {
+      addToDashboard(owner, repo);
     },
-    [addBookmark, removeBookmark]
+    [addToDashboard]
   );
 
   const handleReanalyze = useCallback(
@@ -133,9 +128,10 @@ export const ExploreContent = () => {
           {isLoadingCommunity ? (
             <RepositoryList
               isLoading
-              onBookmarkToggle={handleBookmarkToggle}
+              onAddToDashboard={handleAddToDashboard}
               onReanalyze={handleReanalyze}
               repositories={[]}
+              variant="explore"
             />
           ) : hasNoRepositories ? (
             <EmptyStateVariant variant="no-repos" />
@@ -144,9 +140,11 @@ export const ExploreContent = () => {
           ) : (
             <>
               <RepositoryList
-                onBookmarkToggle={handleBookmarkToggle}
+                dashboardRepoIds={dashboardRepoIds}
+                onAddToDashboard={handleAddToDashboard}
                 onReanalyze={handleReanalyze}
                 repositories={filteredRepositories}
+                variant="explore"
               />
 
               {!searchQuery.trim() && (

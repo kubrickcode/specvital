@@ -221,8 +221,11 @@
     },
     "card": {
       "addBookmark": "즐겨찾기 추가",
+      "addToDashboard": "대시보드에 추가",
       "analyzeLatest": "최신 커밋 분석",
       "bookmarked": "즐겨찾기됨",
+      "inDashboard": "대시보드에 있음",
+      "loginToAdd": "로그인하여 추가",
       "loginToBookmark": "로그인하여 북마크 저장",
       "noAnalysis": "분석 기록 없음",
       "reanalyze": "리포지토리 재분석",

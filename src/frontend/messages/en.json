@@ -221,8 +221,11 @@
     },
     "card": {
       "addBookmark": "Add bookmark",
+      "addToDashboard": "Add to Dashboard",
       "analyzeLatest": "Analyze latest commits",
       "bookmarked": "Bookmarked",
+      "inDashboard": "In Dashboard",
+      "loginToAdd": "Sign in to add",
       "loginToBookmark": "Sign in to bookmark",
       "noAnalysis": "No analysis yet",
       "reanalyze": "Reanalyze repository",

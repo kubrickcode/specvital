@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw, Star } from "lucide-react";
+import { Check, Plus, RefreshCw, Star } from "lucide-react";
 import Link from "next/link";
 import { useFormatter, useNow, useTranslations } from "next-intl";
 
@@ -15,13 +15,25 @@ import { cn } from "@/lib/utils";
 import { TestDeltaBadge } from "./test-delta-badge";
 import { UpdateStatusBadge } from "./update-status-badge";
 
+type RepositoryCardVariant = "dashboard" | "explore";
+
 type RepositoryCardProps = {
+  isInDashboard?: boolean;
+  onAddToDashboard?: (owner: string, repo: string) => void;
   onBookmarkToggle?: (owner: string, repo: string, isBookmarked: boolean) => void;
   onReanalyze?: (owner: string, repo: string) => void;
   repo: RepositoryCardType;
+  variant?: RepositoryCardVariant;
 };
 
-export const RepositoryCard = ({ onBookmarkToggle, onReanalyze, repo }: RepositoryCardProps) => {
+export const RepositoryCard = ({
+  isInDashboard = false,
+  onAddToDashboard,
+  onBookmarkToggle,
+  onReanalyze,
+  repo,
+  variant = "dashboard",
+}: RepositoryCardProps) => {
   const format = useFormatter();
   const now = useNow({ updateInterval: 60_000 });
   const t = useTranslations("dashboard.card");
@@ -43,10 +55,85 @@ export const RepositoryCard = ({ onBookmarkToggle, onReanalyze, repo }: Reposito
     onBookmarkToggle?.(owner, name, isBookmarked);
   };
 
+  const handleAddToDashboardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      openLoginModal();
+      return;
+    }
+
+    if (!isInDashboard) {
+      onAddToDashboard?.(owner, name);
+    }
+  };
+
   const handleReanalyzeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onReanalyze?.(owner, name);
+  };
+
+  const renderActionButton = () => {
+    if (variant === "explore") {
+      const tooltipContent = !isAuthenticated
+        ? t("loginToAdd")
+        : isInDashboard
+          ? t("inDashboard")
+          : t("addToDashboard");
+
+      return (
+        <ResponsiveTooltip content={tooltipContent}>
+          <Button
+            aria-label={tooltipContent}
+            className={cn(
+              "size-8 shrink-0",
+              isInDashboard && "text-emerald-600 hover:text-emerald-700"
+            )}
+            disabled={isInDashboard}
+            onClick={handleAddToDashboardClick}
+            size="icon"
+            variant="ghost"
+          >
+            {isInDashboard ? (
+              <Check aria-hidden="true" className="size-4" />
+            ) : (
+              <Plus aria-hidden="true" className="size-4" />
+            )}
+          </Button>
+        </ResponsiveTooltip>
+      );
+    }
+
+    return (
+      <ResponsiveTooltip
+        content={
+          isAuthenticated
+            ? isBookmarked
+              ? t("removeBookmark")
+              : t("addBookmark")
+            : t("loginToBookmark")
+        }
+      >
+        <Button
+          aria-label={
+            isAuthenticated
+              ? isBookmarked
+                ? t("removeBookmark")
+                : t("addBookmark")
+              : t("loginToBookmark")
+          }
+          aria-pressed={isAuthenticated ? isBookmarked : undefined}
+          className={cn("size-8 shrink-0", isBookmarked && "text-amber-500 hover:text-amber-600")}
+          onClick={handleBookmarkClick}
+          size="icon"
+          variant="ghost"
+        >
+          <Star aria-hidden="true" className={cn("size-4", isBookmarked && "fill-current")} />
+        </Button>
+      </ResponsiveTooltip>
+    );
   };
 
   return (
@@ -63,7 +150,7 @@ export const RepositoryCard = ({ onBookmarkToggle, onReanalyze, repo }: Reposito
       >
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="min-w-0 flex-1 flex items-center gap-1.5">
-            {isBookmarked && (
+            {variant === "dashboard" && isBookmarked && (
               <Star
                 aria-label={t("bookmarked")}
                 className="size-4 shrink-0 text-amber-500 fill-amber-500"
@@ -73,35 +160,7 @@ export const RepositoryCard = ({ onBookmarkToggle, onReanalyze, repo }: Reposito
               {fullName}
             </h3>
           </div>
-          <ResponsiveTooltip
-            content={
-              isAuthenticated
-                ? isBookmarked
-                  ? t("removeBookmark")
-                  : t("addBookmark")
-                : t("loginToBookmark")
-            }
-          >
-            <Button
-              aria-label={
-                isAuthenticated
-                  ? isBookmarked
-                    ? t("removeBookmark")
-                    : t("addBookmark")
-                  : t("loginToBookmark")
-              }
-              aria-pressed={isAuthenticated ? isBookmarked : undefined}
-              className={cn(
-                "size-8 shrink-0",
-                isBookmarked && "text-amber-500 hover:text-amber-600"
-              )}
-              onClick={handleBookmarkClick}
-              size="icon"
-              variant="ghost"
-            >
-              <Star aria-hidden="true" className={cn("size-4", isBookmarked && "fill-current")} />
-            </Button>
-          </ResponsiveTooltip>
+          {renderActionButton()}
         </div>
 
         {hasAnalysis && latestAnalysis ? (
