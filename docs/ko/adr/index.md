@@ -68,6 +68,7 @@ XX-brief-decision-title.md
 | 09  | [GitHub App 통합 인증 전략](./09-github-app-integration.md)                      | Authentication | 2024-12-29 |
 | 10  | [TestStatus 데이터 계약](./10-test-status-data-contract.md)                      | Data Integrity | 2024-12-29 |
 | 11  | [Repository Visibility 기반 접근 제어](./11-community-private-repo-filtering.md) | Security       | 2026-01-03 |
+| 12  | [Collector 중심 분석 라이프사이클](./12-collector-centric-analysis-lifecycle.md) | Architecture   | 2024-12-16 |
 
 ### Core 리포지토리
 

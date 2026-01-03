@@ -68,6 +68,7 @@ XX-brief-decision-title.md
 | 09  | [GitHub App Integration Strategy](./09-github-app-integration.md)                      | Authentication | 2024-12-29 |
 | 10  | [TestStatus Data Contract](./10-test-status-data-contract.md)                          | Data Integrity | 2024-12-29 |
 | 11  | [Repository Visibility-Based Access Control](./11-community-private-repo-filtering.md) | Security       | 2026-01-03 |
+| 12  | [Collector-Centric Analysis Lifecycle](./12-collector-centric-analysis-lifecycle.md)   | Architecture   | 2024-12-16 |
 
 ### Core Repository
 

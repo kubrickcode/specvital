@@ -41,6 +41,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [GitHub App Integration](./adr/09-github-app-integration.md)
 - [TestStatus Data Contract](./adr/10-test-status-data-contract.md)
 - [Repository Visibility-Based Access Control](./adr/11-community-private-repo-filtering.md)
+- [Collector-Centric Analysis Lifecycle](./adr/12-collector-centric-analysis-lifecycle.md)
 
 **[Core](./adr/core/)**
 

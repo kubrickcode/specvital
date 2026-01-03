@@ -89,6 +89,10 @@ export default defineConfig({
                   link: "/en/adr/11-community-private-repo-filtering",
                 },
                 {
+                  text: "Collector-Centric Lifecycle",
+                  link: "/en/adr/12-collector-centric-analysis-lifecycle",
+                },
+                {
                   text: "Core",
                   collapsed: true,
                   items: [
@@ -204,6 +208,7 @@ export default defineConfig({
                 { text: "GitHub App 통합", link: "/ko/adr/09-github-app-integration" },
                 { text: "TestStatus 데이터 계약", link: "/ko/adr/10-test-status-data-contract" },
                 { text: "Visibility 접근 제어", link: "/ko/adr/11-community-private-repo-filtering" },
+                { text: "Collector 중심 라이프사이클", link: "/ko/adr/12-collector-centric-analysis-lifecycle" },
                 {
                   text: "Core",
                   collapsed: true,

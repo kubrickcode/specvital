@@ -41,6 +41,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [GitHub App 통합](./adr/09-github-app-integration.md)
 - [TestStatus 데이터 계약](./adr/10-test-status-data-contract.md)
 - [Repository Visibility 기반 접근 제어](./adr/11-community-private-repo-filtering.md)
+- [Collector 중심 분석 라이프사이클](./adr/12-collector-centric-analysis-lifecycle.md)
 
 **[Core](./adr/core/)**
 
