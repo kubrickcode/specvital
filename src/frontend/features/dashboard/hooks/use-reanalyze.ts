@@ -1,12 +1,12 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { invalidationEvents, useInvalidationTrigger } from "@/lib/query";
 import { validateRepositoryIdentifiers } from "@/lib/validations/github";
 
 import { triggerReanalyze } from "../api";
-import { paginatedRepositoriesKeys } from "./use-paginated-repositories";
 
 type UseReanalyzeReturn = {
   isPending: boolean;
@@ -14,7 +14,7 @@ type UseReanalyzeReturn = {
 };
 
 export const useReanalyze = (): UseReanalyzeReturn => {
-  const queryClient = useQueryClient();
+  const triggerInvalidation = useInvalidationTrigger();
 
   const mutation = useMutation({
     mutationFn: ({ owner, repo }: { owner: string; repo: string }) => {
@@ -26,7 +26,7 @@ export const useReanalyze = (): UseReanalyzeReturn => {
         description: error instanceof Error ? error.message : String(error),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
+      triggerInvalidation(invalidationEvents.ANALYSIS_COMPLETED);
       toast.success("Reanalysis queued");
     },
   });

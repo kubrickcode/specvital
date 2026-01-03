@@ -1,12 +1,12 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { invalidationEvents, useInvalidationTrigger } from "@/lib/query";
 import { validateRepositoryIdentifiers } from "@/lib/validations/github";
 
 import { addBookmark, removeBookmark } from "../api";
-import { paginatedRepositoriesKeys } from "./use-paginated-repositories";
 
 type UseAddBookmarkReturn = {
   addBookmark: (owner: string, repo: string) => void;
@@ -19,7 +19,7 @@ type UseRemoveBookmarkReturn = {
 };
 
 export const useAddBookmark = (): UseAddBookmarkReturn => {
-  const queryClient = useQueryClient();
+  const triggerInvalidation = useInvalidationTrigger();
 
   const mutation = useMutation({
     mutationFn: ({ owner, repo }: { owner: string; repo: string }) => {
@@ -31,7 +31,7 @@ export const useAddBookmark = (): UseAddBookmarkReturn => {
         description: error instanceof Error ? error.message : String(error),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ exact: false, queryKey: paginatedRepositoriesKeys.all });
+      triggerInvalidation(invalidationEvents.BOOKMARK_CHANGED);
       toast.success("Bookmark added");
     },
   });
@@ -43,7 +43,7 @@ export const useAddBookmark = (): UseAddBookmarkReturn => {
 };
 
 export const useRemoveBookmark = (): UseRemoveBookmarkReturn => {
-  const queryClient = useQueryClient();
+  const triggerInvalidation = useInvalidationTrigger();
 
   const mutation = useMutation({
     mutationFn: ({ owner, repo }: { owner: string; repo: string }) => {
@@ -55,7 +55,7 @@ export const useRemoveBookmark = (): UseRemoveBookmarkReturn => {
         description: error instanceof Error ? error.message : String(error),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ exact: false, queryKey: paginatedRepositoriesKeys.all });
+      triggerInvalidation(invalidationEvents.BOOKMARK_CHANGED);
       toast.success("Bookmark removed");
     },
   });

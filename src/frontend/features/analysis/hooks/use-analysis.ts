@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
 import type { AnalysisResponse, AnalysisResult } from "@/lib/api/types";
+import { invalidationEvents, useInvalidationTrigger } from "@/lib/query";
 
 import { fetchAnalysis } from "../api";
 
@@ -38,10 +39,13 @@ type UseAnalysisReturn = {
 export const useAnalysis = (owner: string, repo: string): UseAnalysisReturn => {
   const intervalRef = useRef(INITIAL_INTERVAL_MS);
   const startTimeRef = useRef(Date.now());
+  const hasTriggeredInvalidation = useRef(false);
+  const triggerInvalidation = useInvalidationTrigger();
 
   useEffect(() => {
     intervalRef.current = INITIAL_INTERVAL_MS;
     startTimeRef.current = Date.now();
+    hasTriggeredInvalidation.current = false;
   }, [owner, repo]);
 
   const query = useQuery({
@@ -89,6 +93,13 @@ export const useAnalysis = (owner: string, repo: string): UseAnalysisReturn => {
   }
 
   const data = response?.status === "completed" ? response.data : null;
+
+  useEffect(() => {
+    if (response?.status === "completed" && !hasTriggeredInvalidation.current) {
+      hasTriggeredInvalidation.current = true;
+      triggerInvalidation(invalidationEvents.ANALYSIS_COMPLETED);
+    }
+  }, [response?.status, triggerInvalidation]);
 
   const isLoading =
     query.isPending || status === "queued" || status === "analyzing" || status === "pending";
