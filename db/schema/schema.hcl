@@ -58,6 +58,11 @@ table "codebases" {
     default = false
   }
 
+  column "is_private" {
+    type    = bool
+    default = false
+  }
+
   column "default_branch" {
     type = varchar(100)
     null = true
@@ -100,6 +105,11 @@ table "codebases" {
   index "idx_codebases_last_viewed" {
     columns = [column.last_viewed_at]
     where   = "last_viewed_at IS NOT NULL"
+  }
+
+  index "idx_codebases_public" {
+    columns = [column.is_private]
+    where   = "is_private = false"
   }
 }
 
