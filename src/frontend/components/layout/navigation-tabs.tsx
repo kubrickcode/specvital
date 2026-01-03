@@ -1,17 +1,20 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 
+import { useAuth } from "@/features/auth";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
   href: string;
   labelKey: "dashboard" | "explore";
+  requiresAuth?: boolean;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", labelKey: "dashboard" },
+  { href: "/dashboard", labelKey: "dashboard", requiresAuth: true },
   { href: "/explore", labelKey: "explore" },
 ];
 
@@ -22,6 +25,12 @@ type NavigationTabsProps = {
 export const NavigationTabs = ({ className }: NavigationTabsProps) => {
   const pathname = usePathname();
   const t = useTranslations("navigation");
+  const { isAuthenticated } = useAuth();
+
+  const visibleItems = useMemo(
+    () => NAV_ITEMS.filter((item) => !item.requiresAuth || isAuthenticated),
+    [isAuthenticated]
+  );
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -35,7 +44,7 @@ export const NavigationTabs = ({ className }: NavigationTabsProps) => {
 
   return (
     <nav aria-label={t("ariaLabel")} className={cn("hidden items-center gap-1 md:flex", className)}>
-      {NAV_ITEMS.map((item) => {
+      {visibleItems.map((item) => {
         const active = isActive(item.href);
         return (
           <Link

@@ -48,7 +48,7 @@ export const Header = () => {
               <Image alt={tCommon("appName")} height={28} src="/logo.png" width={28} />
               <span>{tCommon("appName")}</span>
             </Link>
-            {!isHomePage && <NavigationTabs />}
+            <NavigationTabs />
           </div>
 
           <div className="hidden items-center gap-2 md:flex">
