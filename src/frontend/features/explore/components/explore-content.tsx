@@ -119,6 +119,7 @@ export const ExploreContent = () => {
 
       <TabsContent value="community">
         <div className="space-y-8">
+          <p className="text-sm text-muted-foreground">{t("community.visibilityDisclosure")}</p>
           <SearchSortControls
             hasNextPage={hasNextPage}
             isLoading={isLoadingCommunity}

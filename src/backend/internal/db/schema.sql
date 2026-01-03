@@ -151,7 +151,8 @@ CREATE TABLE public.codebases (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     last_viewed_at timestamp with time zone,
     external_repo_id character varying(64) NOT NULL,
-    is_stale boolean DEFAULT false NOT NULL
+    is_stale boolean DEFAULT false NOT NULL,
+    is_private boolean DEFAULT false NOT NULL
 );
 
 
@@ -718,6 +719,13 @@ CREATE INDEX idx_codebases_last_viewed ON public.codebases USING btree (last_vie
 --
 
 CREATE INDEX idx_codebases_owner_name ON public.codebases USING btree (owner, name);
+
+
+--
+-- Name: idx_codebases_public; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_codebases_public ON public.codebases USING btree (is_private) WHERE (is_private = false);
 
 
 --

@@ -171,6 +171,9 @@
       "myRepos": "내 저장소",
       "organizations": "조직"
     },
+    "community": {
+      "visibilityDisclosure": "공개 저장소만 표시됩니다. 분석 시점의 공개 여부 기준입니다."
+    },
     "loginRequired": {
       "myReposTitle": "내 저장소를 보려면 로그인하세요",
       "myReposDescription": "GitHub 계정을 연결하여 개인 저장소를 확인하고 분석하세요.",

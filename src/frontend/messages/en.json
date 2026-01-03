@@ -171,6 +171,9 @@
       "myRepos": "My Repos",
       "organizations": "Organizations"
     },
+    "community": {
+      "visibilityDisclosure": "Showing public repositories. Visibility determined at analysis time."
+    },
     "loginRequired": {
       "myReposTitle": "Sign in to view your repositories",
       "myReposDescription": "Connect your GitHub account to see and analyze your personal repositories.",

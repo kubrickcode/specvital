@@ -166,10 +166,12 @@ WHERE c.last_viewed_at IS NOT NULL
         SELECT 1 FROM user_analysis_history uah
         WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
     ))
-    OR (sqlc.arg(view_filter)::text = 'community' AND NOT EXISTS(
-        SELECT 1 FROM user_analysis_history uah
-        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
-    ))
+    OR (sqlc.arg(view_filter)::text = 'community'
+        AND c.is_private = false
+        AND NOT EXISTS(
+            SELECT 1 FROM user_analysis_history uah
+            WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+        ))
   )
   AND (
     sqlc.arg(ownership_filter)::text = 'all'
@@ -253,10 +255,12 @@ WHERE c.last_viewed_at IS NOT NULL
         SELECT 1 FROM user_analysis_history uah
         WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
     ))
-    OR (sqlc.arg(view_filter)::text = 'community' AND NOT EXISTS(
-        SELECT 1 FROM user_analysis_history uah
-        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
-    ))
+    OR (sqlc.arg(view_filter)::text = 'community'
+        AND c.is_private = false
+        AND NOT EXISTS(
+            SELECT 1 FROM user_analysis_history uah
+            WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+        ))
   )
   AND (
     sqlc.arg(ownership_filter)::text = 'all'
@@ -340,10 +344,12 @@ WHERE c.last_viewed_at IS NOT NULL
         SELECT 1 FROM user_analysis_history uah
         WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
     ))
-    OR (sqlc.arg(view_filter)::text = 'community' AND NOT EXISTS(
-        SELECT 1 FROM user_analysis_history uah
-        WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
-    ))
+    OR (sqlc.arg(view_filter)::text = 'community'
+        AND c.is_private = false
+        AND NOT EXISTS(
+            SELECT 1 FROM user_analysis_history uah
+            WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+        ))
   )
   AND (
     sqlc.arg(ownership_filter)::text = 'all'
