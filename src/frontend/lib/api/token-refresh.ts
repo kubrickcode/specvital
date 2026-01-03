@@ -4,7 +4,6 @@ const SKIP_REFRESH_PATHS = [
   "/api/auth/callback",
   "/api/auth/login",
   "/api/auth/logout",
-  "/api/auth/me",
   "/api/auth/refresh",
 ];
 
