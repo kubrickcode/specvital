@@ -3,7 +3,7 @@
 import { Loader2 } from "lucide-react";
 
 import { useAuth } from "../hooks";
-import { LoginButton } from "./login-button";
+import { SignInTrigger } from "./sign-in-trigger";
 import { UserMenu } from "./user-menu";
 
 export const AuthStatus = () => {
@@ -17,5 +17,5 @@ export const AuthStatus = () => {
     );
   }
 
-  return isAuthenticated ? <UserMenu /> : <LoginButton />;
+  return isAuthenticated ? <UserMenu /> : <SignInTrigger />;
 };

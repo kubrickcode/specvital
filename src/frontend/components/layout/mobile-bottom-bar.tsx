@@ -2,10 +2,10 @@
 
 import {
   Compass,
-  Github,
   Globe,
   LayoutDashboard,
   Loader2,
+  LogIn,
   LogOut,
   Moon,
   Plus,
@@ -26,7 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/features/auth";
+import { useAuth, useLoginModal } from "@/features/auth";
 import { AnalyzeDialog } from "@/features/home";
 import { isValidLocale, LANGUAGE_NAMES } from "@/i18n/config";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -123,8 +123,8 @@ const MobileThemeToggle = () => {
 const MobileAuthAction = () => {
   const t = useTranslations("header");
   const tAuth = useTranslations("auth");
-  const { isAuthenticated, isLoading, login, loginPending, logout, logoutPending, user } =
-    useAuth();
+  const { isAuthenticated, isLoading, logout, logoutPending, user } = useAuth();
+  const { open: openLoginModal } = useLoginModal();
 
   if (isLoading) {
     return (
@@ -180,12 +180,11 @@ const MobileAuthAction = () => {
     <Button
       aria-label={tAuth("login")}
       className="flex-col gap-0.5"
-      disabled={loginPending}
-      onClick={login}
+      onClick={openLoginModal}
       size="mobile-nav"
       variant="mobile-nav"
     >
-      {loginPending ? <Loader2 className="size-5 animate-spin" /> : <Github className="size-5" />}
+      <LogIn className="size-5" />
       <span className="text-[10px] font-normal">{tAuth("login")}</span>
     </Button>
   );

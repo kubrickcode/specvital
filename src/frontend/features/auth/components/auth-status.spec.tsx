@@ -8,6 +8,9 @@ const mockUseAuth = vi.fn();
 
 vi.mock("../hooks", () => ({
   useAuth: () => mockUseAuth(),
+  useLoginModal: () => ({
+    open: vi.fn(),
+  }),
 }));
 
 const messages = {

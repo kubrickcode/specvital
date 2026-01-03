@@ -30,6 +30,12 @@
     "logout": "Sign out",
     "openUserMenu": "Open user menu"
   },
+  "loginModal": {
+    "continueWithGitHub": "Continue with GitHub",
+    "description": "Sign in to save repositories and manage your analysis history.",
+    "terms": "By signing in, you agree to our Terms of Service.",
+    "title": "Sign in to SpecVital"
+  },
   "home": {
     "headline": "Test suite, instantly",
     "subheadline": "Paste a GitHub URL. Get full test analysis. No setup required.",

@@ -1,2 +1,2 @@
-export { AuthStatus, LoginButton, OAuthErrorHandler, UserMenu } from "./components";
-export { useAuth } from "./hooks";
+export { AuthStatus, LoginModal, OAuthErrorHandler, SignInTrigger, UserMenu } from "./components";
+export { useAuth, useLoginModal } from "./hooks";
