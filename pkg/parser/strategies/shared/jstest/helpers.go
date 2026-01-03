@@ -159,7 +159,7 @@ func ExtractTestName(args *sitter.Node, source []byte) string {
 		switch child.Type() {
 		case "string", "template_string":
 			return UnquoteString(parser.GetNodeText(child, source))
-		case "identifier", "binary_expression", "call_expression":
+		case "identifier", "binary_expression", "call_expression", "member_expression":
 			return DynamicNamePlaceholder
 		}
 	}

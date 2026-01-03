@@ -208,6 +208,65 @@ defineTest(__dirname, transform, null, prefix)`,
 	}
 }
 
+func TestParseMemberExpressionTestName(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		source     string
+		wantSuites int
+		wantTests  int
+	}{
+		{
+			name: "should detect describe with member expression name",
+			source: `const envs = [{name: 'env1'}, {name: 'env2'}]
+for (const env of envs) {
+	describe(env.name, () => {
+		it('should work', () => {})
+	})
+}`,
+			wantSuites: 1,
+			wantTests:  0,
+		},
+		{
+			name: "should detect it with member expression name",
+			source: `const tests = [{label: 'test1'}]
+describe('Suite', () => {
+	for (const t of tests) {
+		it(t.label, () => {})
+	}
+})`,
+			wantSuites: 1,
+			wantTests:  0,
+		},
+		{
+			name:       "should detect top-level test with member expression",
+			source:     `it(config.testName, () => {})`,
+			wantSuites: 0,
+			wantTests:  1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := parse(context.Background(), []byte(tt.source), "test.ts")
+			if err != nil {
+				t.Fatalf("parse() error = %v", err)
+			}
+
+			if len(file.Suites) != tt.wantSuites {
+				t.Errorf("len(Suites) = %d, want %d", len(file.Suites), tt.wantSuites)
+			}
+
+			if len(file.Tests) != tt.wantTests {
+				t.Errorf("len(Tests) = %d, want %d", len(file.Tests), tt.wantTests)
+			}
+		})
+	}
+}
+
 func TestParseJestNode(t *testing.T) {
 	t.Parallel()
 
