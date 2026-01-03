@@ -177,6 +177,9 @@ WHERE c.last_viewed_at IS NOT NULL
     sqlc.arg(ownership_filter)::text = 'all'
     OR (sqlc.arg(ownership_filter)::text = 'mine' AND c.owner = (SELECT username FROM user_context))
     OR (sqlc.arg(ownership_filter)::text = 'organization' AND c.owner IN (SELECT login FROM user_orgs))
+    OR (sqlc.arg(ownership_filter)::text = 'others'
+        AND c.owner != (SELECT username FROM user_context)
+        AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
     sqlc.arg(cursor_analyzed_at)::timestamptz IS NULL
@@ -266,6 +269,9 @@ WHERE c.last_viewed_at IS NOT NULL
     sqlc.arg(ownership_filter)::text = 'all'
     OR (sqlc.arg(ownership_filter)::text = 'mine' AND c.owner = (SELECT username FROM user_context))
     OR (sqlc.arg(ownership_filter)::text = 'organization' AND c.owner IN (SELECT login FROM user_orgs))
+    OR (sqlc.arg(ownership_filter)::text = 'others'
+        AND c.owner != (SELECT username FROM user_context)
+        AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
     sqlc.arg(cursor_name)::text IS NULL
@@ -355,6 +361,9 @@ WHERE c.last_viewed_at IS NOT NULL
     sqlc.arg(ownership_filter)::text = 'all'
     OR (sqlc.arg(ownership_filter)::text = 'mine' AND c.owner = (SELECT username FROM user_context))
     OR (sqlc.arg(ownership_filter)::text = 'organization' AND c.owner IN (SELECT login FROM user_orgs))
+    OR (sqlc.arg(ownership_filter)::text = 'others'
+        AND c.owner != (SELECT username FROM user_context)
+        AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
     sqlc.arg(cursor_test_count)::int IS NULL

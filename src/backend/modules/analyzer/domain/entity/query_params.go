@@ -79,6 +79,7 @@ const (
 	OwnershipFilterAll          OwnershipFilter = "all"
 	OwnershipFilterMine         OwnershipFilter = "mine"
 	OwnershipFilterOrganization OwnershipFilter = "organization"
+	OwnershipFilterOthers       OwnershipFilter = "others"
 )
 
 func ParseOwnershipFilter(s string) OwnershipFilter {
@@ -87,6 +88,8 @@ func ParseOwnershipFilter(s string) OwnershipFilter {
 		return OwnershipFilterMine
 	case "organization":
 		return OwnershipFilterOrganization
+	case "others":
+		return OwnershipFilterOthers
 	default:
 		return OwnershipFilterAll
 	}

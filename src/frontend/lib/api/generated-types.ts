@@ -728,11 +728,12 @@ export interface components {
          *     - all: All analyzed repositories (personal and organization)
          *     - mine: Only repositories owned by the current user
          *     - organization: Only repositories owned by organizations the user is a member of
+         *     - others: Only repositories owned by other users (not mine, not organization)
          *
          * @default all
          * @enum {string}
          */
-        OwnershipFilterParam: "all" | "mine" | "organization";
+        OwnershipFilterParam: "all" | "mine" | "organization" | "others";
         RepositoryStatsResponse: {
             /**
              * @description Total number of analyzed repositories for the user

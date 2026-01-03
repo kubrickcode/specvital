@@ -27,6 +27,7 @@ WHERE uah.user_id = sqlc.arg(user_id)
     sqlc.arg(ownership)::text = 'all'
     OR (sqlc.arg(ownership)::text = 'mine' AND c.owner = u.username)
     OR (sqlc.arg(ownership)::text = 'organization' AND go.id IS NOT NULL)
+    OR (sqlc.arg(ownership)::text = 'others' AND c.owner != u.username AND go.id IS NULL)
   )
 ORDER BY uah.updated_at DESC, uah.id DESC
 LIMIT sqlc.arg(page_limit);

@@ -217,6 +217,9 @@ WHERE c.last_viewed_at IS NOT NULL
     $3::text = 'all'
     OR ($3::text = 'mine' AND c.owner = (SELECT username FROM user_context))
     OR ($3::text = 'organization' AND c.owner IN (SELECT login FROM user_orgs))
+    OR ($3::text = 'others'
+        AND c.owner != (SELECT username FROM user_context)
+        AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
     $4::text IS NULL
@@ -375,6 +378,9 @@ WHERE c.last_viewed_at IS NOT NULL
     $3::text = 'all'
     OR ($3::text = 'mine' AND c.owner = (SELECT username FROM user_context))
     OR ($3::text = 'organization' AND c.owner IN (SELECT login FROM user_orgs))
+    OR ($3::text = 'others'
+        AND c.owner != (SELECT username FROM user_context)
+        AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
     $4::timestamptz IS NULL
@@ -533,6 +539,9 @@ WHERE c.last_viewed_at IS NOT NULL
     $3::text = 'all'
     OR ($3::text = 'mine' AND c.owner = (SELECT username FROM user_context))
     OR ($3::text = 'organization' AND c.owner IN (SELECT login FROM user_orgs))
+    OR ($3::text = 'others'
+        AND c.owner != (SELECT username FROM user_context)
+        AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
     $4::int IS NULL

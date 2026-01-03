@@ -40,6 +40,7 @@ WHERE uah.user_id = $1
     $4::text = 'all'
     OR ($4::text = 'mine' AND c.owner = u.username)
     OR ($4::text = 'organization' AND go.id IS NOT NULL)
+    OR ($4::text = 'others' AND c.owner != u.username AND go.id IS NULL)
   )
 ORDER BY uah.updated_at DESC, uah.id DESC
 LIMIT $5

@@ -1115,12 +1115,14 @@ components:
         - all
         - mine
         - organization
+        - others
       default: all
       description: |
         Filter repositories by ownership type:
         - all: All analyzed repositories (personal and organization)
         - mine: Only repositories owned by the current user
         - organization: Only repositories owned by organizations the user is a member of
+        - others: Only repositories owned by other users (not mine, not organization)
 
     RepositoryStatsResponse:
       type: object
