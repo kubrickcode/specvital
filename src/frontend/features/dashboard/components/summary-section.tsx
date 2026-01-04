@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { easeOutTransition, staggerContainer, staggerItem, useReducedMotion } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 
 import { useRepositoryStats } from "../hooks";
 
@@ -60,17 +61,34 @@ type StatCardProps = {
   value: number;
 };
 
-const StatCard = ({ icon, isVisible, label, value }: StatCardProps) => (
+type IconVariant = "blue" | "emerald";
+
+type StatCardPropsWithVariant = StatCardProps & {
+  iconVariant: IconVariant;
+};
+
+const iconVariantStyles: Record<IconVariant, string> = {
+  blue: "bg-gradient-to-br from-blue-500/20 to-blue-500/5 text-blue-500 ring-1 ring-blue-500/10",
+  emerald:
+    "bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 text-emerald-500 ring-1 ring-emerald-500/10",
+};
+
+const StatCard = ({ icon, iconVariant, isVisible, label, value }: StatCardPropsWithVariant) => (
   <motion.div variants={staggerItem}>
-    <Card className="h-full">
+    <Card className="h-full" depth="raised">
       <CardContent className="flex items-center gap-4">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <div
+          className={cn(
+            "flex size-12 shrink-0 items-center justify-center rounded-xl",
+            iconVariantStyles[iconVariant]
+          )}
+        >
           {icon}
         </div>
         <div className="flex flex-col">
           <motion.span
             animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
-            className="text-3xl font-bold tabular-nums"
+            className="text-3xl font-bold tabular-nums tracking-tight"
             initial={{ opacity: 0 }}
             transition={easeOutTransition}
           >
@@ -84,9 +102,9 @@ const StatCard = ({ icon, isVisible, label, value }: StatCardProps) => (
 );
 
 const StatCardSkeleton = () => (
-  <Card className="h-full">
+  <Card className="h-full" depth="raised">
     <CardContent className="flex items-center gap-4">
-      <Skeleton className="size-12 rounded-lg" />
+      <Skeleton className="size-12 rounded-xl" />
       <div className="flex flex-col gap-2">
         <Skeleton className="h-8 w-16" />
         <Skeleton className="h-4 w-24" />
@@ -122,12 +140,14 @@ export const SummarySection = () => {
     >
       <StatCard
         icon={<TestTube2 aria-hidden="true" className="size-6" />}
+        iconVariant="emerald"
         isVisible
         label={t("totalTests")}
         value={data.totalTests}
       />
       <StatCard
         icon={<FolderGit2 aria-hidden="true" className="size-6" />}
+        iconVariant="blue"
         isVisible
         label={t("activeRepos")}
         value={data.totalRepositories}
