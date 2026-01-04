@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/specvital/collector/compare/v1.1.0...v1.1.1) (2026-01-04)
+
+### 🔧 Maintenance
+
+#### 🔨 Chore
+
+- update core ([1f224fd](https://github.com/specvital/collector/commit/1f224fddf200ebb72e9fe11acfc114d988e21fba))
+
 ## [1.1.0](https://github.com/specvital/collector/compare/v1.0.6...v1.1.0) (2026-01-04)
 
 ### 🎯 Highlights
