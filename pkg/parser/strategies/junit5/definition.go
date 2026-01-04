@@ -4,6 +4,7 @@ package junit5
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -116,18 +117,43 @@ const maxNestedDepth = 20
 
 func parseTestClasses(root *sitter.Node, source []byte, filename string) []domain.TestSuite {
 	var suites []domain.TestSuite
+	var implicitClassTests []domain.Test
 
 	parser.WalkTree(root, func(node *sitter.Node) bool {
-		if node.Type() == javaast.NodeClassDeclaration {
+		switch node.Type() {
+		case javaast.NodeClassDeclaration:
 			if suite := parseTestClassWithDepth(node, source, filename, 0); suite != nil {
 				suites = append(suites, *suite)
 			}
 			return false // Don't recurse into nested classes here
+
+		case javaast.NodeMethodDeclaration:
+			// Handle Java 21+ implicit classes: methods directly under program node
+			if node.Parent() != nil && node.Parent().Type() == "program" {
+				if test := parseTestMethod(node, source, filename, domain.TestStatusActive, ""); test != nil {
+					implicitClassTests = append(implicitClassTests, *test)
+				}
+			}
 		}
 		return true
 	})
 
+	// Create synthetic suite for implicit class tests (Java 21+)
+	if len(implicitClassTests) > 0 {
+		suites = append(suites, domain.TestSuite{
+			Name:     getImplicitClassName(filename),
+			Status:   domain.TestStatusActive,
+			Location: parser.GetLocation(root, filename),
+			Tests:    implicitClassTests,
+		})
+	}
+
 	return suites
+}
+
+// getImplicitClassName extracts class name from filename for Java 21+ implicit classes.
+func getImplicitClassName(filename string) string {
+	return strings.TrimSuffix(filepath.Base(filename), ".java")
 }
 
 func parseTestClassWithDepth(node *sitter.Node, source []byte, filename string, depth int) *domain.TestSuite {

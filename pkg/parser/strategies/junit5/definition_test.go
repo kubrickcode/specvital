@@ -913,3 +913,130 @@ class KotestSpec : StringSpec({
 		}
 	})
 }
+
+func TestJUnit5Parser_ImplicitClass(t *testing.T) {
+	p := &JUnit5Parser{}
+	ctx := context.Background()
+
+	t.Run("Java 21+ implicit class with @Test methods", func(t *testing.T) {
+		// Java 21+ allows methods at file level without explicit class declaration
+		source := `
+import module org.junit.start;
+
+void main() {
+    JUnit.run();
+}
+
+@Test
+void stringLength() {
+    Assertions.assertEquals(11, "Hello JUnit".length());
+}
+
+@Test
+void anotherTest() {
+    Assertions.assertTrue(true);
+}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "HelloTests.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if testFile.Path != "HelloTests.java" {
+			t.Errorf("expected Path='HelloTests.java', got '%s'", testFile.Path)
+		}
+		if testFile.Framework != "junit5" {
+			t.Errorf("expected Framework='junit5', got '%s'", testFile.Framework)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite for implicit class, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if suite.Name != "HelloTests" {
+			t.Errorf("expected Suite.Name='HelloTests', got '%s'", suite.Name)
+		}
+		if len(suite.Tests) != 2 {
+			t.Fatalf("expected 2 Tests in implicit class, got %d", len(suite.Tests))
+		}
+		if suite.Tests[0].Name != "stringLength" {
+			t.Errorf("expected Tests[0].Name='stringLength', got '%s'", suite.Tests[0].Name)
+		}
+		if suite.Tests[1].Name != "anotherTest" {
+			t.Errorf("expected Tests[1].Name='anotherTest', got '%s'", suite.Tests[1].Name)
+		}
+	})
+
+	t.Run("implicit class with path in filename", func(t *testing.T) {
+		source := `
+@Test
+void singleTest() {}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "src/test/java/com/example/ImplicitTests.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		// Should extract just the filename without path
+		if suite.Name != "ImplicitTests" {
+			t.Errorf("expected Suite.Name='ImplicitTests', got '%s'", suite.Name)
+		}
+	})
+
+	t.Run("mixed explicit class and implicit methods", func(t *testing.T) {
+		// If a file has both a class and top-level methods, both should be detected
+		source := `
+class ExplicitTest {
+    @Test
+    void classTest() {}
+}
+
+@Test
+void implicitTest() {}
+`
+		testFile, err := p.Parse(ctx, []byte(source), "MixedTests.java")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 2 {
+			t.Fatalf("expected 2 Suites (explicit class + implicit class), got %d", len(testFile.Suites))
+		}
+
+		// First suite should be the explicit class
+		if testFile.Suites[0].Name != "ExplicitTest" {
+			t.Errorf("expected first Suite.Name='ExplicitTest', got '%s'", testFile.Suites[0].Name)
+		}
+		// Second suite should be the implicit class (filename-based)
+		if testFile.Suites[1].Name != "MixedTests" {
+			t.Errorf("expected second Suite.Name='MixedTests', got '%s'", testFile.Suites[1].Name)
+		}
+	})
+}
+
+func TestGetImplicitClassName(t *testing.T) {
+	tests := []struct {
+		filename string
+		expected string
+	}{
+		{"HelloTests.java", "HelloTests"},
+		{"src/test/java/HelloTests.java", "HelloTests"},
+		{"Test.java", "Test"},
+		{"MyTest", "MyTest"}, // no extension
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.filename, func(t *testing.T) {
+			result := getImplicitClassName(tt.filename)
+			if result != tt.expected {
+				t.Errorf("expected '%s', got '%s'", tt.expected, result)
+			}
+		})
+	}
+}

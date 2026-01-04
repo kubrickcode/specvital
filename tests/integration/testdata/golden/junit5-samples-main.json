@@ -3,7 +3,7 @@
   "ref": "main",
   "expectedFrameworks": ["junit4", "junit5", "kotest", "testng"],
   "fileCount": 28,
-  "testCount": 48,
+  "testCount": 49,
   "frameworkCounts": {
     "junit4": 4,
     "junit5": 22,
