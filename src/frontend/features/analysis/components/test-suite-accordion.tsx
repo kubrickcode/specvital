@@ -1,13 +1,15 @@
 "use client";
 
 import { ChevronDown, ChevronRight, FileText } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { TestSuite } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 import { FrameworkBadge } from "./framework-badge";
+import { StatusMiniBar } from "./status-mini-bar";
 import { TestItem } from "./test-item";
+import { calculateStatusCounts } from "../utils/calculate-status-counts";
 
 type TestSuiteAccordionProps = {
   suite: TestSuite;
@@ -21,6 +23,7 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
   };
 
   const testCount = suite.tests.length;
+  const statusCounts = useMemo(() => calculateStatusCounts(suite.tests), [suite.tests]);
 
   return (
     <div
@@ -57,6 +60,7 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
           )}
         </span>
         <FrameworkBadge framework={suite.framework} />
+        <StatusMiniBar counts={statusCounts} />
         <span className="text-xs text-muted-foreground flex-shrink-0">
           {testCount} {testCount === 1 ? "test" : "tests"}
         </span>

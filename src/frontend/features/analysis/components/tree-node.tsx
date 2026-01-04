@@ -1,12 +1,15 @@
 "use client";
 
 import { ChevronDown, ChevronRight, FileText, Folder, FolderOpen } from "lucide-react";
+import { useMemo } from "react";
 
 import { cn } from "@/lib/utils";
 
 import { FrameworkBadge } from "./framework-badge";
+import { StatusMiniBar } from "./status-mini-bar";
 import { TestItem } from "./test-item";
 import type { FlatTreeItem } from "../types";
+import { calculateStatusCounts } from "../utils/calculate-status-counts";
 
 type TreeNodeProps = {
   isExpanded: boolean;
@@ -19,6 +22,14 @@ const INDENT_SIZE = 20;
 export const TreeNode = ({ isExpanded, item, onToggle }: TreeNodeProps) => {
   const { depth, hasChildren, node } = item;
   const isDirectory = node.type === "directory";
+
+  const statusCounts = useMemo(() => {
+    if (isDirectory) {
+      return { active: 0, skipped: 0, todo: 0 };
+    }
+    const allTests = node.suites.flatMap((suite) => suite.tests);
+    return calculateStatusCounts(allTests);
+  }, [isDirectory, node.suites]);
 
   const handleClick = () => {
     onToggle(node.path);
@@ -82,6 +93,7 @@ export const TreeNode = ({ isExpanded, item, onToggle }: TreeNodeProps) => {
         <FileText className="h-4 w-4 flex-shrink-0 text-blue-500" />
         <span className="flex-1 text-sm truncate">{node.name}</span>
         {firstSuite && <FrameworkBadge framework={firstSuite.framework} />}
+        <StatusMiniBar counts={statusCounts} />
         <span className="text-xs text-muted-foreground flex-shrink-0">{node.testCount}</span>
       </button>
       {isExpanded && suites.length > 0 && (
