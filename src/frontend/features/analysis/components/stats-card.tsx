@@ -53,6 +53,7 @@ export const StatsCard = ({ summary }: StatsCardProps) => {
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2 font-medium">
                         <span
+                          aria-hidden="true"
                           className="h-3 w-3 rounded-full"
                           style={{ backgroundColor: getFrameworkSolidColor(fw.framework) }}
                         />
@@ -64,9 +65,18 @@ export const StatsCard = ({ summary }: StatsCardProps) => {
                       </span>
                     </div>
                     <div
+                      aria-label={t("frameworkProgress", { framework: fw.framework })}
                       aria-valuemax={100}
                       aria-valuemin={0}
                       aria-valuenow={percentage}
+                      aria-valuetext={t("frameworkProgressDetail", {
+                        active: fw.active,
+                        framework: fw.framework,
+                        percentage,
+                        skipped: fw.skipped,
+                        todo: fw.todo,
+                        total: fw.total,
+                      })}
                       className="h-2 w-full rounded-full bg-muted overflow-hidden"
                       role="progressbar"
                     >

@@ -31,13 +31,14 @@ type FilterSummaryProps = {
 export const FilterSummary = ({ filteredCount, hasFilter, totalCount }: FilterSummaryProps) => {
   const t = useTranslations("analyze.filter");
 
-  if (!hasFilter) {
-    return null;
-  }
-
   return (
-    <span className="text-sm text-muted-foreground">
-      {t("resultSummary", { filtered: filteredCount, total: totalCount })}
+    <span
+      aria-atomic="true"
+      aria-live="polite"
+      className="text-sm text-muted-foreground"
+      role="status"
+    >
+      {hasFilter ? t("resultSummary", { filtered: filteredCount, total: totalCount }) : null}
     </span>
   );
 };

@@ -127,6 +127,8 @@
     "todo": "할 일",
     "byFramework": "프레임워크별",
     "framework": "프레임워크",
+    "frameworkProgress": "{framework} 테스트 분포",
+    "frameworkProgressDetail": "{framework}: 전체 테스트의 {percentage}% ({total}개 테스트 - 활성 {active}개, 건너뜀 {skipped}개, 할 일 {todo}개)",
     "tests": "개"
   },
   "errors": {

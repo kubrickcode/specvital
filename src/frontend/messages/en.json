@@ -127,6 +127,8 @@
     "todo": "Todo",
     "byFramework": "By Framework",
     "framework": "Framework",
+    "frameworkProgress": "{framework} test distribution",
+    "frameworkProgressDetail": "{framework}: {percentage}% of total tests ({total} tests - {active} active, {skipped} skipped, {todo} todo)",
     "tests": "tests"
   },
   "errors": {
