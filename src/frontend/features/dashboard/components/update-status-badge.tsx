@@ -37,7 +37,7 @@ export const UpdateStatusBadge = ({ status }: UpdateStatusBadgeProps) => {
   return (
     <Badge className={cn("gap-1", className)} variant="outline">
       <Icon aria-hidden="true" className="size-3" />
-      <span className="sr-only">{t(labelKey)}</span>
+      <span className="text-xs">{t(labelKey)}</span>
     </Badge>
   );
 };

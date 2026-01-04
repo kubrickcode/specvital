@@ -49,6 +49,25 @@ func (m *mockRepository) GetPreviousAnalysis(_ context.Context, _ string, _ stri
 	return nil, nil
 }
 
+type mockGitClient struct {
+	latestSHA string
+	err       error
+}
+
+func (m *mockGitClient) GetLatestCommitSHA(_ context.Context, _, _ string) (string, error) {
+	return m.latestSHA, m.err
+}
+
+func (m *mockGitClient) GetLatestCommitSHAWithToken(_ context.Context, _, _, _ string) (string, error) {
+	return m.latestSHA, m.err
+}
+
+type mockTokenProvider struct{}
+
+func (m *mockTokenProvider) GetUserGitHubToken(_ context.Context, _ string) (string, error) {
+	return "", nil
+}
+
 func TestGetRecentRepositories_DefaultParams(t *testing.T) {
 	now := time.Now()
 	mock := &mockRepository{
@@ -67,7 +86,7 @@ func TestGetRecentRepositories_DefaultParams(t *testing.T) {
 	}
 
 	log := newTestLogger()
-	listUC := usecase.NewListRepositoryCardsUseCase(mock)
+	listUC := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, mock, &mockTokenProvider{})
 	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil)
 
 	req := api.GetRecentRepositoriesRequestObject{
@@ -109,7 +128,7 @@ func TestGetRecentRepositories_WithPaginationParams(t *testing.T) {
 	mock := &mockRepository{paginatedRepos: repos}
 
 	log := newTestLogger()
-	listUC := usecase.NewListRepositoryCardsUseCase(mock)
+	listUC := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, mock, &mockTokenProvider{})
 	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil)
 
 	limit := 20
@@ -148,7 +167,7 @@ func TestGetRecentRepositories_InvalidCursor(t *testing.T) {
 	mock := &mockRepository{}
 
 	log := newTestLogger()
-	listUC := usecase.NewListRepositoryCardsUseCase(mock)
+	listUC := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, mock, &mockTokenProvider{})
 	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil)
 
 	invalidCursor := "invalid-cursor-data"
@@ -173,7 +192,7 @@ func TestGetRecentRepositories_SortByMismatch(t *testing.T) {
 	mock := &mockRepository{}
 
 	log := newTestLogger()
-	listUC := usecase.NewListRepositoryCardsUseCase(mock)
+	listUC := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, mock, &mockTokenProvider{})
 	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil)
 
 	cursor := entity.EncodeCursor(entity.RepositoryCursor{

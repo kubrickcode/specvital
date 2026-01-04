@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
 )
@@ -25,12 +27,20 @@ type ListRepositoryCardsPaginatedInput struct {
 }
 
 type ListRepositoryCardsUseCase struct {
-	repository port.Repository
+	gitClient     port.GitClient
+	repository    port.Repository
+	tokenProvider port.TokenProvider
 }
 
-func NewListRepositoryCardsUseCase(repository port.Repository) *ListRepositoryCardsUseCase {
+func NewListRepositoryCardsUseCase(
+	gitClient port.GitClient,
+	repository port.Repository,
+	tokenProvider port.TokenProvider,
+) *ListRepositoryCardsUseCase {
 	return &ListRepositoryCardsUseCase{
-		repository: repository,
+		gitClient:     gitClient,
+		repository:    repository,
+		tokenProvider: tokenProvider,
 	}
 }
 
@@ -69,7 +79,7 @@ func (uc *ListRepositoryCardsUseCase) ExecutePaginated(ctx context.Context, inpu
 		return entity.PaginatedRepositoryCards{}, err
 	}
 
-	cards := uc.buildCardsFromPaginated(ctx, repos, bookmarkedIDs)
+	cards := uc.buildCardsFromPaginated(ctx, repos, bookmarkedIDs, input.UserID)
 
 	var nextCursor *string
 	if hasNext && len(repos) > 0 {
@@ -164,7 +174,7 @@ type repoData struct {
 	XfailCount     int
 }
 
-func (uc *ListRepositoryCardsUseCase) buildCard(ctx context.Context, r repoData, bookmarkedIDs map[string]bool) entity.RepositoryCard {
+func (uc *ListRepositoryCardsUseCase) buildCard(ctx context.Context, r repoData, bookmarkedIDs map[string]bool, status entity.UpdateStatus) entity.RepositoryCard {
 	var analysis *entity.AnalysisSummary
 	if r.AnalysisID != "" {
 		change := 0
@@ -196,12 +206,23 @@ func (uc *ListRepositoryCardsUseCase) buildCard(ctx context.Context, r repoData,
 		LatestAnalysis: analysis,
 		Name:           r.Name,
 		Owner:          r.Owner,
-		UpdateStatus:   entity.UpdateStatusUnknown,
+		UpdateStatus:   status,
 	}
 }
 
-func (uc *ListRepositoryCardsUseCase) buildCardsFromPaginated(ctx context.Context, repos []port.PaginatedRepository, bookmarkedIDs map[string]bool) []entity.RepositoryCard {
+func (uc *ListRepositoryCardsUseCase) buildCardsFromPaginated(ctx context.Context, repos []port.PaginatedRepository, bookmarkedIDs map[string]bool, userID string) []entity.RepositoryCard {
 	cards := make([]entity.RepositoryCard, len(repos))
+	statuses := make([]entity.UpdateStatus, len(repos))
+
+	g, gCtx := errgroup.WithContext(ctx)
+	for i, r := range repos {
+		g.Go(func() error {
+			statuses[i] = uc.getUpdateStatus(gCtx, r.Owner, r.Name, r.CommitSHA, userID)
+			return nil
+		})
+	}
+	_ = g.Wait()
+
 	for i, r := range repos {
 		cards[i] = uc.buildCard(ctx, repoData{
 			ActiveCount:    r.ActiveCount,
@@ -217,7 +238,23 @@ func (uc *ListRepositoryCardsUseCase) buildCardsFromPaginated(ctx context.Contex
 			TodoCount:      r.TodoCount,
 			TotalTests:     r.TotalTests,
 			XfailCount:     r.XfailCount,
-		}, bookmarkedIDs)
+		}, bookmarkedIDs, statuses[i])
 	}
 	return cards
+}
+
+func (uc *ListRepositoryCardsUseCase) getUpdateStatus(ctx context.Context, owner, repo, analyzedSHA, userID string) entity.UpdateStatus {
+	if analyzedSHA == "" {
+		return entity.UpdateStatusUnknown
+	}
+
+	latestSHA, err := getLatestCommitWithAuth(ctx, uc.gitClient, uc.tokenProvider, owner, repo, userID)
+	if err != nil {
+		return entity.UpdateStatusUnknown
+	}
+
+	if latestSHA == analyzedSHA {
+		return entity.UpdateStatusUpToDate
+	}
+	return entity.UpdateStatusNewCommits
 }

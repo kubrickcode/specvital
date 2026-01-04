@@ -142,7 +142,7 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 
 	analyzeRepositoryUC := analyzerusecase.NewAnalyzeRepositoryUseCase(analyzerGitClient, analyzerQueue, analyzerRepo, tokenProvider)
 	getAnalysisUC := analyzerusecase.NewGetAnalysisUseCase(analyzerQueue, analyzerRepo)
-	listRepositoryCardsUC := analyzerusecase.NewListRepositoryCardsUseCase(analyzerRepo)
+	listRepositoryCardsUC := analyzerusecase.NewListRepositoryCardsUseCase(analyzerGitClient, analyzerRepo, tokenProvider)
 	getUpdateStatusUC := analyzerusecase.NewGetUpdateStatusUseCase(analyzerGitClient, analyzerRepo, tokenProvider)
 	getRepositoryStatsUC := analyzerusecase.NewGetRepositoryStatsUseCase(analyzerRepo)
 	reanalyzeRepositoryUC := analyzerusecase.NewReanalyzeRepositoryUseCase(analyzerGitClient, analyzerQueue, analyzerRepo, tokenProvider)

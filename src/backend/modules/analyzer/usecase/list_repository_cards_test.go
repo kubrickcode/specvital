@@ -56,6 +56,25 @@ func (m *mockRepository) UpdateLastViewed(_ context.Context, _, _ string) error 
 	return nil
 }
 
+type mockGitClient struct {
+	latestSHA string
+	err       error
+}
+
+func (m *mockGitClient) GetLatestCommitSHA(_ context.Context, _, _ string) (string, error) {
+	return m.latestSHA, m.err
+}
+
+func (m *mockGitClient) GetLatestCommitSHAWithToken(_ context.Context, _, _, _ string) (string, error) {
+	return m.latestSHA, m.err
+}
+
+type mockTokenProvider struct{}
+
+func (m *mockTokenProvider) GetUserGitHubToken(_ context.Context, _ string) (string, error) {
+	return "", nil
+}
+
 func TestExecutePaginated_FirstPage(t *testing.T) {
 	t.Parallel()
 
@@ -75,7 +94,7 @@ func TestExecutePaginated_FirstPage(t *testing.T) {
 		},
 	}
 
-	uc := usecase.NewListRepositoryCardsUseCase(repo)
+	uc := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, repo, &mockTokenProvider{})
 	result, err := uc.ExecutePaginated(context.Background(), usecase.ListRepositoryCardsPaginatedInput{
 		Limit:  20,
 		SortBy: entity.SortByRecent,
@@ -123,7 +142,7 @@ func TestExecutePaginated_HasNextPage(t *testing.T) {
 	}
 
 	repo := &mockRepository{paginatedRepos: repos}
-	uc := usecase.NewListRepositoryCardsUseCase(repo)
+	uc := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, repo, &mockTokenProvider{})
 
 	result, err := uc.ExecutePaginated(context.Background(), usecase.ListRepositoryCardsPaginatedInput{
 		Limit:  20,
@@ -174,7 +193,7 @@ func TestExecutePaginated_WithCursor(t *testing.T) {
 		},
 	}
 
-	uc := usecase.NewListRepositoryCardsUseCase(repo)
+	uc := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, repo, &mockTokenProvider{})
 	result, err := uc.ExecutePaginated(context.Background(), usecase.ListRepositoryCardsPaginatedInput{
 		Cursor: cursor,
 		Limit:  20,
@@ -204,7 +223,7 @@ func TestExecutePaginated_InvalidCursor(t *testing.T) {
 	})
 
 	repo := &mockRepository{}
-	uc := usecase.NewListRepositoryCardsUseCase(repo)
+	uc := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, repo, &mockTokenProvider{})
 
 	_, err := uc.ExecutePaginated(context.Background(), usecase.ListRepositoryCardsPaginatedInput{
 		Cursor: cursor,
@@ -224,7 +243,7 @@ func TestExecutePaginated_DefaultValues(t *testing.T) {
 	t.Parallel()
 
 	repo := &mockRepository{}
-	uc := usecase.NewListRepositoryCardsUseCase(repo)
+	uc := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, repo, &mockTokenProvider{})
 
 	_, err := uc.ExecutePaginated(context.Background(), usecase.ListRepositoryCardsPaginatedInput{
 		UserID: "user-1",
@@ -278,7 +297,7 @@ func TestExecutePaginated_BookmarkIntegration(t *testing.T) {
 		bookmarkedIDs: []string{"codebase-bookmarked"},
 	}
 
-	uc := usecase.NewListRepositoryCardsUseCase(repo)
+	uc := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, repo, &mockTokenProvider{})
 	result, err := uc.ExecutePaginated(context.Background(), usecase.ListRepositoryCardsPaginatedInput{
 		Limit:  20,
 		SortBy: entity.SortByRecent,
