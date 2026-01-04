@@ -44,7 +44,7 @@ func (m *mockRepository) GetPreviousAnalysis(_ context.Context, _, _ string) (*p
 	return m.previousAnalysis, nil
 }
 
-func (m *mockRepository) GetRepositoryStats(_ context.Context) (*entity.RepositoryStats, error) {
+func (m *mockRepository) GetRepositoryStats(_ context.Context, _ string) (*entity.RepositoryStats, error) {
 	return nil, nil
 }
 

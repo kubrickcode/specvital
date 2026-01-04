@@ -64,6 +64,14 @@ type mockHistoryRepository struct {
 	err   error
 }
 
+func (m *mockHistoryRepository) AddUserAnalyzedRepository(_ context.Context, _, _, _ string) (*port.AddHistoryResult, error) {
+	return nil, m.err
+}
+
+func (m *mockHistoryRepository) CheckUserHistoryExists(_ context.Context, _, _, _ string) (bool, error) {
+	return false, m.err
+}
+
 func (m *mockHistoryRepository) GetUserAnalyzedRepositories(_ context.Context, _ string, _ port.AnalyzedReposParams) ([]*domainentity.AnalyzedRepository, error) {
 	if m.err != nil {
 		return nil, m.err
@@ -143,12 +151,14 @@ func (m *mockGitHubAppHandler) GetUserGitHubAppInstallations(_ context.Context, 
 func createTestHandler(t *testing.T, bookmarkRepo *mockBookmarkRepository, historyRepo *mockHistoryRepository) *Handler {
 	t.Helper()
 
+	addAnalyzedRepoUC := historyuc.NewAddAnalyzedRepoUseCase(historyRepo)
 	addBookmarkUC := bookmarkuc.NewAddBookmarkUseCase(bookmarkRepo)
 	getBookmarksUC := bookmarkuc.NewGetBookmarksUseCase(bookmarkRepo)
 	removeBookmarkUC := bookmarkuc.NewRemoveBookmarkUseCase(bookmarkRepo)
 	getAnalyzedReposUC := historyuc.NewGetAnalyzedReposUseCase(historyRepo)
 
 	handler, err := NewHandler(&HandlerConfig{
+		AddAnalyzedRepo:  addAnalyzedRepoUC,
 		AddBookmark:      addBookmarkUC,
 		GetAnalyzedRepos: getAnalyzedReposUC,
 		GetBookmarks:     getBookmarksUC,

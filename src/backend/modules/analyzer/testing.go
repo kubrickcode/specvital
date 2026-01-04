@@ -60,7 +60,7 @@ func (m *mockRepository) GetCodebaseID(ctx context.Context, owner, repo string) 
 	return "test-codebase-id", nil
 }
 
-func (m *mockRepository) GetRepositoryStats(ctx context.Context) (*entity.RepositoryStats, error) {
+func (m *mockRepository) GetRepositoryStats(ctx context.Context, userID string) (*entity.RepositoryStats, error) {
 	return &entity.RepositoryStats{}, nil
 }
 

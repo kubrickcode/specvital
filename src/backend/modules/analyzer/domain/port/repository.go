@@ -14,7 +14,7 @@ type Repository interface {
 	GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error)
 	GetPaginatedRepositories(ctx context.Context, params PaginationParams) ([]PaginatedRepository, error)
 	GetPreviousAnalysis(ctx context.Context, codebaseID, currentAnalysisID string) (*PreviousAnalysis, error)
-	GetRepositoryStats(ctx context.Context) (*entity.RepositoryStats, error)
+	GetRepositoryStats(ctx context.Context, userID string) (*entity.RepositoryStats, error)
 	GetTestSuitesWithCases(ctx context.Context, analysisID string) ([]TestSuiteWithCases, error)
 	UpdateLastViewed(ctx context.Context, owner, repo string) error
 }

@@ -233,7 +233,16 @@ func (h *Handler) GetRecentRepositories(ctx context.Context, request api.GetRece
 }
 
 func (h *Handler) GetRepositoryStats(ctx context.Context, _ api.GetRepositoryStatsRequestObject) (api.GetRepositoryStatsResponseObject, error) {
-	stats, err := h.getRepositoryStats.Execute(ctx)
+	userID := middleware.GetUserID(ctx)
+	if userID == "" {
+		return api.GetRepositoryStats401ApplicationProblemPlusJSONResponse{
+			UnauthorizedApplicationProblemPlusJSONResponse: api.NewUnauthorized("authentication required"),
+		}, nil
+	}
+
+	stats, err := h.getRepositoryStats.Execute(ctx, usecase.GetRepositoryStatsInput{
+		UserID: userID,
+	})
 	if err != nil {
 		h.logger.Error(ctx, "failed to get repository stats", "error", err)
 		return api.GetRepositoryStats500ApplicationProblemPlusJSONResponse{

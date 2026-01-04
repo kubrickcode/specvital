@@ -146,8 +146,13 @@ func (r *PostgresRepository) GetPreviousAnalysis(ctx context.Context, codebaseID
 	}, nil
 }
 
-func (r *PostgresRepository) GetRepositoryStats(ctx context.Context) (*entity.RepositoryStats, error) {
-	row, err := r.queries.GetRepositoryStats(ctx)
+func (r *PostgresRepository) GetRepositoryStats(ctx context.Context, userID string) (*entity.RepositoryStats, error) {
+	uuid, err := stringToUUID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("parse user ID: %w", err)
+	}
+
+	row, err := r.queries.GetRepositoryStats(ctx, uuid)
 	if err != nil {
 		return nil, fmt.Errorf("get repository stats: %w", err)
 	}

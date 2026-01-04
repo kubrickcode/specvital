@@ -76,14 +76,19 @@ SELECT
     COUNT(DISTINCT c.id) AS total_repositories,
     COALESCE(SUM(a.total_tests), 0)::bigint AS total_tests
 FROM codebases c
-LEFT JOIN LATERAL (
-    SELECT total_tests
-    FROM analyses
-    WHERE codebase_id = c.id AND status = 'completed'
-    ORDER BY created_at DESC
+JOIN LATERAL (
+    SELECT an.id, an.total_tests
+    FROM analyses an
+    WHERE an.codebase_id = c.id AND an.status = 'completed'
+    ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
-WHERE c.last_viewed_at IS NOT NULL AND c.is_stale = false;
+WHERE c.last_viewed_at IS NOT NULL
+  AND c.is_stale = false
+  AND EXISTS(
+      SELECT 1 FROM user_analysis_history uah
+      WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
+  );
 
 -- name: GetPreviousAnalysis :one
 SELECT

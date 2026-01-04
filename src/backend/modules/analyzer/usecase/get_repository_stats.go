@@ -18,8 +18,12 @@ func NewGetRepositoryStatsUseCase(repository port.Repository) *GetRepositoryStat
 	}
 }
 
-func (uc *GetRepositoryStatsUseCase) Execute(ctx context.Context) (*entity.RepositoryStats, error) {
-	stats, err := uc.repository.GetRepositoryStats(ctx)
+type GetRepositoryStatsInput struct {
+	UserID string
+}
+
+func (uc *GetRepositoryStatsUseCase) Execute(ctx context.Context, input GetRepositoryStatsInput) (*entity.RepositoryStats, error) {
+	stats, err := uc.repository.GetRepositoryStats(ctx, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("get repository stats: %w", err)
 	}
