@@ -94,10 +94,11 @@ const AttentionCard = ({ item, onReanalyze }: AttentionCardProps) => {
     >
       <Card
         className={cn(
-          "h-full transition-all duration-200",
-          "hover:shadow-md hover:border-primary/20",
+          "h-full",
+          "hover:border-primary/20 hover:-translate-y-0.5",
           "group-focus-visible:shadow-md group-focus-visible:border-primary/20"
         )}
+        depth="raised"
       >
         <CardContent className="p-4 space-y-3">
           <div className="flex items-start justify-between gap-2">

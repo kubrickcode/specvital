@@ -13,17 +13,17 @@ type UpdateStatusBadgeProps = {
 
 const STATUS_CONFIG = {
   "new-commits": {
-    className: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+    className: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
     Icon: GitCommit,
     labelKey: "newCommits",
   },
   unknown: {
-    className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+    className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
     Icon: CircleDashed,
     labelKey: "unknown",
   },
   "up-to-date": {
-    className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+    className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
     Icon: CheckCircle2,
     labelKey: "upToDate",
   },
