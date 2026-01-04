@@ -228,7 +228,7 @@ export const MobileBottomBar = () => {
     <motion.nav
       animate="visible"
       aria-label={t("mobileNavigation")}
-      className="pb-safe fixed inset-x-0 bottom-0 z-50 border-t border-border/40 bg-[oklch(0.91_0.012_98/0.92)] shadow-[0_-2px_8px_0_rgb(0_0_0/0.06)] backdrop-blur-xl dark:bg-[oklch(0.25_0.015_95/0.85)] dark:shadow-[0_-2px_8px_0_rgb(0_0_0/0.25)] md:hidden"
+      className="pb-safe fixed inset-x-0 bottom-0 z-50 border-t border-border/40 bg-background/90 shadow-[0_-2px_8px_0_rgb(0_0_0/0.04)] backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-background/60 dark:shadow-[0_-2px_8px_0_rgb(0_0_0/0.2)] md:hidden"
       initial={shouldReduceMotion ? false : "hidden"}
       variants={shouldReduceMotion ? undefined : slideInUp}
     >
