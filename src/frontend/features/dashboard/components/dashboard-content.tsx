@@ -17,7 +17,6 @@ import {
 import { useOwnershipFilter } from "../hooks/use-ownership-filter";
 import { useStarredFilter } from "../hooks/use-starred-filter";
 import type { SortOption } from "../types";
-import { AttentionZone } from "./attention-zone";
 import { EmptyStateVariant } from "./empty-state-variant";
 import { FilterBar } from "./filter-bar";
 import { InfiniteScrollLoader } from "./infinite-scroll-loader";
@@ -106,8 +105,6 @@ export const DashboardContent = () => {
   return (
     <div className="space-y-8">
       <SummarySection />
-
-      <AttentionZone onReanalyze={handleReanalyze} repositories={repositories} />
 
       <FilterBar
         hasNextPage={hasNextPage && !starredOnly}

@@ -1,4 +1,3 @@
-export { AttentionZone } from "./attention-zone";
 export { DashboardContent } from "./dashboard-content";
 export { DiscoveryCard } from "./discovery-card";
 export { DiscoveryListSheet } from "./discovery-list-sheet";
@@ -17,7 +16,6 @@ export { RepositoryCard } from "./repository-card";
 export { RepositoryGrid } from "./repository-grid";
 export { RepositoryList } from "./repository-list";
 export { RepositorySkeleton } from "./repository-skeleton";
-export { SeverityBadge } from "./severity-badge";
 export { SortDropdown } from "./sort-dropdown";
 export { StarredToggle } from "./starred-toggle";
 export { SummarySection } from "./summary-section";

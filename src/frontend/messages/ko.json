@@ -286,19 +286,6 @@
       "starredLabel": "즐겨찾기만 보기"
     },
     "exploreCta": "다른 저장소 둘러보기",
-    "attention": {
-      "focused": "집중 테스트",
-      "focusedDescription": ".only() 감지됨 - CI에서 다른 테스트가 건너뛰어질 수 있음",
-      "itemCount": "확인이 필요한 저장소 {count}개",
-      "moreItems": "+{count}개 더 확인 필요",
-      "newCommits": "새 커밋",
-      "newCommitsDescription": "마지막 분석 이후 새 커밋이 있습니다",
-      "reanalyze": "재분석",
-      "skippedHigh": "높은 건너뛰기 비율",
-      "skippedHighDescription": "30% 이상의 테스트가 건너뛰어짐",
-      "title": "확인 필요",
-      "viewDetails": "상세 보기"
-    },
     "status": {
       "newCommits": "새 커밋 있음",
       "unknown": "상태 알 수 없음",

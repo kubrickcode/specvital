@@ -286,19 +286,6 @@
       "starredLabel": "Show starred only"
     },
     "exploreCta": "Browse other repositories",
-    "attention": {
-      "focused": "Focused tests",
-      "focusedDescription": ".only() detected - other tests may be skipped in CI",
-      "itemCount": "{count, plural, =1 {1 repository needs attention} other {# repositories need attention}}",
-      "moreItems": "+{count} more need attention",
-      "newCommits": "New commits",
-      "newCommitsDescription": "New commits available since last analysis",
-      "reanalyze": "Re-analyze",
-      "skippedHigh": "High skip rate",
-      "skippedHighDescription": "Over 30% of tests are skipped",
-      "title": "Needs Attention",
-      "viewDetails": "View Details"
-    },
     "status": {
       "newCommits": "New commits available",
       "unknown": "Status unknown",
