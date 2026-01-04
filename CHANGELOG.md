@@ -1,5 +1,51 @@
 # Changelog
 
+## [1.2.0](https://github.com/specvital/infra/compare/v1.1.0...v1.2.0) (2026-01-04)
+
+### 🎯 Highlights
+
+#### ✨ Features
+
+- **db:** add committed_at column to analyses table ([66a993d](https://github.com/specvital/infra/commit/66a993dcd00dc5ef891806c105ef6880cc106d2d))
+- **db:** add external_repo_id column and integrity indexes ([848036b](https://github.com/specvital/infra/commit/848036b7a074c6e1f5549d436ae0db0ea9f502cb))
+- **db:** add GitHub App Installation table ([cd33ecb](https://github.com/specvital/infra/commit/cd33ecb5c2f20d76355c91a826f4da6f7a0c5278))
+- **db:** add GitHub cache tables for repository and organization data ([1605686](https://github.com/specvital/infra/commit/16056864c865991a87858815592b10db94b202f4))
+- **db:** add is_private column to codebases table ([b688ba8](https://github.com/specvital/infra/commit/b688ba89c88eebeb2599a83a64a8324a9304bb04))
+- **db:** add refresh token table for hybrid authentication ([0db7539](https://github.com/specvital/infra/commit/0db75399ddf1a326ba59c14e77a91fca05a32efa))
+- **db:** add user_analysis_history table for dashboard personalization ([1044f38](https://github.com/specvital/infra/commit/1044f38993ce2629630fd9321de60ab64fd93a15))
+- **db:** add user_bookmarks table for dashboard favorites ([7866748](https://github.com/specvital/infra/commit/78667485c8d51845dbb3c484adc0f40e57af78f6))
+
+#### ⚡ Performance
+
+- **db:** optimize index for cursor pagination ([d358516](https://github.com/specvital/infra/commit/d358516dd0eb603fcef8a59a998aa62578d4d484))
+
+### 🔧 Maintenance
+
+#### 📚 Documentation
+
+- add CLAUDE.md ([5ef6ab0](https://github.com/specvital/infra/commit/5ef6ab0a933e3b0995acb08537f36f830dbf6589))
+- add missing version headers and improve CHANGELOG hierarchy ([34c3614](https://github.com/specvital/infra/commit/34c3614a190afb5d31ab26bc27b70cfc6fe763fb))
+- update README.md ([82b6396](https://github.com/specvital/infra/commit/82b6396cf7d276f81f15893e4883e226f58eb4ea))
+
+#### ♻️ Refactoring
+
+- **db:** change composite PK to surrogate PK for consistency ([dad65f8](https://github.com/specvital/infra/commit/dad65f846501a04ff648fe76c0b24a84efd041f8))
+
+#### 🔨 Chore
+
+- add sync-docs action command ([a8b519f](https://github.com/specvital/infra/commit/a8b519f03c8e1b46dcd73a31402cbfe387a754e6))
+- auto-remove River DROP statements from makemigration ([53eb9ec](https://github.com/specvital/infra/commit/53eb9ece7b0359bbc7aa633e8a217620e6259c07))
+- changing the environment variable name for accessing GitHub MCP ([3b74e68](https://github.com/specvital/infra/commit/3b74e68e41d19a0c44fc9b779e9f75c085eb2ef5))
+- delete unused claude skills ([5c01ef8](https://github.com/specvital/infra/commit/5c01ef828ada131952325868c0ea5287eeb273ee))
+- **deps-dev:** bump @semantic-release/release-notes-generator ([5197985](https://github.com/specvital/infra/commit/51979859d9a9b5796899874d81f476c29ab9315b))
+- **deps:** bump actions/checkout from 4 to 6 ([8d1f8a4](https://github.com/specvital/infra/commit/8d1f8a4c99f42b378d889c452a24d250ee35b040))
+- **deps:** bump actions/setup-node from 4 to 6 ([45ca48d](https://github.com/specvital/infra/commit/45ca48de2d3a9266eb23498d57bb82d6f320abb8))
+- improved the claude code status line to display the correct context window size. ([928558e](https://github.com/specvital/infra/commit/928558e4d0f2070989d1cf475b2f855e9e9620a5))
+- modified container structure to support codespaces ([558ee28](https://github.com/specvital/infra/commit/558ee28996f145f9f0b3a6d87f6892c91c0b081f))
+- sync ai-config-toolkit ([bb51262](https://github.com/specvital/infra/commit/bb512622768223293c922300b3eb00d24423f2bd))
+- sync docs ([34ab8a2](https://github.com/specvital/infra/commit/34ab8a24eed1824c3b3e3d9c5c1dfda948d9b254))
+- sync docs ([9d595ac](https://github.com/specvital/infra/commit/9d595ac7477d30d956c18cd8d4cc689a6f6a02f6))
+
 ## [1.1.0](https://github.com/specvital/infra/compare/v1.0.0...v1.1.0) (2025-12-19)
 
 ### 🎯 Highlights
