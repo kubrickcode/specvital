@@ -1759,3 +1759,89 @@ func TestParse_RuleTesterInsideDescribe(t *testing.T) {
 		t.Errorf("Tests[0].Name = %q, want %q", suite.Tests[0].Name, "no-console (dynamic cases)")
 	}
 }
+
+func TestParse_ConditionalSkip(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		source     string
+		wantSuites int
+		wantTests  int
+	}{
+		{
+			name:       "should NOT detect test.skip(condition) as test",
+			source:     `test.skip(isCI);`,
+			wantSuites: 0,
+			wantTests:  0,
+		},
+		{
+			name:       "should NOT detect it.skip(condition) as test",
+			source:     `it.skip(process.env.CI);`,
+			wantSuites: 0,
+			wantTests:  0,
+		},
+		{
+			name:       "should NOT detect test.skip(condition, message) as test",
+			source:     `test.skip(isCI, 'skipped on CI');`,
+			wantSuites: 0,
+			wantTests:  0,
+		},
+		{
+			name:       "should NOT detect describe.skip(condition) as suite",
+			source:     `describe.skip(isWindows);`,
+			wantSuites: 0,
+			wantTests:  0,
+		},
+		{
+			name:       "should detect test.skip('name', callback) as test",
+			source:     `test.skip('skipped test', () => {});`,
+			wantSuites: 0,
+			wantTests:  1,
+		},
+		{
+			name:       "should detect it.skip('name', callback) as test",
+			source:     `it.skip('skipped test', () => {});`,
+			wantSuites: 0,
+			wantTests:  1,
+		},
+		{
+			name:       "should detect describe.skip('name', callback) as suite",
+			source:     `describe.skip('skipped suite', () => { it('test', () => {}); });`,
+			wantSuites: 1,
+			wantTests:  0,
+		},
+		{
+			name:       "should detect test(dynamicName(), callback) as test with dynamic name",
+			source:     `test(getTestName(), () => {});`,
+			wantSuites: 0,
+			wantTests:  1,
+		},
+		{
+			name:       "should detect it(obj.name, callback) as test with dynamic name",
+			source:     `it(testCase.name, () => {});`,
+			wantSuites: 0,
+			wantTests:  1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := Parse(context.Background(), []byte(tt.source), "test.ts", "vitest")
+
+			if err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			if len(file.Suites) != tt.wantSuites {
+				t.Errorf("len(Suites) = %d, want %d", len(file.Suites), tt.wantSuites)
+			}
+
+			if len(file.Tests) != tt.wantTests {
+				t.Errorf("len(Tests) = %d, want %d", len(file.Tests), tt.wantTests)
+			}
+		})
+	}
+}

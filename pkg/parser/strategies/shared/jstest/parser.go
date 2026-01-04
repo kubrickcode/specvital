@@ -221,6 +221,13 @@ func processTestCase(callNode *sitter.Node, args *sitter.Node, source []byte, fi
 		return
 	}
 
+	// Skip if first arg is not a string and there's no callback.
+	// This filters out Vitest's conditional skip pattern: test.skip(condition)
+	// which is NOT a test declaration but a conditional skip API.
+	if !IsFirstArgString(args) && FindCallback(args) == nil {
+		return
+	}
+
 	if isDynamic {
 		name += DynamicCasesSuffix
 	}
@@ -238,6 +245,13 @@ func processTestCase(callNode *sitter.Node, args *sitter.Node, source []byte, fi
 func processTestSuite(callNode *sitter.Node, args *sitter.Node, source []byte, filename string, file *domain.TestFile, parentSuite *domain.TestSuite, status domain.TestStatus, modifier string, isDynamic bool) {
 	name := ExtractTestName(args, source)
 	if name == "" {
+		return
+	}
+
+	// Skip if first arg is not a string and there's no callback.
+	// This filters out Vitest's conditional skip pattern: describe.skip(condition)
+	// which is NOT a suite declaration but a conditional skip API.
+	if !IsFirstArgString(args) && FindCallback(args) == nil {
 		return
 	}
 

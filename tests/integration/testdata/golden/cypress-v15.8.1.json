@@ -3,7 +3,7 @@
   "ref": "v15.8.1",
   "expectedFrameworks": ["cypress", "jest", "mocha", "vitest"],
   "fileCount": 1556,
-  "testCount": 10886,
+  "testCount": 10881,
   "frameworkCounts": {
     "cypress": 1358,
     "jest": 31,
