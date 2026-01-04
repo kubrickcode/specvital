@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
@@ -12,9 +13,11 @@ import { isValidLocale, locales } from "@/i18n/config";
 import { QueryProvider } from "@/lib/query";
 import "../globals.css";
 
-const geistSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
+const pretendard = localFont({
+  display: "swap",
+  src: "../../public/fonts/PretendardVariable.woff2",
+  variable: "--font-pretendard",
+  weight: "45 920",
 });
 
 const geistMono = Geist_Mono({
@@ -43,7 +46,7 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-dvh flex-col font-sans antialiased`}
+        className={`${pretendard.variable} ${geistMono.variable} flex min-h-dvh flex-col font-sans antialiased`}
       >
         <NuqsAdapter>
           <QueryProvider>
