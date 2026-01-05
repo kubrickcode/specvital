@@ -1,4 +1,4 @@
-h1:vqCsUwPRKi37TyGCrE7AFTf55xyv1guyBbCXiDMzFFw=
+h1:4oNViR8Hqu8DySCddqtg4aAgxzpTEX7ReEjRIhkFCOc=
 20251208122222_init.sql h1:4hgvsY53Nx2aws2BPLM/x4kV27qXTRYTAKd/GlGciis=
 20251209084551_add_test_status_focused_xfail_modifier.sql h1:+pY+6sow5rDMVE7Nbl0OLatQfVtHF9YH9Cr621wP+Uc=
 20251211134507_test_case_length.sql h1:Nbzl0u5eBOLpsLhZlfx4MGb6nY4P9e0136YaQYZwvvE=
@@ -17,3 +17,4 @@ h1:vqCsUwPRKi37TyGCrE7AFTf55xyv1guyBbCXiDMzFFw=
 20251227092840_add-refresh-tokens.sql h1:dICj7oADpwEHDd1XD+Bs8k56A7HlURhZlYsiFGyp8Cg=
 20251230090838_add_committed_at_to_analyses.sql h1:6eYfkgr5LB+Ck03bm2ZgRyHCGcnidAJxz85tgX4rkQ8=
 20260103081227_codebase_is_private.sql h1:HqL/7Z64GpZNZQ9kqOXgVhkbvLopC+Id1n9VuoaZ0CA=
+20260105094828_create_spec_view_cache.sql h1:oE9BVyf14V7j4SexjA2vO/pOfd/MsNhIvgjlkcCVHXI=

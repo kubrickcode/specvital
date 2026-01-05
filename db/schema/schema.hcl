@@ -851,6 +851,87 @@ table "user_github_repositories" {
   }
 }
 
+// ==============================================================================
+// Spec View Cache
+// ==============================================================================
+
+table "spec_view_cache" {
+  schema = schema.public
+
+  column "id" {
+    type    = uuid
+    default = sql("gen_random_uuid()")
+  }
+
+  column "cache_key_hash" {
+    type = bytea
+  }
+
+  column "codebase_id" {
+    type = uuid
+  }
+
+  column "file_path" {
+    type = text
+  }
+
+  column "framework" {
+    type = varchar(50)
+  }
+
+  column "suite_hierarchy" {
+    type = text
+  }
+
+  column "original_name" {
+    type = text
+  }
+
+  column "converted_name" {
+    type = text
+  }
+
+  column "language" {
+    type    = varchar(10)
+    default = "en"
+  }
+
+  column "model_id" {
+    type = varchar(100)
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  foreign_key "fk_spec_view_cache_codebase" {
+    columns     = [column.codebase_id]
+    ref_columns = [table.codebases.column.id]
+    on_delete   = CASCADE
+  }
+
+  unique "uq_spec_view_cache_key_model" {
+    columns = [column.cache_key_hash, column.model_id]
+  }
+
+  index "idx_spec_view_cache_lookup" {
+    columns = [column.cache_key_hash, column.model_id]
+  }
+
+  index "idx_spec_view_cache_codebase" {
+    columns = [column.codebase_id]
+  }
+}
+
+// ==============================================================================
+// GitHub Cache Tables
+// ==============================================================================
+
 table "github_organizations" {
   schema = schema.public
 
