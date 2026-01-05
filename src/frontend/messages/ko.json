@@ -97,7 +97,15 @@
     },
     "viewMode": {
       "list": "목록 보기",
+      "spec": "스펙 보기",
       "tree": "트리 보기"
+    },
+    "specView": {
+      "cancel": "취소",
+      "consentDescription": "AI가 테스트 이름을 자연어로 변환합니다. API 호출에 비용이 발생할 수 있습니다.",
+      "consentTitle": "AI 변환",
+      "convert": "변환",
+      "languageLabel": "언어"
     },
     "status": {
       "loading": "로딩 중...",

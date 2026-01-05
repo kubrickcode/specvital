@@ -97,7 +97,15 @@
     },
     "viewMode": {
       "list": "List view",
+      "spec": "Spec view",
       "tree": "Tree view"
+    },
+    "specView": {
+      "cancel": "Cancel",
+      "consentDescription": "AI will convert test names to natural language. API calls may incur costs.",
+      "consentTitle": "AI Conversion",
+      "convert": "Convert",
+      "languageLabel": "Language"
     },
     "status": {
       "loading": "Loading...",

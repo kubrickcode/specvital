@@ -1,4 +1,4 @@
-export const VIEW_MODES = ["list", "tree"] as const;
+export const VIEW_MODES = ["list", "tree", "spec"] as const;
 
 export type ViewMode = (typeof VIEW_MODES)[number];
 
