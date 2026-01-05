@@ -38,6 +38,8 @@ type Config struct {
 	EncryptionKey           string
 	Environment             string
 	FrontendURL             string
+	GeminiAPIKey            string
+	GeminiModel             string
 	GitHubAppID             int64
 	GitHubAppPrivateKey     []byte
 	GitHubAppSlug           string
@@ -76,6 +78,8 @@ func ConfigFromEnv() Config {
 		EncryptionKey:           os.Getenv("ENCRYPTION_KEY"),
 		Environment:             os.Getenv("ENV"),
 		FrontendURL:             frontendURL,
+		GeminiAPIKey:            os.Getenv("GEMINI_API_KEY"),
+		GeminiModel:             os.Getenv("GEMINI_MODEL"),
 		GitHubAppID:             ghAppID,
 		GitHubAppPrivateKey:     ghAppPrivateKey,
 		GitHubAppSlug:           os.Getenv("GITHUB_APP_SLUG"),

@@ -140,19 +140,21 @@ GitHub OAuth → Access Token (15min JWT) + Refresh Token (7d, DB-stored)
 
 ## Environment Variables
 
-| Variable                    | Purpose                      | Default |
-| --------------------------- | ---------------------------- | ------- |
-| `PORT`                      | Server port                  | 8000    |
-| `ALLOWED_ORIGINS`           | CORS origins                 | -       |
-| `DATABASE_URL`              | PostgreSQL connection        | -       |
-| `GITHUB_TOKEN`              | GitHub API rate limit        | -       |
-| `JWT_SECRET`                | Token signing (32+ chars)    | -       |
-| `ENCRYPTION_KEY`            | Sensitive data (32+ chars)   | -       |
-| `FRONTEND_URL`              | OAuth redirect               | -       |
-| `GITHUB_APP_ID`             | GitHub App ID                | -       |
-| `GITHUB_APP_SLUG`           | GitHub App slug name         | -       |
-| `GITHUB_APP_PRIVATE_KEY`    | GitHub App private key (PEM) | -       |
-| `GITHUB_APP_WEBHOOK_SECRET` | Webhook signature secret     | -       |
+| Variable                    | Purpose                         | Default               |
+| --------------------------- | ------------------------------- | --------------------- |
+| `PORT`                      | Server port                     | 8000                  |
+| `ALLOWED_ORIGINS`           | CORS origins                    | -                     |
+| `DATABASE_URL`              | PostgreSQL connection           | -                     |
+| `GITHUB_TOKEN`              | GitHub API rate limit           | -                     |
+| `JWT_SECRET`                | Token signing (32+ chars)       | -                     |
+| `ENCRYPTION_KEY`            | Sensitive data (32+ chars)      | -                     |
+| `FRONTEND_URL`              | OAuth redirect                  | -                     |
+| `GITHUB_APP_ID`             | GitHub App ID                   | -                     |
+| `GITHUB_APP_SLUG`           | GitHub App slug name            | -                     |
+| `GITHUB_APP_PRIVATE_KEY`    | GitHub App private key (PEM)    | -                     |
+| `GITHUB_APP_WEBHOOK_SECRET` | Webhook signature secret        | -                     |
+| `GEMINI_API_KEY`            | Google AI API key for Spec View | -                     |
+| `GEMINI_MODEL`              | Gemini model ID                 | gemini-2.5-flash-lite |
 
 ## Key Patterns
 
