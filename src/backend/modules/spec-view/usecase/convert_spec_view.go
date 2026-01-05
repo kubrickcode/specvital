@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -124,6 +125,11 @@ func (uc *ConvertSpecViewUseCase) Execute(ctx context.Context, input ConvertSpec
 
 		result, err := uc.aiProvider.ConvertTestNames(ctx, convertInput)
 		if err != nil {
+			if errors.Is(err, domain.ErrRateLimited) {
+				slog.WarnContext(ctx, "rate limited during conversion, returning partial results",
+					"file", filePath, "converted_so_far", len(newConversions))
+				break
+			}
 			return nil, fmt.Errorf("convert file %s: %w", filePath, err)
 		}
 

@@ -277,6 +277,7 @@ func initSpecViewHandler(ctx context.Context, container *infra.Container, querie
 	aiProvider, err := specviewadapter.NewGeminiProvider(ctx, specviewadapter.GeminiConfig{
 		APIKey:  container.GeminiAPIKey,
 		ModelID: container.GeminiModel,
+		RPM:     container.GeminiRPM,
 	})
 	if err != nil {
 		return nil, nil, fmt.Errorf("create gemini provider: %w", err)
@@ -302,8 +303,27 @@ func initSpecViewHandler(ctx context.Context, container *infra.Container, querie
 	})
 	if err != nil {
 		rateLimiter.Close()
+		aiProvider.Close()
 		return nil, nil, fmt.Errorf("create handler: %w", err)
 	}
 
-	return handler, rateLimiter, nil
+	closer := &multiCloser{closers: []io.Closer{rateLimiter, aiProvider}}
+	return handler, closer, nil
+}
+
+type multiCloser struct {
+	closers []io.Closer
+}
+
+func (m *multiCloser) Close() error {
+	var errs []error
+	for _, c := range m.closers {
+		if err := c.Close(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("close errors: %v", errs)
+	}
+	return nil
 }

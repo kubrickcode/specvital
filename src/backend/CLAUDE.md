@@ -155,6 +155,7 @@ GitHub OAuth → Access Token (15min JWT) + Refresh Token (7d, DB-stored)
 | `GITHUB_APP_WEBHOOK_SECRET` | Webhook signature secret        | -                     |
 | `GEMINI_API_KEY`            | Google AI API key for Spec View | -                     |
 | `GEMINI_MODEL`              | Gemini model ID                 | gemini-2.5-flash-lite |
+| `GEMINI_RPM`                | Gemini API requests per minute  | 2000                  |
 
 ## Key Patterns
 

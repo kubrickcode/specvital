@@ -8,7 +8,7 @@ import { FrameworkFilter } from "./framework-filter";
 import { SearchInput } from "./search-input";
 import { StatusFilter } from "./status-filter";
 import { ViewModeToggle } from "./view-mode-toggle";
-import type { ViewMode } from "../types";
+import type { ConversionLanguage, ViewMode } from "../types";
 
 type FilterBarProps = {
   availableFrameworks: string[];
@@ -16,7 +16,7 @@ type FilterBarProps = {
   onFrameworksChange: (value: string[]) => void;
   onQueryChange: (value: string) => void;
   onStatusesChange: (value: TestStatus[]) => void;
-  onViewModeChange: (value: ViewMode) => void;
+  onViewModeChange: (value: ViewMode, language?: ConversionLanguage) => void;
   query: string;
   statuses: TestStatus[];
   viewMode: ViewMode;

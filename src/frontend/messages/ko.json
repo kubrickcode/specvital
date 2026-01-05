@@ -105,7 +105,10 @@
       "consentDescription": "AI가 테스트 이름을 자연어로 변환합니다. API 호출에 비용이 발생할 수 있습니다.",
       "consentTitle": "AI 변환",
       "convert": "변환",
-      "languageLabel": "언어"
+      "errorTitle": "변환 실패",
+      "languageLabel": "언어",
+      "retry": "다시 시도",
+      "summary": "{total}개 테스트 ({cached}개 캐시됨, {converted}개 변환됨)"
     },
     "status": {
       "loading": "로딩 중...",

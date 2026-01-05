@@ -14,6 +14,9 @@ const cspValue = isDev
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    proxyTimeout: 5 * 60 * 1000, // 5 minutes for long-running API calls (e.g., AI conversion)
+  },
   headers: async () => [
     {
       headers: [

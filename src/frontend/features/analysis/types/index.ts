@@ -1,5 +1,13 @@
 export type { FileTreeNode, FileTreeNodeType, FlatTreeItem } from "./file-tree";
 export type { FilterState } from "./filter";
+export type {
+  ConvertedTestFile,
+  ConvertedTestItem,
+  ConvertedTestSuite,
+  ConversionSummary,
+  ConvertSpecViewRequest,
+  ConvertSpecViewResponse,
+} from "./spec";
 export {
   CONVERSION_LANGUAGES,
   DEFAULT_CONVERSION_LANGUAGE,

@@ -11,27 +11,37 @@ export const getApiUrl = (path: string): string => {
 };
 
 type FetchOptions = {
+  body?: string;
   method?: "DELETE" | "GET" | "POST";
   skipRefresh?: boolean;
   timeoutMs?: number;
 };
 
-const executeFetch = async (path: string, method: string, signal: AbortSignal): Promise<Response> =>
+const executeFetch = async (
+  path: string,
+  method: string,
+  signal: AbortSignal,
+  body?: string
+): Promise<Response> =>
   fetch(getApiUrl(path), {
+    body,
     cache: "no-store",
     credentials: "include",
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      ...(body && { "Content-Type": "application/json" }),
+    },
     method,
     signal,
   });
 
 export async function apiFetch(path: string, options: FetchOptions = {}): Promise<Response> {
-  const { method = "GET", skipRefresh = false, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+  const { body, method = "GET", skipRefresh = false, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await executeFetch(path, method, controller.signal);
+    const response = await executeFetch(path, method, controller.signal, body);
 
     const isServer = typeof window === "undefined";
     if (isTokenExpiredResponse(response) && !isServer && !skipRefresh && !shouldSkipRefresh(path)) {
@@ -43,7 +53,7 @@ export async function apiFetch(path: string, options: FetchOptions = {}): Promis
         const retryTimeoutId = setTimeout(() => retryController.abort(), timeoutMs);
 
         try {
-          return await executeFetch(path, method, retryController.signal);
+          return await executeFetch(path, method, retryController.signal, body);
         } finally {
           clearTimeout(retryTimeoutId);
         }

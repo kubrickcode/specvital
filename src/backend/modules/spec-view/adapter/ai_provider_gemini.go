@@ -32,20 +32,30 @@ const (
 	cbFailureThreshold = 5                // Open circuit after 5 consecutive failures
 	cbSuccessThreshold = 2                // Close circuit after 2 consecutive successes in half-open state
 	cbTimeout          = 30 * time.Second // Wait before attempting recovery (half-open)
+
+	// Gemini API Rate Limiting
+	defaultGeminiRPM = 2000 // Pay-as-you-go tier: 2000 RPM for gemini-2.0-flash-lite
 )
 
 type GeminiConfig struct {
 	APIKey  string
 	ModelID string
+	RPM     int // Requests per minute limit (default: 2000 for pay-as-you-go)
 }
 
 type GeminiProvider struct {
 	client         *genai.Client
 	modelID        string
 	circuitBreaker *CircuitBreaker
+	rateLimiter    *MemoryRateLimiter
 }
 
 var _ port.AIProvider = (*GeminiProvider)(nil)
+
+func (p *GeminiProvider) Close() error {
+	p.rateLimiter.Close()
+	return nil
+}
 
 func NewGeminiProvider(ctx context.Context, cfg GeminiConfig) (*GeminiProvider, error) {
 	if cfg.APIKey == "" {
@@ -71,10 +81,21 @@ func NewGeminiProvider(ctx context.Context, cfg GeminiConfig) (*GeminiProvider, 
 		Timeout:          cbTimeout,
 	})
 
+	rpm := cfg.RPM
+	if rpm <= 0 {
+		rpm = defaultGeminiRPM
+	}
+
+	rateLimiter := NewMemoryRateLimiter(RateLimiterConfig{
+		Limit:  rpm,
+		Window: time.Minute,
+	})
+
 	return &GeminiProvider{
 		client:         client,
 		modelID:        modelID,
 		circuitBreaker: circuitBreaker,
+		rateLimiter:    rateLimiter,
 	}, nil
 }
 
@@ -85,6 +106,10 @@ func (p *GeminiProvider) ModelID() string {
 func (p *GeminiProvider) ConvertTestNames(ctx context.Context, input port.ConvertInput) (map[string]string, error) {
 	if !p.circuitBreaker.Allow() {
 		return nil, domain.ErrAIProviderUnavailable
+	}
+
+	if !p.rateLimiter.Allow(ctx, "gemini-api") {
+		return nil, domain.ErrRateLimited
 	}
 
 	prompt := buildPrompt(input)
@@ -167,6 +192,15 @@ func isRetryableError(err error) bool {
 func classifyError(err error) error {
 	if err == nil {
 		return nil
+	}
+
+	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+		return fmt.Errorf("request timeout: %w", err)
+	}
+
+	errStr := err.Error()
+	if strings.Contains(errStr, "timeout") || strings.Contains(errStr, "deadline") {
+		return fmt.Errorf("request timeout: %w", err)
 	}
 
 	var apiErr genai.APIError
