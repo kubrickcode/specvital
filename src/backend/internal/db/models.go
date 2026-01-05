@@ -377,6 +377,20 @@ type RiverQueue struct {
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
+type SpecViewCache struct {
+	ID             pgtype.UUID        `json:"id"`
+	CacheKeyHash   []byte             `json:"cache_key_hash"`
+	CodebaseID     pgtype.UUID        `json:"codebase_id"`
+	FilePath       string             `json:"file_path"`
+	Framework      string             `json:"framework"`
+	SuiteHierarchy string             `json:"suite_hierarchy"`
+	OriginalName   string             `json:"original_name"`
+	ConvertedName  string             `json:"converted_name"`
+	Language       string             `json:"language"`
+	ModelID        string             `json:"model_id"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
 type TestCase struct {
 	ID         pgtype.UUID `json:"id"`
 	SuiteID    pgtype.UUID `json:"suite_id"`
