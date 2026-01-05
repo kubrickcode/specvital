@@ -52,6 +52,10 @@ type GitHubAppHandlers interface {
 	GetUserGitHubAppInstallations(ctx context.Context, request GetUserGitHubAppInstallationsRequestObject) (GetUserGitHubAppInstallationsResponseObject, error)
 }
 
+type SpecViewHandlers interface {
+	ConvertSpecView(ctx context.Context, request ConvertSpecViewRequestObject) (ConvertSpecViewResponseObject, error)
+}
+
 type APIHandlers struct {
 	analyzer        AnalyzerHandlers
 	analysisHistory AnalysisHistoryHandlers
@@ -60,6 +64,7 @@ type APIHandlers struct {
 	github          GitHubHandlers
 	githubApp       GitHubAppHandlers
 	repository      RepositoryHandlers
+	specView        SpecViewHandlers
 	webhook         WebhookHandlers
 }
 
@@ -73,6 +78,7 @@ func NewAPIHandlers(
 	github GitHubHandlers,
 	githubApp GitHubAppHandlers,
 	repository RepositoryHandlers,
+	specView SpecViewHandlers,
 	webhook WebhookHandlers,
 ) *APIHandlers {
 	return &APIHandlers{
@@ -83,6 +89,7 @@ func NewAPIHandlers(
 		github:          github,
 		githubApp:       githubApp,
 		repository:      repository,
+		specView:        specView,
 		webhook:         webhook,
 	}
 }
@@ -193,4 +200,16 @@ func (h *APIHandlers) GetUserGitHubAppInstallations(ctx context.Context, request
 
 func (h *APIHandlers) WebhookHandler() WebhookHandlers {
 	return h.webhook
+}
+
+// Spec View handler - stub implementation for Commit 1
+// Will be replaced with actual handler delegation in Commit 5
+
+func (h *APIHandlers) ConvertSpecView(_ context.Context, _ ConvertSpecViewRequestObject) (ConvertSpecViewResponseObject, error) {
+	if h.specView == nil {
+		return ConvertSpecView500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: NewInternalError("Spec View not yet implemented"),
+		}, nil
+	}
+	return nil, nil
 }

@@ -21,6 +21,18 @@ const (
 	CookieAuthScopes = "cookieAuth.Scopes"
 )
 
+// Defines values for ConversionLanguage.
+const (
+	De ConversionLanguage = "de"
+	En ConversionLanguage = "en"
+	Es ConversionLanguage = "es"
+	Fr ConversionLanguage = "fr"
+	Ja ConversionLanguage = "ja"
+	Ko ConversionLanguage = "ko"
+	Pt ConversionLanguage = "pt"
+	Zh ConversionLanguage = "zh"
+)
+
 // Defines values for GitHubAppInstallationAccountType.
 const (
 	GitHubAppInstallationAccountTypeOrganization GitHubAppInstallationAccountType = "organization"
@@ -180,6 +192,102 @@ type BookmarkedRepositoriesResponse struct {
 type CompletedResponse struct {
 	Data   AnalysisResult `json:"data"`
 	Status string         `json:"status"`
+}
+
+// ConversionLanguage Target language for conversion:
+// - de: German (Deutsch)
+// - en: English
+// - es: Spanish (Español)
+// - fr: French (Français)
+// - ja: Japanese (日本語)
+// - ko: Korean (한국어)
+// - pt: Portuguese (Português)
+// - zh: Chinese (中文)
+type ConversionLanguage string
+
+// ConversionSummary defines model for ConversionSummary.
+type ConversionSummary struct {
+	// CachedCount Number of tests retrieved from cache
+	CachedCount int `json:"cachedCount"`
+
+	// ConvertedAt ISO 8601 timestamp of conversion completion
+	ConvertedAt time.Time `json:"convertedAt"`
+
+	// ConvertedCount Number of tests newly converted by AI
+	ConvertedCount int `json:"convertedCount"`
+
+	// TotalTests Total number of tests in the repository
+	TotalTests int `json:"totalTests"`
+}
+
+// ConvertSpecViewRequest defines model for ConvertSpecViewRequest.
+type ConvertSpecViewRequest struct {
+	// IsForceRefresh Bypass cache and force new AI conversion for all tests
+	IsForceRefresh *bool `json:"isForceRefresh,omitempty"`
+
+	// Language Target language for conversion:
+	// - de: German (Deutsch)
+	// - en: English
+	// - es: Spanish (Español)
+	// - fr: French (Français)
+	// - ja: Japanese (日本語)
+	// - ko: Korean (한국어)
+	// - pt: Portuguese (Português)
+	// - zh: Chinese (中文)
+	Language *ConversionLanguage `json:"language,omitempty"`
+}
+
+// ConvertSpecViewResponse defines model for ConvertSpecViewResponse.
+type ConvertSpecViewResponse struct {
+	// Data Converted tests grouped by file
+	Data    []ConvertedTestFile `json:"data"`
+	Summary ConversionSummary   `json:"summary"`
+}
+
+// ConvertedTestFile defines model for ConvertedTestFile.
+type ConvertedTestFile struct {
+	// FilePath Path to the test file
+	FilePath string `json:"filePath"`
+
+	// Framework Testing framework identifier
+	Framework Framework            `json:"framework"`
+	Suites    []ConvertedTestSuite `json:"suites"`
+}
+
+// ConvertedTestItem defines model for ConvertedTestItem.
+type ConvertedTestItem struct {
+	// ConvertedName AI-converted natural language description
+	ConvertedName string `json:"convertedName"`
+
+	// IsFromCache Whether this result was retrieved from cache
+	IsFromCache bool `json:"isFromCache"`
+
+	// Line Line number where the test is defined
+	Line int `json:"line"`
+
+	// Modifier Test modifier (e.g., only, skip)
+	Modifier *string `json:"modifier,omitempty"`
+
+	// OriginalName Original technical test name
+	OriginalName string `json:"originalName"`
+
+	// Status Test status indicator:
+	// - active: Normal test that will run
+	// - focused: Test marked to run exclusively (e.g., it.only)
+	// - skipped: Test marked to be skipped (e.g., it.skip)
+	// - todo: Placeholder test to be implemented
+	// - xfail: Expected to fail (pytest xfail)
+	Status TestStatus `json:"status"`
+}
+
+// ConvertedTestSuite defines model for ConvertedTestSuite.
+type ConvertedTestSuite struct {
+	// SuiteHierarchy Full suite hierarchy
+	SuiteHierarchy string `json:"suiteHierarchy"`
+
+	// SuiteName Name of the test suite
+	SuiteName string              `json:"suiteName"`
+	Tests     []ConvertedTestItem `json:"tests"`
 }
 
 // DevLoginRequest defines model for DevLoginRequest.
@@ -776,6 +884,9 @@ type HandleGitHubAppWebhookParams struct {
 // AuthDevLoginJSONRequestBody defines body for AuthDevLogin for application/json ContentType.
 type AuthDevLoginJSONRequestBody = DevLoginRequest
 
+// ConvertSpecViewJSONRequestBody defines body for ConvertSpecView for application/json ContentType.
+type ConvertSpecViewJSONRequestBody = ConvertSpecViewRequest
+
 // AddUserAnalyzedRepositoryJSONRequestBody defines body for AddUserAnalyzedRepository for application/json ContentType.
 type AddUserAnalyzedRepositoryJSONRequestBody = AddAnalyzedRepositoryRequest
 
@@ -975,6 +1086,9 @@ type ServerInterface interface {
 	// Check repository update status
 	// (GET /api/repositories/{owner}/{repo}/update-status)
 	GetUpdateStatus(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo)
+	// Convert test names to natural language spec view
+	// (POST /api/spec-view/convert/{owner}/{repo}/{commitSha})
+	ConvertSpecView(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo, commitSHA string)
 	// Get user's analyzed repositories
 	// (GET /api/user/analyzed-repositories)
 	GetUserAnalyzedRepositories(w http.ResponseWriter, r *http.Request, params GetUserAnalyzedRepositoriesParams)
@@ -1089,6 +1203,12 @@ func (_ Unimplemented) ReanalyzeRepository(w http.ResponseWriter, r *http.Reques
 // Check repository update status
 // (GET /api/repositories/{owner}/{repo}/update-status)
 func (_ Unimplemented) GetUpdateStatus(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Convert test names to natural language spec view
+// (POST /api/spec-view/convert/{owner}/{repo}/{commitSha})
+func (_ Unimplemented) ConvertSpecView(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo, commitSHA string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -1607,6 +1727,55 @@ func (siw *ServerInterfaceWrapper) GetUpdateStatus(w http.ResponseWriter, r *htt
 	handler.ServeHTTP(w, r)
 }
 
+// ConvertSpecView operation middleware
+func (siw *ServerInterfaceWrapper) ConvertSpecView(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "owner" -------------
+	var owner Owner
+
+	err = runtime.BindStyledParameterWithOptions("simple", "owner", chi.URLParam(r, "owner"), &owner, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "owner", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "repo" -------------
+	var repo Repo
+
+	err = runtime.BindStyledParameterWithOptions("simple", "repo", chi.URLParam(r, "repo"), &repo, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "repo", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "commitSha" -------------
+	var commitSHA string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "commitSha", chi.URLParam(r, "commitSha"), &commitSHA, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "commitSha", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ConvertSpecView(w, r, owner, repo, commitSHA)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetUserAnalyzedRepositories operation middleware
 func (siw *ServerInterfaceWrapper) GetUserAnalyzedRepositories(w http.ResponseWriter, r *http.Request) {
 
@@ -2088,6 +2257,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/repositories/{owner}/{repo}/update-status", wrapper.GetUpdateStatus)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/spec-view/convert/{owner}/{repo}/{commitSha}", wrapper.ConvertSpecView)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/user/analyzed-repositories", wrapper.GetUserAnalyzedRepositories)
@@ -2803,6 +2975,81 @@ func (response GetUpdateStatus500ApplicationProblemPlusJSONResponse) VisitGetUpd
 	return json.NewEncoder(w).Encode(response)
 }
 
+type ConvertSpecViewRequestObject struct {
+	Owner     Owner  `json:"owner"`
+	Repo      Repo   `json:"repo"`
+	CommitSHA string `json:"commitSha"`
+	Body      *ConvertSpecViewJSONRequestBody
+}
+
+type ConvertSpecViewResponseObject interface {
+	VisitConvertSpecViewResponse(w http.ResponseWriter) error
+}
+
+type ConvertSpecView200JSONResponse ConvertSpecViewResponse
+
+func (response ConvertSpecView200JSONResponse) VisitConvertSpecViewResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ConvertSpecView400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response ConvertSpecView400ApplicationProblemPlusJSONResponse) VisitConvertSpecViewResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ConvertSpecView401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response ConvertSpecView401ApplicationProblemPlusJSONResponse) VisitConvertSpecViewResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ConvertSpecView404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response ConvertSpecView404ApplicationProblemPlusJSONResponse) VisitConvertSpecViewResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ConvertSpecView429ApplicationProblemPlusJSONResponse struct {
+	TooManyRequestsApplicationProblemPlusJSONResponse
+}
+
+func (response ConvertSpecView429ApplicationProblemPlusJSONResponse) VisitConvertSpecViewResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(429)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ConvertSpecView500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response ConvertSpecView500ApplicationProblemPlusJSONResponse) VisitConvertSpecViewResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetUserAnalyzedRepositoriesRequestObject struct {
 	Params GetUserAnalyzedRepositoriesParams
 }
@@ -3283,6 +3530,9 @@ type StrictServerInterface interface {
 	// Check repository update status
 	// (GET /api/repositories/{owner}/{repo}/update-status)
 	GetUpdateStatus(ctx context.Context, request GetUpdateStatusRequestObject) (GetUpdateStatusResponseObject, error)
+	// Convert test names to natural language spec view
+	// (POST /api/spec-view/convert/{owner}/{repo}/{commitSha})
+	ConvertSpecView(ctx context.Context, request ConvertSpecViewRequestObject) (ConvertSpecViewResponseObject, error)
 	// Get user's analyzed repositories
 	// (GET /api/user/analyzed-repositories)
 	GetUserAnalyzedRepositories(ctx context.Context, request GetUserAnalyzedRepositoriesRequestObject) (GetUserAnalyzedRepositoriesResponseObject, error)
@@ -3699,6 +3949,41 @@ func (sh *strictHandler) GetUpdateStatus(w http.ResponseWriter, r *http.Request,
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetUpdateStatusResponseObject); ok {
 		if err := validResponse.VisitGetUpdateStatusResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ConvertSpecView operation middleware
+func (sh *strictHandler) ConvertSpecView(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo, commitSHA string) {
+	var request ConvertSpecViewRequestObject
+
+	request.Owner = owner
+	request.Repo = repo
+	request.CommitSHA = commitSHA
+
+	var body ConvertSpecViewJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ConvertSpecView(ctx, request.(ConvertSpecViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ConvertSpecView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ConvertSpecViewResponseObject); ok {
+		if err := validResponse.VisitConvertSpecViewResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

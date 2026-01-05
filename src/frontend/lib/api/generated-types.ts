@@ -518,6 +518,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/spec-view/convert/{owner}/{repo}/{commitSha}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description GitHub repository owner (user or organization)
+                 * @example facebook
+                 */
+                owner: components["parameters"]["Owner"];
+                /**
+                 * @description GitHub repository name
+                 * @example react
+                 */
+                repo: components["parameters"]["Repo"];
+                /**
+                 * @description Git commit SHA of the analysis to convert
+                 * @example abc123def456
+                 */
+                commitSha: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Convert test names to natural language spec view
+         * @description Converts all test names from a specific analysis to human-readable natural language.
+         *     Uses AI (Gemini) with aggressive caching for efficiency.
+         *     Tests are grouped by file for batch processing.
+         *
+         */
+        post: operations["convertSpecView"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1118,6 +1157,98 @@ export interface components {
             /** @description Optional message about the processing result */
             message?: string;
         };
+        ConvertSpecViewRequest: {
+            /**
+             * @description Bypass cache and force new AI conversion for all tests
+             * @default false
+             */
+            isForceRefresh: boolean;
+            language?: components["schemas"]["ConversionLanguage"];
+        };
+        ConvertSpecViewResponse: {
+            /** @description Converted tests grouped by file */
+            data: components["schemas"]["ConvertedTestFile"][];
+            summary: components["schemas"]["ConversionSummary"];
+        };
+        ConvertedTestFile: {
+            /**
+             * @description Path to the test file
+             * @example src/__tests__/auth.spec.ts
+             */
+            filePath: string;
+            framework: components["schemas"]["Framework"];
+            suites: components["schemas"]["ConvertedTestSuite"][];
+        };
+        ConvertedTestSuite: {
+            /**
+             * @description Full suite hierarchy
+             * @example AuthService > Login
+             */
+            suiteHierarchy: string;
+            /**
+             * @description Name of the test suite
+             * @example Login
+             */
+            suiteName: string;
+            tests: components["schemas"]["ConvertedTestItem"][];
+        };
+        ConvertedTestItem: {
+            /**
+             * @description AI-converted natural language description
+             * @example Session creation on login
+             */
+            convertedName: string;
+            /** @description Whether this result was retrieved from cache */
+            isFromCache: boolean;
+            /** @description Line number where the test is defined */
+            line: number;
+            /** @description Test modifier (e.g., only, skip) */
+            modifier?: string;
+            /**
+             * @description Original technical test name
+             * @example should create session when credentials valid
+             */
+            originalName: string;
+            status: components["schemas"]["TestStatus"];
+        };
+        ConversionSummary: {
+            /**
+             * @description Number of tests retrieved from cache
+             * @example 280
+             */
+            cachedCount: number;
+            /**
+             * Format: date-time
+             * @description ISO 8601 timestamp of conversion completion
+             * @example 2026-01-05T10:30:00Z
+             */
+            convertedAt: string;
+            /**
+             * @description Number of tests newly converted by AI
+             * @example 32
+             */
+            convertedCount: number;
+            /**
+             * @description Total number of tests in the repository
+             * @example 312
+             */
+            totalTests: number;
+        };
+        /**
+         * @description Target language for conversion:
+         *     - de: German (Deutsch)
+         *     - en: English
+         *     - es: Spanish (Español)
+         *     - fr: French (Français)
+         *     - ja: Japanese (日本語)
+         *     - ko: Korean (한국어)
+         *     - pt: Portuguese (Português)
+         *     - zh: Chinese (中文)
+         *
+         * @default en
+         * @enum {string}
+         */
+        ConversionLanguage: "de" | "en" | "es" | "fr" | "ja" | "ko" | "pt" | "zh";
     };
     responses: {
         /** @description Invalid request parameters */
@@ -1864,6 +1995,51 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetail"];
                 };
             };
+            500: components["responses"]["InternalError"];
+        };
+    };
+    convertSpecView: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description GitHub repository owner (user or organization)
+                 * @example facebook
+                 */
+                owner: components["parameters"]["Owner"];
+                /**
+                 * @description GitHub repository name
+                 * @example react
+                 */
+                repo: components["parameters"]["Repo"];
+                /**
+                 * @description Git commit SHA of the analysis to convert
+                 * @example abc123def456
+                 */
+                commitSha: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ConvertSpecViewRequest"];
+            };
+        };
+        responses: {
+            /** @description Test names converted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConvertSpecViewResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            429: components["responses"]["TooManyRequests"];
             500: components["responses"]["InternalError"];
         };
     };

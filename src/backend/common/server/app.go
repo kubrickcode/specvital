@@ -207,7 +207,9 @@ func initHandlers(container *infra.Container) (*Handlers, error) {
 		return nil, fmt.Errorf("create github-app api handler: %w", err)
 	}
 
-	apiHandlers := api.NewAPIHandlers(analyzerHandler, userHandler, authHandler, userHandler, githubHandler, ghAppAPIHandler, analyzerHandler, webhookHandler)
+	// specView is nil until Commit 5 (handler implementation)
+	var specViewHandler api.SpecViewHandlers
+	apiHandlers := api.NewAPIHandlers(analyzerHandler, userHandler, authHandler, userHandler, githubHandler, ghAppAPIHandler, analyzerHandler, specViewHandler, webhookHandler)
 
 	return &Handlers{
 		API:     apiHandlers,
