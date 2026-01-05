@@ -1235,20 +1235,36 @@ export interface components {
             totalTests: number;
         };
         /**
-         * @description Target language for conversion:
+         * @description Target language for AI conversion (24 languages, alphabetically sorted):
+         *     - ar: Arabic (العربية)
+         *     - cs: Czech (Čeština)
+         *     - da: Danish (Dansk)
          *     - de: German (Deutsch)
+         *     - el: Greek (Ελληνικά)
          *     - en: English
          *     - es: Spanish (Español)
+         *     - fi: Finnish (Suomi)
          *     - fr: French (Français)
+         *     - hi: Hindi (हिन्दी)
+         *     - id: Indonesian (Bahasa Indonesia)
+         *     - it: Italian (Italiano)
          *     - ja: Japanese (日本語)
          *     - ko: Korean (한국어)
+         *     - nl: Dutch (Nederlands)
+         *     - pl: Polish (Polski)
          *     - pt: Portuguese (Português)
+         *     - ru: Russian (Русский)
+         *     - sv: Swedish (Svenska)
+         *     - th: Thai (ไทย)
+         *     - tr: Turkish (Türkçe)
+         *     - uk: Ukrainian (Українська)
+         *     - vi: Vietnamese (Tiếng Việt)
          *     - zh: Chinese (中文)
          *
          * @default en
          * @enum {string}
          */
-        ConversionLanguage: "de" | "en" | "es" | "fr" | "ja" | "ko" | "pt" | "zh";
+        ConversionLanguage: "ar" | "cs" | "da" | "de" | "el" | "en" | "es" | "fi" | "fr" | "hi" | "id" | "it" | "ja" | "ko" | "nl" | "pl" | "pt" | "ru" | "sv" | "th" | "tr" | "uk" | "vi" | "zh";
     };
     responses: {
         /** @description Invalid request parameters */

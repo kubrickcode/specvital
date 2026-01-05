@@ -23,13 +23,29 @@ const (
 
 // Defines values for ConversionLanguage.
 const (
+	Ar ConversionLanguage = "ar"
+	Cs ConversionLanguage = "cs"
+	Da ConversionLanguage = "da"
 	De ConversionLanguage = "de"
+	El ConversionLanguage = "el"
 	En ConversionLanguage = "en"
 	Es ConversionLanguage = "es"
+	Fi ConversionLanguage = "fi"
 	Fr ConversionLanguage = "fr"
+	Hi ConversionLanguage = "hi"
+	ID ConversionLanguage = "id"
+	It ConversionLanguage = "it"
 	Ja ConversionLanguage = "ja"
 	Ko ConversionLanguage = "ko"
+	Nl ConversionLanguage = "nl"
+	Pl ConversionLanguage = "pl"
 	Pt ConversionLanguage = "pt"
+	Ru ConversionLanguage = "ru"
+	Sv ConversionLanguage = "sv"
+	Th ConversionLanguage = "th"
+	Tr ConversionLanguage = "tr"
+	Uk ConversionLanguage = "uk"
+	Vi ConversionLanguage = "vi"
 	Zh ConversionLanguage = "zh"
 )
 
@@ -194,14 +210,30 @@ type CompletedResponse struct {
 	Status string         `json:"status"`
 }
 
-// ConversionLanguage Target language for conversion:
+// ConversionLanguage Target language for AI conversion (24 languages, alphabetically sorted):
+// - ar: Arabic (العربية)
+// - cs: Czech (Čeština)
+// - da: Danish (Dansk)
 // - de: German (Deutsch)
+// - el: Greek (Ελληνικά)
 // - en: English
 // - es: Spanish (Español)
+// - fi: Finnish (Suomi)
 // - fr: French (Français)
+// - hi: Hindi (हिन्दी)
+// - id: Indonesian (Bahasa Indonesia)
+// - it: Italian (Italiano)
 // - ja: Japanese (日本語)
 // - ko: Korean (한국어)
+// - nl: Dutch (Nederlands)
+// - pl: Polish (Polski)
 // - pt: Portuguese (Português)
+// - ru: Russian (Русский)
+// - sv: Swedish (Svenska)
+// - th: Thai (ไทย)
+// - tr: Turkish (Türkçe)
+// - uk: Ukrainian (Українська)
+// - vi: Vietnamese (Tiếng Việt)
 // - zh: Chinese (中文)
 type ConversionLanguage string
 
@@ -225,14 +257,30 @@ type ConvertSpecViewRequest struct {
 	// IsForceRefresh Bypass cache and force new AI conversion for all tests
 	IsForceRefresh *bool `json:"isForceRefresh,omitempty"`
 
-	// Language Target language for conversion:
+	// Language Target language for AI conversion (24 languages, alphabetically sorted):
+	// - ar: Arabic (العربية)
+	// - cs: Czech (Čeština)
+	// - da: Danish (Dansk)
 	// - de: German (Deutsch)
+	// - el: Greek (Ελληνικά)
 	// - en: English
 	// - es: Spanish (Español)
+	// - fi: Finnish (Suomi)
 	// - fr: French (Français)
+	// - hi: Hindi (हिन्दी)
+	// - id: Indonesian (Bahasa Indonesia)
+	// - it: Italian (Italiano)
 	// - ja: Japanese (日本語)
 	// - ko: Korean (한국어)
+	// - nl: Dutch (Nederlands)
+	// - pl: Polish (Polski)
 	// - pt: Portuguese (Português)
+	// - ru: Russian (Русский)
+	// - sv: Swedish (Svenska)
+	// - th: Thai (ไทย)
+	// - tr: Turkish (Türkçe)
+	// - uk: Ukrainian (Українська)
+	// - vi: Vietnamese (Tiếng Việt)
 	// - zh: Chinese (中文)
 	Language *ConversionLanguage `json:"language,omitempty"`
 }
