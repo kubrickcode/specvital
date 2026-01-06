@@ -206,8 +206,8 @@ type uncachedFileData struct {
 func groupUncachedByFile(metas []testMeta, cached map[string]*entity.CacheEntry) map[string]*uncachedFileData {
 	result := make(map[string]*uncachedFileData)
 
-	fileSuiteTests := make(map[string]map[string][]string)
-	fileLocalIdx := make(map[string]int)
+	fileSuiteOrder := make(map[string][]string)
+	fileSuiteTestMetas := make(map[string]map[string][]testMeta)
 
 	for i, meta := range metas {
 		keyHex := hex.EncodeToString(meta.cacheKeyHash)
@@ -219,22 +219,32 @@ func groupUncachedByFile(metas []testMeta, cached map[string]*entity.CacheEntry)
 			result[meta.filePath] = &uncachedFileData{
 				indexToMeta: make(map[string]testMeta),
 			}
-			fileSuiteTests[meta.filePath] = make(map[string][]string)
-			fileLocalIdx[meta.filePath] = 1
+			fileSuiteTestMetas[meta.filePath] = make(map[string][]testMeta)
 		}
 
-		localIdx := fileLocalIdx[meta.filePath]
-		result[meta.filePath].indexToMeta[fmt.Sprintf("%d", localIdx)] = metas[i]
-		fileSuiteTests[meta.filePath][meta.suiteHierarchy] = append(fileSuiteTests[meta.filePath][meta.suiteHierarchy], meta.originalName)
+		if _, exists := fileSuiteTestMetas[meta.filePath][meta.suiteHierarchy]; !exists {
+			fileSuiteOrder[meta.filePath] = append(fileSuiteOrder[meta.filePath], meta.suiteHierarchy)
+		}
 
-		fileLocalIdx[meta.filePath]++
+		fileSuiteTestMetas[meta.filePath][meta.suiteHierarchy] = append(
+			fileSuiteTestMetas[meta.filePath][meta.suiteHierarchy], metas[i])
 	}
 
-	for filePath, suiteTests := range fileSuiteTests {
-		for hierarchy, tests := range suiteTests {
+	for filePath, hierarchies := range fileSuiteOrder {
+		localIdx := 1
+		for _, hierarchy := range hierarchies {
+			testMetas := fileSuiteTestMetas[filePath][hierarchy]
+			testNames := make([]string, 0, len(testMetas))
+
+			for _, tm := range testMetas {
+				result[filePath].indexToMeta[fmt.Sprintf("%d", localIdx)] = tm
+				testNames = append(testNames, tm.originalName)
+				localIdx++
+			}
+
 			result[filePath].suites = append(result[filePath].suites, port.SuiteInput{
 				Hierarchy: hierarchy,
-				Tests:     tests,
+				Tests:     testNames,
 			})
 		}
 	}
