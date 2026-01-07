@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.3.0](https://github.com/specvital/web/compare/v1.2.1...v1.3.0) (2026-01-07)
+
+### 🎯 Highlights
+
+#### ✨ Features
+
+- **ai-notice:** Implement AI feature suspension notice with Coming Soon modal ([8e33313](https://github.com/specvital/web/commit/8e33313d87902ab5482c077a5c00b5f4d84b162b))
+- **api:** add OpenAPI spec for Spec View feature ([04c3f9c](https://github.com/specvital/web/commit/04c3f9c5836e2871619f82be422fccf475217383))
+- **spec-view:** add cache freshness indicator and manual regeneration ([0f89732](https://github.com/specvital/web/commit/0f89732e449cc6f645ed6ef6f557af736f5114ef))
+- **spec-view:** add spec view mode toggle with language selection dialog ([66151cf](https://github.com/specvital/web/commit/66151cfbd9f652a4da1d5b2cd869f2c9e2643fea))
+- **spec-view:** implement cache repository for AI conversion results ([fc879a0](https://github.com/specvital/web/commit/fc879a0d0ae53916a65117cd1c7230a213aeaa9c))
+- **spec-view:** implement domain layer for Spec View feature ([d55edf9](https://github.com/specvital/web/commit/d55edf9cf73667aee54886eebadea85731fd1d50))
+- **spec-view:** implement frontend components and API integration ([eae6c12](https://github.com/specvital/web/commit/eae6c129bc4ea339be369855096be1dd7fe2b579))
+- **spec-view:** implement Gemini AI Provider adapter ([6fdae64](https://github.com/specvital/web/commit/6fdae64e991e6d63c6abe099dab2976bda55e0ec))
+- **spec-view:** implement usecase and handler for spec conversion API ([0f6fe4a](https://github.com/specvital/web/commit/0f6fe4a2bbb5b7419c4bbddc7f0a9681bc468263))
+- **spec-view:** improve accessibility with keyboard navigation and ARIA support ([f6f7db4](https://github.com/specvital/web/commit/f6f7db4d332f72c5ff292620ff8ad44b08cacdc1))
+
+#### 🐛 Bug Fixes
+
+- **auth:** fix home to dashboard redirect failure on cold start ([a517b45](https://github.com/specvital/web/commit/a517b4596102c63c0c5205c168c04a8504c69c2d))
+- **spec-view:** fix converted test names being mapped to wrong tests ([477ad26](https://github.com/specvital/web/commit/477ad265e50b8f700fae89e8e9e49e4017d63e2f))
+- **spec-view:** fix spec view cache save failure ([d7f8f8b](https://github.com/specvital/web/commit/d7f8f8b75b46eb6549a78336b351cd0257d42965))
+- **spec-view:** fix test name conversion failing for files after the first ([ce7d4e3](https://github.com/specvital/web/commit/ce7d4e356de72a428b8eef1e00a34d1138214159))
+
+#### ⚡ Performance
+
+- **spec-view:** fix AI conversion timeout for large repositories ([d507c91](https://github.com/specvital/web/commit/d507c91d14a1ce5248156f7d1c6bcbbb4f29e526))
+- **spec-view:** improve AI prompt for better conversion quality ([ca9695a](https://github.com/specvital/web/commit/ca9695a60ca38b75d6a0c970b8d988039f68e879))
+- **spec-view:** improve AI test name conversion quality (2nd iteration) ([cb02ad0](https://github.com/specvital/web/commit/cb02ad0fd2c7090ed0d4b0d062bc8e8a2271f775))
+
+### 🔧 Maintenance
+
+#### ♻️ Refactoring
+
+- **spec-view:** extract AI prompt logic to separate file ([2f50536](https://github.com/specvital/web/commit/2f505361bf44c19c459f4e7ded9c14599837a21b))
+
+#### 🔨 Chore
+
+- sync docs ([4811f84](https://github.com/specvital/web/commit/4811f8461874ca92f189f450921c636ff4714d77))
+
 ## [1.2.1](https://github.com/specvital/web/compare/v1.2.0...v1.2.1) (2026-01-04)
 
 ### 🎯 Highlights
