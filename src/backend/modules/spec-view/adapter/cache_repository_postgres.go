@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/specvital/web/src/backend/internal/db"
@@ -59,9 +58,8 @@ func (r *CacheRepositoryPostgres) UpsertCachedConversions(ctx context.Context, e
 		return nil
 	}
 
-	params := make([]db.UpsertCachedConversionsParams, 0, len(entries))
 	for _, entry := range entries {
-		params = append(params, db.UpsertCachedConversionsParams{
+		if err := r.queries.UpsertCachedConversion(ctx, db.UpsertCachedConversionParams{
 			CacheKeyHash:   entry.CacheKeyHash,
 			CodebaseID:     uuidToPgtype(entry.CodebaseID),
 			ConvertedName:  entry.ConvertedName,
@@ -71,43 +69,9 @@ func (r *CacheRepositoryPostgres) UpsertCachedConversions(ctx context.Context, e
 			ModelID:        entry.ModelID,
 			OriginalName:   entry.OriginalName,
 			SuiteHierarchy: entry.SuiteHierarchy,
-		})
-	}
-
-	copyCount, err := r.conn.CopyFrom(
-		ctx,
-		pgx.Identifier{"spec_view_cache"},
-		[]string{
-			"cache_key_hash",
-			"codebase_id",
-			"file_path",
-			"framework",
-			"suite_hierarchy",
-			"original_name",
-			"converted_name",
-			"language",
-			"model_id",
-		},
-		pgx.CopyFromSlice(len(params), func(i int) ([]any, error) {
-			p := params[i]
-			return []any{
-				p.CacheKeyHash,
-				p.CodebaseID,
-				p.FilePath,
-				p.Framework,
-				p.SuiteHierarchy,
-				p.OriginalName,
-				p.ConvertedName,
-				p.Language,
-				p.ModelID,
-			}, nil
-		}),
-	)
-	if err != nil {
-		return fmt.Errorf("copy from: %w", err)
-	}
-	if copyCount != int64(len(params)) {
-		return fmt.Errorf("expected %d rows, got %d", len(params), copyCount)
+		}); err != nil {
+			return fmt.Errorf("upsert cached conversion: %w", err)
+		}
 	}
 
 	return nil

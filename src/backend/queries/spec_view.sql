@@ -15,7 +15,7 @@ FROM spec_view_cache
 WHERE cache_key_hash = ANY($1::bytea[])
   AND model_id = $2;
 
--- name: UpsertCachedConversions :copyfrom
+-- name: UpsertCachedConversion :exec
 INSERT INTO spec_view_cache (
     cache_key_hash,
     codebase_id,
@@ -26,7 +26,15 @@ INSERT INTO spec_view_cache (
     converted_name,
     language,
     model_id
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+ON CONFLICT (cache_key_hash, model_id) DO UPDATE SET
+    converted_name = EXCLUDED.converted_name,
+    codebase_id = EXCLUDED.codebase_id,
+    file_path = EXCLUDED.file_path,
+    framework = EXCLUDED.framework,
+    suite_hierarchy = EXCLUDED.suite_hierarchy,
+    original_name = EXCLUDED.original_name,
+    language = EXCLUDED.language;
 
 -- name: DeleteCodebaseCache :exec
 DELETE FROM spec_view_cache

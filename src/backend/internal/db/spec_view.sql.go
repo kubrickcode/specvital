@@ -76,7 +76,29 @@ func (q *Queries) GetCachedConversions(ctx context.Context, arg GetCachedConvers
 	return items, nil
 }
 
-type UpsertCachedConversionsParams struct {
+const upsertCachedConversion = `-- name: UpsertCachedConversion :exec
+INSERT INTO spec_view_cache (
+    cache_key_hash,
+    codebase_id,
+    file_path,
+    framework,
+    suite_hierarchy,
+    original_name,
+    converted_name,
+    language,
+    model_id
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+ON CONFLICT (cache_key_hash, model_id) DO UPDATE SET
+    converted_name = EXCLUDED.converted_name,
+    codebase_id = EXCLUDED.codebase_id,
+    file_path = EXCLUDED.file_path,
+    framework = EXCLUDED.framework,
+    suite_hierarchy = EXCLUDED.suite_hierarchy,
+    original_name = EXCLUDED.original_name,
+    language = EXCLUDED.language
+`
+
+type UpsertCachedConversionParams struct {
 	CacheKeyHash   []byte      `json:"cache_key_hash"`
 	CodebaseID     pgtype.UUID `json:"codebase_id"`
 	FilePath       string      `json:"file_path"`
@@ -86,4 +108,19 @@ type UpsertCachedConversionsParams struct {
 	ConvertedName  string      `json:"converted_name"`
 	Language       string      `json:"language"`
 	ModelID        string      `json:"model_id"`
+}
+
+func (q *Queries) UpsertCachedConversion(ctx context.Context, arg UpsertCachedConversionParams) error {
+	_, err := q.db.Exec(ctx, upsertCachedConversion,
+		arg.CacheKeyHash,
+		arg.CodebaseID,
+		arg.FilePath,
+		arg.Framework,
+		arg.SuiteHierarchy,
+		arg.OriginalName,
+		arg.ConvertedName,
+		arg.Language,
+		arg.ModelID,
+	)
+	return err
 }
