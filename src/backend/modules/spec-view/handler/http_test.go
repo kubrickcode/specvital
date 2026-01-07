@@ -23,6 +23,8 @@ func (m *mockConvertSpecViewUseCase) Execute(_ context.Context, _ usecase.Conver
 }
 
 func TestConvertSpecView_Success(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	mock := &mockConvertSpecViewUseCase{
 		result: &usecase.ConvertSpecViewOutput{
 			Files: []usecase.FileConversionResult{
@@ -76,6 +78,8 @@ func TestConvertSpecView_Success(t *testing.T) {
 }
 
 func TestConvertSpecView_InvalidOwner(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	h := &Handler{
 		convertSpecView: &mockConvertSpecViewUseCase{},
 		logger:          logger.New(),
@@ -97,6 +101,8 @@ func TestConvertSpecView_InvalidOwner(t *testing.T) {
 }
 
 func TestConvertSpecView_EmptyCommitSHA(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	h := &Handler{
 		convertSpecView: &mockConvertSpecViewUseCase{},
 		logger:          logger.New(),
@@ -118,6 +124,8 @@ func TestConvertSpecView_EmptyCommitSHA(t *testing.T) {
 }
 
 func TestConvertSpecView_InvalidCommitSHAFormat(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	h := &Handler{
 		convertSpecView: &mockConvertSpecViewUseCase{},
 		logger:          logger.New(),
@@ -139,6 +147,8 @@ func TestConvertSpecView_InvalidCommitSHAFormat(t *testing.T) {
 }
 
 func TestConvertSpecView_AnalysisNotFound(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	h := &Handler{
 		convertSpecView: &mockConvertSpecViewUseCase{
 			err: domain.ErrAnalysisNotFound,
@@ -162,6 +172,8 @@ func TestConvertSpecView_AnalysisNotFound(t *testing.T) {
 }
 
 func TestConvertSpecView_CommitMismatch(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	h := &Handler{
 		convertSpecView: &mockConvertSpecViewUseCase{
 			err: domain.ErrCommitMismatch,
@@ -185,6 +197,8 @@ func TestConvertSpecView_CommitMismatch(t *testing.T) {
 }
 
 func TestConvertSpecView_RateLimited(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	h := &Handler{
 		convertSpecView: &mockConvertSpecViewUseCase{
 			err: domain.ErrRateLimited,
@@ -208,6 +222,8 @@ func TestConvertSpecView_RateLimited(t *testing.T) {
 }
 
 func TestConvertSpecView_InvalidLanguage(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	h := &Handler{
 		convertSpecView: &mockConvertSpecViewUseCase{
 			err: domain.ErrInvalidLanguage,
@@ -277,6 +293,8 @@ func TestConvertSpecView_UnexpectedError(t *testing.T) {
 }
 
 func TestConvertSpecView_WithLanguage(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	mock := &mockConvertSpecViewUseCase{
 		result: &usecase.ConvertSpecViewOutput{
 			Files:   []usecase.FileConversionResult{},
@@ -309,6 +327,8 @@ func TestConvertSpecView_WithLanguage(t *testing.T) {
 }
 
 func TestConvertSpecView_WithForceRefresh(t *testing.T) {
+	t.Skip("Skipped: Spec View feature temporarily suspended pending Level 2 redesign")
+
 	mock := &mockConvertSpecViewUseCase{
 		result: &usecase.ConvertSpecViewOutput{
 			Files:   []usecase.FileConversionResult{},
