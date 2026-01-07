@@ -56,25 +56,33 @@ export const FilterBar = ({
   viewMode,
 }: FilterBarProps) => {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="flex-1">
-        <SearchInput onChange={onQueryChange} value={query} />
-      </div>
-      {/* Mobile: full-bleed horizontal scroll area with fixed ViewModeToggle */}
-      <div className="flex items-center gap-2">
-        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-hide flex-1 min-w-0">
-          <div className="flex items-center gap-2 w-max">
-            <StatusFilter onChange={onStatusesChange} value={statuses} />
-            <FrameworkFilter
-              availableFrameworks={availableFrameworks}
-              onChange={onFrameworksChange}
-              value={frameworks}
-            />
+    <>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex-1">
+          <SearchInput onChange={onQueryChange} value={query} />
+        </div>
+        {/* Mobile: full-bleed horizontal scroll area with fixed ViewModeToggle */}
+        <div className="flex items-center gap-2">
+          <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-hide flex-1 min-w-0">
+            <div className="flex items-center gap-2 w-max">
+              <StatusFilter onChange={onStatusesChange} value={statuses} />
+              <FrameworkFilter
+                availableFrameworks={availableFrameworks}
+                onChange={onFrameworksChange}
+                value={frameworks}
+              />
+            </div>
+          </div>
+          <ViewModeToggle onChange={onViewModeChange} value={viewMode} />
+          <div className="hidden sm:block">
+            <AIAnalysisButton />
           </div>
         </div>
-        <ViewModeToggle onChange={onViewModeChange} value={viewMode} />
-        <AIAnalysisButton />
       </div>
-    </div>
+      {/* AI Analysis button: full width on mobile only */}
+      <div className="block sm:hidden">
+        <AIAnalysisButton className="w-full" />
+      </div>
+    </>
   );
 };
