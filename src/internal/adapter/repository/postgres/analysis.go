@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -196,7 +197,7 @@ func (r *AnalysisRepository) SaveAnalysisInventory(ctx context.Context, params a
 	queries := db.New(tx)
 	pgID := toPgUUID(params.AnalysisID)
 
-	totalSuites, totalTests, err := r.saveInventory(ctx, tx, pgID, params.Inventory)
+	_, totalSuites, totalTests, err := r.saveInventory(ctx, tx, pgID, params.Inventory)
 	if err != nil {
 		return fmt.Errorf("save inventory: %w", err)
 	}
@@ -292,7 +293,7 @@ func (r *AnalysisRepository) SaveAnalysisResult(ctx context.Context, params Save
 	domainInventory := convertCoreToDomainInventory(params.Result.Inventory)
 	pgID := dbAnalysis.ID
 
-	totalSuites, totalTests, err := r.saveInventory(ctx, tx, pgID, domainInventory)
+	_, totalSuites, totalTests, err := r.saveInventory(ctx, tx, pgID, domainInventory)
 	if err != nil {
 		return fmt.Errorf("save inventory: %w", err)
 	}
@@ -384,7 +385,7 @@ type flatSuite struct {
 	tempID     int
 	parentTemp int // -1 if root
 	suite      analysis.TestSuite
-	file       analysis.TestFile
+	fileID     pgtype.UUID
 	depth      int
 }
 
@@ -393,7 +394,7 @@ type flatTest struct {
 	test        analysis.Test
 }
 
-func flattenInventory(inventory *analysis.Inventory) ([]flatSuite, []flatTest) {
+func flattenInventory(inventory *analysis.Inventory, fileIDs map[string]pgtype.UUID) ([]flatSuite, []flatTest) {
 	if inventory == nil {
 		return nil, nil
 	}
@@ -403,8 +404,10 @@ func flattenInventory(inventory *analysis.Inventory) ([]flatSuite, []flatTest) {
 	tempID := 0
 
 	for _, file := range inventory.Files {
+		fileID := fileIDs[file.Path]
+
 		for _, suite := range file.Suites {
-			flattenSuiteRecursive(&suites, &tests, &tempID, -1, file, suite, 0)
+			flattenSuiteRecursive(&suites, &tests, &tempID, -1, fileID, suite, 0)
 		}
 
 		if len(file.Tests) > 0 {
@@ -415,8 +418,8 @@ func flattenInventory(inventory *analysis.Inventory) ([]flatSuite, []flatTest) {
 					Name:     file.Path,
 					Location: analysis.Location{StartLine: 1},
 				},
-				file:  file,
-				depth: 0,
+				fileID: fileID,
+				depth:  0,
 			}
 			suites = append(suites, implicitSuite)
 
@@ -433,13 +436,13 @@ func flattenInventory(inventory *analysis.Inventory) ([]flatSuite, []flatTest) {
 	return suites, tests
 }
 
-func flattenSuiteRecursive(suites *[]flatSuite, tests *[]flatTest, tempID *int, parentTemp int, file analysis.TestFile, suite analysis.TestSuite, depth int) {
+func flattenSuiteRecursive(suites *[]flatSuite, tests *[]flatTest, tempID *int, parentTemp int, fileID pgtype.UUID, suite analysis.TestSuite, depth int) {
 	currentTempID := *tempID
 	*suites = append(*suites, flatSuite{
 		tempID:     currentTempID,
 		parentTemp: parentTemp,
 		suite:      suite,
-		file:       file,
+		fileID:     fileID,
 		depth:      depth,
 	})
 	*tempID++
@@ -452,7 +455,7 @@ func flattenSuiteRecursive(suites *[]flatSuite, tests *[]flatTest, tempID *int, 
 	}
 
 	for _, nested := range suite.Suites {
-		flattenSuiteRecursive(suites, tests, tempID, currentTempID, file, nested, depth+1)
+		flattenSuiteRecursive(suites, tests, tempID, currentTempID, fileID, nested, depth+1)
 	}
 }
 
@@ -475,7 +478,6 @@ func maxDepthInSuites(suitesByDepth map[int][]flatSuite) int {
 func (r *AnalysisRepository) saveSuitesBatch(
 	ctx context.Context,
 	tx pgx.Tx,
-	analysisID pgtype.UUID,
 	suites []flatSuite,
 	parentIDs map[int]pgtype.UUID,
 ) (map[int]pgtype.UUID, error) {
@@ -492,12 +494,10 @@ func (r *AnalysisRepository) saveSuitesBatch(
 		}
 
 		batch.Queue(db.InsertTestSuiteBatch,
-			analysisID,
+			s.fileID,
 			parentID,
 			truncateString(s.suite.Name, maxTestSuiteNameLength),
-			s.file.Path,
 			pgtype.Int4{Int32: int32(s.suite.Location.StartLine), Valid: true},
-			pgtype.Text{String: s.file.Framework, Valid: s.file.Framework != ""},
 			int32(s.depth),
 		)
 	}
@@ -557,19 +557,58 @@ func (r *AnalysisRepository) saveTestsCopyFrom(
 	return nil
 }
 
+func (r *AnalysisRepository) saveFiles(
+	ctx context.Context,
+	tx pgx.Tx,
+	analysisID pgtype.UUID,
+	files []analysis.TestFile,
+) (map[string]pgtype.UUID, error) {
+	fileIDs := make(map[string]pgtype.UUID, len(files))
+	queries := db.New(tx)
+
+	for _, file := range files {
+		var hintsJSON []byte
+		if file.DomainHints != nil {
+			var err error
+			hintsJSON, err = json.Marshal(file.DomainHints)
+			if err != nil {
+				return nil, fmt.Errorf("marshal domain hints for %q: %w", file.Path, err)
+			}
+		}
+
+		fileID, err := queries.InsertTestFile(ctx, db.InsertTestFileParams{
+			AnalysisID:  analysisID,
+			FilePath:    file.Path,
+			Framework:   pgtype.Text{String: file.Framework, Valid: file.Framework != ""},
+			DomainHints: hintsJSON,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("insert test file %q: %w", file.Path, err)
+		}
+		fileIDs[file.Path] = fileID
+	}
+
+	return fileIDs, nil
+}
+
 func (r *AnalysisRepository) saveInventory(
 	ctx context.Context,
 	tx pgx.Tx,
 	analysisID pgtype.UUID,
 	inventory *analysis.Inventory,
-) (totalSuites, totalTests int, err error) {
-	if inventory == nil {
-		return 0, 0, nil
+) (totalFiles, totalSuites, totalTests int, err error) {
+	if inventory == nil || len(inventory.Files) == 0 {
+		return 0, 0, 0, nil
 	}
 
-	suites, tests := flattenInventory(inventory)
+	fileIDs, err := r.saveFiles(ctx, tx, analysisID, inventory.Files)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("save files: %w", err)
+	}
+
+	suites, tests := flattenInventory(inventory, fileIDs)
 	if len(suites) == 0 {
-		return 0, 0, nil
+		return len(inventory.Files), 0, 0, nil
 	}
 
 	suitesByDepth := groupByDepth(suites)
@@ -578,22 +617,22 @@ func (r *AnalysisRepository) saveInventory(
 	allIDs := make(map[int]pgtype.UUID)
 	for depth := 0; depth <= maxDepth; depth++ {
 		if err := ctx.Err(); err != nil {
-			return 0, 0, err
+			return 0, 0, 0, err
 		}
 		depthSuites := suitesByDepth[depth]
 		if len(depthSuites) == 0 {
 			continue
 		}
-		newIDs, err := r.saveSuitesBatch(ctx, tx, analysisID, depthSuites, allIDs)
+		newIDs, err := r.saveSuitesBatch(ctx, tx, depthSuites, allIDs)
 		if err != nil {
-			return 0, 0, fmt.Errorf("save suites at depth %d (count=%d): %w", depth, len(depthSuites), err)
+			return 0, 0, 0, fmt.Errorf("save suites at depth %d (count=%d): %w", depth, len(depthSuites), err)
 		}
 		maps.Copy(allIDs, newIDs)
 	}
 
 	if err := r.saveTestsCopyFrom(ctx, tx, tests, allIDs); err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 
-	return len(suites), len(tests), nil
+	return len(inventory.Files), len(suites), len(tests), nil
 }

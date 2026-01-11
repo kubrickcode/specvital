@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/specvital/core/pkg/domain"
 	"github.com/specvital/core/pkg/parser"
 	"github.com/specvital/worker/internal/domain/analysis"
@@ -674,7 +675,7 @@ func TestSaveAnalysisResultParams_Validate(t *testing.T) {
 
 func Test_flattenInventory(t *testing.T) {
 	t.Run("nil inventory returns empty", func(t *testing.T) {
-		suites, tests := flattenInventory(nil)
+		suites, tests := flattenInventory(nil, nil)
 		if suites != nil || tests != nil {
 			t.Errorf("expected nil, nil for nil inventory")
 		}
@@ -682,7 +683,7 @@ func Test_flattenInventory(t *testing.T) {
 
 	t.Run("empty inventory returns empty slices", func(t *testing.T) {
 		inv := &analysis.Inventory{}
-		suites, tests := flattenInventory(inv)
+		suites, tests := flattenInventory(inv, nil)
 		if len(suites) != 0 || len(tests) != 0 {
 			t.Errorf("expected empty slices for empty inventory")
 		}
@@ -716,7 +717,10 @@ func Test_flattenInventory(t *testing.T) {
 			},
 		}
 
-		suites, tests := flattenInventory(inv)
+		fileIDs := map[string]pgtype.UUID{
+			"test.go": {Bytes: [16]byte{1}, Valid: true},
+		}
+		suites, tests := flattenInventory(inv, fileIDs)
 
 		if len(suites) != 2 {
 			t.Errorf("expected 2 suites, got %d", len(suites))
@@ -760,7 +764,10 @@ func Test_flattenInventory(t *testing.T) {
 			},
 		}
 
-		suites, tests := flattenInventory(inv)
+		fileIDs := map[string]pgtype.UUID{
+			"simple_test.go": {Bytes: [16]byte{2}, Valid: true},
+		}
+		suites, tests := flattenInventory(inv, fileIDs)
 
 		if len(suites) != 1 {
 			t.Errorf("expected 1 implicit suite, got %d", len(suites))
