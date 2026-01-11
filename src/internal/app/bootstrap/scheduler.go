@@ -1,3 +1,4 @@
+// Package bootstrap provides application startup utilities for analyzer and scheduler services.
 package bootstrap
 
 import (
@@ -101,3 +102,4 @@ func StartScheduler(cfg SchedulerConfig) error {
 	slog.Info("service shutdown complete", "name", cfg.ServiceName)
 	return nil
 }
+

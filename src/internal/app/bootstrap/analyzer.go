@@ -1,11 +1,10 @@
-// Package bootstrap provides application startup utilities for worker services.
+// Package bootstrap provides application startup utilities for analyzer and scheduler services.
 package bootstrap
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,9 +15,8 @@ import (
 	infraqueue "github.com/specvital/worker/internal/infra/queue"
 )
 
-const defaultConcurrency = 5
-
-type WorkerConfig struct {
+// AnalyzerConfig holds configuration for the analyzer service.
+type AnalyzerConfig struct {
 	ServiceName     string
 	Concurrency     int
 	ShutdownTimeout time.Duration
@@ -26,7 +24,8 @@ type WorkerConfig struct {
 	EncryptionKey   string
 }
 
-func (c *WorkerConfig) Validate() error {
+// Validate checks that required analyzer configuration fields are set.
+func (c *AnalyzerConfig) Validate() error {
 	if c.ServiceName == "" {
 		return fmt.Errorf("service name is required")
 	}
@@ -39,7 +38,8 @@ func (c *WorkerConfig) Validate() error {
 	return nil
 }
 
-func (c *WorkerConfig) applyDefaults() {
+// applyDefaults sets default values for optional analyzer configuration.
+func (c *AnalyzerConfig) applyDefaults() {
 	if c.Concurrency <= 0 {
 		c.Concurrency = defaultConcurrency
 	}
@@ -48,10 +48,10 @@ func (c *WorkerConfig) applyDefaults() {
 	}
 }
 
-// StartWorker starts the worker service for queue processing.
-// Workers consume tasks from PostgreSQL-based river queue and process them.
-// Horizontal scaling is safe - multiple worker instances share the workload.
-func StartWorker(cfg WorkerConfig) error {
+// StartAnalyzer starts the analyzer service for queue processing.
+// Analyzers consume tasks from PostgreSQL-based river queue and process them.
+// Horizontal scaling is safe - multiple analyzer instances share the workload.
+func StartAnalyzer(cfg AnalyzerConfig) error {
 	if err := cfg.Validate(); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
@@ -70,7 +70,7 @@ func StartWorker(cfg WorkerConfig) error {
 
 	slog.Info("postgres connected")
 
-	container, err := app.NewWorkerContainer(ctx, app.ContainerConfig{
+	container, err := app.NewAnalyzerContainer(ctx, app.ContainerConfig{
 		EncryptionKey: cfg.EncryptionKey,
 		Pool:          pool,
 	})
@@ -93,11 +93,11 @@ func StartWorker(cfg WorkerConfig) error {
 		return fmt.Errorf("queue server: %w", err)
 	}
 
-	slog.Info("worker starting", "concurrency", cfg.Concurrency)
+	slog.Info("analyzer starting", "concurrency", cfg.Concurrency)
 	if err := srv.Start(ctx); err != nil {
 		return fmt.Errorf("start server: %w", err)
 	}
-	slog.Info("worker ready", "concurrency", cfg.Concurrency)
+	slog.Info("analyzer ready", "concurrency", cfg.Concurrency)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
@@ -112,23 +112,4 @@ func StartWorker(cfg WorkerConfig) error {
 
 	slog.Info("service shutdown complete", "name", cfg.ServiceName)
 	return nil
-}
-
-func maskURL(rawURL string) string {
-	parsed, err := url.Parse(rawURL)
-	if err != nil {
-		return "[invalid-url]"
-	}
-
-	host := parsed.Host
-	if len(host) > 30 {
-		host = host[:30] + "..."
-	}
-
-	userPart := ""
-	if parsed.User != nil {
-		userPart = parsed.User.Username() + ":****@"
-	}
-
-	return fmt.Sprintf("%s://%s%s/...", parsed.Scheme, userPart, host)
 }

@@ -20,7 +20,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := bootstrap.StartWorker(bootstrap.WorkerConfig{
+	if err := bootstrap.StartAnalyzer(bootstrap.AnalyzerConfig{
 		ServiceName:   "analyzer",
 		DatabaseURL:   cfg.DatabaseURL,
 		EncryptionKey: cfg.EncryptionKey,
