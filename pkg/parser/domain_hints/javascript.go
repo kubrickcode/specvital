@@ -44,7 +44,6 @@ const (
 	`
 )
 
-
 func (e *JavaScriptExtractor) Extract(ctx context.Context, source []byte) *domain.DomainHints {
 	tree, err := tspool.Parse(ctx, e.lang, source)
 	if err != nil {

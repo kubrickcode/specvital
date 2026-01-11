@@ -149,10 +149,10 @@ func walkTree(node *sitter.Node, visitor func(*sitter.Node) bool) {
 
 func TestGetDeclarationChildren(t *testing.T) {
 	tests := []struct {
-		name           string
-		source         string
-		expectedTypes  []string
-		expectedNames  []string
+		name          string
+		source        string
+		expectedTypes []string
+		expectedNames []string
 	}{
 		{
 			name: "simple class with methods",

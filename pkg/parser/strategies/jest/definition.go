@@ -122,13 +122,13 @@ func (p *JestParser) Parse(ctx context.Context, source []byte, filename string) 
 }
 
 var (
-	configRootDirPattern           = regexp.MustCompile(`rootDir\s*:\s*['"]([^'"]+)['"]`)
-	configRootsPattern             = regexp.MustCompile(`roots\s*:\s*\[([^\]]+)\]`)
-	configRootItemPattern          = regexp.MustCompile(`['"]([^'"]+)['"]`)
-	injectGlobalsFalsePattern      = regexp.MustCompile(`injectGlobals\s*:\s*false`)
-	configTestMatchPattern         = regexp.MustCompile(`testMatch\s*:\s*\[([^\]]+)\]`)
-	configTestPathIgnorePattern    = regexp.MustCompile(`testPathIgnorePatterns\s*:\s*\[([^\]]+)\]`)
-	configModulePathIgnorePattern  = regexp.MustCompile(`modulePathIgnorePatterns\s*:\s*\[([^\]]+)\]`)
+	configRootDirPattern          = regexp.MustCompile(`rootDir\s*:\s*['"]([^'"]+)['"]`)
+	configRootsPattern            = regexp.MustCompile(`roots\s*:\s*\[([^\]]+)\]`)
+	configRootItemPattern         = regexp.MustCompile(`['"]([^'"]+)['"]`)
+	injectGlobalsFalsePattern     = regexp.MustCompile(`injectGlobals\s*:\s*false`)
+	configTestMatchPattern        = regexp.MustCompile(`testMatch\s*:\s*\[([^\]]+)\]`)
+	configTestPathIgnorePattern   = regexp.MustCompile(`testPathIgnorePatterns\s*:\s*\[([^\]]+)\]`)
+	configModulePathIgnorePattern = regexp.MustCompile(`modulePathIgnorePatterns\s*:\s*\[([^\]]+)\]`)
 )
 
 func parseRootDir(content []byte) string {

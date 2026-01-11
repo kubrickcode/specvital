@@ -1195,9 +1195,9 @@ func TestCreateOrder(t *testing.T) {
 		}
 
 		expectedImports := map[string]bool{
-			"testing":                          true,
+			"testing":                            true,
 			"github.com/stretchr/testify/assert": true,
-			"myapp/services/inventory":         true,
+			"myapp/services/inventory":           true,
 		}
 		for _, imp := range file.DomainHints.Imports {
 			delete(expectedImports, imp)
