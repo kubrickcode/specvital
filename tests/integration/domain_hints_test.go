@@ -136,7 +136,6 @@ func verifyLanguageHints(t *testing.T, result *parser.ScanResult, langName strin
 		t.Logf("Sample file: %s", samplePath)
 		t.Logf("  Imports: %d items", len(sampleHints.Imports))
 		t.Logf("  Calls: %d items", len(sampleHints.Calls))
-		t.Logf("  Variables: %d items", len(sampleHints.Variables))
 
 		if len(sampleHints.Imports) == 0 {
 			t.Errorf("sample %s file has no imports", langName)

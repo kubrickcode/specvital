@@ -1206,17 +1206,6 @@ func TestCreateOrder(t *testing.T) {
 			t.Errorf("missing imports: %v", expectedImports)
 		}
 
-		foundMockCart := false
-		for _, v := range file.DomainHints.Variables {
-			if v == "mockCart" {
-				foundMockCart = true
-				break
-			}
-		}
-		if !foundMockCart {
-			t.Errorf("expected mockCart in variables, got %v", file.DomainHints.Variables)
-		}
-
 		if len(file.DomainHints.Calls) == 0 {
 			t.Error("expected at least one call hint")
 		}
@@ -1274,15 +1263,6 @@ test.describe('authentication flow', () => {
 		}
 		if !importSet["./pages/login"] {
 			t.Errorf("expected ./pages/login import, got %v", file.DomainHints.Imports)
-		}
-
-		// Check variables
-		varSet := make(map[string]bool)
-		for _, v := range file.DomainHints.Variables {
-			varSet[v] = true
-		}
-		if !varSet["mockCredentials"] {
-			t.Errorf("expected mockCredentials variable, got %v", file.DomainHints.Variables)
 		}
 
 		// Check calls (excluding test framework)

@@ -2,7 +2,6 @@ package domain_hints
 
 import (
 	"context"
-	"regexp"
 	"strings"
 
 	sitter "github.com/smacker/go-tree-sitter"
@@ -45,30 +44,7 @@ const (
 			)
 		)
 	`
-
-	goVariableQuery = `
-		(function_declaration
-			body: (block
-				(short_var_declaration
-					left: (expression_list
-						(identifier) @var
-					)
-				)
-			)
-		)
-		(function_declaration
-			body: (block
-				(var_declaration
-					(var_spec
-						name: (identifier) @var
-					)
-				)
-			)
-		)
-	`
 )
-
-var domainVariablePattern = regexp.MustCompile(`(?i)(mock|fake|stub|fixture|test|expected|want|got)`)
 
 func (e *GoExtractor) Extract(ctx context.Context, source []byte) *domain.DomainHints {
 	tree, err := tspool.Parse(ctx, domain.LanguageGo, source)
@@ -80,12 +56,11 @@ func (e *GoExtractor) Extract(ctx context.Context, source []byte) *domain.Domain
 	root := tree.RootNode()
 
 	hints := &domain.DomainHints{
-		Imports:   extractGoImports(root, source),
-		Calls:     extractGoCalls(root, source),
-		Variables: extractGoVariables(root, source),
+		Imports: extractGoImports(root, source),
+		Calls:   extractGoCalls(root, source),
 	}
 
-	if len(hints.Imports) == 0 && len(hints.Calls) == 0 && len(hints.Variables) == 0 {
+	if len(hints.Imports) == 0 && len(hints.Calls) == 0 {
 		return nil
 	}
 
@@ -140,35 +115,6 @@ func extractGoCalls(root *sitter.Node, source []byte) []string {
 	}
 
 	return calls
-}
-
-func extractGoVariables(root *sitter.Node, source []byte) []string {
-	results, err := tspool.QueryWithCache(root, source, domain.LanguageGo, goVariableQuery)
-	if err != nil {
-		return nil
-	}
-
-	seen := make(map[string]struct{})
-	variables := make([]string, 0)
-
-	for _, r := range results {
-		if node, ok := r.Captures["var"]; ok {
-			name := getNodeText(node, source)
-			if name == "" || name == "_" {
-				continue
-			}
-			if !domainVariablePattern.MatchString(name) {
-				continue
-			}
-			if _, exists := seen[name]; exists {
-				continue
-			}
-			seen[name] = struct{}{}
-			variables = append(variables, name)
-		}
-	}
-
-	return variables
 }
 
 func trimQuotes(s string) string {

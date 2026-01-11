@@ -42,13 +42,6 @@ const (
 			]
 		)
 	`
-
-	// Variable declarations: const x = ..., let y = ..., var z = ...
-	jsVariableQuery = `
-		(variable_declarator
-			name: (identifier) @var
-		)
-	`
 )
 
 
@@ -62,12 +55,11 @@ func (e *JavaScriptExtractor) Extract(ctx context.Context, source []byte) *domai
 	root := tree.RootNode()
 
 	hints := &domain.DomainHints{
-		Imports:   e.extractImports(root, source),
-		Calls:     e.extractCalls(root, source),
-		Variables: e.extractVariables(root, source),
+		Imports: e.extractImports(root, source),
+		Calls:   e.extractCalls(root, source),
 	}
 
-	if len(hints.Imports) == 0 && len(hints.Calls) == 0 && len(hints.Variables) == 0 {
+	if len(hints.Imports) == 0 && len(hints.Calls) == 0 {
 		return nil
 	}
 
@@ -158,35 +150,6 @@ func (e *JavaScriptExtractor) extractCalls(root *sitter.Node, source []byte) []s
 	}
 
 	return calls
-}
-
-func (e *JavaScriptExtractor) extractVariables(root *sitter.Node, source []byte) []string {
-	results, err := tspool.QueryWithCache(root, source, e.lang, jsVariableQuery)
-	if err != nil {
-		return nil
-	}
-
-	seen := make(map[string]struct{})
-	variables := make([]string, 0)
-
-	for _, r := range results {
-		if node, ok := r.Captures["var"]; ok {
-			name := getNodeText(node, source)
-			if name == "" || name == "_" {
-				continue
-			}
-			if !domainVariablePattern.MatchString(name) {
-				continue
-			}
-			if _, exists := seen[name]; exists {
-				continue
-			}
-			seen[name] = struct{}{}
-			variables = append(variables, name)
-		}
-	}
-
-	return variables
 }
 
 func trimJSQuotes(s string) string {

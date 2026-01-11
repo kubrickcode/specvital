@@ -54,19 +54,6 @@ func TestCreateOrder(t *testing.T) {
 			}
 		}
 	})
-
-	t.Run("variables", func(t *testing.T) {
-		found := false
-		for _, v := range hints.Variables {
-			if v == "mockCart" {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("expected mockCart in variables, got %v", hints.Variables)
-		}
-	})
 }
 
 func TestGoExtractor_Extract_EmptyFile(t *testing.T) {
@@ -113,53 +100,6 @@ func TestSomething(t *testing.T) {
 
 	if len(expectedCalls) > 0 {
 		t.Errorf("missing calls: %v, got: %v", expectedCalls, hints.Calls)
-	}
-}
-
-func TestGoExtractor_Extract_VariableFiltering(t *testing.T) {
-	source := []byte(`package test
-
-import "testing"
-
-func TestFiltering(t *testing.T) {
-	mockUser := User{}
-	fakeClient := &Client{}
-	stubRepo := newStubRepo()
-	testData := getData()
-	expectedResult := "ok"
-	wantValue := 42
-	gotResult := doSomething()
-	fixtureOrder := Order{}
-	regularVar := "ignored"
-	count := 10
-}
-`)
-
-	extractor := &GoExtractor{}
-	hints := extractor.Extract(context.Background(), source)
-
-	if hints == nil {
-		t.Fatal("expected hints, got nil")
-	}
-
-	shouldMatch := []string{"mockUser", "fakeClient", "stubRepo", "testData", "expectedResult", "wantValue", "gotResult", "fixtureOrder"}
-	shouldNotMatch := []string{"regularVar", "count"}
-
-	varSet := make(map[string]bool)
-	for _, v := range hints.Variables {
-		varSet[v] = true
-	}
-
-	for _, v := range shouldMatch {
-		if !varSet[v] {
-			t.Errorf("expected %q to be included in variables", v)
-		}
-	}
-
-	for _, v := range shouldNotMatch {
-		if varSet[v] {
-			t.Errorf("expected %q to be excluded from variables", v)
-		}
 	}
 }
 

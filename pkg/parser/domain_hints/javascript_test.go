@@ -141,55 +141,6 @@ test('should work', async () => {
 	}
 }
 
-func TestJavaScriptExtractor_Extract_Variables(t *testing.T) {
-	source := []byte(`
-import { test } from '@playwright/test';
-
-test('should work', async () => {
-  const mockUser = { name: 'test' };
-  let fakeClient = new Client();
-  var stubRepo = createStubRepo();
-  const testData = getData();
-  const expectedResult = 'ok';
-  let wantValue = 42;
-  var gotResponse = await fetch();
-  const fixtureOrder = Order.create();
-  const regularVar = 'ignored';
-  const count = 10;
-});
-`)
-
-	extractor := &JavaScriptExtractor{lang: domain.LanguageTypeScript}
-	hints := extractor.Extract(context.Background(), source)
-
-	if hints == nil {
-		t.Fatal("expected hints, got nil")
-	}
-
-	shouldMatch := []string{
-		"mockUser", "fakeClient", "stubRepo", "testData",
-		"expectedResult", "wantValue", "gotResponse", "fixtureOrder",
-	}
-	shouldNotMatch := []string{"regularVar", "count"}
-
-	varSet := make(map[string]bool)
-	for _, v := range hints.Variables {
-		varSet[v] = true
-	}
-
-	for _, v := range shouldMatch {
-		if !varSet[v] {
-			t.Errorf("expected %q to be included in variables, got %v", v, hints.Variables)
-		}
-	}
-
-	for _, v := range shouldNotMatch {
-		if varSet[v] {
-			t.Errorf("expected %q to be excluded from variables", v)
-		}
-	}
-}
-
 func TestJavaScriptExtractor_Extract_EmptyFile(t *testing.T) {
 	source := []byte(`// empty file`)
 
@@ -275,16 +226,6 @@ test.describe('authentication flow', () => {
 		t.Error("expected ./pages/login import")
 	}
 
-	// Verify domain-relevant variables
-	varSet := make(map[string]bool)
-	for _, v := range hints.Variables {
-		varSet[v] = true
-	}
-
-	if !varSet["mockCredentials"] {
-		t.Error("expected mockCredentials variable")
-	}
-
 	// Verify calls (excluding test framework)
 	callSet := make(map[string]bool)
 	for _, c := range hints.Calls {
@@ -331,16 +272,6 @@ test('should render user profile', () => {
 	}
 	if !importSet["./UserProfile"] {
 		t.Error("expected ./UserProfile import")
-	}
-
-	// Verify variables
-	varSet := make(map[string]bool)
-	for _, v := range hints.Variables {
-		varSet[v] = true
-	}
-
-	if !varSet["mockUser"] {
-		t.Errorf("expected mockUser variable, got %v", hints.Variables)
 	}
 
 	// Verify calls
