@@ -113,6 +113,8 @@ func TestGetExtractor(t *testing.T) {
 		{domain.LanguageTypeScript, false},
 		{domain.LanguageTSX, false},
 		{domain.LanguagePython, false},
+		{domain.LanguageJava, false},
+		{domain.LanguageKotlin, false},
 	}
 
 	for _, tt := range tests {
