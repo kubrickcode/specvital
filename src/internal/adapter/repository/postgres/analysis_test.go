@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -819,6 +820,568 @@ func Test_maxDepthInSuites(t *testing.T) {
 		result := maxDepthInSuites(suitesByDepth)
 		if result != 5 {
 			t.Errorf("expected max depth 5, got %d", result)
+		}
+	})
+}
+
+func TestAnalysisRepository_DomainHints(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool, cleanup := testdb.SetupTestDB(t)
+	defer cleanup()
+
+	repo := NewAnalysisRepository(pool)
+	ctx := context.Background()
+
+	t.Run("should save and retrieve DomainHints", func(t *testing.T) {
+		// Given: DomainHints that contains Calls and Imports
+		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
+			Owner:          "hints-owner",
+			Repo:           "hints-repo",
+			CommitSHA:      "hints123",
+			Branch:         "main",
+			ExternalRepoID: "hints-id-1",
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		inventory := &analysis.Inventory{
+			Files: []analysis.TestFile{
+				{
+					Path:      "auth.test.ts",
+					Framework: "jest",
+					DomainHints: &analysis.DomainHints{
+						Calls:   []string{"authService.validateToken", "userRepo.findById"},
+						Imports: []string{"@nestjs/jwt", "@nestjs/testing"},
+					},
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "AuthService",
+							Location: analysis.Location{StartLine: 10},
+							Tests: []analysis.Test{
+								{Name: "should validate token", Location: analysis.Location{StartLine: 12}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		// When: SaveAnalysisInventory is called
+		err = repo.SaveAnalysisInventory(ctx, analysis.SaveAnalysisInventoryParams{
+			AnalysisID: analysisID,
+			Inventory:  inventory,
+		})
+		if err != nil {
+			t.Fatalf("SaveAnalysisInventory failed: %v", err)
+		}
+
+		// Then: domain_hints is stored as JSONB and matches the original
+		var domainHintsJSON []byte
+		pgID := toPgUUID(analysisID)
+		err = pool.QueryRow(ctx, "SELECT domain_hints FROM test_files WHERE analysis_id = $1", pgID).Scan(&domainHintsJSON)
+		if err != nil {
+			t.Fatalf("failed to query domain_hints: %v", err)
+		}
+
+		if domainHintsJSON == nil {
+			t.Fatal("expected domain_hints to be non-nil")
+		}
+
+		var retrievedHints analysis.DomainHints
+		if err := json.Unmarshal(domainHintsJSON, &retrievedHints); err != nil {
+			t.Fatalf("failed to unmarshal domain_hints: %v", err)
+		}
+
+		if len(retrievedHints.Calls) != 2 {
+			t.Errorf("expected 2 calls, got %d", len(retrievedHints.Calls))
+		}
+		if retrievedHints.Calls[0] != "authService.validateToken" {
+			t.Errorf("expected first call to be 'authService.validateToken', got %q", retrievedHints.Calls[0])
+		}
+		if retrievedHints.Calls[1] != "userRepo.findById" {
+			t.Errorf("expected second call to be 'userRepo.findById', got %q", retrievedHints.Calls[1])
+		}
+
+		if len(retrievedHints.Imports) != 2 {
+			t.Errorf("expected 2 imports, got %d", len(retrievedHints.Imports))
+		}
+		if retrievedHints.Imports[0] != "@nestjs/jwt" {
+			t.Errorf("expected first import to be '@nestjs/jwt', got %q", retrievedHints.Imports[0])
+		}
+		if retrievedHints.Imports[1] != "@nestjs/testing" {
+			t.Errorf("expected second import to be '@nestjs/testing', got %q", retrievedHints.Imports[1])
+		}
+	})
+
+	t.Run("should save nil DomainHints as null", func(t *testing.T) {
+		_, err := pool.Exec(ctx, "TRUNCATE codebases CASCADE")
+		if err != nil {
+			t.Fatalf("failed to truncate: %v", err)
+		}
+
+		// Given: TestFile with nil DomainHints
+		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
+			Owner:          "nil-hints-owner",
+			Repo:           "nil-hints-repo",
+			CommitSHA:      "nilhints123",
+			Branch:         "main",
+			ExternalRepoID: "nil-hints-id",
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		inventory := &analysis.Inventory{
+			Files: []analysis.TestFile{
+				{
+					Path:        "simple.test.ts",
+					Framework:   "jest",
+					DomainHints: nil,
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "SimpleSuite",
+							Location: analysis.Location{StartLine: 5},
+							Tests: []analysis.Test{
+								{Name: "simple test", Location: analysis.Location{StartLine: 7}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		// When: SaveAnalysisInventory is called
+		err = repo.SaveAnalysisInventory(ctx, analysis.SaveAnalysisInventoryParams{
+			AnalysisID: analysisID,
+			Inventory:  inventory,
+		})
+		if err != nil {
+			t.Fatalf("SaveAnalysisInventory failed: %v", err)
+		}
+
+		// Then: domain_hints is stored as null
+		var domainHintsJSON []byte
+		pgID := toPgUUID(analysisID)
+		err = pool.QueryRow(ctx, "SELECT domain_hints FROM test_files WHERE analysis_id = $1", pgID).Scan(&domainHintsJSON)
+		if err != nil {
+			t.Fatalf("failed to query domain_hints: %v", err)
+		}
+
+		if domainHintsJSON != nil {
+			t.Errorf("expected domain_hints to be nil, got %s", string(domainHintsJSON))
+		}
+	})
+
+	t.Run("should save empty DomainHints arrays", func(t *testing.T) {
+		_, err := pool.Exec(ctx, "TRUNCATE codebases CASCADE")
+		if err != nil {
+			t.Fatalf("failed to truncate: %v", err)
+		}
+
+		// Given: TestFile with empty DomainHints arrays
+		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
+			Owner:          "empty-hints-owner",
+			Repo:           "empty-hints-repo",
+			CommitSHA:      "emptyhints123",
+			Branch:         "main",
+			ExternalRepoID: "empty-hints-id",
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		inventory := &analysis.Inventory{
+			Files: []analysis.TestFile{
+				{
+					Path:      "empty-hints.test.ts",
+					Framework: "jest",
+					DomainHints: &analysis.DomainHints{
+						Calls:   []string{},
+						Imports: []string{},
+					},
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "EmptyHintsSuite",
+							Location: analysis.Location{StartLine: 5},
+							Tests: []analysis.Test{
+								{Name: "test with empty hints", Location: analysis.Location{StartLine: 7}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		// When: SaveAnalysisInventory is called
+		err = repo.SaveAnalysisInventory(ctx, analysis.SaveAnalysisInventoryParams{
+			AnalysisID: analysisID,
+			Inventory:  inventory,
+		})
+		if err != nil {
+			t.Fatalf("SaveAnalysisInventory failed: %v", err)
+		}
+
+		// Then: domain_hints is stored with empty arrays
+		var domainHintsJSON []byte
+		pgID := toPgUUID(analysisID)
+		err = pool.QueryRow(ctx, "SELECT domain_hints FROM test_files WHERE analysis_id = $1", pgID).Scan(&domainHintsJSON)
+		if err != nil {
+			t.Fatalf("failed to query domain_hints: %v", err)
+		}
+
+		if domainHintsJSON == nil {
+			t.Fatal("expected domain_hints to be non-nil for empty arrays")
+		}
+
+		var retrievedHints analysis.DomainHints
+		if err := json.Unmarshal(domainHintsJSON, &retrievedHints); err != nil {
+			t.Fatalf("failed to unmarshal domain_hints: %v", err)
+		}
+
+		if retrievedHints.Calls == nil {
+			t.Error("expected Calls to be empty slice, got nil")
+		}
+		if len(retrievedHints.Calls) != 0 {
+			t.Errorf("expected 0 calls, got %d", len(retrievedHints.Calls))
+		}
+
+		if retrievedHints.Imports == nil {
+			t.Error("expected Imports to be empty slice, got nil")
+		}
+		if len(retrievedHints.Imports) != 0 {
+			t.Errorf("expected 0 imports, got %d", len(retrievedHints.Imports))
+		}
+	})
+}
+
+func TestAnalysisRepository_FileIdRelationship(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool, cleanup := testdb.SetupTestDB(t)
+	defer cleanup()
+
+	repo := NewAnalysisRepository(pool)
+	ctx := context.Background()
+
+	t.Run("should link test_suites to test_files via file_id", func(t *testing.T) {
+		// Given: Inventory with multiple files
+		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
+			Owner:          "fileid-owner",
+			Repo:           "fileid-repo",
+			CommitSHA:      "fileid123",
+			Branch:         "main",
+			ExternalRepoID: "fileid-id-1",
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		inventory := &analysis.Inventory{
+			Files: []analysis.TestFile{
+				{
+					Path:      "auth/login.test.ts",
+					Framework: "jest",
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "LoginService",
+							Location: analysis.Location{StartLine: 10},
+							Tests: []analysis.Test{
+								{Name: "should login user", Location: analysis.Location{StartLine: 12}},
+							},
+						},
+					},
+				},
+				{
+					Path:      "auth/logout.test.ts",
+					Framework: "jest",
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "LogoutService",
+							Location: analysis.Location{StartLine: 5},
+							Tests: []analysis.Test{
+								{Name: "should logout user", Location: analysis.Location{StartLine: 7}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		// When: SaveAnalysisInventory is called
+		err = repo.SaveAnalysisInventory(ctx, analysis.SaveAnalysisInventoryParams{
+			AnalysisID: analysisID,
+			Inventory:  inventory,
+		})
+		if err != nil {
+			t.Fatalf("SaveAnalysisInventory failed: %v", err)
+		}
+
+		// Then: test_files are created for each file
+		var fileCount int
+		pgID := toPgUUID(analysisID)
+		err = pool.QueryRow(ctx, "SELECT COUNT(*) FROM test_files WHERE analysis_id = $1", pgID).Scan(&fileCount)
+		if err != nil {
+			t.Fatalf("failed to query test_files count: %v", err)
+		}
+		if fileCount != 2 {
+			t.Errorf("expected 2 test_files, got %d", fileCount)
+		}
+
+		// Then: test_suites.file_id references correct test_files.id
+		type suiteFileRow struct {
+			suiteName string
+			filePath  string
+		}
+		rows, err := pool.Query(ctx, `
+			SELECT ts.name, tf.file_path
+			FROM test_suites ts
+			JOIN test_files tf ON ts.file_id = tf.id
+			WHERE tf.analysis_id = $1
+			ORDER BY tf.file_path
+		`, pgID)
+		if err != nil {
+			t.Fatalf("failed to query suite-file relationship: %v", err)
+		}
+		defer rows.Close()
+
+		var results []suiteFileRow
+		for rows.Next() {
+			var r suiteFileRow
+			if err := rows.Scan(&r.suiteName, &r.filePath); err != nil {
+				t.Fatalf("failed to scan row: %v", err)
+			}
+			results = append(results, r)
+		}
+		if err := rows.Err(); err != nil {
+			t.Fatalf("row iteration error: %v", err)
+		}
+
+		if len(results) != 2 {
+			t.Fatalf("expected 2 suite-file relationships, got %d", len(results))
+		}
+
+		// Verify LoginService is linked to login.test.ts
+		if results[0].suiteName != "LoginService" || results[0].filePath != "auth/login.test.ts" {
+			t.Errorf("expected LoginService in auth/login.test.ts, got %q in %q", results[0].suiteName, results[0].filePath)
+		}
+
+		// Verify LogoutService is linked to logout.test.ts
+		if results[1].suiteName != "LogoutService" || results[1].filePath != "auth/logout.test.ts" {
+			t.Errorf("expected LogoutService in auth/logout.test.ts, got %q in %q", results[1].suiteName, results[1].filePath)
+		}
+	})
+
+	t.Run("should cascade delete test_suites when test_files deleted", func(t *testing.T) {
+		_, err := pool.Exec(ctx, "TRUNCATE codebases CASCADE")
+		if err != nil {
+			t.Fatalf("failed to truncate: %v", err)
+		}
+
+		// Given: Inventory with test file and suites
+		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
+			Owner:          "cascade-owner",
+			Repo:           "cascade-repo",
+			CommitSHA:      "cascade123",
+			Branch:         "main",
+			ExternalRepoID: "cascade-id-1",
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		inventory := &analysis.Inventory{
+			Files: []analysis.TestFile{
+				{
+					Path:      "cascade.test.ts",
+					Framework: "jest",
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "CascadeSuite",
+							Location: analysis.Location{StartLine: 10},
+							Tests: []analysis.Test{
+								{Name: "cascade test", Location: analysis.Location{StartLine: 12}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		err = repo.SaveAnalysisInventory(ctx, analysis.SaveAnalysisInventoryParams{
+			AnalysisID: analysisID,
+			Inventory:  inventory,
+		})
+		if err != nil {
+			t.Fatalf("SaveAnalysisInventory failed: %v", err)
+		}
+
+		// Verify data exists before delete
+		pgID := toPgUUID(analysisID)
+		var suiteCountBefore int
+		err = pool.QueryRow(ctx, `
+			SELECT COUNT(*) FROM test_suites ts
+			JOIN test_files tf ON ts.file_id = tf.id
+			WHERE tf.analysis_id = $1
+		`, pgID).Scan(&suiteCountBefore)
+		if err != nil {
+			t.Fatalf("failed to query suite count before delete: %v", err)
+		}
+		if suiteCountBefore != 1 {
+			t.Fatalf("expected 1 suite before delete, got %d", suiteCountBefore)
+		}
+
+		var testCountBefore int
+		err = pool.QueryRow(ctx, `
+			SELECT COUNT(*) FROM test_cases tc
+			JOIN test_suites ts ON tc.suite_id = ts.id
+			JOIN test_files tf ON ts.file_id = tf.id
+			WHERE tf.analysis_id = $1
+		`, pgID).Scan(&testCountBefore)
+		if err != nil {
+			t.Fatalf("failed to query test count before delete: %v", err)
+		}
+		if testCountBefore != 1 {
+			t.Fatalf("expected 1 test case before delete, got %d", testCountBefore)
+		}
+
+		// When: test_files are deleted
+		_, err = pool.Exec(ctx, "DELETE FROM test_files WHERE analysis_id = $1", pgID)
+		if err != nil {
+			t.Fatalf("failed to delete test_files: %v", err)
+		}
+
+		// Then: test_suites should be cascade deleted
+		var suiteCountAfter int
+		err = pool.QueryRow(ctx, `
+			SELECT COUNT(*) FROM test_suites ts
+			JOIN test_files tf ON ts.file_id = tf.id
+			WHERE tf.analysis_id = $1
+		`, pgID).Scan(&suiteCountAfter)
+		if err != nil {
+			t.Fatalf("failed to query suite count after delete: %v", err)
+		}
+		if suiteCountAfter != 0 {
+			t.Errorf("expected 0 suites after cascade delete, got %d", suiteCountAfter)
+		}
+
+		// Then: test_cases should also be cascade deleted
+		var testCountAfter int
+		err = pool.QueryRow(ctx, `
+			SELECT COUNT(*) FROM test_cases tc
+			JOIN test_suites ts ON tc.suite_id = ts.id
+			JOIN test_files tf ON ts.file_id = tf.id
+			WHERE tf.analysis_id = $1
+		`, pgID).Scan(&testCountAfter)
+		if err != nil {
+			t.Fatalf("failed to query test count after delete: %v", err)
+		}
+		if testCountAfter != 0 {
+			t.Errorf("expected 0 test cases after cascade delete, got %d", testCountAfter)
+		}
+	})
+
+	t.Run("should track test_files.analysis_id for reverse lookup", func(t *testing.T) {
+		_, err := pool.Exec(ctx, "TRUNCATE codebases CASCADE")
+		if err != nil {
+			t.Fatalf("failed to truncate: %v", err)
+		}
+
+		// Given: Analysis with multiple files
+		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
+			Owner:          "reverse-owner",
+			Repo:           "reverse-repo",
+			CommitSHA:      "reverse123",
+			Branch:         "main",
+			ExternalRepoID: "reverse-id-1",
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		inventory := &analysis.Inventory{
+			Files: []analysis.TestFile{
+				{
+					Path:      "file1.test.ts",
+					Framework: "jest",
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "Suite1",
+							Location: analysis.Location{StartLine: 5},
+							Tests: []analysis.Test{
+								{Name: "test1", Location: analysis.Location{StartLine: 7}},
+							},
+						},
+					},
+				},
+				{
+					Path:      "file2.test.ts",
+					Framework: "vitest",
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "Suite2",
+							Location: analysis.Location{StartLine: 10},
+							Tests: []analysis.Test{
+								{Name: "test2", Location: analysis.Location{StartLine: 12}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		err = repo.SaveAnalysisInventory(ctx, analysis.SaveAnalysisInventoryParams{
+			AnalysisID: analysisID,
+			Inventory:  inventory,
+		})
+		if err != nil {
+			t.Fatalf("SaveAnalysisInventory failed: %v", err)
+		}
+
+		// Then: All test_files should have correct analysis_id
+		pgID := toPgUUID(analysisID)
+		rows, err := pool.Query(ctx, `
+			SELECT file_path, framework
+			FROM test_files
+			WHERE analysis_id = $1
+			ORDER BY file_path
+		`, pgID)
+		if err != nil {
+			t.Fatalf("failed to query test_files: %v", err)
+		}
+		defer rows.Close()
+
+		type fileRow struct {
+			filePath  string
+			framework pgtype.Text
+		}
+		var files []fileRow
+		for rows.Next() {
+			var f fileRow
+			if err := rows.Scan(&f.filePath, &f.framework); err != nil {
+				t.Fatalf("failed to scan row: %v", err)
+			}
+			files = append(files, f)
+		}
+		if err := rows.Err(); err != nil {
+			t.Fatalf("row iteration error: %v", err)
+		}
+
+		if len(files) != 2 {
+			t.Fatalf("expected 2 files, got %d", len(files))
+		}
+
+		if files[0].filePath != "file1.test.ts" || files[0].framework.String != "jest" {
+			t.Errorf("expected file1.test.ts with jest, got %q with %q", files[0].filePath, files[0].framework.String)
+		}
+
+		if files[1].filePath != "file2.test.ts" || files[1].framework.String != "vitest" {
+			t.Errorf("expected file2.test.ts with vitest, got %q with %q", files[1].filePath, files[1].framework.String)
 		}
 	})
 }
