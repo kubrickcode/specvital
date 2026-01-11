@@ -129,3 +129,71 @@ func TestGetExtractor(t *testing.T) {
 		})
 	}
 }
+
+func TestShouldFilterNoise(t *testing.T) {
+	tests := []struct {
+		name   string
+		call   string
+		filter bool
+	}{
+		{"empty string", "", true},
+		{"starts with bracket", "[.", true},
+		{"starts with bracket long", "[...arr]", true},
+		{"single valid identifier", "a", false},
+		{"single valid identifier upper", "A", false},
+		{"single valid identifier digit", "1", false},
+		{"single valid identifier underscore", "_", false},
+		{"single invalid identifier space", " ", true},
+		{"single invalid identifier dot", ".", true},
+		{"single invalid identifier bracket", "[", true},
+		{"normal identifier", "doSomething", false},
+		{"dotted identifier", "service.method", false},
+		{"spreadsheet identifier edge case", "[.forEach", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := shouldFilterNoise(tt.call)
+			if got != tt.filter {
+				t.Errorf("shouldFilterNoise(%q) = %v, want %v", tt.call, got, tt.filter)
+			}
+		})
+	}
+}
+
+func TestGoExtractor_Extract_NoiseFiltering(t *testing.T) {
+	source := []byte(`package test
+
+import "testing"
+
+func TestSpread(t *testing.T) {
+	// This would produce "[." pattern if not filtered
+	result := []int{1, 2}
+	expanded := append([]int{}, result...)
+	doSomething()
+}
+`)
+
+	extractor := &GoExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	t.Run("no malformed identifiers", func(t *testing.T) {
+		for _, call := range hints.Calls {
+			if len(call) > 0 && call[0] == '[' {
+				t.Errorf("found malformed call: %q", call)
+			}
+		}
+	})
+
+	t.Run("no empty strings", func(t *testing.T) {
+		for _, call := range hints.Calls {
+			if call == "" {
+				t.Error("found empty call")
+			}
+		}
+	})
+}

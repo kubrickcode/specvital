@@ -191,6 +191,11 @@ var rustTestFrameworkCalls = map[string]struct{}{
 	"proptest":       {},
 	"prop_assert":    {},
 	"prop_assert_eq": {},
+	// Rust stdlib enums (domain noise in test files)
+	"Ok":    {},
+	"Err":   {},
+	"Some":  {},
+	"None":  {},
 }
 
 func isRustTestFrameworkCall(call string) bool {

@@ -372,6 +372,66 @@ func TestGetExtractor_Rust(t *testing.T) {
 	}
 }
 
+func TestRustExtractor_Extract_StdlibEnumFiltering(t *testing.T) {
+	source := []byte(`
+#[test]
+fn test_result_handling() {
+	let result = compute();
+	match result {
+		Ok(value) => {
+			process(value);
+		}
+		Err(error) => {
+			handle_error(error);
+		}
+	}
+
+	let maybe = find();
+	match maybe {
+		Some(item) => use_item(item),
+		None => set_default(),
+	}
+}
+`)
+
+	extractor := &RustExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	t.Run("stdlib enums filtered", func(t *testing.T) {
+		callSet := make(map[string]bool)
+		for _, call := range hints.Calls {
+			callSet[call] = true
+		}
+
+		// Stdlib enum constructors should be excluded
+		excluded := []string{"Ok", "Err", "Some", "None"}
+		for _, call := range excluded {
+			if callSet[call] {
+				t.Errorf("expected stdlib enum %q to be excluded, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		callSet := make(map[string]bool)
+		for _, call := range hints.Calls {
+			callSet[call] = true
+		}
+
+		// Domain calls should be included
+		expectedCalls := []string{"process", "handle_error", "use_item", "set_default"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}
+
 func TestExtractRustUsePath(t *testing.T) {
 	tests := []struct {
 		name  string

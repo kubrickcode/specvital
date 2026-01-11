@@ -188,6 +188,7 @@ var testFrameworkCalls = map[string]struct{}{
 	"describe": {}, "it": {}, "test": {}, "expect": {},
 	"beforeEach": {}, "afterEach": {}, "beforeAll": {}, "afterAll": {},
 	"vi": {}, "jest": {}, "cy": {},
+	"fn": {}, // Standalone mock function (jest.fn(), vi.fn() result)
 }
 
 func isTestFrameworkCall(call string) bool {

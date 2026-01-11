@@ -385,3 +385,70 @@ describe('Azure monitor datasource', () => {
 		t.Errorf("expected 1 import, got %d: %v", len(hints.Imports), hints.Imports)
 	}
 }
+
+func TestJavaScriptExtractor_Extract_MockFunctionFiltering(t *testing.T) {
+	source := []byte(`
+import { test, expect, describe } from '@playwright/test';
+
+describe('user service', () => {
+	test('should create user', () => {
+		const fn = jest.fn();
+		fn(userData);
+		userService.create(userData);
+
+		const mockValidator = vi.fn();
+		mockValidator();
+
+		const mockAPI = jest.fn().mockResolvedValue({ id: 1 });
+		mockAPI();
+		apiClient.send(request);
+	});
+});
+`)
+
+	extractor := &JavaScriptExtractor{lang: domain.LanguageTypeScript}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	t.Run("mock functions filtered", func(t *testing.T) {
+		callSet := make(map[string]bool)
+		for _, call := range hints.Calls {
+			callSet[call] = true
+		}
+
+		// Standalone fn() calls should be excluded
+		if callSet["fn"] {
+			t.Errorf("expected standalone fn() to be filtered, got %v", hints.Calls)
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		callSet := make(map[string]bool)
+		for _, call := range hints.Calls {
+			callSet[call] = true
+		}
+
+		// Domain calls should be included
+		expectedCalls := []string{"userService.create", "apiClient.send"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("jest.fn and vi.fn filtered", func(t *testing.T) {
+		callSet := make(map[string]bool)
+		for _, call := range hints.Calls {
+			callSet[call] = true
+		}
+
+		// jest and vi framework calls should already be filtered
+		if callSet["jest"] || callSet["vi"] {
+			t.Errorf("expected jest/vi framework calls to be filtered, got %v", hints.Calls)
+		}
+	})
+}
