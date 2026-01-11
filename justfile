@@ -99,13 +99,17 @@ build target="all":
     cd src
     case "{{ target }}" in
       all)
-        go build -o ../bin/worker ./cmd/worker
+        go build -o ../bin/analyzer ./cmd/analyzer
+        go build -o ../bin/spec-generator ./cmd/spec-generator
         go build -o ../bin/scheduler ./cmd/scheduler
         go build -o ../bin/enqueue ./cmd/enqueue
-        echo "Built: bin/worker, bin/scheduler, bin/enqueue"
+        echo "Built: bin/analyzer, bin/spec-generator, bin/scheduler, bin/enqueue"
         ;;
-      worker)
-        go build -o ../bin/worker ./cmd/worker
+      analyzer)
+        go build -o ../bin/analyzer ./cmd/analyzer
+        ;;
+      spec-generator)
+        go build -o ../bin/spec-generator ./cmd/spec-generator
         ;;
       scheduler)
         go build -o ../bin/scheduler ./cmd/scheduler
@@ -117,7 +121,7 @@ build target="all":
         go build ./...
         ;;
       *)
-        echo "Unknown target: {{ target }}. Use: all, worker, scheduler, enqueue, check"
+        echo "Unknown target: {{ target }}. Use: all, analyzer, spec-generator, scheduler, enqueue, check"
         exit 1
         ;;
     esac
@@ -146,7 +150,7 @@ release:
     git checkout main
     echo "✅ Release triggered! Check GitHub Actions for progress."
 
-run mode="local":
+run-analyzer mode="local":
     #!/usr/bin/env bash
     set -euo pipefail
     cd src
@@ -156,6 +160,23 @@ run mode="local":
         ;;
       integration)
         air
+        ;;
+      *)
+        echo "Unknown mode: {{ mode }}. Use: local, integration"
+        exit 1
+        ;;
+    esac
+
+run-spec-generator mode="local":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd src
+    case "{{ mode }}" in
+      local)
+        DATABASE_URL="$LOCAL_DATABASE_URL" go run ./cmd/spec-generator
+        ;;
+      integration)
+        go run ./cmd/spec-generator
         ;;
       *)
         echo "Unknown mode: {{ mode }}. Use: local, integration"
@@ -209,5 +230,5 @@ tidy:
 update-core:
     cd src && GOPROXY=direct go get -u github.com/specvital/core@main && go mod tidy
 
-docker-build service="worker":
+docker-build service="analyzer":
     docker build --build-arg SERVICE={{ service }} -t specvital-{{ service }}:local .

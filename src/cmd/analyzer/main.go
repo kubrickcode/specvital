@@ -21,11 +21,11 @@ func main() {
 	}
 
 	if err := bootstrap.StartWorker(bootstrap.WorkerConfig{
-		ServiceName:   "worker",
+		ServiceName:   "analyzer",
 		DatabaseURL:   cfg.DatabaseURL,
 		EncryptionKey: cfg.EncryptionKey,
 	}); err != nil {
-		slog.Error("worker failed", "error", err)
+		slog.Error("analyzer failed", "error", err)
 		os.Exit(1)
 	}
 }
