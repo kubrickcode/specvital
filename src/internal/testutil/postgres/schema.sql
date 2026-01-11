@@ -334,6 +334,25 @@ CREATE TABLE public.river_queue (
 
 
 --
+-- Name: spec_view_cache; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.spec_view_cache (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cache_key_hash bytea NOT NULL,
+    codebase_id uuid NOT NULL,
+    file_path text NOT NULL,
+    framework character varying(50) NOT NULL,
+    suite_hierarchy text NOT NULL,
+    original_name text NOT NULL,
+    converted_name text NOT NULL,
+    language character varying(10) DEFAULT 'en'::character varying NOT NULL,
+    model_id character varying(100) NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: test_cases; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -349,18 +368,29 @@ CREATE TABLE public.test_cases (
 
 
 --
+-- Name: test_files; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.test_files (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    analysis_id uuid NOT NULL,
+    file_path character varying(1000) NOT NULL,
+    framework character varying(50),
+    domain_hints jsonb
+);
+
+
+--
 -- Name: test_suites; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.test_suites (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    analysis_id uuid NOT NULL,
     parent_id uuid,
     name character varying(500) NOT NULL,
-    file_path character varying(1000) NOT NULL,
     line_number integer,
-    framework character varying(50),
     depth integer DEFAULT 0 NOT NULL,
+    file_id uuid NOT NULL,
     CONSTRAINT chk_no_self_reference CHECK ((id <> parent_id))
 );
 
@@ -552,11 +582,27 @@ ALTER TABLE ONLY public.river_queue
 
 
 --
+-- Name: spec_view_cache spec_view_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_view_cache
+    ADD CONSTRAINT spec_view_cache_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: test_cases test_cases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.test_cases
     ADD CONSTRAINT test_cases_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: test_files test_files_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.test_files
+    ADD CONSTRAINT test_files_pkey PRIMARY KEY (id);
 
 
 --
@@ -605,6 +651,22 @@ ALTER TABLE ONLY public.oauth_accounts
 
 ALTER TABLE ONLY public.refresh_tokens
     ADD CONSTRAINT uq_refresh_tokens_hash UNIQUE (token_hash);
+
+
+--
+-- Name: spec_view_cache uq_spec_view_cache_key_model; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_view_cache
+    ADD CONSTRAINT uq_spec_view_cache_key_model UNIQUE (cache_key_hash, model_id);
+
+
+--
+-- Name: test_files uq_test_files_analysis_path; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.test_files
+    ADD CONSTRAINT uq_test_files_analysis_path UNIQUE (analysis_id, file_path);
 
 
 --
@@ -778,6 +840,20 @@ CREATE INDEX idx_refresh_tokens_user ON public.refresh_tokens USING btree (user_
 
 
 --
+-- Name: idx_spec_view_cache_codebase; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_spec_view_cache_codebase ON public.spec_view_cache USING btree (codebase_id);
+
+
+--
+-- Name: idx_spec_view_cache_lookup; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_spec_view_cache_lookup ON public.spec_view_cache USING btree (cache_key_hash, model_id);
+
+
+--
 -- Name: idx_test_cases_status; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -792,17 +868,17 @@ CREATE INDEX idx_test_cases_suite ON public.test_cases USING btree (suite_id);
 
 
 --
--- Name: idx_test_suites_analysis; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_test_files_analysis; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_test_suites_analysis ON public.test_suites USING btree (analysis_id);
+CREATE INDEX idx_test_files_analysis ON public.test_files USING btree (analysis_id);
 
 
 --
 -- Name: idx_test_suites_file; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_test_suites_file ON public.test_suites USING btree (analysis_id, file_path);
+CREATE INDEX idx_test_suites_file ON public.test_suites USING btree (file_id);
 
 
 --
@@ -979,6 +1055,14 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
+-- Name: spec_view_cache fk_spec_view_cache_codebase; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_view_cache
+    ADD CONSTRAINT fk_spec_view_cache_codebase FOREIGN KEY (codebase_id) REFERENCES public.codebases(id) ON DELETE CASCADE;
+
+
+--
 -- Name: test_cases fk_test_cases_suite; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -987,11 +1071,19 @@ ALTER TABLE ONLY public.test_cases
 
 
 --
--- Name: test_suites fk_test_suites_analysis; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: test_files fk_test_files_analysis; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.test_files
+    ADD CONSTRAINT fk_test_files_analysis FOREIGN KEY (analysis_id) REFERENCES public.analyses(id) ON DELETE CASCADE;
+
+
+--
+-- Name: test_suites fk_test_suites_file; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.test_suites
-    ADD CONSTRAINT fk_test_suites_analysis FOREIGN KEY (analysis_id) REFERENCES public.analyses(id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_test_suites_file FOREIGN KEY (file_id) REFERENCES public.test_files(id) ON DELETE CASCADE;
 
 
 --
