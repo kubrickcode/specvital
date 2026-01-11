@@ -8,8 +8,8 @@ import (
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
-	"github.com/specvital/collector/internal/domain/analysis"
-	uc "github.com/specvital/collector/internal/usecase/analysis"
+	"github.com/specvital/worker/internal/domain/analysis"
+	uc "github.com/specvital/worker/internal/usecase/analysis"
 )
 
 // Mock implementations for testing
@@ -34,10 +34,10 @@ func (m *mockVCS) GetHeadCommit(ctx context.Context, url string, token *string) 
 }
 
 type mockSource struct {
-	branchFn              func() string
-	commitSHAFn           func() string
-	closeFn               func(ctx context.Context) error
-	verifyCommitExistsFn  func(ctx context.Context, sha string) (bool, error)
+	branchFn             func() string
+	commitSHAFn          func() string
+	closeFn              func(ctx context.Context) error
+	verifyCommitExistsFn func(ctx context.Context, sha string) (bool, error)
 }
 
 func (m *mockSource) Branch() string {

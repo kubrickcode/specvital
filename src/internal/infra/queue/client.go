@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
-	adapterqueue "github.com/specvital/collector/internal/adapter/queue"
+	adapterqueue "github.com/specvital/worker/internal/adapter/queue"
 )
 
 // Client is insert-only (no worker).

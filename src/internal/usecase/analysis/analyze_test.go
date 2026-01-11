@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/collector/internal/domain/analysis"
+	"github.com/specvital/worker/internal/domain/analysis"
 )
 
 // Mock implementations
@@ -108,15 +108,15 @@ func (m *mockRepository) SaveAnalysisInventory(ctx context.Context, params analy
 }
 
 type mockCodebaseRepository struct {
-	findByExternalIDFn    func(ctx context.Context, host, externalRepoID string) (*analysis.Codebase, error)
-	findByOwnerNameFn     func(ctx context.Context, host, owner, name string) (*analysis.Codebase, error)
-	findWithLastCommitFn  func(ctx context.Context, host, owner, name string) (*analysis.Codebase, error)
-	markStaleFn           func(ctx context.Context, id analysis.UUID) error
-	markStaleAndUpsertFn  func(ctx context.Context, staleID analysis.UUID, params analysis.UpsertCodebaseParams) (*analysis.Codebase, error)
-	unmarkStaleFn         func(ctx context.Context, id analysis.UUID, owner, name string) (*analysis.Codebase, error)
-	updateOwnerNameFn     func(ctx context.Context, id analysis.UUID, owner, name string) (*analysis.Codebase, error)
-	updateVisibilityFn    func(ctx context.Context, id analysis.UUID, isPrivate bool) error
-	upsertFn              func(ctx context.Context, params analysis.UpsertCodebaseParams) (*analysis.Codebase, error)
+	findByExternalIDFn   func(ctx context.Context, host, externalRepoID string) (*analysis.Codebase, error)
+	findByOwnerNameFn    func(ctx context.Context, host, owner, name string) (*analysis.Codebase, error)
+	findWithLastCommitFn func(ctx context.Context, host, owner, name string) (*analysis.Codebase, error)
+	markStaleFn          func(ctx context.Context, id analysis.UUID) error
+	markStaleAndUpsertFn func(ctx context.Context, staleID analysis.UUID, params analysis.UpsertCodebaseParams) (*analysis.Codebase, error)
+	unmarkStaleFn        func(ctx context.Context, id analysis.UUID, owner, name string) (*analysis.Codebase, error)
+	updateOwnerNameFn    func(ctx context.Context, id analysis.UUID, owner, name string) (*analysis.Codebase, error)
+	updateVisibilityFn   func(ctx context.Context, id analysis.UUID, isPrivate bool) error
+	upsertFn             func(ctx context.Context, params analysis.UpsertCodebaseParams) (*analysis.Codebase, error)
 }
 
 func (m *mockCodebaseRepository) FindByExternalID(ctx context.Context, host, externalRepoID string) (*analysis.Codebase, error) {

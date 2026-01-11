@@ -5,7 +5,7 @@ services:
     image: mcr.microsoft.com/devcontainers/base:bookworm
     privileged: true
     volumes:
-      - ..:/workspaces/specvital-collector:delegated
+      - ..:/workspaces/specvital-worker:delegated
       - /var/run/docker.sock:/var/run/docker.sock
       - ${HOME}/.env.secrets:/root/.env.secrets:ro
       - ../.claude-sessions:/root/.claude

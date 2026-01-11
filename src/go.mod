@@ -1,4 +1,4 @@
-module github.com/specvital/collector
+module github.com/specvital/worker
 
 go 1.24.11
 

@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "bash /workspaces/specvital-collector/.claude/statusline.sh"
+    "command": "bash /workspaces/specvital-worker/.claude/statusline.sh"
   },
   "hooks": {
     "Stop": [
@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /workspaces/specvital-collector/.claude/notify.sh"
+            "command": "bash /workspaces/specvital-worker/.claude/notify.sh"
           }
         ]
       }
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /workspaces/specvital-collector/.claude/notify.sh '❓ Question waiting for you!'"
+            "command": "bash /workspaces/specvital-worker/.claude/notify.sh '❓ Question waiting for you!'"
           }
         ]
       }

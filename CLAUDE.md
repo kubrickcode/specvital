@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SpecVital Collector - Worker service for analyzing test files in GitHub repositories
+SpecVital Worker - Background job processing service for analyzing test files in GitHub repositories
 
 - Queue-based async worker (River on PostgreSQL)
 - Dual-binary: Worker (scalable) + Scheduler (singleton)

@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/specvital/collector/internal/app"
-	"github.com/specvital/collector/internal/infra/db"
+	"github.com/specvital/worker/internal/app"
+	"github.com/specvital/worker/internal/infra/db"
 )
 
 const (

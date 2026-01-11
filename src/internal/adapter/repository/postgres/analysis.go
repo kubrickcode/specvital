@@ -14,9 +14,9 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/specvital/collector/internal/domain/analysis"
-	"github.com/specvital/collector/internal/infra/db"
 	"github.com/specvital/core/pkg/parser"
+	"github.com/specvital/worker/internal/domain/analysis"
+	"github.com/specvital/worker/internal/infra/db"
 )
 
 var _ analysis.AutoRefreshRepository = (*AnalysisRepository)(nil)

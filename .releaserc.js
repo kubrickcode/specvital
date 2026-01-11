@@ -41,7 +41,7 @@ const mainTemplate = `{{> header}}
 /** @type {import('semantic-release').Options} */
 export default {
   branches: ["release"],
-  repositoryUrl: "https://github.com/specvital/collector",
+  repositoryUrl: "https://github.com/specvital/worker",
   plugins: [
     [
       "@semantic-release/commit-analyzer",

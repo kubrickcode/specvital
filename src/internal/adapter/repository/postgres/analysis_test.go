@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/collector/internal/domain/analysis"
-	testdb "github.com/specvital/collector/internal/testutil/postgres"
 	"github.com/specvital/core/pkg/domain"
 	"github.com/specvital/core/pkg/parser"
+	"github.com/specvital/worker/internal/domain/analysis"
+	testdb "github.com/specvital/worker/internal/testutil/postgres"
 )
 
 func TestAnalysisRepository_SaveAnalysisResult(t *testing.T) {

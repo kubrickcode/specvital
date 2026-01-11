@@ -1,15 +1,15 @@
 {
-  "name": "specvital-collector",
+  "name": "specvital-worker",
   "dockerComposeFile": "docker-compose.yml",
   "initializeCommand": "touch ${HOME}/.env.secrets",
   "service": "workspace",
-  "workspaceFolder": "/workspaces/specvital-collector",
+  "workspaceFolder": "/workspaces/specvital-worker",
   "features": {
     "ghcr.io/guiyomh/features/just:0": {},
     "./local-features/node": {},
     "./local-features/go": {}
   },
-  "postCreateCommand": "bash /workspaces/specvital-collector/.devcontainer/post-create.sh",
+  "postCreateCommand": "bash /workspaces/specvital-worker/.devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
       "extensions": ["esbenp.prettier-vscode", "skellock.just"],

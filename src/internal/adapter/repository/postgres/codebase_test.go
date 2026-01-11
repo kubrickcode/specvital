@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/specvital/collector/internal/domain/analysis"
-	testdb "github.com/specvital/collector/internal/testutil/postgres"
+	"github.com/specvital/worker/internal/domain/analysis"
+	testdb "github.com/specvital/worker/internal/testutil/postgres"
 )
 
 func TestCodebaseRepository_FindByExternalID(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/collector/internal/domain/analysis"
+	"github.com/specvital/worker/internal/domain/analysis"
 )
 
 func TestNewCoreParser(t *testing.T) {

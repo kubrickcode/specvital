@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"time"
 
-	infrascheduler "github.com/specvital/collector/internal/infra/scheduler"
-	"github.com/specvital/collector/internal/usecase/autorefresh"
+	infrascheduler "github.com/specvital/worker/internal/infra/scheduler"
+	"github.com/specvital/worker/internal/usecase/autorefresh"
 )
 
 const defaultJobTimeout = 5 * time.Minute

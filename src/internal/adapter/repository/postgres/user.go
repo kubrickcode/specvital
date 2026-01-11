@@ -10,8 +10,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/specvital/core/pkg/crypto"
 
-	"github.com/specvital/collector/internal/domain/analysis"
-	"github.com/specvital/collector/internal/infra/db"
+	"github.com/specvital/worker/internal/domain/analysis"
+	"github.com/specvital/worker/internal/infra/db"
 )
 
 var _ analysis.TokenLookup = (*UserRepository)(nil)

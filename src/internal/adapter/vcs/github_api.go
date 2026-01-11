@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/specvital/collector/internal/domain/analysis"
+	"github.com/specvital/worker/internal/domain/analysis"
 )
 
 const (

@@ -133,7 +133,7 @@ release:
     echo "  - Create tag and GitHub release"
     echo "  - Update CHANGELOG.md"
     echo ""
-    echo "Progress: https://github.com/specvital/collector/actions"
+    echo "Progress: https://github.com/specvital/worker/actions"
     echo ""
     read -p "Type 'yes' to continue: " confirm
     if [ "$confirm" != "yes" ]; then

@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/specvital/collector/internal/domain/analysis"
+	"github.com/specvital/worker/internal/domain/analysis"
 )
 
 // Tuned for 1h cron interval:

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/specvital/collector/internal/domain/analysis"
-	testdb "github.com/specvital/collector/internal/testutil/postgres"
 	"github.com/specvital/core/pkg/crypto"
+	"github.com/specvital/worker/internal/domain/analysis"
+	testdb "github.com/specvital/worker/internal/testutil/postgres"
 )
 
 // passthroughEncryptor returns input as-is for testing without real encryption.

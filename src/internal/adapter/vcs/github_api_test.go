@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/specvital/collector/internal/domain/analysis"
+	"github.com/specvital/worker/internal/domain/analysis"
 )
 
 func TestNewGitHubAPIClient(t *testing.T) {

@@ -1,6 +1,6 @@
-# specvital collector
+# specvital worker
 
-Repository analysis worker service for SpecVital platform.
+Background job processing service for SpecVital platform.
 
 ## Architecture
 

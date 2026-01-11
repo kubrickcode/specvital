@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/specvital/collector/internal/adapter/mapping"
-	"github.com/specvital/collector/internal/domain/analysis"
 	"github.com/specvital/core/pkg/parser"
 	"github.com/specvital/core/pkg/source"
+	"github.com/specvital/worker/internal/adapter/mapping"
+	"github.com/specvital/worker/internal/domain/analysis"
 )
 
 // CoreParser implements analysis.Parser using specvital/core's parser package.

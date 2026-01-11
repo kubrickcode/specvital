@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/riverqueue/river"
-	"github.com/specvital/collector/internal/domain/analysis"
-	uc "github.com/specvital/collector/internal/usecase/analysis"
+	"github.com/specvital/worker/internal/domain/analysis"
+	uc "github.com/specvital/worker/internal/usecase/analysis"
 )
 
 const maxRetryAttempts = 3

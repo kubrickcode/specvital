@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/specvital/collector/internal/app/bootstrap"
+	"github.com/specvital/worker/internal/app/bootstrap"
 )
 
 func main() {

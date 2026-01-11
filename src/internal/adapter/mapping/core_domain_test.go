@@ -3,8 +3,8 @@ package mapping
 import (
 	"testing"
 
-	"github.com/specvital/collector/internal/domain/analysis"
 	"github.com/specvital/core/pkg/domain"
+	"github.com/specvital/worker/internal/domain/analysis"
 )
 
 func TestConvertCoreToDomainInventory_Nil(t *testing.T) {

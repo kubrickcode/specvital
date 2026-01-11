@@ -1,8 +1,8 @@
 package mapping
 
 import (
-	"github.com/specvital/collector/internal/domain/analysis"
 	"github.com/specvital/core/pkg/domain"
+	"github.com/specvital/worker/internal/domain/analysis"
 )
 
 // ConvertCoreToDomainInventory converts inventory from specvital/core types to domain types.

@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/specvital/collector/internal/app/bootstrap"
-	"github.com/specvital/collector/internal/infra/config"
+	"github.com/specvital/worker/internal/app/bootstrap"
+	"github.com/specvital/worker/internal/infra/config"
 
 	_ "github.com/specvital/core/pkg/parser/strategies/all"
 )
