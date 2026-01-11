@@ -3,6 +3,7 @@ package domain_hints
 import (
 	"context"
 	"regexp"
+	"strings"
 
 	sitter "github.com/smacker/go-tree-sitter"
 
@@ -125,6 +126,11 @@ func extractGoCalls(root *sitter.Node, source []byte) []string {
 			if call == "" {
 				continue
 			}
+			// Normalize: remove whitespace and limit to 2 segments
+			call = normalizeCall(call)
+			if call == "" {
+				continue
+			}
 			if _, exists := seen[call]; exists {
 				continue
 			}
@@ -173,6 +179,28 @@ func trimQuotes(s string) string {
 		return s[1 : len(s)-1]
 	}
 	return s
+}
+
+// normalizeCall normalizes a function call for domain hints:
+// 1. Removes whitespace (newlines, extra spaces)
+// 2. Limits to first 2 segments (e.g., "a.b.c.d" -> "a.b")
+// This reduces token count while preserving meaningful domain context.
+func normalizeCall(call string) string {
+	// Remove all whitespace (newlines, tabs, spaces)
+	var result strings.Builder
+	for _, r := range call {
+		if r != ' ' && r != '\n' && r != '\t' && r != '\r' {
+			result.WriteRune(r)
+		}
+	}
+	call = result.String()
+
+	// Limit to 2 segments
+	parts := strings.SplitN(call, ".", 3)
+	if len(parts) >= 2 {
+		return parts[0] + "." + parts[1]
+	}
+	return call
 }
 
 func getNodeText(node *sitter.Node, source []byte) (result string) {

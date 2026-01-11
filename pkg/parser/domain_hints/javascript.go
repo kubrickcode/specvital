@@ -24,9 +24,11 @@ const (
 	`
 
 	// CommonJS: require('x'), require("x")
+	// Note: predicate #eq? is not guaranteed to work in all tree-sitter bindings,
+	// so we also filter by function name in the extraction code.
 	jsRequireQuery = `
 		(call_expression
-			function: (identifier) @func (#eq? @func "require")
+			function: (identifier) @func
 			arguments: (arguments (string) @import)
 		)
 	`
@@ -99,6 +101,11 @@ func (e *JavaScriptExtractor) extractImports(root *sitter.Node, source []byte) [
 	requireResults, err := tspool.QueryWithCache(root, source, e.lang, jsRequireQuery)
 	if err == nil {
 		for _, r := range requireResults {
+			// Manually filter: only accept require() calls
+			funcNode, hasFuncNode := r.Captures["func"]
+			if !hasFuncNode || getNodeText(funcNode, source) != "require" {
+				continue
+			}
 			if node, ok := r.Captures["import"]; ok {
 				path := trimJSQuotes(getNodeText(node, source))
 				if path != "" {
@@ -131,6 +138,11 @@ func (e *JavaScriptExtractor) extractCalls(root *sitter.Node, source []byte) []s
 			}
 			// Skip require() calls as they're already captured in imports
 			if call == "require" {
+				continue
+			}
+			// Normalize: remove whitespace and limit to 2 segments
+			call = normalizeCall(call)
+			if call == "" {
 				continue
 			}
 			// Skip test framework calls

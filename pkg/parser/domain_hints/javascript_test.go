@@ -353,3 +353,104 @@ test('should render user profile', () => {
 		t.Errorf("expected userService.getProfile call, got %v", hints.Calls)
 	}
 }
+
+func TestJavaScriptExtractor_Extract_CallsNormalization(t *testing.T) {
+	source := []byte(`
+import { test } from '@playwright/test';
+
+test('chained calls', async () => {
+  // Long chains should be normalized to 2 segments
+  e2eSelectors.queryEditor.resourcePicker.select.button().click();
+  e2e.components.NavToolbar.editDashboard.editButton().should('be.visible');
+
+  // Calls with newlines should be normalized
+  e2eSelectors.configEditor
+    .azureCloud
+    .input()
+    .find('input')
+    .type('Azure');
+});
+`)
+
+	extractor := &JavaScriptExtractor{lang: domain.LanguageTypeScript}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, c := range hints.Calls {
+		callSet[c] = true
+	}
+
+	// Should be normalized to 2 segments
+	expectedCalls := []string{
+		"e2eSelectors.queryEditor",
+		"e2e.components",
+		"e2eSelectors.configEditor",
+	}
+
+	for _, call := range expectedCalls {
+		if !callSet[call] {
+			t.Errorf("expected %q call (2-segment normalized), got %v", call, hints.Calls)
+		}
+	}
+
+	// Full chains should NOT be present
+	for call := range callSet {
+		if len(call) > 50 {
+			t.Errorf("call too long (should be normalized): %s", call)
+		}
+	}
+}
+
+func TestJavaScriptExtractor_Extract_ImportsNotOvertaken(t *testing.T) {
+	// This test ensures describe/it strings are NOT captured as imports
+	source := []byte(`
+import { test } from '@playwright/test';
+
+describe('Azure monitor datasource', () => {
+  it('create dashboard with panels', () => {
+    addVariable('subscription');
+    addVariable('resourceGroups');
+  });
+});
+`)
+
+	extractor := &JavaScriptExtractor{lang: domain.LanguageTypeScript}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	importSet := make(map[string]bool)
+	for _, imp := range hints.Imports {
+		importSet[imp] = true
+	}
+
+	// Only real imports should be captured
+	if !importSet["@playwright/test"] {
+		t.Error("expected @playwright/test import")
+	}
+
+	// describe/it arguments should NOT be in imports
+	invalidImports := []string{
+		"Azure monitor datasource",
+		"create dashboard with panels",
+		"subscription",
+		"resourceGroups",
+	}
+
+	for _, inv := range invalidImports {
+		if importSet[inv] {
+			t.Errorf("describe/it argument %q should NOT be in imports", inv)
+		}
+	}
+
+	// Verify only 1 import
+	if len(hints.Imports) != 1 {
+		t.Errorf("expected 1 import, got %d: %v", len(hints.Imports), hints.Imports)
+	}
+}
