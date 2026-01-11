@@ -89,7 +89,6 @@ func setupTestRouter(handler *Handler) *chi.Mux {
 		&mockGitHubHandler{},
 		&mockGitHubAppHandler{},
 		&mockRepositoryHandler{},
-		nil, // specView
 		nil, // webhook
 	)
 	strictHandler := api.NewStrictHandler(apiHandlers, nil)

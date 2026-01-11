@@ -113,23 +113,7 @@
     },
     "viewMode": {
       "list": "List view",
-      "spec": "Spec view",
       "tree": "Tree view"
-    },
-    "specView": {
-      "cancel": "Cancel",
-      "consentDescription": "AI will convert test names to natural language. API calls may incur costs.",
-      "consentTitle": "AI Conversion",
-      "convert": "Convert",
-      "errorTitle": "Conversion Failed",
-      "generatedAt": "Generated {time}",
-      "languageLabel": "Language",
-      "loaded": "Loaded {fileCount} files with {testCount} tests",
-      "regenerate": "Regenerate",
-      "regenerating": "Regenerating specifications, please wait...",
-      "retry": "Try Again",
-      "summary": "{total} tests ({cached} cached, {converted} converted)",
-      "treeLabel": "Test specifications, {fileCount} files, {testCount} tests"
     },
     "status": {
       "loading": "Loading...",

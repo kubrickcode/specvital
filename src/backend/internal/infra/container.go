@@ -24,9 +24,6 @@ type Container struct {
 	Encryptor              crypto.Encryptor
 	Environment            string
 	FrontendURL            string
-	GeminiAPIKey           string
-	GeminiModel            string
-	GeminiRPM              int
 	GitClient              client.GitClient
 	GitHubAppClient        ghappport.GitHubAppClient
 	GitHubAppWebhookSecret string
@@ -41,9 +38,6 @@ type Config struct {
 	EncryptionKey           string
 	Environment             string
 	FrontendURL             string
-	GeminiAPIKey            string
-	GeminiModel             string
-	GeminiRPM               int
 	GitHubAppID             int64
 	GitHubAppPrivateKey     []byte
 	GitHubAppSlug           string
@@ -76,25 +70,12 @@ func ConfigFromEnv() Config {
 		ghAppPrivateKey = []byte(strings.ReplaceAll(key, "\\n", "\n"))
 	}
 
-	var geminiRPM int
-	if rpm := os.Getenv("GEMINI_RPM"); rpm != "" {
-		parsed, err := strconv.Atoi(rpm)
-		if err != nil {
-			slog.Warn("invalid GEMINI_RPM value, using default", "value", rpm, "error", err)
-		} else {
-			geminiRPM = parsed
-		}
-	}
-
 	return Config{
 		CookieDomain:            os.Getenv("COOKIE_DOMAIN"),
 		DatabaseURL:             os.Getenv("DATABASE_URL"),
 		EncryptionKey:           os.Getenv("ENCRYPTION_KEY"),
 		Environment:             os.Getenv("ENV"),
 		FrontendURL:             frontendURL,
-		GeminiAPIKey:            os.Getenv("GEMINI_API_KEY"),
-		GeminiModel:             os.Getenv("GEMINI_MODEL"),
-		GeminiRPM:               geminiRPM,
 		GitHubAppID:             ghAppID,
 		GitHubAppPrivateKey:     ghAppPrivateKey,
 		GitHubAppSlug:           os.Getenv("GITHUB_APP_SLUG"),
@@ -175,9 +156,6 @@ func NewContainer(ctx context.Context, cfg Config) (*Container, error) {
 		Encryptor:              encryptor,
 		Environment:            cfg.Environment,
 		FrontendURL:            cfg.FrontendURL,
-		GeminiAPIKey:           cfg.GeminiAPIKey,
-		GeminiModel:            cfg.GeminiModel,
-		GeminiRPM:              cfg.GeminiRPM,
 		GitClient:              gitClient,
 		GitHubAppClient:        ghAppClient,
 		GitHubAppWebhookSecret: cfg.GitHubAppWebhookSecret,

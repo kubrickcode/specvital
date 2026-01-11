@@ -25,9 +25,6 @@ import (
 	githubadapter "github.com/specvital/web/src/backend/modules/github/adapter"
 	githubhandler "github.com/specvital/web/src/backend/modules/github/handler"
 	githubusecase "github.com/specvital/web/src/backend/modules/github/usecase"
-	specviewadapter "github.com/specvital/web/src/backend/modules/spec-view/adapter"
-	specviewhandler "github.com/specvital/web/src/backend/modules/spec-view/handler"
-	specviewusecase "github.com/specvital/web/src/backend/modules/spec-view/usecase"
 	useradapter "github.com/specvital/web/src/backend/modules/user/adapter"
 	userhandler "github.com/specvital/web/src/backend/modules/user/handler"
 	bookmarkuc "github.com/specvital/web/src/backend/modules/user/usecase/bookmark"
@@ -214,15 +211,7 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 		return nil, nil, fmt.Errorf("create github-app api handler: %w", err)
 	}
 
-	specViewHandler, specViewCloser, err := initSpecViewHandler(ctx, container, queries, log)
-	if err != nil {
-		return nil, nil, fmt.Errorf("create spec-view handler: %w", err)
-	}
-	if specViewCloser != nil {
-		closers = append(closers, specViewCloser)
-	}
-
-	apiHandlers := api.NewAPIHandlers(analyzerHandler, userHandler, authHandler, userHandler, githubHandler, ghAppAPIHandler, analyzerHandler, specViewHandler, webhookHandler)
+	apiHandlers := api.NewAPIHandlers(analyzerHandler, userHandler, authHandler, userHandler, githubHandler, ghAppAPIHandler, analyzerHandler, webhookHandler)
 
 	return &Handlers{
 		API:     apiHandlers,
@@ -262,66 +251,6 @@ func (a *App) Close() error {
 		}
 	}
 
-	if len(errs) > 0 {
-		return fmt.Errorf("close errors: %v", errs)
-	}
-	return nil
-}
-
-func initSpecViewHandler(ctx context.Context, container *infra.Container, queries *db.Queries, log *logger.Logger) (api.SpecViewHandlers, io.Closer, error) {
-	if container.GeminiAPIKey == "" {
-		log.Info(ctx, "Gemini API key not configured, spec-view will be disabled")
-		return nil, nil, nil
-	}
-
-	aiProvider, err := specviewadapter.NewGeminiProvider(ctx, specviewadapter.GeminiConfig{
-		APIKey:  container.GeminiAPIKey,
-		ModelID: container.GeminiModel,
-		RPM:     container.GeminiRPM,
-	})
-	if err != nil {
-		return nil, nil, fmt.Errorf("create gemini provider: %w", err)
-	}
-
-	analysisProvider, err := specviewadapter.NewAnalysisProviderAdapter(queries)
-	if err != nil {
-		return nil, nil, fmt.Errorf("create analysis provider: %w", err)
-	}
-	cacheRepo := specviewadapter.NewCacheRepositoryPostgres(container.DB, queries)
-	rateLimiter := specviewadapter.NewMemoryRateLimiter(specviewadapter.RateLimiterConfig{})
-
-	convertSpecViewUC := specviewusecase.NewConvertSpecViewUseCase(
-		aiProvider,
-		analysisProvider,
-		cacheRepo,
-		rateLimiter,
-	)
-
-	handler, err := specviewhandler.NewHandler(&specviewhandler.HandlerConfig{
-		ConvertSpecView: convertSpecViewUC,
-		Logger:          log,
-	})
-	if err != nil {
-		rateLimiter.Close()
-		aiProvider.Close()
-		return nil, nil, fmt.Errorf("create handler: %w", err)
-	}
-
-	closer := &multiCloser{closers: []io.Closer{rateLimiter, aiProvider}}
-	return handler, closer, nil
-}
-
-type multiCloser struct {
-	closers []io.Closer
-}
-
-func (m *multiCloser) Close() error {
-	var errs []error
-	for _, c := range m.closers {
-		if err := c.Close(); err != nil {
-			errs = append(errs, err)
-		}
-	}
 	if len(errs) > 0 {
 		return fmt.Errorf("close errors: %v", errs)
 	}
