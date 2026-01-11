@@ -377,6 +377,20 @@ type RiverQueue struct {
 	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
+type SpecViewCache struct {
+	ID             pgtype.UUID        `json:"id"`
+	CacheKeyHash   []byte             `json:"cache_key_hash"`
+	CodebaseID     pgtype.UUID        `json:"codebase_id"`
+	FilePath       string             `json:"file_path"`
+	Framework      string             `json:"framework"`
+	SuiteHierarchy string             `json:"suite_hierarchy"`
+	OriginalName   string             `json:"original_name"`
+	ConvertedName  string             `json:"converted_name"`
+	Language       string             `json:"language"`
+	ModelID        string             `json:"model_id"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
 type TestCase struct {
 	ID         pgtype.UUID `json:"id"`
 	SuiteID    pgtype.UUID `json:"suite_id"`
@@ -387,15 +401,21 @@ type TestCase struct {
 	Modifier   pgtype.Text `json:"modifier"`
 }
 
+type TestFile struct {
+	ID          pgtype.UUID `json:"id"`
+	AnalysisID  pgtype.UUID `json:"analysis_id"`
+	FilePath    string      `json:"file_path"`
+	Framework   pgtype.Text `json:"framework"`
+	DomainHints []byte      `json:"domain_hints"`
+}
+
 type TestSuite struct {
 	ID         pgtype.UUID `json:"id"`
-	AnalysisID pgtype.UUID `json:"analysis_id"`
 	ParentID   pgtype.UUID `json:"parent_id"`
 	Name       string      `json:"name"`
-	FilePath   string      `json:"file_path"`
 	LineNumber pgtype.Int4 `json:"line_number"`
-	Framework  pgtype.Text `json:"framework"`
 	Depth      int32       `json:"depth"`
+	FileID     pgtype.UUID `json:"file_id"`
 }
 
 type User struct {

@@ -5,10 +5,16 @@ type Inventory struct {
 }
 
 type TestFile struct {
-	Path      string
-	Framework string
-	Suites    []TestSuite
-	Tests     []Test
+	Path        string
+	Framework   string
+	DomainHints *DomainHints
+	Suites      []TestSuite
+	Tests       []Test
+}
+
+type DomainHints struct {
+	Calls   []string
+	Imports []string
 }
 
 type TestSuite struct {

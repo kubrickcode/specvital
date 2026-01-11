@@ -37,18 +37,13 @@ UPDATE analyses
 SET status = 'failed', error_message = $2, completed_at = $3
 WHERE id = $1;
 
--- name: CreateTestSuite :one
-INSERT INTO test_suites (analysis_id, parent_id, name, file_path, line_number, framework, depth)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING *;
-
 -- name: CreateTestCase :one
 INSERT INTO test_cases (suite_id, name, line_number, status, tags, modifier)
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
--- name: GetTestSuitesByAnalysisID :many
-SELECT * FROM test_suites WHERE analysis_id = $1 ORDER BY file_path, line_number;
+-- name: GetTestSuitesByFileID :many
+SELECT * FROM test_suites WHERE file_id = $1 ORDER BY line_number;
 
 -- name: GetTestCasesBySuiteID :many
 SELECT * FROM test_cases WHERE suite_id = $1 ORDER BY line_number;
@@ -127,3 +122,13 @@ INSERT INTO user_analysis_history (user_id, analysis_id)
 VALUES ($1, $2)
 ON CONFLICT ON CONSTRAINT uq_user_analysis_history_user_analysis
 DO UPDATE SET updated_at = now();
+
+-- name: InsertTestFile :one
+INSERT INTO test_files (analysis_id, file_path, framework, domain_hints)
+VALUES ($1, $2, $3, $4)
+RETURNING id;
+
+-- name: InsertTestSuite :one
+INSERT INTO test_suites (file_id, parent_id, name, line_number, depth)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id;

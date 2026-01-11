@@ -90,46 +90,6 @@ func (q *Queries) CreateTestCase(ctx context.Context, arg CreateTestCaseParams) 
 	return i, err
 }
 
-const createTestSuite = `-- name: CreateTestSuite :one
-INSERT INTO test_suites (analysis_id, parent_id, name, file_path, line_number, framework, depth)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, analysis_id, parent_id, name, file_path, line_number, framework, depth
-`
-
-type CreateTestSuiteParams struct {
-	AnalysisID pgtype.UUID `json:"analysis_id"`
-	ParentID   pgtype.UUID `json:"parent_id"`
-	Name       string      `json:"name"`
-	FilePath   string      `json:"file_path"`
-	LineNumber pgtype.Int4 `json:"line_number"`
-	Framework  pgtype.Text `json:"framework"`
-	Depth      int32       `json:"depth"`
-}
-
-func (q *Queries) CreateTestSuite(ctx context.Context, arg CreateTestSuiteParams) (TestSuite, error) {
-	row := q.db.QueryRow(ctx, createTestSuite,
-		arg.AnalysisID,
-		arg.ParentID,
-		arg.Name,
-		arg.FilePath,
-		arg.LineNumber,
-		arg.Framework,
-		arg.Depth,
-	)
-	var i TestSuite
-	err := row.Scan(
-		&i.ID,
-		&i.AnalysisID,
-		&i.ParentID,
-		&i.Name,
-		&i.FilePath,
-		&i.LineNumber,
-		&i.Framework,
-		&i.Depth,
-	)
-	return i, err
-}
-
 const findCodebaseByExternalID = `-- name: FindCodebaseByExternalID :one
 SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale, is_private FROM codebases
 WHERE host = $1 AND external_repo_id = $2
@@ -399,12 +359,12 @@ func (q *Queries) GetTestCasesBySuiteID(ctx context.Context, suiteID pgtype.UUID
 	return items, nil
 }
 
-const getTestSuitesByAnalysisID = `-- name: GetTestSuitesByAnalysisID :many
-SELECT id, analysis_id, parent_id, name, file_path, line_number, framework, depth FROM test_suites WHERE analysis_id = $1 ORDER BY file_path, line_number
+const getTestSuitesByFileID = `-- name: GetTestSuitesByFileID :many
+SELECT id, parent_id, name, line_number, depth, file_id FROM test_suites WHERE file_id = $1 ORDER BY line_number
 `
 
-func (q *Queries) GetTestSuitesByAnalysisID(ctx context.Context, analysisID pgtype.UUID) ([]TestSuite, error) {
-	rows, err := q.db.Query(ctx, getTestSuitesByAnalysisID, analysisID)
+func (q *Queries) GetTestSuitesByFileID(ctx context.Context, fileID pgtype.UUID) ([]TestSuite, error) {
+	rows, err := q.db.Query(ctx, getTestSuitesByFileID, fileID)
 	if err != nil {
 		return nil, err
 	}
@@ -414,13 +374,11 @@ func (q *Queries) GetTestSuitesByAnalysisID(ctx context.Context, analysisID pgty
 		var i TestSuite
 		if err := rows.Scan(
 			&i.ID,
-			&i.AnalysisID,
 			&i.ParentID,
 			&i.Name,
-			&i.FilePath,
 			&i.LineNumber,
-			&i.Framework,
 			&i.Depth,
+			&i.FileID,
 		); err != nil {
 			return nil, err
 		}
@@ -430,6 +388,58 @@ func (q *Queries) GetTestSuitesByAnalysisID(ctx context.Context, analysisID pgty
 		return nil, err
 	}
 	return items, nil
+}
+
+const insertTestFile = `-- name: InsertTestFile :one
+INSERT INTO test_files (analysis_id, file_path, framework, domain_hints)
+VALUES ($1, $2, $3, $4)
+RETURNING id
+`
+
+type InsertTestFileParams struct {
+	AnalysisID  pgtype.UUID `json:"analysis_id"`
+	FilePath    string      `json:"file_path"`
+	Framework   pgtype.Text `json:"framework"`
+	DomainHints []byte      `json:"domain_hints"`
+}
+
+func (q *Queries) InsertTestFile(ctx context.Context, arg InsertTestFileParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, insertTestFile,
+		arg.AnalysisID,
+		arg.FilePath,
+		arg.Framework,
+		arg.DomainHints,
+	)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const insertTestSuite = `-- name: InsertTestSuite :one
+INSERT INTO test_suites (file_id, parent_id, name, line_number, depth)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id
+`
+
+type InsertTestSuiteParams struct {
+	FileID     pgtype.UUID `json:"file_id"`
+	ParentID   pgtype.UUID `json:"parent_id"`
+	Name       string      `json:"name"`
+	LineNumber pgtype.Int4 `json:"line_number"`
+	Depth      int32       `json:"depth"`
+}
+
+func (q *Queries) InsertTestSuite(ctx context.Context, arg InsertTestSuiteParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, insertTestSuite,
+		arg.FileID,
+		arg.ParentID,
+		arg.Name,
+		arg.LineNumber,
+		arg.Depth,
+	)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const markCodebaseStale = `-- name: MarkCodebaseStale :exec
