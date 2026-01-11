@@ -7,9 +7,9 @@ description: git ls-remote 결과로 visibility 판단하여 private repository 
 
 > 🇺🇸 [English Version](/en/adr/11-community-private-repo-filtering)
 
-| 날짜       | 작성자       | 리포지토리            |
-| ---------- | ------------ | --------------------- |
-| 2026-01-03 | @KubrickCode | infra, collector, web |
+| 날짜       | 작성자       | 리포지토리         |
+| ---------- | ------------ | ------------------ |
+| 2026-01-03 | @KubrickCode | infra, worker, web |
 
 ## 배경
 
@@ -46,7 +46,7 @@ description: git ls-remote 결과로 visibility 판단하여 private repository 
 
 ### 핵심 아이디어
 
-collector에서 분석 시 `git ls-remote`로 최신 커밋 조회. 이 로직 활용:
+worker에서 분석 시 `git ls-remote`로 최신 커밋 조회. 이 로직 활용:
 
 1. **토큰 없이 먼저 시도** → 성공 시 **public**
 2. **실패 시 사용자 토큰으로 시도** → 성공 시 **private**
@@ -118,7 +118,7 @@ ON codebases(is_private)
 WHERE is_private = false;
 ```
 
-### git ls-remote 로직 변경 (collector)
+### git ls-remote 로직 변경 (worker)
 
 **파일**: `src/internal/adapter/vcs/git.go`
 
@@ -199,7 +199,7 @@ AND (
 │         │                                                            │
 │         ▼                                                            │
 │  ┌─────────────────────────────────────────────────────────────┐    │
-│  │                      collector                               │    │
+│  │                      worker                               │    │
 │  │                                                              │    │
 │  │  git ls-remote (토큰 없이)                                    │    │
 │  │  ├─ 성공 → isPrivate = false (public)                        │    │

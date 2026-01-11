@@ -9,7 +9,7 @@ description: 리포지토리 접근을 위한 GitHub App 인증 전략 ADR
 
 | 날짜       | 작성자       | 관련 리포지토리 |
 | ---------- | ------------ | --------------- |
-| 2024-12-29 | @KubrickCode | web, collector  |
+| 2024-12-29 | @KubrickCode | web, worker     |
 
 ## 맥락
 
@@ -39,7 +39,7 @@ Specvital은 다음 목적으로 인증된 GitHub API 접근 필요:
 1. **보안 접근**: 최소 필요 권한, 단기 토큰
 2. **조직 지원**: 사용자 컨텍스트 없이 조직 리포지토리 분석 가능
 3. **확장성**: 설치별 독립적 rate limit
-4. **유지보수성**: web(토큰 발급자)과 collector(토큰 소비자) 간 명확한 분리
+4. **유지보수성**: web(토큰 발급자)과 worker(토큰 소비자) 간 명확한 분리
 
 ## 결정
 
@@ -77,7 +77,7 @@ Specvital은 다음 목적으로 인증된 GitHub API 접근 필요:
 └─────────────────────────────┼────────────────────────────────┘
                               │
 ┌─────────────────────────────┼────────────────────────────────┐
-│                             │        Collector Service       │
+│                             │        Worker Service       │
 │                             ▼                                │
 │                      ┌──────────────┐    ┌──────────────┐   │
 │                      │   Analyze    │───▶│   GitHub     │   │
@@ -109,7 +109,7 @@ func (c *GitHubAppClient) CreateInstallationToken(
 }
 ```
 
-**Collector Service (토큰 소비자):**
+**Worker Service (토큰 소비자):**
 
 ```go
 // GitHubAPIClient: 토큰을 선택적 Bearer 인증으로 사용
@@ -253,7 +253,7 @@ type AnalyzeArgs struct {
     InstallationID  *int64  `json:"installation_id,omitempty"`  // 토큰 조회용
 }
 
-// 옵션 2: Collector가 내부 API로 토큰 조회
+// 옵션 2: Worker가 내부 API로 토큰 조회
 func (w *AnalyzeWorker) getToken(ctx context.Context, installationID int64) (string, error) {
     return w.tokenClient.GetInstallationToken(ctx, installationID)
 }
@@ -304,7 +304,7 @@ CREATE INDEX idx_installations_account ON github_app_installations(account_id);
 
 **개발자 경험:**
 
-- 관심사의 명확한 분리 (web: 발급자, collector: 소비자)
+- 관심사의 명확한 분리 (web: 발급자, worker: 소비자)
 - Webhook 기반 상태 동기화
 - 테스트 가능한 컴포넌트 (모킹 가능한 인터페이스)
 
@@ -338,7 +338,7 @@ CREATE INDEX idx_installations_account ON github_app_installations(account_id);
 ### 2단계: Private 리포지토리 지원 (향후)
 
 - 큐 메시지에 `installation_id` 추가
-- Collector가 온디맨드로 토큰 조회
+- Worker가 온디맨드로 토큰 조회
 - TTL과 함께 토큰 캐싱 구현
 
 ### 3단계: 향상된 기능 (향후)

@@ -7,9 +7,9 @@ description: ADR on GitHub App authentication strategy for repository access
 
 > :kr: [한국어 버전](/ko/adr/09-github-app-integration.md)
 
-| Date       | Author       | Repos          |
-| ---------- | ------------ | -------------- |
-| 2024-12-29 | @KubrickCode | web, collector |
+| Date       | Author       | Repos       |
+| ---------- | ------------ | ----------- |
+| 2024-12-29 | @KubrickCode | web, worker |
 
 ## Context
 
@@ -39,7 +39,7 @@ Specvital needs authenticated GitHub API access for:
 1. **Secure Access**: Minimal necessary permissions, short-lived tokens
 2. **Organization Support**: Enable org repository analysis without user context
 3. **Scalability**: Independent rate limits per installation
-4. **Maintainability**: Clear separation between web (token issuer) and collector (token consumer)
+4. **Maintainability**: Clear separation between web (token issuer) and worker (token consumer)
 
 ## Decision
 
@@ -77,7 +77,7 @@ Specvital needs authenticated GitHub API access for:
 └─────────────────────────────┼────────────────────────────────┘
                               │
 ┌─────────────────────────────┼────────────────────────────────┐
-│                             │        Collector Service       │
+│                             │        Worker Service       │
 │                             ▼                                │
 │                      ┌──────────────┐    ┌──────────────┐   │
 │                      │   Analyze    │───▶│   GitHub     │   │
@@ -109,7 +109,7 @@ func (c *GitHubAppClient) CreateInstallationToken(
 }
 ```
 
-**Collector Service (Token Consumer):**
+**Worker Service (Token Consumer):**
 
 ```go
 // GitHubAPIClient uses token as optional Bearer auth
@@ -253,7 +253,7 @@ type AnalyzeArgs struct {
     InstallationID  *int64  `json:"installation_id,omitempty"`  // For token fetch
 }
 
-// Option 2: Collector fetches token via internal API
+// Option 2: Worker fetches token via internal API
 func (w *AnalyzeWorker) getToken(ctx context.Context, installationID int64) (string, error) {
     return w.tokenClient.GetInstallationToken(ctx, installationID)
 }
@@ -304,7 +304,7 @@ CREATE INDEX idx_installations_account ON github_app_installations(account_id);
 
 **Developer Experience:**
 
-- Clear separation of concerns (web: issuer, collector: consumer)
+- Clear separation of concerns (web: issuer, worker: consumer)
 - Webhook-based state synchronization
 - Testable components (mockable interfaces)
 
@@ -338,7 +338,7 @@ CREATE INDEX idx_installations_account ON github_app_installations(account_id);
 ### Phase 2: Private Repository Support (Future)
 
 - Add `installation_id` to queue message
-- Collector fetches token on-demand
+- Worker fetches token on-demand
 - Implement token caching with TTL
 
 ### Phase 3: Enhanced Features (Future)

@@ -5,11 +5,11 @@ description: ADR on weighted semaphore for limiting concurrent git clone operati
 
 # ADR-06: Semaphore-Based Clone Concurrency Control
 
-> 🇰🇷 [한국어 버전](/ko/adr/collector/06-semaphore-clone-concurrency.md)
+> 🇰🇷 [한국어 버전](/ko/adr/worker/06-semaphore-clone-concurrency.md)
 
-| Date       | Author       | Repos     |
-| ---------- | ------------ | --------- |
-| 2024-12-18 | @KubrickCode | collector |
+| Date       | Author       | Repos  |
+| ---------- | ------------ | ------ |
+| 2024-12-18 | @KubrickCode | worker |
 
 ## Context
 

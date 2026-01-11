@@ -5,11 +5,11 @@ description: ADR on Repository pattern for data access abstraction and testabili
 
 # ADR-07: Repository Pattern Data Access Abstraction
 
-> 🇰🇷 [한국어 버전](/ko/adr/collector/07-repository-pattern.md)
+> 🇰🇷 [한국어 버전](/ko/adr/worker/07-repository-pattern.md)
 
-| Date       | Author       | Repos     |
-| ---------- | ------------ | --------- |
-| 2024-12-18 | @KubrickCode | collector |
+| Date       | Author       | Repos  |
+| ---------- | ------------ | ------ |
+| 2024-12-18 | @KubrickCode | worker |
 
 ## Context
 

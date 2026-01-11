@@ -46,7 +46,7 @@ XX-brief-decision-title.md
 | -------------- | --------------------- |
 | Parser         | core                  |
 | API            | web                   |
-| Worker         | collector             |
+| Worker         | worker                |
 | Database       | infra                 |
 | Infrastructure | infra                 |
 | Cross-cutting  | multiple              |
@@ -68,7 +68,7 @@ XX-brief-decision-title.md
 | 09  | [GitHub App Integration Strategy](./09-github-app-integration.md)                      | Authentication | 2024-12-29 |
 | 10  | [TestStatus Data Contract](./10-test-status-data-contract.md)                          | Data Integrity | 2024-12-29 |
 | 11  | [Repository Visibility-Based Access Control](./11-community-private-repo-filtering.md) | Security       | 2026-01-03 |
-| 12  | [Collector-Centric Analysis Lifecycle](./12-collector-centric-analysis-lifecycle.md)   | Architecture   | 2024-12-16 |
+| 12  | [Worker-Centric Analysis Lifecycle](./12-worker-centric-analysis-lifecycle.md)         | Architecture   | 2024-12-16 |
 
 ### Core Repository
 
@@ -90,17 +90,17 @@ XX-brief-decision-title.md
 | 14  | [Indirect Import Alias Detection Unsupported](./core/14-indirect-import-unsupported.md)                       | Parser  | 2025-12-29 |
 | 15  | [C# Preprocessor Block Attribute Detection Limitation](./core/15-csharp-preprocessor-attribute-limitation.md) | Parser  | 2026-01-04 |
 
-### Collector Repository
+### Worker Repository
 
-| #   | Title                                                                                           | Area         | Date       |
-| --- | ----------------------------------------------------------------------------------------------- | ------------ | ---------- |
-| 01  | [Scheduled Re-collection Architecture](./collector/01-scheduled-recollection.md)                | Architecture | 2024-12-18 |
-| 02  | [Clean Architecture Layer Introduction](./collector/02-clean-architecture-layers.md)            | Architecture | 2024-12-18 |
-| 03  | [Graceful Shutdown and Context-Based Lifecycle Management](./collector/03-graceful-shutdown.md) | Architecture | 2024-12-18 |
-| 04  | [OAuth Token Graceful Degradation](./collector/04-oauth-token-graceful-degradation.md)          | Reliability  | 2024-12-18 |
-| 05  | [Worker-Scheduler Process Separation](./collector/05-worker-scheduler-separation.md)            | Architecture | 2024-12-18 |
-| 06  | [Semaphore-Based Clone Concurrency Control](./collector/06-semaphore-clone-concurrency.md)      | Concurrency  | 2024-12-18 |
-| 07  | [Repository Pattern Data Access Abstraction](./collector/07-repository-pattern.md)              | Architecture | 2024-12-18 |
+| #   | Title                                                                                        | Area         | Date       |
+| --- | -------------------------------------------------------------------------------------------- | ------------ | ---------- |
+| 01  | [Scheduled Re-analysis Architecture](./worker/01-scheduled-recollection.md)                  | Architecture | 2024-12-18 |
+| 02  | [Clean Architecture Layer Introduction](./worker/02-clean-architecture-layers.md)            | Architecture | 2024-12-18 |
+| 03  | [Graceful Shutdown and Context-Based Lifecycle Management](./worker/03-graceful-shutdown.md) | Architecture | 2024-12-18 |
+| 04  | [OAuth Token Graceful Degradation](./worker/04-oauth-token-graceful-degradation.md)          | Reliability  | 2024-12-18 |
+| 05  | [Analyzer-Scheduler Process Separation](./worker/05-worker-scheduler-separation.md)          | Architecture | 2024-12-18 |
+| 06  | [Semaphore-Based Clone Concurrency Control](./worker/06-semaphore-clone-concurrency.md)      | Concurrency  | 2024-12-18 |
+| 07  | [Repository Pattern Data Access Abstraction](./worker/07-repository-pattern.md)              | Architecture | 2024-12-18 |
 
 ### Web Repository
 
@@ -139,5 +139,5 @@ XX-brief-decision-title.md
 
 - [specvital/core](https://github.com/specvital/core) - Parser engine
 - [specvital/web](https://github.com/specvital/web) - Web platform
-- [specvital/collector](https://github.com/specvital/collector) - Worker service
+- [specvital/worker](https://github.com/specvital/worker) - Worker service
 - [specvital/infra](https://github.com/specvital/infra) - Infrastructure

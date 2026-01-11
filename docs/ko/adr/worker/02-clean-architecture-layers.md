@@ -5,11 +5,11 @@ description: 6개의 명확한 레이어로 구성된 Clean Architecture 구조
 
 # ADR-02: 클린 아키텍처 레이어 도입
 
-> 🇺🇸 [English Version](/en/adr/collector/02-clean-architecture-layers.md)
+> 🇺🇸 [English Version](/en/adr/worker/02-clean-architecture-layers.md)
 
 | 날짜       | 작성자       | 리포지토리 |
 | ---------- | ------------ | ---------- |
-| 2024-12-18 | @KubrickCode | collector  |
+| 2024-12-18 | @KubrickCode | worker     |
 
 ## 배경
 

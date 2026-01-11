@@ -19,7 +19,7 @@ Specvital 플랫폼의 제품 사양 및 요구사항 문서.
 - [아키텍처](./prd/01-architecture.md) - 시스템 아키텍처 및 서비스 구성
 - [코어 엔진](./prd/02-core-engine.md) - 테스트 파서 라이브러리 설계
 - [웹 플랫폼](./prd/03-web-platform.md) - 웹 대시보드 및 REST API
-- [컬렉터 서비스](./prd/04-collector-service.md) - 백그라운드 분석 워커
+- [워커 서비스](./prd/04-worker-service.md) - 백그라운드 분석 워커
 - [데이터베이스 설계](./prd/05-database-design.md) - 데이터베이스 스키마 및 설계
 - [기술 스택](./prd/06-tech-stack.md) - 기술 선택 및 근거
 
@@ -41,7 +41,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [GitHub App 통합](./adr/09-github-app-integration.md)
 - [TestStatus 데이터 계약](./adr/10-test-status-data-contract.md)
 - [Repository Visibility 기반 접근 제어](./adr/11-community-private-repo-filtering.md)
-- [Collector 중심 분석 라이프사이클](./adr/12-collector-centric-analysis-lifecycle.md)
+- [Worker 중심 분석 라이프사이클](./adr/12-worker-centric-analysis-lifecycle.md)
 
 **[Core](./adr/core/)**
 
@@ -61,15 +61,15 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [간접 Import Alias 감지 미지원](./adr/core/14-indirect-import-unsupported.md)
 - [C# 전처리기 블록 내 Attribute 감지 한계](./adr/core/15-csharp-preprocessor-attribute-limitation.md)
 
-**[Collector](./adr/collector/)**
+**[Worker](./adr/worker/)**
 
-- [스케줄 기반 재수집](./adr/collector/01-scheduled-recollection.md)
-- [Clean Architecture 레이어](./adr/collector/02-clean-architecture-layers.md)
-- [Graceful Shutdown](./adr/collector/03-graceful-shutdown.md)
-- [OAuth 토큰 Degradation](./adr/collector/04-oauth-token-graceful-degradation.md)
-- [Worker-Scheduler 분리](./adr/collector/05-worker-scheduler-separation.md)
-- [Semaphore Clone 동시성](./adr/collector/06-semaphore-clone-concurrency.md)
-- [Repository 패턴](./adr/collector/07-repository-pattern.md)
+- [스케줄 기반 재분석](./adr/worker/01-scheduled-recollection.md)
+- [Clean Architecture 레이어](./adr/worker/02-clean-architecture-layers.md)
+- [Graceful Shutdown](./adr/worker/03-graceful-shutdown.md)
+- [OAuth 토큰 Degradation](./adr/worker/04-oauth-token-graceful-degradation.md)
+- [Analyzer-Scheduler 분리](./adr/worker/05-worker-scheduler-separation.md)
+- [Semaphore Clone 동시성](./adr/worker/06-semaphore-clone-concurrency.md)
+- [Repository 패턴](./adr/worker/07-repository-pattern.md)
 
 **[Web](./adr/web/)**
 
@@ -100,7 +100,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 
 ### [릴리즈 노트](./releases.md)
 
-전체 서비스 릴리즈 히스토리 (Core, Collector, Web, Infra).
+전체 서비스 릴리즈 히스토리 (Core, Worker, Web, Infra).
 
 ### [용어집](./glossary.md)
 
@@ -116,7 +116,7 @@ Specvital 플랫폼은 여러 리포지토리로 구성됨:
 
 - [specvital/core](https://github.com/specvital/core) - 파서 엔진
 - [specvital/web](https://github.com/specvital/web) - 웹 플랫폼
-- [specvital/collector](https://github.com/specvital/collector) - 워커 서비스
+- [specvital/worker](https://github.com/specvital/worker) - 워커 서비스
 - [specvital/infra](https://github.com/specvital/infra) - 인프라 및 스키마
 
 ## 기여하기

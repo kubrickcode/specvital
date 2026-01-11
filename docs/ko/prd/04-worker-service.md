@@ -1,13 +1,13 @@
 ---
-title: 컬렉터 서비스
+title: 워커 서비스
 description: 백그라운드 분석 태스크 처리 워커 서비스
 ---
 
-# Collector Service
+# Worker Service
 
-> 🇺🇸 [English Version](/en/prd/04-collector-service.md)
+> 🇺🇸 [English Version](/en/prd/04-worker-service.md)
 
-> 백그라운드 분석 워커
+> 백그라운드 분석 워커 (analyzer, spec-generator)
 
 ## 핵심 역할
 
@@ -18,10 +18,10 @@ description: 백그라운드 분석 태스크 처리 워커 서비스
 
 ```
 1. Backend → Queue: 분석 요청
-2. Collector ← Queue: 태스크 수신
-3. Collector → GitHub: git clone
-4. Collector → Core: 파싱
-5. Collector → DB: 결과 저장
+2. Worker (analyzer) ← Queue: 태스크 수신
+3. Worker → GitHub: git clone
+4. Worker → Core: 파싱
+5. Worker → DB: 결과 저장
 ```
 
 ## 에러 처리
@@ -36,4 +36,4 @@ description: 백그라운드 분석 태스크 처리 워커 서비스
 - 지수 백오프
 - Dead Letter Queue
 
-> 설정값은 collector 리포지토리 참조
+> 설정값은 worker 리포지토리 참조

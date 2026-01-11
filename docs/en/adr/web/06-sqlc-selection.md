@@ -46,7 +46,7 @@ The database access layer must integrate seamlessly with this stack.
 
 ### Migration Architecture
 
-Database migrations are managed in a separate `infra` repository, shared by both `web` and `collector` services. This means:
+Database migrations are managed in a separate `infra` repository, shared by both `web` and `worker` services. This means:
 
 - Web service only needs database **connection**, not migration management
 - Schema is the single source of truth, maintained externally

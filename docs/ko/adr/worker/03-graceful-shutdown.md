@@ -5,11 +5,11 @@ description: context 기반 서비스 생명주기 및 우아한 종료 관리 �
 
 # ADR-03: Graceful Shutdown 및 컨텍스트 기반 생명주기 관리
 
-> 🇺🇸 [English Version](/en/adr/collector/03-graceful-shutdown.md)
+> 🇺🇸 [English Version](/en/adr/worker/03-graceful-shutdown.md)
 
 | 날짜       | 작성자       | 리포지토리 |
 | ---------- | ------------ | ---------- |
-| 2024-12-18 | @KubrickCode | collector  |
+| 2024-12-18 | @KubrickCode | worker     |
 
 ## 배경
 

@@ -32,9 +32,9 @@ description: 테스트 용이성 향상을 위해 sync.Once 싱글톤에서 Cont
 - **Handler 계층**: UseCase 주입 필요
 - **Adapter 계층**: 인프라 클라이언트(DB, Queue) 주입 필요
 
-### Collector 서비스와의 일관성
+### Worker 서비스와의 일관성
 
-Collector 서비스는 진입점별(Worker, Scheduler) 별도 컨테이너를 사용하는 Container 패턴 사용. 유사한 패턴을 채택하여 저장소 간 일관성 확보.
+Worker 서비스는 진입점별(Worker, Scheduler) 별도 컨테이너를 사용하는 Container 패턴 사용. 유사한 패턴을 채택하여 저장소 간 일관성 확보.
 
 ## Decision
 
@@ -77,7 +77,7 @@ main.go
 - **테스트 용이성**: 생성자를 통한 의존성 주입으로 쉬운 목킹
 - **명시적 의존성**: 모든 의존성이 Container 구조체에서 가시적
 - **라이프사이클 제어**: Close() 메서드로 중앙화된 정리
-- **일관성**: Collector 서비스 패턴과 일치
+- **일관성**: Worker 서비스 패턴과 일치
 
 **단점:**
 
@@ -261,7 +261,7 @@ func (a *App) Close() error {
 
 **일관성:**
 
-- Collector 서비스 Container 패턴과 일치
+- Worker 서비스 Container 패턴과 일치
 - 저장소 간 작업 시 익숙한 구조
 - 의존성 관리에 대한 공유 멘탈 모델
 
@@ -288,5 +288,5 @@ func (a *App) Close() error {
 ## References
 
 - [Dependency Injection in Go - Alex Edwards](https://www.alexedwards.net/blog/organising-database-access)
-- [Collector ADR-02: Clean Architecture Layers](/ko/adr/collector/02-clean-architecture-layers.md)
+- [Worker ADR-02: Clean Architecture Layers](/ko/adr/worker/02-clean-architecture-layers.md)
 - [Web ADR-08: Clean Architecture Pattern](/ko/adr/web/08-clean-architecture-pattern.md)

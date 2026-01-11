@@ -5,11 +5,11 @@ description: ADR on graceful degradation for OAuth tokens with public access fal
 
 # ADR-04: OAuth Token Graceful Degradation
 
-> 🇰🇷 [한국어 버전](/ko/adr/collector/04-oauth-token-graceful-degradation.md)
+> 🇰🇷 [한국어 버전](/ko/adr/worker/04-oauth-token-graceful-degradation.md)
 
-| Date       | Author       | Repos     |
-| ---------- | ------------ | --------- |
-| 2024-12-18 | @KubrickCode | collector |
+| Date       | Author       | Repos  |
+| ---------- | ------------ | ------ |
+| 2024-12-18 | @KubrickCode | worker |
 
 ## Context
 

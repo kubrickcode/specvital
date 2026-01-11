@@ -5,11 +5,11 @@ description: ADR on scheduler-based re-collection with adaptive decay for data f
 
 # ADR-01: Scheduled Re-collection Architecture
 
-> 🇰🇷 [한국어 버전](/ko/adr/collector/01-scheduled-recollection.md)
+> 🇰🇷 [한국어 버전](/ko/adr/worker/01-scheduled-recollection.md)
 
-| Date       | Author       | Repos     |
-| ---------- | ------------ | --------- |
-| 2024-12-18 | @KubrickCode | collector |
+| Date       | Author       | Repos  |
+| ---------- | ------------ | ------ |
+| 2024-12-18 | @KubrickCode | worker |
 
 ## Context
 

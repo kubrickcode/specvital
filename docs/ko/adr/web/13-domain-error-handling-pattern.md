@@ -293,4 +293,4 @@ if err != nil {
 
 - [Go Blog: Working with Errors in Go 1.13](https://go.dev/blog/go1.13-errors)
 - [ADR-08: Clean Architecture 패턴](/ko/adr/web/08-clean-architecture-pattern.md)
-- [Collector ADR-02: Clean Architecture 계층](/ko/adr/collector/02-clean-architecture-layers.md)
+- [Worker ADR-02: Clean Architecture 계층](/ko/adr/worker/02-clean-architecture-layers.md)

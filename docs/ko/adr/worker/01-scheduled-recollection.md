@@ -5,11 +5,11 @@ description: 적응형 감쇠 로직을 갖춘 스케줄러 기반 자동 재분
 
 # ADR-01: 스케줄 기반 재수집 아키텍처
 
-> 🇺🇸 [English Version](/en/adr/collector/01-scheduled-recollection.md)
+> 🇺🇸 [English Version](/en/adr/worker/01-scheduled-recollection.md)
 
 | 날짜       | 작성자       | 리포지토리 |
 | ---------- | ------------ | ---------- |
-| 2024-12-18 | @KubrickCode | collector  |
+| 2024-12-18 | @KubrickCode | worker     |
 
 ## 배경
 

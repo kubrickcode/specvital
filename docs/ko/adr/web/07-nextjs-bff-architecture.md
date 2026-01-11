@@ -21,7 +21,7 @@ SpecVital 생태계 구성:
 
 - **Go 백엔드**: 비즈니스 로직, 데이터베이스 접근, GitHub API 연동, 분석 오케스트레이션
 - **프론트엔드**: 저장소 분석 시각화를 위한 React 기반 UI
-- **외부 서비스**: GitHub OAuth, GitHub API, River 큐 (Collector와 공유)
+- **외부 서비스**: GitHub OAuth, GitHub API, River 큐 (Worker와 공유)
 
 ### 클라이언트-백엔드 직접 통신의 문제점
 
@@ -49,7 +49,7 @@ SpecVital 생태계 구성:
 브라우저 <-> Next.js 서버 (BFF) <-> Go 백엔드 API <-> 데이터베이스
                                           |
                                           v
-                                    Collector 서비스
+                                    Worker 서비스
 ```
 
 ### 핵심 원칙

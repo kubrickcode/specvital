@@ -32,9 +32,9 @@ As the codebase migrated to Clean Architecture ([ADR-08](/en/adr/web/08-clean-ar
 - **Handler layer** requires UseCases to be injected
 - **Adapter layer** requires infrastructure clients (DB, Queue) to be injected
 
-### Collector Service Alignment
+### Worker Service Alignment
 
-The Collector service uses a Container pattern with separate containers per entry point (Worker, Scheduler). Adopting a similar pattern ensures consistency across repositories.
+The Worker service uses a Container pattern with separate containers per entry point (Worker, Scheduler). Adopting a similar pattern ensures consistency across repositories.
 
 ## Decision
 
@@ -77,7 +77,7 @@ main.go
 - **Testability**: Dependencies injected via constructors; easily mocked
 - **Explicit Dependencies**: All dependencies visible in Container struct
 - **Lifecycle Control**: Centralized cleanup with Close() method
-- **Consistency**: Matches Collector service pattern
+- **Consistency**: Matches Worker service pattern
 
 **Cons:**
 
@@ -261,7 +261,7 @@ func (a *App) Close() error {
 
 **Consistency:**
 
-- Matches Collector service Container pattern
+- Matches Worker service Container pattern
 - Familiar structure for developers working across repositories
 - Shared mental model for dependency management
 
@@ -288,5 +288,5 @@ func (a *App) Close() error {
 ## References
 
 - [Dependency Injection in Go - Alex Edwards](https://www.alexedwards.net/blog/organising-database-access)
-- [Collector ADR-02: Clean Architecture Layers](/en/adr/collector/02-clean-architecture-layers.md)
+- [Worker ADR-02: Clean Architecture Layers](/en/adr/worker/02-clean-architecture-layers.md)
 - [Web ADR-08: Clean Architecture Pattern](/en/adr/web/08-clean-architecture-pattern.md)

@@ -5,11 +5,11 @@ description: ADR on separating Worker and Scheduler into independent processes
 
 # ADR-05: Worker-Scheduler Process Separation
 
-> 🇰🇷 [한국어 버전](/ko/adr/collector/05-worker-scheduler-separation.md)
+> 🇰🇷 [한국어 버전](/ko/adr/worker/05-worker-scheduler-separation.md)
 
-| Date       | Author       | Repos     |
-| ---------- | ------------ | --------- |
-| 2024-12-18 | @KubrickCode | collector |
+| Date       | Author       | Repos  |
+| ---------- | ------------ | ------ |
+| 2024-12-18 | @KubrickCode | worker |
 
 ## Context
 
@@ -133,8 +133,8 @@ Separate binaries with dedicated entry points and DI containers.
 Single binary that switches behavior based on environment variable or flag.
 
 ```bash
-./collector --mode=worker
-./collector --mode=scheduler
+./worker --mode=worker
+./worker --mode=scheduler
 ```
 
 **Pros:**

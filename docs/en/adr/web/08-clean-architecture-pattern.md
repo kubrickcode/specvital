@@ -47,9 +47,9 @@ The initial service-oriented structure presented several challenges as the codeb
 | Apply Clean Architecture adapter layer          | Repository, Queue, Client implementations  |
 | Apply Clean Architecture handler layer          | Complete handler -> usecase -> domain flow |
 
-### Alignment with Collector Service
+### Alignment with Worker Service
 
-The Collector service already adopted a 6-layer Clean Architecture ([Collector ADR-02](/en/adr/collector/02-clean-architecture-layers.md)). Adopting a similar structure for Web backend ensures:
+The Worker service already adopted a 6-layer Clean Architecture ([Worker ADR-02](/en/adr/worker/02-clean-architecture-layers.md)). Adopting a similar structure for Web backend ensures:
 
 - Consistent mental model across repositories
 - Reusable patterns for team members
@@ -84,12 +84,12 @@ handler -> usecase -> domain <- adapter
 
 ### Why 5 Layers Instead of 6?
 
-Collector uses 6 layers including separate Application and Infrastructure layers. Web simplifies this:
+Worker uses 6 layers including separate Application and Infrastructure layers. Web simplifies this:
 
-| Collector (6-Layer) | Web (5-Layer)         | Rationale                         |
-| ------------------- | --------------------- | --------------------------------- |
-| Application         | (merged into Handler) | Web has single entry point (HTTP) |
-| Infrastructure      | (merged into Adapter) | Simpler DI wiring in Web context  |
+| Worker (6-Layer) | Web (5-Layer)         | Rationale                         |
+| ---------------- | --------------------- | --------------------------------- |
+| Application      | (merged into Handler) | Web has single entry point (HTTP) |
+| Infrastructure   | (merged into Adapter) | Simpler DI wiring in Web context  |
 
 Web backend's simpler requirements (HTTP-only entry point, smaller team) don't warrant the additional Infrastructure/Application separation.
 
@@ -110,7 +110,7 @@ Web backend's simpler requirements (HTTP-only entry point, smaller team) don't w
 - **Maintainability**: Clear boundaries reduce cognitive load
 - **AI-Friendliness**: Isolated files fit within LLM context windows
 - **Flexibility**: Technology changes isolated to adapter layer
-- **Consistency**: Aligns with Collector architecture pattern
+- **Consistency**: Aligns with Worker architecture pattern
 
 **Cons:**
 
@@ -301,5 +301,5 @@ Each migration followed the same pattern: domain/entity -> domain/port -> usecas
 - [The Clean Architecture - Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Clean Architecture in Go - Three Dots Labs](https://threedots.tech/post/introducing-clean-architecture/)
 - [AI-Optimizing Codebase Architecture for AI Coding Tools](https://medium.com/@richardhightower/ai-optimizing-codebase-architecture-for-ai-coding-tools-ff6bb6fdc497)
-- [Collector ADR-02: Clean Architecture Layers](/en/adr/collector/02-clean-architecture-layers.md)
-- [Collector ADR-07: Repository Pattern](/en/adr/collector/07-repository-pattern.md)
+- [Worker ADR-02: Clean Architecture Layers](/en/adr/worker/02-clean-architecture-layers.md)
+- [Worker ADR-07: Repository Pattern](/en/adr/worker/07-repository-pattern.md)

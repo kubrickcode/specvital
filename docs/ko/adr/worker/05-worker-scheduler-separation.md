@@ -5,11 +5,11 @@ description: 독립적 스케일링을 위한 Worker와 Scheduler 프로세스 �
 
 # ADR-05: 워커-스케줄러 프로세스 분리
 
-> 🇺🇸 [English Version](/en/adr/collector/05-worker-scheduler-separation.md)
+> 🇺🇸 [English Version](/en/adr/worker/05-worker-scheduler-separation.md)
 
 | 날짜       | 작성자       | 리포지토리 |
 | ---------- | ------------ | ---------- |
-| 2024-12-18 | @KubrickCode | collector  |
+| 2024-12-18 | @KubrickCode | worker     |
 
 ## 배경
 
@@ -133,8 +133,8 @@ SchedulerContainer:
 환경 변수나 플래그에 따라 동작을 전환하는 단일 바이너리.
 
 ```bash
-./collector --mode=worker
-./collector --mode=scheduler
+./worker --mode=worker
+./worker --mode=scheduler
 ```
 
 **장점:**

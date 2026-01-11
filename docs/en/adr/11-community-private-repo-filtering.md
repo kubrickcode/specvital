@@ -7,9 +7,9 @@ description: ADR on visibility detection via git ls-remote to isolate private re
 
 > 🇰🇷 [한국어 버전](/ko/adr/11-community-private-repo-filtering)
 
-| Date       | Author       | Repos                 |
-| ---------- | ------------ | --------------------- |
-| 2026-01-03 | @KubrickCode | infra, collector, web |
+| Date       | Author       | Repos              |
+| ---------- | ------------ | ------------------ |
+| 2026-01-03 | @KubrickCode | infra, worker, web |
 
 ## Context
 
@@ -46,7 +46,7 @@ Intentional omission of `is_private` in the `codebases` table:
 
 ### Core Idea
 
-During analysis, the collector fetches the latest commit via `git ls-remote`. Leverage this existing logic:
+During analysis, the worker fetches the latest commit via `git ls-remote`. Leverage this existing logic:
 
 1. **Try without token first** → Success means **public**
 2. **On failure, try with user token** → Success means **private**
@@ -118,7 +118,7 @@ ON codebases(is_private)
 WHERE is_private = false;
 ```
 
-### git ls-remote Logic Change (collector)
+### git ls-remote Logic Change (worker)
 
 **File**: `src/internal/adapter/vcs/git.go`
 
@@ -199,7 +199,7 @@ AND (
 │         │                                                            │
 │         ▼                                                            │
 │  ┌─────────────────────────────────────────────────────────────┐    │
-│  │                      collector                               │    │
+│  │                      worker                               │    │
 │  │                                                              │    │
 │  │  git ls-remote (without token)                               │    │
 │  │  ├─ Success → isPrivate = false (public)                     │    │

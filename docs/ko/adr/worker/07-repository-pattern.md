@@ -5,11 +5,11 @@ description: Domain 레이어에 정의된 도메인 중심 인터페이스를 �
 
 # ADR-07: 리포지토리 패턴 데이터 접근 추상화
 
-> 🇺🇸 [English Version](/en/adr/collector/07-repository-pattern.md)
+> 🇺🇸 [English Version](/en/adr/worker/07-repository-pattern.md)
 
 | 날짜       | 작성자       | 리포지토리 |
 | ---------- | ------------ | ---------- |
-| 2024-12-18 | @KubrickCode | collector  |
+| 2024-12-18 | @KubrickCode | worker     |
 
 ## 컨텍스트
 

@@ -47,9 +47,9 @@ description: 관심사 분리, 테스트 용이성, AI 지원 개발을 위한 5
 | Clean Architecture 어댑터 계층 적용       | Repository, Queue, Client 구현         |
 | Clean Architecture 핸들러 계층 적용       | handler -> usecase -> domain 흐름 완성 |
 
-### Collector 서비스와의 정합성
+### Worker 서비스와의 정합성
 
-Collector 서비스는 이미 6계층 Clean Architecture 채택([Collector ADR-02](/ko/adr/collector/02-clean-architecture-layers.md)). Web 백엔드에서 유사한 구조 채택으로:
+Worker 서비스는 이미 6계층 Clean Architecture 채택([Worker ADR-02](/ko/adr/worker/02-clean-architecture-layers.md)). Web 백엔드에서 유사한 구조 채택으로:
 
 - 리포지토리 간 일관된 멘탈 모델 유지
 - 팀원들을 위한 재사용 가능한 패턴
@@ -84,12 +84,12 @@ handler -> usecase -> domain <- adapter
 
 ### 왜 6계층이 아닌 5계층인가?
 
-Collector는 별도의 Application과 Infrastructure 계층을 포함한 6계층 사용. Web은 이를 단순화:
+Worker는 별도의 Application과 Infrastructure 계층을 포함한 6계층 사용. Web은 이를 단순화:
 
-| Collector (6계층) | Web (5계층)      | 근거                                   |
-| ----------------- | ---------------- | -------------------------------------- |
-| Application       | (Handler에 병합) | Web은 단일 진입점(HTTP)만 있음         |
-| Infrastructure    | (Adapter에 병합) | Web 컨텍스트에서 더 단순한 DI 와이어링 |
+| Worker (6계층) | Web (5계층)      | 근거                                   |
+| -------------- | ---------------- | -------------------------------------- |
+| Application    | (Handler에 병합) | Web은 단일 진입점(HTTP)만 있음         |
+| Infrastructure | (Adapter에 병합) | Web 컨텍스트에서 더 단순한 DI 와이어링 |
 
 Web 백엔드의 단순한 요구사항(HTTP 전용 진입점, 소규모 팀)은 추가적인 Infrastructure/Application 분리를 정당화하지 않음.
 
@@ -110,7 +110,7 @@ Web 백엔드의 단순한 요구사항(HTTP 전용 진입점, 소규모 팀)은
 - **유지보수성**: 명확한 경계로 인지 부하 감소
 - **AI 친화성**: 고립된 파일이 LLM 컨텍스트 윈도우에 적합
 - **유연성**: 기술 변경이 adapter 계층에 격리됨
-- **일관성**: Collector 아키텍처 패턴과 정합
+- **일관성**: Worker 아키텍처 패턴과 정합
 
 **단점:**
 
@@ -301,5 +301,5 @@ func (uc *GetAnalysisUseCase) Execute(ctx context.Context, input GetAnalysisInpu
 - [The Clean Architecture - Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Clean Architecture in Go - Three Dots Labs](https://threedots.tech/post/introducing-clean-architecture/)
 - [AI-Optimizing Codebase Architecture for AI Coding Tools](https://medium.com/@richardhightower/ai-optimizing-codebase-architecture-for-ai-coding-tools-ff6bb6fdc497)
-- [Collector ADR-02: Clean Architecture Layers](/ko/adr/collector/02-clean-architecture-layers.md)
-- [Collector ADR-07: Repository Pattern](/ko/adr/collector/07-repository-pattern.md)
+- [Worker ADR-02: Clean Architecture Layers](/ko/adr/worker/02-clean-architecture-layers.md)
+- [Worker ADR-07: Repository Pattern](/ko/adr/worker/07-repository-pattern.md)

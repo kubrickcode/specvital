@@ -5,11 +5,11 @@ description: UseCase 레벨 weighted semaphore를 통한 Git clone 동시성 제
 
 # ADR-06: 세마포어 기반 클론 동시성 제어
 
-> 🇺🇸 [English Version](/en/adr/collector/06-semaphore-clone-concurrency.md)
+> 🇺🇸 [English Version](/en/adr/worker/06-semaphore-clone-concurrency.md)
 
 | 날짜       | 작성자       | 리포지토리 |
 | ---------- | ------------ | ---------- |
-| 2024-12-18 | @KubrickCode | collector  |
+| 2024-12-18 | @KubrickCode | worker     |
 
 ## 컨텍스트
 

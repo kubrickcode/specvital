@@ -21,7 +21,7 @@ In the SpecVital ecosystem, we have:
 
 - **Go Backend**: Business logic, database access, GitHub API integration, analysis orchestration
 - **Frontend**: React-based UI for repository analysis visualization
-- **External Services**: GitHub OAuth, GitHub API, River queue (shared with Collector)
+- **External Services**: GitHub OAuth, GitHub API, River queue (shared with Worker)
 
 ### Challenges of Direct Client-Backend Communication
 
@@ -49,7 +49,7 @@ In the SpecVital ecosystem, we have:
 Browser <-> Next.js Server (BFF) <-> Go Backend API <-> Database
                                           |
                                           v
-                                    Collector Service
+                                    Worker Service
 ```
 
 ### Core Principles

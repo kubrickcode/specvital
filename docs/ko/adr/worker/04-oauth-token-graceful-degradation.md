@@ -5,11 +5,11 @@ description: OAuth 토큰 처리를 위한 예외 분류 및 우아한 저하 �
 
 # ADR-04: OAuth 토큰 Graceful Degradation
 
-> 🇺🇸 [English Version](/en/adr/collector/04-oauth-token-graceful-degradation.md)
+> 🇺🇸 [English Version](/en/adr/worker/04-oauth-token-graceful-degradation.md)
 
 | 날짜       | 작성자       | 리포지토리 |
 | ---------- | ------------ | ---------- |
-| 2024-12-18 | @KubrickCode | collector  |
+| 2024-12-18 | @KubrickCode | worker     |
 
 ## 배경
 

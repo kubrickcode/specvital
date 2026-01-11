@@ -46,7 +46,7 @@ XX-brief-decision-title.md
 | -------------- | ------------------- |
 | Parser         | core                |
 | API            | web                 |
-| Worker         | collector           |
+| Worker         | worker              |
 | Database       | infra               |
 | Infrastructure | infra               |
 | Cross-cutting  | 복수                |
@@ -68,7 +68,7 @@ XX-brief-decision-title.md
 | 09  | [GitHub App 통합 인증 전략](./09-github-app-integration.md)                      | Authentication | 2024-12-29 |
 | 10  | [TestStatus 데이터 계약](./10-test-status-data-contract.md)                      | Data Integrity | 2024-12-29 |
 | 11  | [Repository Visibility 기반 접근 제어](./11-community-private-repo-filtering.md) | Security       | 2026-01-03 |
-| 12  | [Collector 중심 분석 라이프사이클](./12-collector-centric-analysis-lifecycle.md) | Architecture   | 2024-12-16 |
+| 12  | [Worker 중심 분석 라이프사이클](./12-worker-centric-analysis-lifecycle.md)       | Architecture   | 2024-12-16 |
 
 ### Core 리포지토리
 
@@ -90,17 +90,17 @@ XX-brief-decision-title.md
 | 14  | [간접 Import Alias 감지 미지원](./core/14-indirect-import-unsupported.md)                        | Parser  | 2025-12-29 |
 | 15  | [C# 전처리기 블록 내 Attribute 감지 한계](./core/15-csharp-preprocessor-attribute-limitation.md) | Parser  | 2026-01-04 |
 
-### Collector 리포지토리
+### Worker 리포지토리
 
-| #   | 제목                                                                                   | 영역         | 날짜       |
-| --- | -------------------------------------------------------------------------------------- | ------------ | ---------- |
-| 01  | [스케줄 기반 재수집 아키텍처](./collector/01-scheduled-recollection.md)                | Architecture | 2024-12-18 |
-| 02  | [Clean Architecture 레이어 도입](./collector/02-clean-architecture-layers.md)          | Architecture | 2024-12-18 |
-| 03  | [Graceful Shutdown 및 Context 기반 생명주기 관리](./collector/03-graceful-shutdown.md) | Architecture | 2024-12-18 |
-| 04  | [OAuth 토큰 Graceful Degradation](./collector/04-oauth-token-graceful-degradation.md)  | Reliability  | 2024-12-18 |
-| 05  | [Worker-Scheduler 프로세스 분리](./collector/05-worker-scheduler-separation.md)        | Architecture | 2024-12-18 |
-| 06  | [Semaphore 기반 Clone 동시성 제어](./collector/06-semaphore-clone-concurrency.md)      | Concurrency  | 2024-12-18 |
-| 07  | [Repository 패턴 데이터 접근 추상화](./collector/07-repository-pattern.md)             | Architecture | 2024-12-18 |
+| #   | 제목                                                                                | 영역         | 날짜       |
+| --- | ----------------------------------------------------------------------------------- | ------------ | ---------- |
+| 01  | [스케줄 기반 재분석 아키텍처](./worker/01-scheduled-recollection.md)                | Architecture | 2024-12-18 |
+| 02  | [Clean Architecture 레이어 도입](./worker/02-clean-architecture-layers.md)          | Architecture | 2024-12-18 |
+| 03  | [Graceful Shutdown 및 Context 기반 생명주기 관리](./worker/03-graceful-shutdown.md) | Architecture | 2024-12-18 |
+| 04  | [OAuth 토큰 Graceful Degradation](./worker/04-oauth-token-graceful-degradation.md)  | Reliability  | 2024-12-18 |
+| 05  | [Analyzer-Scheduler 프로세스 분리](./worker/05-worker-scheduler-separation.md)      | Architecture | 2024-12-18 |
+| 06  | [Semaphore 기반 Clone 동시성 제어](./worker/06-semaphore-clone-concurrency.md)      | Concurrency  | 2024-12-18 |
+| 07  | [Repository 패턴 데이터 접근 추상화](./worker/07-repository-pattern.md)             | Architecture | 2024-12-18 |
 
 ### Web 리포지토리
 
@@ -139,5 +139,5 @@ XX-brief-decision-title.md
 
 - [specvital/core](https://github.com/specvital/core) - 파서 엔진
 - [specvital/web](https://github.com/specvital/web) - 웹 플랫폼
-- [specvital/collector](https://github.com/specvital/collector) - 워커 서비스
+- [specvital/worker](https://github.com/specvital/worker) - 워커 서비스
 - [specvital/infra](https://github.com/specvital/infra) - 인프라

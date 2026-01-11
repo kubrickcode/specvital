@@ -1,52 +1,52 @@
 ---
-title: Collector-Centric Analysis Lifecycle
-description: ADR delegating analysis record lifecycle ownership to Collector service
+title: Worker-Centric Analysis Lifecycle
+description: ADR delegating analysis record lifecycle ownership to Worker service
 ---
 
-# ADR-12: Collector-Centric Analysis Lifecycle
+# ADR-12: Worker-Centric Analysis Lifecycle
 
-> [Korean Version](/ko/adr/12-collector-centric-analysis-lifecycle.md)
+> [Korean Version](/ko/adr/12-worker-centric-analysis-lifecycle.md)
 
-| Date       | Author       | Repos          |
-| ---------- | ------------ | -------------- |
-| 2024-12-16 | @KubrickCode | web, collector |
+| Date       | Author       | Repos       |
+| ---------- | ------------ | ----------- |
+| 2024-12-16 | @KubrickCode | web, worker |
 
 ## Context
 
 ### Existing Architecture
 
-ADR-03 established API (Web) and Worker (Collector) service separation. ADR-04 introduced queue-based async processing. Initial implementation caused dual ownership issues:
+ADR-03 established API (Web) and Worker service separation. ADR-04 introduced queue-based async processing. Initial implementation caused dual ownership issues:
 
 **Previous Flow:**
 
 ```
-User Request → Web creates "pending" record → Enqueue → Collector processes → Record update
+User Request → Web creates "pending" record → Enqueue → Worker processes → Record update
 ```
 
 **Problem: Two services manipulating the same database record**
 
 ### Dual Ownership Issues
 
-| Issue                  | Impact                                                   |
-| ---------------------- | -------------------------------------------------------- |
-| Duplicate Records      | Web creates pending record, Collector may create another |
-| State Inconsistency    | Web's DB state may not match actual queue state          |
-| Complex Error Recovery | Failure requires coordination between two services       |
-| Race Conditions        | Retry requests may create multiple pending records       |
-| Unclear Responsibility | Ambiguous authoritative source for record state          |
+| Issue                  | Impact                                                |
+| ---------------------- | ----------------------------------------------------- |
+| Duplicate Records      | Web creates pending record, Worker may create another |
+| State Inconsistency    | Web's DB state may not match actual queue state       |
+| Complex Error Recovery | Failure requires coordination between two services    |
+| Race Conditions        | Retry requests may create multiple pending records    |
+| Unclear Responsibility | Ambiguous authoritative source for record state       |
 
 ### Root Cause
 
-Core problem: **No Single Source of Truth** for analysis record lifecycle. Both Web and Collector have write access to the same record, causing synchronization complexity.
+Core problem: **No Single Source of Truth** for analysis record lifecycle. Both Web and Worker have write access to the same record, causing synchronization complexity.
 
 ## Decision
 
-**Adopt Collector-centric analysis lifecycle where Collector exclusively owns record creation, processing, and completion.**
+**Adopt Worker-centric analysis lifecycle where Worker exclusively owns record creation, processing, and completion.**
 
 ### New Architecture
 
 ```
-User Request → Web (enqueue only) → Queue → Collector (create → process → complete)
+User Request → Web (enqueue only) → Queue → Worker (create → process → complete)
                     ↓                              ↓
               UUID generation          Single ownership of record lifecycle
               Check status from queue  Create record on job start
@@ -56,24 +56,24 @@ User Request → Web (enqueue only) → Queue → Collector (create → process 
 **Core Principles:**
 
 1. **Web: Enqueue Only** - Generate analysis UUID, enqueue job, no writes to analysis table
-2. **Collector: Full Ownership** - Create record on job start, update on completion
+2. **Worker: Full Ownership** - Create record on job start, update on completion
 3. **Queue as State Source** - Web checks in-progress analysis from queue, not DB
-4. **Single Writer** - Only Collector writes to analysis records
+4. **Single Writer** - Only Worker writes to analysis records
 
 ## Options Considered
 
-### Option A: Collector-Centric Ownership (Selected)
+### Option A: Worker-Centric Ownership (Selected)
 
-Web enqueues analysis request with generated UUID. Collector creates record on processing start, updates on completion.
+Web enqueues analysis request with generated UUID. Worker creates record on processing start, updates on completion.
 
 **Pros:**
 
 - Single source of truth: One service owns entire lifecycle
-- No duplicate records: Only Collector creates analysis entries
-- Clear service boundaries: Web handles HTTP, Collector handles analysis
+- No duplicate records: Only Worker creates analysis entries
+- Clear service boundaries: Web handles HTTP, Worker handles analysis
 - Simple error handling: All failure states managed in one place
 - Better transaction consistency: Create and update in same service context
-- Independent scaling: Collector scales without affecting Web
+- Independent scaling: Worker scales without affecting Web
 
 **Cons:**
 
@@ -83,7 +83,7 @@ Web enqueues analysis request with generated UUID. Collector creates record on p
 
 ### Option B: Web-Centric Ownership
 
-Web creates and manages all records. Collector only updates existing records.
+Web creates and manages all records. Worker only updates existing records.
 
 **Pros:**
 
@@ -92,7 +92,7 @@ Web creates and manages all records. Collector only updates existing records.
 
 **Cons:**
 
-- Collector must handle "record not found" cases
+- Worker must handle "record not found" cases
 - Timing issues if queue processes before DB commit
 - More complex retry logic (must check record existence)
 - Web becomes bottleneck for record creation
@@ -154,19 +154,19 @@ CommitSHA-based uniqueness prevents duplicate analysis:
 
 **Operational Simplicity:**
 
-- Single service for debugging analysis issues
+- Single service for debugging analysis issues (Worker)
 - Clearer logs and traces
 - Simpler monitoring (only one writer to track)
 
 **Scalability:**
 
-- Collector scales independently based on queue depth
+- Worker scales independently based on queue depth
 - Web stays lightweight (no heavy DB writes for analysis)
 - Queue naturally buffers load
 
 **Future Compatibility:**
 
-- Aligns with scheduled recollection (Collector ADR-01)
+- Aligns with scheduled re-analysis (Worker ADR-01)
 - Same lifecycle whether user-initiated or scheduled
 - Consistent ownership model
 
@@ -180,7 +180,7 @@ CommitSHA-based uniqueness prevents duplicate analysis:
 
 **Delayed Visibility:**
 
-- Analysis doesn't appear in DB until Collector starts processing
+- Analysis doesn't appear in DB until Worker starts processing
 - Short delay between enqueue and record creation
 - **Mitigation**: Queue status provides immediate feedback
 
@@ -191,16 +191,16 @@ CommitSHA-based uniqueness prevents duplicate analysis:
 
 ### Technical Implications
 
-| Aspect             | Implication                                                     |
-| ------------------ | --------------------------------------------------------------- |
-| Transaction Scope  | Record creation + initial state in single Collector transaction |
-| Failure Handling   | All retries managed in Collector                                |
-| Queue Schema       | Must support owner/repo lookup for status                       |
-| Monitoring         | Queue metrics indicate analysis status                          |
-| Scheduled Analysis | User-initiated and scheduled share same lifecycle               |
+| Aspect             | Implication                                                  |
+| ------------------ | ------------------------------------------------------------ |
+| Transaction Scope  | Record creation + initial state in single Worker transaction |
+| Failure Handling   | All retries managed in Worker                                |
+| Queue Schema       | Must support owner/repo lookup for status                    |
+| Monitoring         | Queue metrics indicate analysis status                       |
+| Scheduled Analysis | User-initiated and scheduled share same lifecycle            |
 
 ## References
 
 - [ADR-03: API and Worker Service Separation](/en/adr/03-api-worker-service-separation.md)
 - [ADR-04: Queue-Based Async Processing](/en/adr/04-queue-based-async-processing.md)
-- [Collector ADR-01: Scheduled Recollection Architecture](/en/adr/collector/01-scheduled-recollection.md)
+- [Worker ADR-01: Scheduled Re-analysis Architecture](/en/adr/worker/01-scheduled-recollection.md)

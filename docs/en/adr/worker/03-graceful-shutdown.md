@@ -5,11 +5,11 @@ description: ADR on context-based lifecycle management for graceful shutdown in 
 
 # ADR-03: Graceful Shutdown and Context-Based Lifecycle Management
 
-> 🇰🇷 [한국어 버전](/ko/adr/collector/03-graceful-shutdown.md)
+> 🇰🇷 [한국어 버전](/ko/adr/worker/03-graceful-shutdown.md)
 
-| Date       | Author       | Repos     |
-| ---------- | ------------ | --------- |
-| 2024-12-18 | @KubrickCode | collector |
+| Date       | Author       | Repos  |
+| ---------- | ------------ | ------ |
+| 2024-12-18 | @KubrickCode | worker |
 
 ## Context
 

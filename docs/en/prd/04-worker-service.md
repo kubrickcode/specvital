@@ -1,13 +1,13 @@
 ---
-title: Collector Service
+title: Worker Service
 description: Background analysis worker service specification
 ---
 
-# Collector Service
+# Worker Service
 
-> 🇰🇷 [한국어 버전](/ko/prd/04-collector-service.md)
+> 🇰🇷 [한국어 버전](/ko/prd/04-worker-service.md)
 
-> Background analysis worker
+> Background analysis workers (analyzer, spec-generator)
 
 ## Core Responsibilities
 
@@ -18,10 +18,10 @@ description: Background analysis worker service specification
 
 ```
 1. Backend → Queue: Analysis request
-2. Collector ← Queue: Receive task
-3. Collector → GitHub: git clone
-4. Collector → Core: Parsing
-5. Collector → DB: Store results
+2. Worker (analyzer) ← Queue: Receive task
+3. Worker → GitHub: git clone
+4. Worker → Core: Parsing
+5. Worker → DB: Store results
 ```
 
 ## Error Handling
@@ -36,4 +36,4 @@ description: Background analysis worker service specification
 - Exponential backoff
 - Dead Letter Queue
 
-> See collector repository for configuration details
+> See worker repository for configuration details

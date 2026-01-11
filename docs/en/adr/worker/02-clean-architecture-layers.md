@@ -5,11 +5,11 @@ description: ADR on six-layer Clean Architecture for separation of concerns and 
 
 # ADR-02: Clean Architecture Layer Introduction
 
-> 🇰🇷 [한국어 버전](/ko/adr/collector/02-clean-architecture-layers.md)
+> 🇰🇷 [한국어 버전](/ko/adr/worker/02-clean-architecture-layers.md)
 
-| Date       | Author       | Repos     |
-| ---------- | ------------ | --------- |
-| 2024-12-18 | @KubrickCode | collector |
+| Date       | Author       | Repos  |
+| ---------- | ------------ | ------ |
+| 2024-12-18 | @KubrickCode | worker |
 
 ## Context
 
