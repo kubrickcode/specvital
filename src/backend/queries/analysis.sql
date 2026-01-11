@@ -84,8 +84,7 @@ JOIN LATERAL (
     ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
-WHERE c.last_viewed_at IS NOT NULL
-  AND c.is_stale = false
+WHERE c.is_stale = false
   AND EXISTS(
       SELECT 1 FROM user_analysis_history uah
       WHERE uah.analysis_id = a.id AND uah.user_id = sqlc.arg(user_id)::uuid
@@ -165,8 +164,7 @@ JOIN LATERAL (
     ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
-WHERE c.last_viewed_at IS NOT NULL
-  AND c.is_stale = false
+WHERE c.is_stale = false
   AND (
     sqlc.arg(view_filter)::text = 'all'
     OR (sqlc.arg(view_filter)::text = 'my' AND EXISTS(
@@ -258,8 +256,7 @@ JOIN LATERAL (
     ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
-WHERE c.last_viewed_at IS NOT NULL
-  AND c.is_stale = false
+WHERE c.is_stale = false
   AND (
     sqlc.arg(view_filter)::text = 'all'
     OR (sqlc.arg(view_filter)::text = 'my' AND EXISTS(
@@ -351,8 +348,7 @@ JOIN LATERAL (
     ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
-WHERE c.last_viewed_at IS NOT NULL
-  AND c.is_stale = false
+WHERE c.is_stale = false
   AND (
     sqlc.arg(view_filter)::text = 'all'
     OR (sqlc.arg(view_filter)::text = 'my' AND EXISTS(

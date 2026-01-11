@@ -199,8 +199,7 @@ JOIN LATERAL (
     ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
-WHERE c.last_viewed_at IS NOT NULL
-  AND c.is_stale = false
+WHERE c.is_stale = false
   AND (
     $2::text = 'all'
     OR ($2::text = 'my' AND EXISTS(
@@ -361,8 +360,7 @@ JOIN LATERAL (
     ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
-WHERE c.last_viewed_at IS NOT NULL
-  AND c.is_stale = false
+WHERE c.is_stale = false
   AND (
     $2::text = 'all'
     OR ($2::text = 'my' AND EXISTS(
@@ -523,8 +521,7 @@ JOIN LATERAL (
     ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
-WHERE c.last_viewed_at IS NOT NULL
-  AND c.is_stale = false
+WHERE c.is_stale = false
   AND (
     $2::text = 'all'
     OR ($2::text = 'my' AND EXISTS(
@@ -679,8 +676,7 @@ JOIN LATERAL (
     ORDER BY an.created_at DESC
     LIMIT 1
 ) a ON true
-WHERE c.last_viewed_at IS NOT NULL
-  AND c.is_stale = false
+WHERE c.is_stale = false
   AND EXISTS(
       SELECT 1 FROM user_analysis_history uah
       WHERE uah.analysis_id = a.id AND uah.user_id = $1::uuid
