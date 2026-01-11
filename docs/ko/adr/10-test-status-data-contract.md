@@ -7,9 +7,9 @@ description: 크로스 서비스 TestStatus 열거형 정렬을 통한 데이터
 
 > 🇺🇸 [English Version](/en/adr/10-test-status-data-contract)
 
-| 날짜       | 작성자       | 리포지토리           |
-| ---------- | ------------ | -------------------- |
-| 2024-12-29 | @KubrickCode | core, collector, web |
+| 날짜       | 작성자       | 리포지토리        |
+| ---------- | ------------ | ----------------- |
+| 2024-12-29 | @KubrickCode | core, worker, web |
 
 ## 컨텍스트
 
@@ -18,7 +18,7 @@ description: 크로스 서비스 TestStatus 열거형 정렬을 통한 데이터
 Specvital은 멀티 서비스 파이프라인을 통해 테스트 메타데이터 처리:
 
 ```
-Core Parser → Collector → Database → Web API → Frontend
+Core Parser → Worker → Database → Web API → Frontend
 ```
 
 각 서비스가 자체 `TestStatus` 타입을 정의하여 발생 가능한 문제:
@@ -33,7 +33,7 @@ Core Parser → Collector → Database → Web API → Frontend
 
 ```
 Core 정의:      active, focused, skipped, todo, xfail (5개 상태)
-Collector 정의: active, skipped, todo (3개 상태)
+Worker 정의: active, skipped, todo (3개 상태)
 ```
 
 **영향**:
@@ -75,12 +75,12 @@ const (
 
 ### 서비스 정렬
 
-| 서비스    | 위치                                    | 상태              |
-| --------- | --------------------------------------- | ----------------- |
-| Core      | `pkg/domain/status.go`                  | 소스 오브 트루스  |
-| Collector | `internal/domain/analysis/inventory.go` | Core에서 1:1 매핑 |
-| Database  | schema.sql의 `test_status` ENUM         | 1:1 매핑          |
-| Web API   | OpenAPI `TestStatus` 스키마             | 1:1 매핑          |
+| 서비스   | 위치                                    | 상태              |
+| -------- | --------------------------------------- | ----------------- |
+| Core     | `pkg/domain/status.go`                  | 소스 오브 트루스  |
+| Worker   | `internal/domain/analysis/inventory.go` | Core에서 1:1 매핑 |
+| Database | schema.sql의 `test_status` ENUM         | 1:1 매핑          |
+| Web API  | OpenAPI `TestStatus` 스키마             | 1:1 매핑          |
 
 ## 고려된 대안
 
@@ -91,7 +91,7 @@ const (
 
 ### 옵션 B: 서브셋 매핑 (이전 상태)
 
-- Collector가 단순화된 3-상태 모델 사용
+- Worker가 단순화된 3-상태 모델 사용
 - `focused → active`, `xfail → todo` 매핑
 - **기각 이유**: 데이터 손실, 의미론적 손상
 
@@ -118,7 +118,7 @@ const (
 )
 ```
 
-### Collector (소비자)
+### Worker (소비자)
 
 ```go
 // internal/domain/analysis/inventory.go
@@ -213,7 +213,7 @@ TestStatus:
 
 - 새 상태 추가 시 4곳 모두 변경 필요:
   - Core: `pkg/domain/status.go`
-  - Collector: `internal/domain/analysis/inventory.go`
+  - Worker: `internal/domain/analysis/inventory.go`
   - Database: ENUM 변경 마이그레이션
   - Web: OpenAPI 스키마 업데이트
 - 배포 중 버전 불일치 위험
@@ -229,15 +229,15 @@ TestStatus:
 ### 새 상태 추가
 
 1. Core `pkg/domain/status.go`에 먼저 추가
-2. Collector 도메인 및 매핑 레이어에 추가
+2. Worker 도메인 및 매핑 레이어에 추가
 3. ENUM 추가를 위한 데이터베이스 마이그레이션 생성
 4. OpenAPI 스키마 업데이트
-5. 순서대로 배포: Database → Collector → Web → Core
+5. 순서대로 배포: Database → Worker → Web → Core
 
 ### 상태 폐기
 
 1. 문서에서 deprecated로 표시
-2. Collector에서 deprecated 상태를 대체 상태로 매핑
+2. Worker에서 deprecated 상태를 대체 상태로 매핑
 3. deprecated 상태 출력을 중단하도록 파서 업데이트
 4. 마이그레이션 기간 후 OpenAPI에서 제거
 

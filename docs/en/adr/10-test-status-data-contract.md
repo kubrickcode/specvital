@@ -7,9 +7,9 @@ description: ADR on cross-service TestStatus enum alignment for data integrity
 
 > 🇰🇷 [한국어 버전](/ko/adr/10-test-status-data-contract)
 
-| Date       | Author       | Repos                |
-| ---------- | ------------ | -------------------- |
-| 2024-12-29 | @KubrickCode | core, collector, web |
+| Date       | Author       | Repos             |
+| ---------- | ------------ | ----------------- |
+| 2024-12-29 | @KubrickCode | core, worker, web |
 
 ## Context
 
@@ -18,7 +18,7 @@ description: ADR on cross-service TestStatus enum alignment for data integrity
 Specvital processes test metadata through a multi-service pipeline:
 
 ```
-Core Parser → Collector → Database → Web API → Frontend
+Core Parser → Worker → Database → Web API → Frontend
 ```
 
 Each service defines its own `TestStatus` type, creating potential for:
@@ -33,7 +33,7 @@ During development, a critical data integrity issue was discovered:
 
 ```
 Core defines:    active, focused, skipped, todo, xfail (5 statuses)
-Collector had:   active, skipped, todo (3 statuses)
+Worker had:   active, skipped, todo (3 statuses)
 ```
 
 **Impact**:
@@ -75,12 +75,12 @@ const (
 
 ### Service Alignment
 
-| Service   | Location                                | Status                |
-| --------- | --------------------------------------- | --------------------- |
-| Core      | `pkg/domain/status.go`                  | Source of truth       |
-| Collector | `internal/domain/analysis/inventory.go` | 1:1 mapping from Core |
-| Database  | `test_status` ENUM in schema.sql        | 1:1 mapping           |
-| Web API   | OpenAPI `TestStatus` schema             | 1:1 mapping           |
+| Service  | Location                                | Status                |
+| -------- | --------------------------------------- | --------------------- |
+| Core     | `pkg/domain/status.go`                  | Source of truth       |
+| Worker   | `internal/domain/analysis/inventory.go` | 1:1 mapping from Core |
+| Database | `test_status` ENUM in schema.sql        | 1:1 mapping           |
+| Web API  | OpenAPI `TestStatus` schema             | 1:1 mapping           |
 
 ## Options Considered
 
@@ -91,7 +91,7 @@ const (
 
 ### Option B: Subset Mapping (Previous State)
 
-- Collector uses simplified 3-status model
+- Worker uses simplified 3-status model
 - Map `focused → active`, `xfail → todo`
 - **Rejected**: Data loss, semantic corruption
 
@@ -118,7 +118,7 @@ const (
 )
 ```
 
-### Collector (Consumer)
+### Worker (Consumer)
 
 ```go
 // internal/domain/analysis/inventory.go
@@ -213,7 +213,7 @@ TestStatus:
 
 - Adding new status requires changes in all 4 locations:
   - Core: `pkg/domain/status.go`
-  - Collector: `internal/domain/analysis/inventory.go`
+  - Worker: `internal/domain/analysis/inventory.go`
   - Database: Migration for ENUM alteration
   - Web: OpenAPI schema update
 - Risk of version mismatch during deployment
@@ -229,15 +229,15 @@ TestStatus:
 ### Adding a New Status
 
 1. Add to Core `pkg/domain/status.go` first
-2. Add to Collector domain and mapping layer
+2. Add to Worker domain and mapping layer
 3. Create database migration for ENUM addition
 4. Update OpenAPI schema
-5. Deploy in order: Database → Collector → Web → Core
+5. Deploy in order: Database → Worker → Web → Core
 
 ### Deprecating a Status
 
 1. Mark as deprecated in documentation
-2. Map deprecated status to replacement in Collector
+2. Map deprecated status to replacement in Worker
 3. Update parsers to stop emitting deprecated status
 4. Remove from OpenAPI after migration period
 
