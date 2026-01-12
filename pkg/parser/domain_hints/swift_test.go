@@ -359,3 +359,50 @@ struct PaymentTests {
 		}
 	}
 }
+
+func TestSwiftExtractor_Extract_NoiseFilter(t *testing.T) {
+	source := []byte(`
+import Foundation
+
+class Test {
+    func testMethod() {
+        // Decimal literal patterns should be filtered
+        let x = (0.5).description
+        let y = (1.0).rounded()
+
+        // Real domain calls should be included
+        userService.create(user)
+        paymentGateway.process(amount)
+    }
+}
+`)
+
+	extractor := &SwiftExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("noise patterns filtered", func(t *testing.T) {
+		for call := range callSet {
+			if len(call) > 0 && (call[0] == '[' || call[0] == '(') {
+				t.Errorf("noise pattern %q should be filtered, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"userService.create", "paymentGateway.process"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}

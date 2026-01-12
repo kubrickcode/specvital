@@ -118,6 +118,9 @@ func (e *RubyExtractor) extractCalls(root *sitter.Node, source []byte) []string 
 		if call == "" {
 			continue
 		}
+		if ShouldFilterNoise(call) {
+			continue
+		}
 
 		if isRubyTestFrameworkCall(call) {
 			continue

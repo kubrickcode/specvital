@@ -154,6 +154,9 @@ func (e *PHPExtractor) extractCalls(root *sitter.Node, source []byte) []string {
 			if call == "" {
 				continue
 			}
+			if ShouldFilterNoise(call) {
+				continue
+			}
 			if isPHPTestFrameworkCall(call) {
 				continue
 			}

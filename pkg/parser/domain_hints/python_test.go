@@ -298,3 +298,50 @@ func TestGetExtractor_Python(t *testing.T) {
 		t.Errorf("expected PythonExtractor, got %T", ext)
 	}
 }
+
+func TestPythonExtractor_Extract_NoiseFilter(t *testing.T) {
+	source := []byte(`
+import pytest
+
+def test_noise_patterns():
+    # Bracket patterns should be filtered
+    items = [1, 2, 3]
+    result = [...items]
+
+    # Dollar sign patterns (rare in Python but test anyway)
+    $ = None
+
+    # Real domain calls should be included
+    user_service.create(data)
+    payment_gateway.process(amount)
+`)
+
+	extractor := &PythonExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("noise patterns filtered", func(t *testing.T) {
+		for call := range callSet {
+			if len(call) > 0 && (call[0] == '[' || call[0] == '(' || call == "$") {
+				t.Errorf("noise pattern %q should be filtered, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"user_service.create", "payment_gateway.process"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}

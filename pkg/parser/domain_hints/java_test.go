@@ -224,3 +224,50 @@ func TestGetExtractor_Java(t *testing.T) {
 		t.Errorf("expected JavaExtractor, got %T", ext)
 	}
 }
+
+func TestJavaExtractor_Extract_NoiseFilter(t *testing.T) {
+	source := []byte(`
+package com.example;
+
+class Test {
+	void test() {
+		// Decimal literal patterns should be filtered
+		double x = (0.5).doubleValue();
+		double y = (1.0).toString();
+
+		// Real domain calls should be included
+		userService.create(data);
+		paymentGateway.process(amount);
+	}
+}
+`)
+
+	extractor := &JavaExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("noise patterns filtered", func(t *testing.T) {
+		for call := range callSet {
+			if len(call) > 0 && (call[0] == '[' || call[0] == '(') {
+				t.Errorf("noise pattern %q should be filtered, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"userService.create", "paymentGateway.process"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}

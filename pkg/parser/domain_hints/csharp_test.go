@@ -361,3 +361,53 @@ func TestGetExtractor_CSharp(t *testing.T) {
 		t.Errorf("expected CSharpExtractor, got %T", ext)
 	}
 }
+
+func TestCSharpExtractor_Extract_NoiseFilter(t *testing.T) {
+	source := []byte(`
+namespace MyApp.Tests
+{
+    public class Test
+    {
+        void TestMethod()
+        {
+            // Decimal literal patterns should be filtered
+            var x = (0.5).ToString();
+            var y = (1.0).GetType();
+
+            // Real domain calls should be included
+            userService.Create(data);
+            paymentGateway.Process(amount);
+        }
+    }
+}
+`)
+
+	extractor := &CSharpExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("noise patterns filtered", func(t *testing.T) {
+		for call := range callSet {
+			if len(call) > 0 && (call[0] == '[' || call[0] == '(') {
+				t.Errorf("noise pattern %q should be filtered, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"userService.Create", "paymentGateway.Process"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}

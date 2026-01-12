@@ -102,6 +102,10 @@ func (e *CppExtractor) extractCalls(root *sitter.Node, source []byte) []string {
 				continue
 			}
 
+			if ShouldFilterNoise(call) {
+				continue
+			}
+
 			if isCppTestFrameworkCall(call) {
 				continue
 			}

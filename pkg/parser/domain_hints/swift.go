@@ -94,6 +94,10 @@ func (e *SwiftExtractor) extractCalls(root *sitter.Node, source []byte) []string
 				continue
 			}
 
+			if ShouldFilterNoise(call) {
+				continue
+			}
+
 			if isSwiftTestFrameworkCall(call) {
 				continue
 			}

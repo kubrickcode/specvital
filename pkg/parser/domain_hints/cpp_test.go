@@ -388,3 +388,48 @@ void test() {
 		}
 	}
 }
+
+func TestCppExtractor_Extract_NoiseFilter(t *testing.T) {
+	source := []byte(`
+#include <iostream>
+
+void test() {
+    // Decimal literal patterns should be filtered
+    auto x = (0.5f);
+    auto y = (1.0).toString();
+
+    // Real domain calls should be included
+    userService.create(user);
+    PaymentGateway::process(payment);
+}
+`)
+
+	extractor := &CppExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("noise patterns filtered", func(t *testing.T) {
+		for call := range callSet {
+			if len(call) > 0 && (call[0] == '[' || call[0] == '(') {
+				t.Errorf("noise pattern %q should be filtered, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"userService.create", "PaymentGateway.process"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}

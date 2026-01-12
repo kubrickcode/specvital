@@ -143,6 +143,10 @@ func (e *CSharpExtractor) extractCalls(root *sitter.Node, source []byte) []strin
 			if call == "" {
 				continue
 			}
+			// Filter universal noise patterns (before more specific checks)
+			if ShouldFilterNoise(call) {
+				continue
+			}
 			// Skip test framework calls
 			if isCSharpTestFrameworkCall(call) {
 				continue
