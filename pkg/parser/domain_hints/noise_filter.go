@@ -22,6 +22,11 @@ func ShouldFilterNoise(call string) bool {
 		return true
 	}
 
+	// Generic callback variable name: no domain signal
+	if call == "fn" {
+		return true
+	}
+
 	// Single character not matching valid identifier pattern
 	if len(call) == 1 {
 		return !IsValidIdentifierChar(rune(call[0]))

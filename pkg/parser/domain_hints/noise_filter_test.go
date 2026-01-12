@@ -25,6 +25,10 @@ func TestShouldFilterNoise(t *testing.T) {
 		{"dollar singleton", "$", true},
 		{"dollar with method", "$.ajax", false},
 
+		// Generic callback variable name
+		{"fn callback", "fn", true},
+		{"fn prefixed", "fnCallback", false},
+
 		// Single character identifiers
 		{"single valid identifier", "a", false},
 		{"single valid identifier upper", "A", false},
