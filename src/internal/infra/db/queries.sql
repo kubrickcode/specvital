@@ -132,3 +132,12 @@ RETURNING id;
 INSERT INTO test_suites (file_id, parent_id, name, line_number, depth)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING id;
+
+-- name: UpsertSystemConfig :exec
+INSERT INTO system_config (key, value, updated_at)
+VALUES ($1, $2, now())
+ON CONFLICT (key)
+DO UPDATE SET value = EXCLUDED.value, updated_at = now();
+
+-- name: GetSystemConfig :one
+SELECT value FROM system_config WHERE key = $1;

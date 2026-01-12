@@ -113,7 +113,8 @@ CREATE TABLE public.analyses (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     total_suites integer DEFAULT 0 NOT NULL,
     total_tests integer DEFAULT 0 NOT NULL,
-    committed_at timestamp with time zone
+    committed_at timestamp with time zone,
+    parser_version character varying(100) DEFAULT 'legacy'::character varying NOT NULL
 );
 
 
@@ -353,6 +354,17 @@ CREATE TABLE public.spec_view_cache (
 
 
 --
+-- Name: system_config; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.system_config (
+    key character varying(100) NOT NULL,
+    value text NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: test_cases; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -587,6 +599,14 @@ ALTER TABLE ONLY public.river_queue
 
 ALTER TABLE ONLY public.spec_view_cache
     ADD CONSTRAINT spec_view_cache_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: system_config system_config_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.system_config
+    ADD CONSTRAINT system_config_pkey PRIMARY KEY (key);
 
 
 --
@@ -1008,10 +1028,10 @@ CREATE UNIQUE INDEX river_job_unique_idx ON public.river_job USING btree (unique
 
 
 --
--- Name: uq_analyses_completed_commit; Type: INDEX; Schema: public; Owner: -
+-- Name: uq_analyses_completed_commit_version; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX uq_analyses_completed_commit ON public.analyses USING btree (codebase_id, commit_sha) WHERE (status = 'completed'::public.analysis_status);
+CREATE UNIQUE INDEX uq_analyses_completed_commit_version ON public.analyses USING btree (codebase_id, commit_sha, parser_version) WHERE (status = 'completed'::public.analysis_status);
 
 
 --

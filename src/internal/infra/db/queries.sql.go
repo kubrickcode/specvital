@@ -14,7 +14,7 @@ import (
 const createAnalysis = `-- name: CreateAnalysis :one
 INSERT INTO analyses (id, codebase_id, commit_sha, branch_name, status, started_at)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, codebase_id, commit_sha, branch_name, status, error_message, started_at, completed_at, created_at, total_suites, total_tests, committed_at
+RETURNING id, codebase_id, commit_sha, branch_name, status, error_message, started_at, completed_at, created_at, total_suites, total_tests, committed_at, parser_version
 `
 
 type CreateAnalysisParams struct {
@@ -49,6 +49,7 @@ func (q *Queries) CreateAnalysis(ctx context.Context, arg CreateAnalysisParams) 
 		&i.TotalSuites,
 		&i.TotalTests,
 		&i.CommittedAt,
+		&i.ParserVersion,
 	)
 	return i, err
 }
@@ -325,6 +326,17 @@ func (q *Queries) GetOAuthAccountByUserAndProvider(ctx context.Context, arg GetO
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getSystemConfig = `-- name: GetSystemConfig :one
+SELECT value FROM system_config WHERE key = $1
+`
+
+func (q *Queries) GetSystemConfig(ctx context.Context, key string) (string, error) {
+	row := q.db.QueryRow(ctx, getSystemConfig, key)
+	var value string
+	err := row.Scan(&value)
+	return value, err
 }
 
 const getTestCasesBySuiteID = `-- name: GetTestCasesBySuiteID :many
@@ -637,4 +649,21 @@ func (q *Queries) UpsertCodebase(ctx context.Context, arg UpsertCodebaseParams) 
 		&i.IsPrivate,
 	)
 	return i, err
+}
+
+const upsertSystemConfig = `-- name: UpsertSystemConfig :exec
+INSERT INTO system_config (key, value, updated_at)
+VALUES ($1, $2, now())
+ON CONFLICT (key)
+DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+`
+
+type UpsertSystemConfigParams struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+func (q *Queries) UpsertSystemConfig(ctx context.Context, arg UpsertSystemConfigParams) error {
+	_, err := q.db.Exec(ctx, upsertSystemConfig, arg.Key, arg.Value)
+	return err
 }

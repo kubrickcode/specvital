@@ -232,18 +232,19 @@ func (ns NullTestStatus) Value() (driver.Value, error) {
 }
 
 type Analysis struct {
-	ID           pgtype.UUID        `json:"id"`
-	CodebaseID   pgtype.UUID        `json:"codebase_id"`
-	CommitSha    string             `json:"commit_sha"`
-	BranchName   pgtype.Text        `json:"branch_name"`
-	Status       AnalysisStatus     `json:"status"`
-	ErrorMessage pgtype.Text        `json:"error_message"`
-	StartedAt    pgtype.Timestamptz `json:"started_at"`
-	CompletedAt  pgtype.Timestamptz `json:"completed_at"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	TotalSuites  int32              `json:"total_suites"`
-	TotalTests   int32              `json:"total_tests"`
-	CommittedAt  pgtype.Timestamptz `json:"committed_at"`
+	ID            pgtype.UUID        `json:"id"`
+	CodebaseID    pgtype.UUID        `json:"codebase_id"`
+	CommitSha     string             `json:"commit_sha"`
+	BranchName    pgtype.Text        `json:"branch_name"`
+	Status        AnalysisStatus     `json:"status"`
+	ErrorMessage  pgtype.Text        `json:"error_message"`
+	StartedAt     pgtype.Timestamptz `json:"started_at"`
+	CompletedAt   pgtype.Timestamptz `json:"completed_at"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	TotalSuites   int32              `json:"total_suites"`
+	TotalTests    int32              `json:"total_tests"`
+	CommittedAt   pgtype.Timestamptz `json:"committed_at"`
+	ParserVersion string             `json:"parser_version"`
 }
 
 type AtlasSchemaRevision struct {
@@ -389,6 +390,12 @@ type SpecViewCache struct {
 	Language       string             `json:"language"`
 	ModelID        string             `json:"model_id"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+type SystemConfig struct {
+	Key       string             `json:"key"`
+	Value     string             `json:"value"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 type TestCase struct {
