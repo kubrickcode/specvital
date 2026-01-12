@@ -107,7 +107,7 @@ func extractGoCalls(root *sitter.Node, source []byte) []string {
 				continue
 			}
 			// Filter noise patterns
-			if shouldFilterNoise(call) {
+			if ShouldFilterNoise(call) {
 				continue
 			}
 			if _, exists := seen[call]; exists {
@@ -151,33 +151,6 @@ func normalizeCall(call string) string {
 		return parts[0] + "." + parts[1]
 	}
 	return call
-}
-
-// shouldFilterNoise filters out universal noise patterns from domain hints.
-// Removes: empty strings, malformed identifiers, and framework-specific noise.
-func shouldFilterNoise(call string) bool {
-	// Empty string
-	if call == "" {
-		return true
-	}
-
-	// Malformed patterns: starts with "[" (e.g., "[." from spread array handling)
-	if len(call) > 0 && call[0] == '[' {
-		return true
-	}
-
-	// Single character not matching valid identifier pattern
-	if len(call) == 1 {
-		return !isValidIdentifierChar(rune(call[0]))
-	}
-
-	return false
-}
-
-// isValidIdentifierChar checks if a rune is a valid identifier character.
-// Valid: A-Z, a-z, 0-9, underscore
-func isValidIdentifierChar(r rune) bool {
-	return (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_'
 }
 
 func getNodeText(node *sitter.Node, source []byte) (result string) {
