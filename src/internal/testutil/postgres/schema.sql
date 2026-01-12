@@ -335,21 +335,64 @@ CREATE TABLE public.river_queue (
 
 
 --
--- Name: spec_view_cache; Type: TABLE; Schema: public; Owner: -
+-- Name: spec_behaviors; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.spec_view_cache (
+CREATE TABLE public.spec_behaviors (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cache_key_hash bytea NOT NULL,
-    codebase_id uuid NOT NULL,
-    file_path text NOT NULL,
-    framework character varying(50) NOT NULL,
-    suite_hierarchy text NOT NULL,
-    original_name text NOT NULL,
-    converted_name text NOT NULL,
-    language character varying(10) DEFAULT 'en'::character varying NOT NULL,
-    model_id character varying(100) NOT NULL,
+    feature_id uuid NOT NULL,
+    source_test_case_id uuid,
+    original_name character varying(2000) NOT NULL,
+    converted_description text NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: spec_documents; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.spec_documents (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    analysis_id uuid NOT NULL,
+    content_hash bytea NOT NULL,
+    language character varying(10) DEFAULT 'en'::character varying NOT NULL,
+    executive_summary text,
+    model_id character varying(100) NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: spec_domains; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.spec_domains (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    document_id uuid NOT NULL,
+    name character varying(255) NOT NULL,
+    description text,
+    sort_order integer DEFAULT 0 NOT NULL,
+    classification_confidence numeric(3,2),
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: spec_features; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.spec_features (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    domain_id uuid NOT NULL,
+    name character varying(255) NOT NULL,
+    description text,
+    sort_order integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -594,11 +637,35 @@ ALTER TABLE ONLY public.river_queue
 
 
 --
--- Name: spec_view_cache spec_view_cache_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: spec_behaviors spec_behaviors_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.spec_view_cache
-    ADD CONSTRAINT spec_view_cache_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.spec_behaviors
+    ADD CONSTRAINT spec_behaviors_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: spec_documents spec_documents_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_documents
+    ADD CONSTRAINT spec_documents_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: spec_domains spec_domains_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_domains
+    ADD CONSTRAINT spec_domains_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: spec_features spec_features_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_features
+    ADD CONSTRAINT spec_features_pkey PRIMARY KEY (id);
 
 
 --
@@ -674,11 +741,11 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- Name: spec_view_cache uq_spec_view_cache_key_model; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: spec_documents uq_spec_documents_hash_lang_model; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.spec_view_cache
-    ADD CONSTRAINT uq_spec_view_cache_key_model UNIQUE (cache_key_hash, model_id);
+ALTER TABLE ONLY public.spec_documents
+    ADD CONSTRAINT uq_spec_documents_hash_lang_model UNIQUE (content_hash, language, model_id);
 
 
 --
@@ -860,17 +927,38 @@ CREATE INDEX idx_refresh_tokens_user ON public.refresh_tokens USING btree (user_
 
 
 --
--- Name: idx_spec_view_cache_codebase; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_spec_behaviors_feature_sort; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_spec_view_cache_codebase ON public.spec_view_cache USING btree (codebase_id);
+CREATE INDEX idx_spec_behaviors_feature_sort ON public.spec_behaviors USING btree (feature_id, sort_order);
 
 
 --
--- Name: idx_spec_view_cache_lookup; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_spec_behaviors_source; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_spec_view_cache_lookup ON public.spec_view_cache USING btree (cache_key_hash, model_id);
+CREATE INDEX idx_spec_behaviors_source ON public.spec_behaviors USING btree (source_test_case_id) WHERE (source_test_case_id IS NOT NULL);
+
+
+--
+-- Name: idx_spec_documents_analysis; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_spec_documents_analysis ON public.spec_documents USING btree (analysis_id);
+
+
+--
+-- Name: idx_spec_domains_document_sort; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_spec_domains_document_sort ON public.spec_domains USING btree (document_id, sort_order);
+
+
+--
+-- Name: idx_spec_features_domain_sort; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_spec_features_domain_sort ON public.spec_features USING btree (domain_id, sort_order);
 
 
 --
@@ -1075,11 +1163,43 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- Name: spec_view_cache fk_spec_view_cache_codebase; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: spec_behaviors fk_spec_behaviors_feature; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.spec_view_cache
-    ADD CONSTRAINT fk_spec_view_cache_codebase FOREIGN KEY (codebase_id) REFERENCES public.codebases(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.spec_behaviors
+    ADD CONSTRAINT fk_spec_behaviors_feature FOREIGN KEY (feature_id) REFERENCES public.spec_features(id) ON DELETE CASCADE;
+
+
+--
+-- Name: spec_behaviors fk_spec_behaviors_test_case; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_behaviors
+    ADD CONSTRAINT fk_spec_behaviors_test_case FOREIGN KEY (source_test_case_id) REFERENCES public.test_cases(id) ON DELETE SET NULL;
+
+
+--
+-- Name: spec_documents fk_spec_documents_analysis; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_documents
+    ADD CONSTRAINT fk_spec_documents_analysis FOREIGN KEY (analysis_id) REFERENCES public.analyses(id) ON DELETE CASCADE;
+
+
+--
+-- Name: spec_domains fk_spec_domains_document; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_domains
+    ADD CONSTRAINT fk_spec_domains_document FOREIGN KEY (document_id) REFERENCES public.spec_documents(id) ON DELETE CASCADE;
+
+
+--
+-- Name: spec_features fk_spec_features_domain; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_features
+    ADD CONSTRAINT fk_spec_features_domain FOREIGN KEY (domain_id) REFERENCES public.spec_domains(id) ON DELETE CASCADE;
 
 
 --
