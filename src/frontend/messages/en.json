@@ -91,6 +91,7 @@
     },
     "viewOnGitHub": "View on GitHub",
     "analyzedAt": "Analyzed: {date}",
+    "parserVersion": "Parser: {version}",
     "branch": "Branch",
     "commitDetails": "Commit Details",
     "committedAt": "Committed: {date}",

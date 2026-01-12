@@ -91,6 +91,7 @@
     },
     "viewOnGitHub": "GitHub에서 보기",
     "analyzedAt": "분석 시각: {date}",
+    "parserVersion": "파서 버전: {version}",
     "branch": "브랜치",
     "commitDetails": "커밋 상세",
     "committedAt": "커밋 시각: {date}",

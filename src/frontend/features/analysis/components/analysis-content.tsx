@@ -82,6 +82,7 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
           committedAt={result.committedAt}
           data={result}
           owner={result.owner}
+          parserVersion={result.parserVersion}
           repo={result.repo}
         />
 

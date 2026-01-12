@@ -22,6 +22,7 @@ type AnalysisHeaderProps = {
   committedAt?: string;
   data?: AnalysisResult;
   owner: string;
+  parserVersion?: string;
   repo: string;
 };
 
@@ -32,6 +33,7 @@ export const AnalysisHeader = ({
   committedAt,
   data,
   owner,
+  parserVersion,
   repo,
 }: AnalysisHeaderProps) => {
   const t = useTranslations("analyze");
@@ -58,6 +60,7 @@ export const AnalysisHeader = ({
                     <div>{t("committedAt", { date: formatAnalysisDate(committedAt) })}</div>
                   )}
                   <div>{t("analyzedAt", { date: formatAnalysisDate(analyzedAt) })}</div>
+                  {parserVersion && <div>{t("parserVersion", { version: parserVersion })}</div>}
                 </div>
               }
               side="bottom"
