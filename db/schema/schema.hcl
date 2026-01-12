@@ -25,6 +25,31 @@ enum "github_account_type" {
 }
 
 // ==============================================================================
+// System Config
+// ==============================================================================
+
+table "system_config" {
+  schema = schema.public
+
+  column "key" {
+    type = varchar(100)
+  }
+
+  column "value" {
+    type = text
+  }
+
+  column "updated_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.key]
+  }
+}
+
+// ==============================================================================
 // Tables
 // ==============================================================================
 
@@ -174,6 +199,11 @@ table "analyses" {
     default = 0
   }
 
+  column "parser_version" {
+    type    = varchar(100)
+    default = "legacy"
+  }
+
   primary_key {
     columns = [column.id]
   }
@@ -184,8 +214,8 @@ table "analyses" {
     on_delete   = CASCADE
   }
 
-  index "uq_analyses_completed_commit" {
-    columns = [column.codebase_id, column.commit_sha]
+  index "uq_analyses_completed_commit_version" {
+    columns = [column.codebase_id, column.commit_sha, column.parser_version]
     unique  = true
     where   = "status = 'completed'"
   }
