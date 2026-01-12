@@ -452,3 +452,87 @@ describe('user service', () => {
 		}
 	})
 }
+
+func TestExtractCalls_NoiseFiltering(t *testing.T) {
+	tests := []struct {
+		name          string
+		source        string
+		wantExcluded  []string
+		wantIncluded  []string
+	}{
+		{
+			name: "should filter spread array pattern",
+			source: `
+import { test } from '@playwright/test';
+
+test('spread array', () => {
+	const items = [1, 2, 3];
+	[...items].forEach(x => console.log(x));
+	[...items].map(x => x * 2);
+	userService.process(items);
+});
+`,
+			wantExcluded: []string{"[.forEach", "[.map"},
+			wantIncluded: []string{"userService.process"},
+		},
+		{
+			name: "should filter Cheerio selector",
+			source: `
+import { test } from '@playwright/test';
+import cheerio from 'cheerio';
+
+test('cheerio parsing', () => {
+	const $ = cheerio.load(html);
+	const el = $('p');
+	const text = $('div').text();
+	dataService.parse(text);
+});
+`,
+			wantExcluded: []string{"$"},
+			wantIncluded: []string{"dataService.parse", "cheerio.load"},
+		},
+		{
+			name: "should include valid jQuery method calls",
+			source: `
+import { test } from '@playwright/test';
+
+test('jQuery ajax', () => {
+	$.ajax({ url: '/api' });
+	$.get('/data');
+	$.post('/submit', data);
+	apiClient.fetch('/items');
+});
+`,
+			wantIncluded: []string{"$.ajax", "$.get", "$.post", "apiClient.fetch"},
+			wantExcluded: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			extractor := &JavaScriptExtractor{lang: domain.LanguageTypeScript}
+			hints := extractor.Extract(context.Background(), []byte(tt.source))
+
+			if hints == nil {
+				t.Fatal("expected hints, got nil")
+			}
+
+			callSet := make(map[string]bool)
+			for _, call := range hints.Calls {
+				callSet[call] = true
+			}
+
+			for _, excluded := range tt.wantExcluded {
+				if callSet[excluded] {
+					t.Errorf("expected %q to be filtered out, but found in calls: %v", excluded, hints.Calls)
+				}
+			}
+
+			for _, included := range tt.wantIncluded {
+				if !callSet[included] {
+					t.Errorf("expected %q to be included, but not found in calls: %v", included, hints.Calls)
+				}
+			}
+		})
+	}
+}

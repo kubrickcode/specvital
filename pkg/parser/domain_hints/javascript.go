@@ -136,6 +136,10 @@ func (e *JavaScriptExtractor) extractCalls(root *sitter.Node, source []byte) []s
 			if call == "" {
 				continue
 			}
+			// Filter universal noise patterns (before more specific checks)
+			if ShouldFilterNoise(call) {
+				continue
+			}
 			// Skip test framework calls
 			if isTestFrameworkCall(call) {
 				continue
