@@ -115,6 +115,10 @@ func (e *RustExtractor) extractCalls(root *sitter.Node, source []byte) []string 
 				continue
 			}
 
+			if ShouldFilterNoise(call) {
+				continue
+			}
+
 			if isRustTestFrameworkCall(call) {
 				continue
 			}

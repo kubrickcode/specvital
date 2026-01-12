@@ -432,6 +432,51 @@ fn test_result_handling() {
 	})
 }
 
+func TestRustExtractor_Extract_NoiseFilter(t *testing.T) {
+	source := []byte(`
+fn test_decimal_literals() {
+    // Decimal literals should not be extracted as calls
+    let x = (0.5).abs();
+    let y = (1.0).to_string();
+    let z = (123.456).floor();
+
+    // Real domain calls should be included
+    math_service.calculate(x);
+    number_utils.format(y);
+}
+`)
+
+	extractor := &RustExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("decimal literal noise filtered", func(t *testing.T) {
+		// (0.5).abs() should not produce "(0." or similar noise
+		for call := range callSet {
+			if strings.HasPrefix(call, "(") {
+				t.Errorf("decimal literal noise %q should be filtered, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"math_service.calculate", "number_utils.format"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}
+
 func TestExtractRustUsePath(t *testing.T) {
 	tests := []struct {
 		name  string

@@ -107,6 +107,10 @@ func (e *KotlinExtractor) extractCalls(root *sitter.Node, source []byte) []strin
 			if call == "" {
 				continue
 			}
+			// Filter noise patterns
+			if ShouldFilterNoise(call) {
+				continue
+			}
 			// Skip test framework calls
 			if isKotlinTestFrameworkCall(call) {
 				continue

@@ -2,6 +2,7 @@ package domain_hints
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/specvital/core/pkg/domain"
@@ -243,4 +244,53 @@ func TestGetExtractor_Kotlin(t *testing.T) {
 	if !ok {
 		t.Errorf("expected KotlinExtractor, got %T", ext)
 	}
+}
+
+func TestKotlinExtractor_Extract_NoiseFilter(t *testing.T) {
+	source := []byte(`
+package com.example
+
+class DecimalTest {
+    fun test() {
+        // Decimal literals should not be extracted as calls
+        val x = (0.5).toInt()
+        val y = (1.0).toString()
+        val z = (123.456).roundToInt()
+
+        // Real domain calls should be included
+        mathService.calculate(x)
+        numberUtils.format(y)
+    }
+}
+`)
+
+	extractor := &KotlinExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("decimal literal noise filtered", func(t *testing.T) {
+		// (0.5).toInt() should not produce "(0." or similar noise
+		for call := range callSet {
+			if strings.HasPrefix(call, "(") {
+				t.Errorf("decimal literal noise %q should be filtered, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"mathService.calculate", "numberUtils.format"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
 }
