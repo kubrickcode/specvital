@@ -162,6 +162,9 @@ type AnalysisResult struct {
 	// Owner Repository owner
 	Owner string `json:"owner"`
 
+	// ParserVersion Parser version used for this analysis (e.g., "v1.5.1 (deacdda)")
+	ParserVersion *string `json:"parserVersion,omitempty"`
+
 	// Repo Repository name
 	Repo    string      `json:"repo"`
 	Suites  []TestSuite `json:"suites"`

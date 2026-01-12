@@ -87,6 +87,7 @@ func ToCompletedResponse(analysis *entity.Analysis, opts ...CompletedResponseOpt
 		CommittedAt:   analysis.CommittedAt,
 		IsInMyHistory: options.IsInMyHistory,
 		Owner:         analysis.Owner,
+		ParserVersion: analysis.ParserVersion,
 		Repo:          analysis.Repo,
 		Suites:        suites,
 		Summary: api.Summary{

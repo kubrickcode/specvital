@@ -624,6 +624,11 @@ export interface components {
              */
             owner: string;
             /**
+             * @description Parser version used for this analysis (e.g., "v1.5.1 (deacdda)")
+             * @example v1.5.1 (deacdda)
+             */
+            parserVersion?: string;
+            /**
              * @description Repository name
              * @example react
              */

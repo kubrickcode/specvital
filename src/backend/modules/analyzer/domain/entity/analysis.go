@@ -3,16 +3,17 @@ package entity
 import "time"
 
 type Analysis struct {
-	BranchName  *string
-	CommitSHA   string
-	CommittedAt *time.Time
-	CompletedAt time.Time
-	ID          string
-	Owner       string
-	Repo        string
-	TestSuites  []TestSuite
-	TotalSuites int
-	TotalTests  int
+	BranchName    *string
+	CommitSHA     string
+	CommittedAt   *time.Time
+	CompletedAt   time.Time
+	ID            string
+	Owner         string
+	ParserVersion *string
+	Repo          string
+	TestSuites    []TestSuite
+	TotalSuites   int
+	TotalTests    int
 }
 
 type TestSuite struct {

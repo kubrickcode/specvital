@@ -903,6 +903,10 @@ components:
           type: string
           description: Repository owner
           example: facebook
+        parserVersion:
+          type: string
+          description: Parser version used for this analysis (e.g., "v1.5.1 (deacdda)")
+          example: "v1.5.1 (deacdda)"
         repo:
           type: string
           description: Repository name

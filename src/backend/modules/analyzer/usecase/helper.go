@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
@@ -70,17 +71,24 @@ func buildAnalysisFromCompleted(ctx context.Context, repository port.Repository,
 		}
 	}
 
+	formattedVersion := FormatParserVersion(completed.ParserVersion)
+	var parserVersion *string
+	if formattedVersion != "" {
+		parserVersion = &formattedVersion
+	}
+
 	return &entity.Analysis{
-		BranchName:  completed.BranchName,
-		CommitSHA:   completed.CommitSHA,
-		CommittedAt: completed.CommittedAt,
-		CompletedAt: completed.CompletedAt,
-		ID:          completed.ID,
-		Owner:       completed.Owner,
-		Repo:        completed.Repo,
-		TestSuites:  suites,
-		TotalSuites: completed.TotalSuites,
-		TotalTests:  completed.TotalTests,
+		BranchName:    completed.BranchName,
+		CommitSHA:     completed.CommitSHA,
+		CommittedAt:   completed.CommittedAt,
+		CompletedAt:   completed.CompletedAt,
+		ID:            completed.ID,
+		Owner:         completed.Owner,
+		ParserVersion: parserVersion,
+		Repo:          completed.Repo,
+		TestSuites:    suites,
+		TotalSuites:   completed.TotalSuites,
+		TotalTests:    completed.TotalTests,
 	}, nil
 }
 
@@ -116,4 +124,58 @@ func mapQueueStateToAnalysisStatus(state string) entity.AnalysisStatus {
 		// Unknown queue states conservatively treated as pending
 		return entity.AnalysisStatusPending
 	}
+}
+
+// FormatParserVersion transforms Go module version to display format.
+// Input: "v1.5.1-0.20260112121406-deacdda09e17" -> Output: "v1.5.1 (deacdda)"
+// Input: "v1.5.1" -> Output: "v1.5.1"
+// Input: nil/empty -> Output: ""
+func FormatParserVersion(version *string) string {
+	if version == nil || *version == "" {
+		return ""
+	}
+
+	v := *version
+
+	// Go pseudo-version formats:
+	// 1. vX.Y.Z-0.YYYYMMDDHHMMSS-commitHash (tagged release with subsequent commits)
+	// 2. vX.0.0-YYYYMMDDHHMMSS-commitHash (no prior tag, timestamp without "0." prefix)
+	parts := strings.Split(v, "-")
+
+	// Standard version or not enough parts for pseudo-version
+	if len(parts) < 3 {
+		return v
+	}
+
+	// Check if this is a pseudo-version format
+	// Pattern 1: second part starts with "0." (e.g., "0.20260112121406")
+	// Pattern 2: second part is a timestamp (14 digits)
+	isPseudoVersion := strings.HasPrefix(parts[1], "0.") || isTimestamp(parts[1])
+	if !isPseudoVersion {
+		return v
+	}
+
+	// Extract base version (first part)
+	baseVersion := parts[0]
+
+	// Extract commit hash (last part) and take first 7 chars
+	commitHash := parts[len(parts)-1]
+	if len(commitHash) > 7 {
+		commitHash = commitHash[:7]
+	}
+
+	return fmt.Sprintf("%s (%s)", baseVersion, commitHash)
+}
+
+// isTimestamp checks if a string is a 14-digit timestamp (YYYYMMDDHHMMSS)
+func isTimestamp(s string) bool {
+	if len(s) != 14 {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
 }
