@@ -16,7 +16,7 @@ var _ port.QueueService = (*RiverQueueService)(nil)
 const (
 	TypeAnalyze = "analysis:analyze"
 
-	queueName      = "default"
+	queueName      = "analysis"
 	maxRetries     = 3
 	enqueueTimeout = 5 * time.Second
 )

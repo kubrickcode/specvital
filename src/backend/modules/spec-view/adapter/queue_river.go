@@ -16,7 +16,7 @@ var _ port.QueueService = (*RiverQueueService)(nil)
 const (
 	TypeSpecGeneration = "specview:generate"
 
-	queueName      = "default"
+	queueName      = "specview"
 	maxRetries     = 3
 	enqueueTimeout = 5 * time.Second
 )
