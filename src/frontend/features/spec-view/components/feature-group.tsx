@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { BehaviorItem } from "./behavior-item";
+import { VirtualizedBehaviorList, VIRTUALIZATION_THRESHOLD } from "./virtualized-behavior-list";
 import type { FilteredFeature } from "../hooks/use-document-filter";
 
 type FeatureGroupProps = {
@@ -37,8 +38,16 @@ export const FeatureGroup = ({
   const displayCount = hasFilter ? `${feature.matchCount}/${totalCount}` : behaviorCount;
 
   return (
-    <div className="border-l-2 border-muted-foreground/20 ml-2" id={`feature-${feature.id}`}>
+    <div
+      aria-labelledby={`feature-title-${feature.id}`}
+      className="border-l-2 border-muted-foreground/20 ml-2"
+      id={`feature-${feature.id}`}
+      role="region"
+      tabIndex={-1}
+    >
       <Button
+        aria-controls={isOpen ? `feature-content-${feature.id}` : undefined}
+        aria-expanded={isOpen}
         className={cn(
           "w-full justify-start gap-2 px-3 py-2 h-auto",
           "text-left font-medium hover:bg-muted/50"
@@ -47,24 +56,32 @@ export const FeatureGroup = ({
         variant="ghost"
       >
         {isOpen ? (
-          <ChevronDown className="h-4 w-4 flex-shrink-0" />
+          <ChevronDown aria-hidden="true" className="h-4 w-4 flex-shrink-0" />
         ) : (
-          <ChevronRight className="h-4 w-4 flex-shrink-0" />
+          <ChevronRight aria-hidden="true" className="h-4 w-4 flex-shrink-0" />
         )}
-        <span className="flex-1 truncate">{feature.name}</span>
+        <span className="flex-1 truncate" id={`feature-title-${feature.id}`}>
+          {feature.name}
+        </span>
         <Badge className="text-xs" variant="secondary">
           {displayCount}
         </Badge>
       </Button>
 
       {isOpen && (
-        <div className="pl-4 space-y-0.5">
+        <div className="pl-4 space-y-0.5" id={`feature-content-${feature.id}`}>
           {feature.description && (
             <p className="px-3 py-1.5 text-sm text-muted-foreground">{feature.description}</p>
           )}
-          {visibleBehaviors.map((behavior) => (
-            <BehaviorItem behavior={behavior} key={behavior.id} query={query} />
-          ))}
+          {visibleBehaviors.length >= VIRTUALIZATION_THRESHOLD ? (
+            <VirtualizedBehaviorList behaviors={visibleBehaviors} query={query} />
+          ) : (
+            <div role="list">
+              {visibleBehaviors.map((behavior) => (
+                <BehaviorItem behavior={behavior} key={behavior.id} query={query} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

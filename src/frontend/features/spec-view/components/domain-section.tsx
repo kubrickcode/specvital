@@ -46,21 +46,37 @@ export const DomainSection = ({
     : `${featureCount} features / ${behaviorCount} behaviors`;
 
   return (
-    <Card className="overflow-hidden" id={`domain-${domain.id}`}>
+    <Card
+      aria-labelledby={`domain-title-${domain.id}`}
+      className="overflow-hidden"
+      id={`domain-${domain.id}`}
+      role="region"
+      tabIndex={-1}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <Button
+            aria-controls={isOpen ? `domain-content-${domain.id}` : undefined}
+            aria-expanded={isOpen}
             className="flex-1 justify-start gap-3 px-0 h-auto hover:bg-transparent"
             onClick={() => setIsOpen(!isOpen)}
             variant="ghost"
           >
             {isOpen ? (
-              <ChevronDown className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+              <ChevronDown
+                aria-hidden="true"
+                className="h-5 w-5 flex-shrink-0 text-muted-foreground"
+              />
             ) : (
-              <ChevronRight className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+              <ChevronRight
+                aria-hidden="true"
+                className="h-5 w-5 flex-shrink-0 text-muted-foreground"
+              />
             )}
-            <Layers className="h-5 w-5 flex-shrink-0 text-primary" />
-            <CardTitle className="text-lg">{domain.name}</CardTitle>
+            <Layers aria-hidden="true" className="h-5 w-5 flex-shrink-0 text-primary" />
+            <CardTitle className="text-lg" id={`domain-title-${domain.id}`}>
+              {domain.name}
+            </CardTitle>
           </Button>
 
           <div className="flex items-center gap-2">
@@ -87,7 +103,7 @@ export const DomainSection = ({
       </CardHeader>
 
       {isOpen && (
-        <CardContent className="pt-0 space-y-3">
+        <CardContent className="pt-0 space-y-3" id={`domain-content-${domain.id}`}>
           {domain.features.map((feature) => (
             <FeatureGroup feature={feature} hasFilter={hasFilter} key={feature.id} query={query} />
           ))}

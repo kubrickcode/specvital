@@ -63,9 +63,12 @@ export const BehaviorItem = ({ behavior, query = "" }: BehaviorItemProps) => {
     <div
       className={cn(
         "flex items-start gap-3 px-3 py-2.5 rounded-md",
-        "hover:bg-muted/50 transition-colors group"
+        "hover:bg-muted/50 transition-colors group",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       )}
       id={`behavior-${behavior.id}`}
+      role="listitem"
+      tabIndex={-1}
     >
       <Tooltip>
         <TooltipTrigger asChild>
