@@ -227,6 +227,14 @@
         },
         {
           "color": "",
+          "command": "just run-spec-generator",
+          "name": "run-spec-generator",
+          "shortcut": "g",
+          "terminalName": "run-spec-generator",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
           "executeAll": true,
           "name": "All Integration",
           "shortcut": "i",
