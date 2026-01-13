@@ -10,9 +10,12 @@ const schedulerLockKey = "scheduler:auto-refresh:lock"
 
 // ContainerConfig holds common configuration for dependency injection containers.
 type ContainerConfig struct {
-	EncryptionKey string
-	ParserVersion string
-	Pool          *pgxpool.Pool
+	EncryptionKey   string
+	GeminiAPIKey    string
+	GeminiPhase1Model string // optional: default gemini-2.5-flash
+	GeminiPhase2Model string // optional: default gemini-2.5-flash-lite
+	ParserVersion   string
+	Pool            *pgxpool.Pool
 }
 
 // Validate checks that required common configuration fields are set.
@@ -33,6 +36,9 @@ func (c ContainerConfig) ValidateAnalyzer() error {
 	}
 	if c.ParserVersion == "" {
 		return fmt.Errorf("parser version is required")
+	}
+	if c.GeminiAPIKey == "" {
+		return fmt.Errorf("gemini API key is required")
 	}
 	return nil
 }
