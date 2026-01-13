@@ -115,7 +115,8 @@ func TestPhase2SystemPrompt_ContainsRequiredSections(t *testing.T) {
 	requiredSections := []string{
 		"Critical Constraints",
 		"Conversion Process",
-		"Language-Specific Style",
+		"Output Style: Specification Notation",
+		"Language Examples",
 		"Confidence Scoring",
 		"Output Format",
 		"conversions",
