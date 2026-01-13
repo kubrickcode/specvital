@@ -53,13 +53,22 @@ type SpecViewResult struct {
 
 // Phase1Input represents input for domain classification (Phase 1).
 type Phase1Input struct {
-	Files []FileInfo
+	Files    []FileInfo
+	Language Language
 }
 
-// FileInfo represents a test file with its tests.
+// FileInfo represents a test file with its tests and domain hints.
 type FileInfo struct {
-	Path  string
-	Tests []TestInfo
+	DomainHints *DomainHints
+	Framework   string
+	Path        string
+	Tests       []TestInfo
+}
+
+// DomainHints provides contextual information for domain classification.
+type DomainHints struct {
+	Calls   []string // Function/method calls within tests
+	Imports []string // Module imports in the test file
 }
 
 // TestInfo represents a single test within a file.
@@ -94,6 +103,7 @@ type FeatureGroup struct {
 type Phase2Input struct {
 	DomainContext string // domain context for better conversion
 	FeatureName   string
+	Language      Language
 	Tests         []TestForConversion
 }
 
