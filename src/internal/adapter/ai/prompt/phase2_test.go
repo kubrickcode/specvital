@@ -13,12 +13,12 @@ func TestBuildPhase2UserPrompt_BasicFormat(t *testing.T) {
 		DomainContext: "Authentication",
 		FeatureName:   "Login",
 		Tests: []specview.TestForConversion{
-			{Index: 0, Name: "TestLogin_ValidCredentials"},
-			{Index: 1, Name: "TestLogin_InvalidPassword"},
+			{Index: 10, Name: "TestLogin_ValidCredentials"},
+			{Index: 20, Name: "TestLogin_InvalidPassword"},
 		},
 	}
 
-	prompt := BuildPhase2UserPrompt(input, "English")
+	prompt, indexMapping := BuildPhase2UserPrompt(input, "English")
 
 	// Check context
 	if !strings.Contains(prompt, "Domain: Authentication") {
@@ -31,12 +31,23 @@ func TestBuildPhase2UserPrompt_BasicFormat(t *testing.T) {
 		t.Error("prompt should contain target language")
 	}
 
-	// Check test format
+	// Check test format uses 0-based indices for AI
 	if !strings.Contains(prompt, "0|TestLogin_ValidCredentials") {
-		t.Error("prompt should contain first test")
+		t.Error("prompt should contain first test with 0-based index")
 	}
 	if !strings.Contains(prompt, "1|TestLogin_InvalidPassword") {
-		t.Error("prompt should contain second test")
+		t.Error("prompt should contain second test with 0-based index")
+	}
+
+	// Check index mapping preserves original indices
+	if len(indexMapping) != 2 {
+		t.Fatalf("expected 2 index mappings, got %d", len(indexMapping))
+	}
+	if indexMapping[0] != 10 {
+		t.Errorf("expected indexMapping[0] = 10, got %d", indexMapping[0])
+	}
+	if indexMapping[1] != 20 {
+		t.Errorf("expected indexMapping[1] = 20, got %d", indexMapping[1])
 	}
 }
 
@@ -51,17 +62,28 @@ func TestBuildPhase2UserPrompt_MultipleTests(t *testing.T) {
 		},
 	}
 
-	prompt := BuildPhase2UserPrompt(input, "Korean")
+	prompt, indexMapping := BuildPhase2UserPrompt(input, "Korean")
 
-	// Check test indices are preserved
-	if !strings.Contains(prompt, "5|TestRegister_Success") {
-		t.Error("prompt should preserve test index 5")
+	// Check test indices are converted to 0-based for AI
+	if !strings.Contains(prompt, "0|TestRegister_Success") {
+		t.Error("prompt should use 0-based index for first test")
 	}
-	if !strings.Contains(prompt, "6|TestRegister_DuplicateEmail") {
-		t.Error("prompt should preserve test index 6")
+	if !strings.Contains(prompt, "1|TestRegister_DuplicateEmail") {
+		t.Error("prompt should use 0-based index for second test")
 	}
-	if !strings.Contains(prompt, "7|TestRegister_WeakPassword") {
-		t.Error("prompt should preserve test index 7")
+	if !strings.Contains(prompt, "2|TestRegister_WeakPassword") {
+		t.Error("prompt should use 0-based index for third test")
+	}
+
+	// Check index mapping preserves original indices
+	if len(indexMapping) != 3 {
+		t.Fatalf("expected 3 index mappings, got %d", len(indexMapping))
+	}
+	expectedMapping := []int{5, 6, 7}
+	for i, expected := range expectedMapping {
+		if indexMapping[i] != expected {
+			t.Errorf("expected indexMapping[%d] = %d, got %d", i, expected, indexMapping[i])
+		}
 	}
 }
 
@@ -81,7 +103,7 @@ func TestBuildPhase2UserPrompt_LanguageVariants(t *testing.T) {
 	}
 
 	for _, lang := range languages {
-		prompt := BuildPhase2UserPrompt(input, lang)
+		prompt, _ := BuildPhase2UserPrompt(input, lang)
 		expected := fmt.Sprintf("Target Language: %s", lang)
 		if !strings.Contains(prompt, expected) {
 			t.Errorf("prompt for %s should contain %q", lang, expected)

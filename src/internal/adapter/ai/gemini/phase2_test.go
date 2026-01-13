@@ -23,7 +23,10 @@ func TestParsePhase2Response_ValidJSON(t *testing.T) {
 		]
 	}`
 
-	output, err := parsePhase2Response(jsonStr)
+	// Index mapping: 0→5, 1→7 (simulates original test indices)
+	indexMapping := []int{5, 7}
+
+	output, err := parsePhase2Response(jsonStr, indexMapping)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -32,9 +35,10 @@ func TestParsePhase2Response_ValidJSON(t *testing.T) {
 		t.Errorf("expected 2 behaviors, got %d", len(output.Behaviors))
 	}
 
+	// Verify index mapping: AI's 0 → original 5
 	behavior := output.Behaviors[0]
-	if behavior.TestIndex != 0 {
-		t.Errorf("expected test index 0, got %d", behavior.TestIndex)
+	if behavior.TestIndex != 5 {
+		t.Errorf("expected test index 5 (mapped from 0), got %d", behavior.TestIndex)
 	}
 	if behavior.Confidence != 0.92 {
 		t.Errorf("expected confidence 0.92, got %f", behavior.Confidence)
@@ -42,10 +46,15 @@ func TestParsePhase2Response_ValidJSON(t *testing.T) {
 	if behavior.Description == "" {
 		t.Error("expected non-empty description")
 	}
+
+	// Verify second behavior: AI's 1 → original 7
+	if output.Behaviors[1].TestIndex != 7 {
+		t.Errorf("expected test index 7 (mapped from 1), got %d", output.Behaviors[1].TestIndex)
+	}
 }
 
 func TestParsePhase2Response_InvalidJSON(t *testing.T) {
-	_, err := parsePhase2Response("not json")
+	_, err := parsePhase2Response("not json", nil)
 	if err == nil {
 		t.Error("expected error for invalid JSON")
 	}
@@ -54,7 +63,7 @@ func TestParsePhase2Response_InvalidJSON(t *testing.T) {
 func TestParsePhase2Response_EmptyConversions(t *testing.T) {
 	jsonStr := `{"conversions": []}`
 
-	output, err := parsePhase2Response(jsonStr)
+	output, err := parsePhase2Response(jsonStr, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

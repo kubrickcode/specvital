@@ -29,7 +29,7 @@ func (p *Provider) convertTestNames(ctx context.Context, input specview.Phase2In
 	}
 
 	systemPrompt := prompt.Phase2SystemPrompt
-	userPrompt := prompt.BuildPhase2UserPrompt(input, lang)
+	userPrompt, indexMapping := prompt.BuildPhase2UserPrompt(input, lang)
 
 	var result string
 
@@ -43,8 +43,8 @@ func (p *Provider) convertTestNames(ctx context.Context, input specview.Phase2In
 		return nil, fmt.Errorf("phase 2 conversion failed: %w", err)
 	}
 
-	// Parse JSON response
-	output, err := parsePhase2Response(result)
+	// Parse JSON response and map 0-based indices back to original
+	output, err := parsePhase2Response(result, indexMapping)
 	if err != nil {
 		slog.WarnContext(ctx, "failed to parse phase 2 response",
 			"error", err,
@@ -65,7 +65,8 @@ func (p *Provider) convertTestNames(ctx context.Context, input specview.Phase2In
 }
 
 // parsePhase2Response parses the JSON response into Phase2Output.
-func parsePhase2Response(jsonStr string) (*specview.Phase2Output, error) {
+// indexMapping converts 0-based AI response indices to original test indices.
+func parsePhase2Response(jsonStr string, indexMapping []int) (*specview.Phase2Output, error) {
 	var resp phase2Response
 	if err := json.Unmarshal([]byte(jsonStr), &resp); err != nil {
 		return nil, fmt.Errorf("json unmarshal: %w", err)
@@ -76,10 +77,16 @@ func parsePhase2Response(jsonStr string) (*specview.Phase2Output, error) {
 	}
 
 	for _, c := range resp.Conversions {
+		// Map 0-based index from AI response to original test index
+		originalIndex := c.Index
+		if c.Index >= 0 && c.Index < len(indexMapping) {
+			originalIndex = indexMapping[c.Index]
+		}
+
 		behavior := specview.BehaviorSpec{
 			Confidence:  c.Confidence,
 			Description: c.Description,
-			TestIndex:   c.Index,
+			TestIndex:   originalIndex,
 		}
 		output.Behaviors = append(output.Behaviors, behavior)
 	}
