@@ -1,7 +1,36 @@
 package main
 
-import "log"
+import (
+	"log/slog"
+	"os"
+
+	"github.com/specvital/worker/internal/app/bootstrap"
+	"github.com/specvital/worker/internal/infra/config"
+)
 
 func main() {
-	log.Fatal("spec-generator: not implemented")
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
+	cfg, err := config.Load()
+	if err != nil {
+		slog.Error("failed to load config", "error", err)
+		os.Exit(1)
+	}
+
+	if cfg.GeminiAPIKey == "" {
+		slog.Error("GEMINI_API_KEY is required for spec-generator")
+		os.Exit(1)
+	}
+
+	if err := bootstrap.StartSpecGenerator(bootstrap.SpecGeneratorConfig{
+		ServiceName:       "spec-generator",
+		DatabaseURL:       cfg.DatabaseURL,
+		GeminiAPIKey:      cfg.GeminiAPIKey,
+		GeminiPhase1Model: cfg.GeminiPhase1Model,
+		GeminiPhase2Model: cfg.GeminiPhase2Model,
+	}); err != nil {
+		slog.Error("spec-generator failed", "error", err)
+		os.Exit(1)
+	}
 }

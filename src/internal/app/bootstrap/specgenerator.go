@@ -1,4 +1,3 @@
-// Package bootstrap provides application startup utilities for analyzer and scheduler services.
 package bootstrap
 
 import (
@@ -11,36 +10,37 @@ import (
 	"time"
 
 	"github.com/specvital/worker/internal/app"
-	"github.com/specvital/worker/internal/infra/buildinfo"
 	"github.com/specvital/worker/internal/infra/db"
 	infraqueue "github.com/specvital/worker/internal/infra/queue"
 )
 
-// AnalyzerConfig holds configuration for the analyzer service.
-type AnalyzerConfig struct {
-	ServiceName     string
-	Concurrency     int
-	ShutdownTimeout time.Duration
-	DatabaseURL     string
-	EncryptionKey   string
+// SpecGeneratorConfig holds configuration for the spec-generator service.
+type SpecGeneratorConfig struct {
+	ServiceName       string
+	Concurrency       int
+	ShutdownTimeout   time.Duration
+	DatabaseURL       string
+	GeminiAPIKey      string
+	GeminiPhase1Model string
+	GeminiPhase2Model string
 }
 
-// Validate checks that required analyzer configuration fields are set.
-func (c *AnalyzerConfig) Validate() error {
+// Validate checks that required spec-generator configuration fields are set.
+func (c *SpecGeneratorConfig) Validate() error {
 	if c.ServiceName == "" {
 		return fmt.Errorf("service name is required")
 	}
 	if c.DatabaseURL == "" {
 		return fmt.Errorf("database URL is required")
 	}
-	if c.EncryptionKey == "" {
-		return fmt.Errorf("encryption key is required")
+	if c.GeminiAPIKey == "" {
+		return fmt.Errorf("gemini API key is required")
 	}
 	return nil
 }
 
-// applyDefaults sets default values for optional analyzer configuration.
-func (c *AnalyzerConfig) applyDefaults() {
+// applyDefaults sets default values for optional spec-generator configuration.
+func (c *SpecGeneratorConfig) applyDefaults() {
 	if c.Concurrency <= 0 {
 		c.Concurrency = defaultConcurrency
 	}
@@ -49,10 +49,10 @@ func (c *AnalyzerConfig) applyDefaults() {
 	}
 }
 
-// StartAnalyzer starts the analyzer service for queue processing.
-// Analyzers consume tasks from PostgreSQL-based river queue and process them.
-// Horizontal scaling is safe - multiple analyzer instances share the workload.
-func StartAnalyzer(cfg AnalyzerConfig) error {
+// StartSpecGenerator starts the spec-generator service for queue processing.
+// Spec-generators consume specview:generate tasks and process them using Gemini AI.
+// Horizontal scaling is safe - multiple spec-generator instances share the workload.
+func StartSpecGenerator(cfg SpecGeneratorConfig) error {
 	if err := cfg.Validate(); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
@@ -71,15 +71,11 @@ func StartAnalyzer(cfg AnalyzerConfig) error {
 
 	slog.Info("postgres connected")
 
-	parserVersion := buildinfo.ExtractCoreVersion()
-	if err := registerParserVersion(ctx, pool, parserVersion); err != nil {
-		return fmt.Errorf("register parser version: %w", err)
-	}
-
-	container, err := app.NewAnalyzerContainer(ctx, app.ContainerConfig{
-		EncryptionKey: cfg.EncryptionKey,
-		ParserVersion: parserVersion,
-		Pool:          pool,
+	container, err := app.NewSpecGeneratorContainer(ctx, app.ContainerConfig{
+		GeminiAPIKey:      cfg.GeminiAPIKey,
+		GeminiPhase1Model: cfg.GeminiPhase1Model,
+		GeminiPhase2Model: cfg.GeminiPhase2Model,
+		Pool:              pool,
 	})
 	if err != nil {
 		return fmt.Errorf("container: %w", err)
@@ -100,11 +96,11 @@ func StartAnalyzer(cfg AnalyzerConfig) error {
 		return fmt.Errorf("queue server: %w", err)
 	}
 
-	slog.Info("analyzer starting", "concurrency", cfg.Concurrency)
+	slog.Info("spec-generator starting", "concurrency", cfg.Concurrency)
 	if err := srv.Start(ctx); err != nil {
 		return fmt.Errorf("start server: %w", err)
 	}
-	slog.Info("analyzer ready", "concurrency", cfg.Concurrency)
+	slog.Info("spec-generator ready", "concurrency", cfg.Concurrency)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)

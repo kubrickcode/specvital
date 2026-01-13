@@ -37,6 +37,14 @@ func (c ContainerConfig) ValidateAnalyzer() error {
 	if c.ParserVersion == "" {
 		return fmt.Errorf("parser version is required")
 	}
+	return nil
+}
+
+// ValidateSpecGenerator checks that all spec-generator-specific configuration is valid.
+func (c ContainerConfig) ValidateSpecGenerator() error {
+	if err := c.Validate(); err != nil {
+		return err
+	}
 	if c.GeminiAPIKey == "" {
 		return fmt.Errorf("gemini API key is required")
 	}
