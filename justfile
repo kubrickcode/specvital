@@ -173,10 +173,10 @@ run-spec-generator mode="local":
     cd src
     case "{{ mode }}" in
       local)
-        DATABASE_URL="$LOCAL_DATABASE_URL" go run ./cmd/spec-generator
+        DATABASE_URL="$LOCAL_DATABASE_URL" air -c .air.spec-generator.toml
         ;;
       integration)
-        go run ./cmd/spec-generator
+        air -c .air.spec-generator.toml
         ;;
       *)
         echo "Unknown mode: {{ mode }}. Use: local, integration"

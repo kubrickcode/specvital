@@ -188,6 +188,22 @@
         },
         {
           "color": "",
+          "command": "just run-spec-generator local",
+          "name": "spec-generator local",
+          "shortcut": "g",
+          "terminalName": "spec-generator local",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just run-spec-generator integration",
+          "name": "spec-generator integration",
+          "shortcut": "n",
+          "terminalName": "spec-generator integration",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
           "command": "just run-scheduler local",
           "name": "scheduler local",
           "shortcut": "s",
