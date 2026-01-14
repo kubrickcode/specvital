@@ -121,6 +121,12 @@ func (p *Provider) generateContent(ctx context.Context, model, systemPrompt, use
 		SystemInstruction: &genai.Content{
 			Parts: []*genai.Part{{Text: systemPrompt}},
 		},
+		// Disable thinking to reduce processing time for large inputs.
+		// gemini-2.5-flash has thinking enabled by default (dynamic budget).
+		// This significantly reduces timeout risk for Phase 1 classification.
+		ThinkingConfig: &genai.ThinkingConfig{
+			ThinkingBudget: genai.Ptr(int32(0)),
+		},
 	}
 
 	result, err := p.client.Models.GenerateContent(ctx, model, genai.Text(userPrompt), config)
