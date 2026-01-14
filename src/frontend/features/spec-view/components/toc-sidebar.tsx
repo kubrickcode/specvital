@@ -53,14 +53,23 @@ type TocSidebarProps = {
 type TocItemProps = {
   activeId: string | null;
   domain: FilteredDomain;
+  expandedDomainId: string | null;
   hasFilter?: boolean;
+  onExpandToggle: (domainId: string) => void;
   onNavigate: (sectionId: string) => void;
 };
 
-const TocItem = ({ activeId, domain, hasFilter = false, onNavigate }: TocItemProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const TocItem = ({
+  activeId,
+  domain,
+  expandedDomainId,
+  hasFilter = false,
+  onExpandToggle,
+  onNavigate,
+}: TocItemProps) => {
   const domainId = `domain-${domain.id}`;
   const isDomainActive = activeId === domainId;
+  const isExpanded = expandedDomainId === domainId;
 
   const featureCount = domain.features.length;
   const behaviorCount = domain.features.reduce((sum, f) => sum + f.behaviors.length, 0);
@@ -81,7 +90,7 @@ const TocItem = ({ activeId, domain, hasFilter = false, onNavigate }: TocItemPro
         )}
         onClick={() => {
           onNavigate(domainId);
-          setIsExpanded(!isExpanded);
+          onExpandToggle(isExpanded ? "" : domainId);
         }}
         type="button"
       >
@@ -133,8 +142,10 @@ const TocItem = ({ activeId, domain, hasFilter = false, onNavigate }: TocItemPro
 type TocContentProps = {
   activeId: string | null;
   document: SpecDocument;
+  expandedDomainId: string | null;
   filteredDocument?: FilteredDocument | null;
   hasFilter?: boolean;
+  onExpandToggle: (domainId: string) => void;
   onNavigate: (sectionId: string) => void;
   t: ReturnType<typeof useTranslations<"specView">>;
 };
@@ -142,8 +153,10 @@ type TocContentProps = {
 const TocContent = ({
   activeId,
   document,
+  expandedDomainId,
   filteredDocument,
   hasFilter = false,
+  onExpandToggle,
   onNavigate,
   t,
 }: TocContentProps) => {
@@ -180,8 +193,10 @@ const TocContent = ({
             <TocItem
               activeId={activeId}
               domain={domain}
+              expandedDomainId={expandedDomainId}
               hasFilter={hasFilter}
               key={domain.id}
+              onExpandToggle={onExpandToggle}
               onNavigate={onNavigate}
             />
           ))}
@@ -189,6 +204,23 @@ const TocContent = ({
       </ScrollArea>
     </div>
   );
+};
+
+/**
+ * Extract domain ID from section ID
+ * - "domain-123" → "domain-123"
+ * - "feature-456" → null (need to look up parent domain)
+ */
+const extractDomainIdFromSectionId = (sectionId: string, domains: SpecDomain[]): string | null => {
+  if (sectionId.startsWith("domain-")) {
+    return sectionId;
+  }
+  if (sectionId.startsWith("feature-")) {
+    const featureId = sectionId.replace("feature-", "");
+    const parentDomain = domains.find((d) => d.features.some((f) => f.id === featureId));
+    return parentDomain ? `domain-${parentDomain.id}` : null;
+  }
+  return null;
 };
 
 export const TocSidebar = ({
@@ -199,6 +231,7 @@ export const TocSidebar = ({
 }: TocSidebarProps) => {
   const t = useTranslations("specView");
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [expandedDomainId, setExpandedDomainId] = useState<string | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
@@ -213,6 +246,16 @@ export const TocSidebar = ({
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
+
+  // Auto-expand domain when active section changes
+  useEffect(() => {
+    if (activeId) {
+      const domainId = extractDomainIdFromSectionId(activeId, document.domains);
+      if (domainId) {
+        setExpandedDomainId(domainId);
+      }
+    }
+  }, [activeId, document.domains]);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -271,8 +314,10 @@ export const TocSidebar = ({
           <TocContent
             activeId={activeId}
             document={document}
+            expandedDomainId={expandedDomainId}
             filteredDocument={filteredDocument}
             hasFilter={hasFilter}
+            onExpandToggle={setExpandedDomainId}
             onNavigate={handleNavigate}
             t={t}
           />
@@ -299,8 +344,10 @@ export const TocSidebar = ({
             <TocContent
               activeId={activeId}
               document={document}
+              expandedDomainId={expandedDomainId}
               filteredDocument={filteredDocument}
               hasFilter={hasFilter}
+              onExpandToggle={setExpandedDomainId}
               onNavigate={handleNavigate}
               t={t}
             />
