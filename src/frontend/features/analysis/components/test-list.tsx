@@ -1,4 +1,5 @@
 "use client";
+"use no memo";
 
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useLayoutEffect, useRef, useState } from "react";
