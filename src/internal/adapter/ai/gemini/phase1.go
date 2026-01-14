@@ -94,19 +94,48 @@ func (p *Provider) classifyDomainsSingle(ctx context.Context, input specview.Pha
 
 // classifyDomainsChunked handles Phase 1 classification for large inputs.
 // Splits input into chunks and processes sequentially with anchor domain propagation.
+// Supports resumption from cached progress on job retry.
 func (p *Provider) classifyDomainsChunked(ctx context.Context, input specview.Phase1Input, lang specview.Language, config ChunkConfig) (*specview.Phase1Output, *specview.TokenUsage, error) {
 	chunks := SplitIntoChunks(input.Files, config)
 
-	slog.InfoContext(ctx, "processing phase 1 in chunks",
-		"total_chunks", len(chunks),
-		"total_tests", countTests(input.Files),
-	)
+	// Generate cache key from content hash
+	cacheKey := ChunkCacheKey{
+		ContentHash: fmt.Sprintf("%x", specview.GenerateContentHash(input.Files, lang)),
+		Language:    lang,
+		ModelID:     p.phase1Model,
+	}
+
+	// Check for cached progress from previous attempt
+	cache := GetGlobalChunkCache()
+	progress := cache.Get(cacheKey)
 
 	var allOutputs []*specview.Phase1Output
 	var anchorDomains []specview.DomainGroup
 	totalUsage := &specview.TokenUsage{Model: p.phase1Model}
+	startChunk := 0
 
-	for i, chunk := range chunks {
+	// Resume from cached progress if available and valid
+	if progress != nil && progress.TotalChunks == len(chunks) && progress.CompletedChunks > 0 {
+		allOutputs = progress.CompletedOutputs
+		anchorDomains = progress.AnchorDomains
+		totalUsage = progress.TotalUsage
+		startChunk = progress.CompletedChunks
+
+		slog.InfoContext(ctx, "resuming phase 1 from cached progress",
+			"total_chunks", len(chunks),
+			"completed_chunks", startChunk,
+			"remaining_chunks", len(chunks)-startChunk,
+		)
+	} else {
+		slog.InfoContext(ctx, "processing phase 1 in chunks",
+			"total_chunks", len(chunks),
+			"total_tests", countTests(input.Files),
+		)
+	}
+
+	for i := startChunk; i < len(chunks); i++ {
+		chunk := chunks[i]
+
 		slog.InfoContext(ctx, "processing chunk",
 			"chunk", i+1,
 			"total_chunks", len(chunks),
@@ -123,6 +152,20 @@ func (p *Provider) classifyDomainsChunked(ctx context.Context, input specview.Ph
 		// Process chunk
 		output, usage, err := p.classifyDomainsSingle(ctx, chunkInput, lang, anchorDomains)
 		if err != nil {
+			// Save progress before returning error for potential retry
+			if len(allOutputs) > 0 {
+				cache.Save(cacheKey, &ChunkProgress{
+					AnchorDomains:    anchorDomains,
+					CompletedChunks:  i,
+					CompletedOutputs: allOutputs,
+					TotalChunks:      len(chunks),
+					TotalUsage:       totalUsage,
+				})
+				slog.InfoContext(ctx, "saved chunk progress for retry",
+					"completed_chunks", i,
+					"total_chunks", len(chunks),
+				)
+			}
 			return nil, nil, fmt.Errorf("chunk %d/%d failed: %w", i+1, len(chunks), err)
 		}
 
@@ -157,6 +200,9 @@ func (p *Provider) classifyDomainsChunked(ctx context.Context, input specview.Ph
 			}
 		}
 	}
+
+	// Clear cache on successful completion
+	cache.Delete(cacheKey)
 
 	mergedOutput := MergePhase1Outputs(allOutputs)
 

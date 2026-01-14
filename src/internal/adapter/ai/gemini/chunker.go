@@ -6,14 +6,14 @@ import (
 
 const (
 	// MaxTokensPerChunk is the maximum estimated tokens per API call.
-	// Gemini has 1M tokens/minute limit, we use 150K for safety margin.
-	// Output tokens (~50K for 3K tests) + input tokens must fit within limits.
-	MaxTokensPerChunk = 150_000
+	// Keep under 50K for reliable <60s responses (avoiding 504 DEADLINE_EXCEEDED).
+	// At 40 tokens/test, 1K tests = 40K tokens, leaving margin for prompt.
+	MaxTokensPerChunk = 50_000
 
 	// MaxTestsPerChunk is the maximum number of tests per chunk.
-	// Reduced from 10K to 3K to ensure output JSON fits within 65K token limit.
-	// Each test index in JSON output costs ~5 tokens (number + comma + formatting).
-	MaxTestsPerChunk = 3_000
+	// Reduced to 1K to ensure reliable API responses within timeout limits.
+	// 1K tests ≈ 40K input tokens + output ≈ 30-45s processing time.
+	MaxTestsPerChunk = 1_000
 
 	// tokensPerTest is the estimated tokens per test (name + metadata).
 	tokensPerTest = 40
