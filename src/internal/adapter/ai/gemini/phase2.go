@@ -22,25 +22,26 @@ type phase2Conversion struct {
 }
 
 // convertTestNames performs Phase 2: test name to behavior conversion.
-func (p *Provider) convertTestNames(ctx context.Context, input specview.Phase2Input, lang specview.Language) (*specview.Phase2Output, error) {
+func (p *Provider) convertTestNames(ctx context.Context, input specview.Phase2Input, lang specview.Language) (*specview.Phase2Output, *specview.TokenUsage, error) {
 	// Validate input
 	if len(input.Tests) == 0 {
-		return nil, fmt.Errorf("%w: no tests to convert", specview.ErrInvalidInput)
+		return nil, nil, fmt.Errorf("%w: no tests to convert", specview.ErrInvalidInput)
 	}
 
 	systemPrompt := prompt.Phase2SystemPrompt
 	userPrompt, indexMapping := prompt.BuildPhase2UserPrompt(input, lang)
 
 	var result string
+	var usage *specview.TokenUsage
 
 	// Retry logic
 	err := p.phase2Retry.Do(ctx, func() error {
 		var innerErr error
-		result, innerErr = p.generateContent(ctx, p.phase2Model, systemPrompt, userPrompt, p.phase2CB)
+		result, usage, innerErr = p.generateContent(ctx, p.phase2Model, systemPrompt, userPrompt, p.phase2CB)
 		return innerErr
 	})
 	if err != nil {
-		return nil, fmt.Errorf("phase 2 conversion failed: %w", err)
+		return nil, nil, fmt.Errorf("phase 2 conversion failed: %w", err)
 	}
 
 	// Parse JSON response and map 0-based indices back to original
@@ -50,7 +51,7 @@ func (p *Provider) convertTestNames(ctx context.Context, input specview.Phase2In
 			"error", err,
 			"response", truncateForLog(result, 500),
 		)
-		return nil, fmt.Errorf("failed to parse phase 2 response: %w", err)
+		return nil, nil, fmt.Errorf("failed to parse phase 2 response: %w", err)
 	}
 
 	// Validate output
@@ -58,10 +59,10 @@ func (p *Provider) convertTestNames(ctx context.Context, input specview.Phase2In
 		slog.WarnContext(ctx, "phase 2 output validation failed",
 			"error", err,
 		)
-		return nil, fmt.Errorf("phase 2 output validation failed: %w", err)
+		return nil, nil, fmt.Errorf("phase 2 output validation failed: %w", err)
 	}
 
-	return output, nil
+	return output, usage, nil
 }
 
 // parsePhase2Response parses the JSON response into Phase2Output.

@@ -149,14 +149,14 @@ func (uc *GenerateSpecViewUseCase) Execute(
 		}, nil
 	}
 
-	phase1Output, err := uc.executePhase1(ctx, files, req.Language)
+	phase1Output, phase1Usage, err := uc.executePhase1(ctx, files, req.Language)
 	if err != nil {
 		return nil, fmt.Errorf("%w: phase 1: %w", ErrAIProcessingFailed, err)
 	}
 
 	testIndexMap := buildTestIndexMap(files)
 
-	phase2Results, err := uc.executePhase2(ctx, phase1Output, req.Language, testIndexMap)
+	phase2Results, phase2Usage, err := uc.executePhase2(ctx, phase1Output, req.Language, testIndexMap)
 	if err != nil {
 		return nil, fmt.Errorf("%w: phase 2: %w", ErrAIProcessingFailed, err)
 	}
@@ -166,6 +166,9 @@ func (uc *GenerateSpecViewUseCase) Execute(
 	if err := uc.repository.SaveDocument(ctx, doc); err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrSaveFailed, err)
 	}
+
+	// Log token usage summary
+	uc.logTokenUsage(ctx, req.AnalysisID, phase1Usage, phase2Usage)
 
 	slog.InfoContext(ctx, "document generated",
 		"analysis_id", req.AnalysisID,
@@ -195,7 +198,7 @@ func (uc *GenerateSpecViewUseCase) executePhase1(
 	ctx context.Context,
 	files []specview.FileInfo,
 	lang specview.Language,
-) (*specview.Phase1Output, error) {
+) (*specview.Phase1Output, *specview.TokenUsage, error) {
 	phase1Ctx, cancel := context.WithTimeout(ctx, uc.config.Phase1Timeout)
 	defer cancel()
 
@@ -204,16 +207,16 @@ func (uc *GenerateSpecViewUseCase) executePhase1(
 		Language: lang,
 	}
 
-	output, err := uc.aiProvider.ClassifyDomains(phase1Ctx, input)
+	output, usage, err := uc.aiProvider.ClassifyDomains(phase1Ctx, input)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	slog.InfoContext(ctx, "phase 1 complete",
 		"domain_count", len(output.Domains),
 	)
 
-	return output, nil
+	return output, usage, nil
 }
 
 type phase2Result struct {
@@ -221,6 +224,7 @@ type phase2Result struct {
 	featureIdx  int
 	behaviors   []specview.BehaviorSpec
 	failedCount int
+	usage       *specview.TokenUsage
 }
 
 func (uc *GenerateSpecViewUseCase) executePhase2(
@@ -228,7 +232,7 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 	phase1Output *specview.Phase1Output,
 	lang specview.Language,
 	testIndexMap map[int]specview.TestInfo,
-) ([]phase2Result, error) {
+) ([]phase2Result, *specview.TokenUsage, error) {
 	phase2Ctx, cancel := context.WithTimeout(ctx, uc.config.Phase2Timeout)
 	defer cancel()
 
@@ -245,7 +249,7 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 	}
 
 	if len(featureTasks) == 0 {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	var (
@@ -264,7 +268,7 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 			}
 			defer uc.phase2Sem.Release(1)
 
-			behaviors, failed := uc.convertFeature(gCtx, task, lang, testIndexMap)
+			behaviors, usage, failed := uc.convertFeature(gCtx, task, lang, testIndexMap)
 
 			resultsMu.Lock()
 			results[i] = phase2Result{
@@ -272,6 +276,7 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 				featureIdx:  task.featureIdx,
 				behaviors:   behaviors,
 				failedCount: failed,
+				usage:       usage,
 			}
 			resultsMu.Unlock()
 
@@ -286,16 +291,24 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 	}
 
 	if err := g.Wait(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	failureRate := float64(failedCount) / float64(len(featureTasks))
 	if failureRate > uc.config.FailureThreshold {
-		return nil, fmt.Errorf("%w: %.0f%% features failed (threshold: %.0f%%)",
+		return nil, nil, fmt.Errorf("%w: %.0f%% features failed (threshold: %.0f%%)",
 			ErrPartialFeatureFailure,
 			failureRate*100,
 			uc.config.FailureThreshold*100,
 		)
+	}
+
+	// Aggregate Phase 2 token usage
+	var aggregateUsage specview.TokenUsage
+	for _, r := range results {
+		if r.usage != nil {
+			aggregateUsage = aggregateUsage.Add(*r.usage)
+		}
 	}
 
 	slog.InfoContext(ctx, "phase 2 complete",
@@ -303,7 +316,7 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 		"failed_count", failedCount,
 	)
 
-	return results, nil
+	return results, &aggregateUsage, nil
 }
 
 type featureTask struct {
@@ -318,7 +331,7 @@ func (uc *GenerateSpecViewUseCase) convertFeature(
 	task featureTask,
 	lang specview.Language,
 	testIndexMap map[int]specview.TestInfo,
-) ([]specview.BehaviorSpec, int) {
+) ([]specview.BehaviorSpec, *specview.TokenUsage, int) {
 	featureCtx, cancel := context.WithTimeout(ctx, DefaultPhase2FeatureTimeout)
 	defer cancel()
 
@@ -333,7 +346,7 @@ func (uc *GenerateSpecViewUseCase) convertFeature(
 	}
 
 	if len(tests) == 0 {
-		return nil, 0
+		return nil, nil, 0
 	}
 
 	input := specview.Phase2Input{
@@ -343,16 +356,16 @@ func (uc *GenerateSpecViewUseCase) convertFeature(
 		Tests:         tests,
 	}
 
-	output, err := uc.aiProvider.ConvertTestNames(featureCtx, input)
+	output, usage, err := uc.aiProvider.ConvertTestNames(featureCtx, input)
 	if err != nil {
 		slog.WarnContext(ctx, "feature conversion failed, using fallback",
 			"feature", task.feature.Name,
 			"error", err,
 		)
-		return uc.generateFallbackBehaviors(tests), 1
+		return uc.generateFallbackBehaviors(tests), nil, 1
 	}
 
-	return output.Behaviors, 0
+	return output.Behaviors, usage, 0
 }
 
 func (uc *GenerateSpecViewUseCase) generateFallbackBehaviors(
@@ -443,4 +456,41 @@ func buildTestIndexMap(files []specview.FileInfo) map[int]specview.TestInfo {
 		}
 	}
 	return m
+}
+
+func (uc *GenerateSpecViewUseCase) logTokenUsage(
+	ctx context.Context,
+	analysisID string,
+	phase1Usage *specview.TokenUsage,
+	phase2Usage *specview.TokenUsage,
+) {
+	var phase1Prompt, phase1Candidates, phase1Total int32
+	var phase1Model string
+	if phase1Usage != nil {
+		phase1Prompt = phase1Usage.PromptTokens
+		phase1Candidates = phase1Usage.CandidatesTokens
+		phase1Total = phase1Usage.TotalTokens
+		phase1Model = phase1Usage.Model
+	}
+
+	var phase2Prompt, phase2Candidates, phase2Total int32
+	if phase2Usage != nil {
+		phase2Prompt = phase2Usage.PromptTokens
+		phase2Candidates = phase2Usage.CandidatesTokens
+		phase2Total = phase2Usage.TotalTokens
+	}
+
+	grandTotal := phase1Total + phase2Total
+
+	slog.InfoContext(ctx, "specview_token_usage",
+		"analysis_id", analysisID,
+		"phase1_model", phase1Model,
+		"phase1_prompt_tokens", phase1Prompt,
+		"phase1_candidates_tokens", phase1Candidates,
+		"phase1_total_tokens", phase1Total,
+		"phase2_prompt_tokens", phase2Prompt,
+		"phase2_candidates_tokens", phase2Candidates,
+		"phase2_total_tokens", phase2Total,
+		"grand_total_tokens", grandTotal,
+	)
 }

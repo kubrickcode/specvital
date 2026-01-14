@@ -38,22 +38,22 @@ func (m *mockRepository) SaveDocument(ctx context.Context, doc *specview.SpecDoc
 }
 
 type mockAIProvider struct {
-	classifyDomainsFn  func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error)
-	convertTestNamesFn func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, error)
+	classifyDomainsFn  func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error)
+	convertTestNamesFn func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error)
 }
 
-func (m *mockAIProvider) ClassifyDomains(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error) {
+func (m *mockAIProvider) ClassifyDomains(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
 	if m.classifyDomainsFn != nil {
 		return m.classifyDomainsFn(ctx, input)
 	}
-	return nil, nil
+	return nil, nil, nil
 }
 
-func (m *mockAIProvider) ConvertTestNames(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, error) {
+func (m *mockAIProvider) ConvertTestNames(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
 	if m.convertTestNamesFn != nil {
 		return m.convertTestNamesFn(ctx, input)
 	}
-	return nil, nil
+	return nil, nil, nil
 }
 
 func newTestFiles() []specview.FileInfo {
@@ -144,10 +144,16 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 		}
 
 		aiProvider := &mockAIProvider{
-			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error) {
-				return phase1Output, nil
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				usage := &specview.TokenUsage{
+					Model:            "gemini-2.5-flash",
+					PromptTokens:     1000,
+					CandidatesTokens: 500,
+					TotalTokens:      1500,
+				}
+				return phase1Output, usage, nil
 			},
-			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, error) {
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
 				behaviors := make([]specview.BehaviorSpec, len(input.Tests))
 				for i, test := range input.Tests {
 					behaviors[i] = specview.BehaviorSpec{
@@ -156,7 +162,13 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 						Confidence:  0.9,
 					}
 				}
-				return &specview.Phase2Output{Behaviors: behaviors}, nil
+				usage := &specview.TokenUsage{
+					Model:            "gemini-2.5-flash-lite",
+					PromptTokens:     200,
+					CandidatesTokens: 100,
+					TotalTokens:      300,
+				}
+				return &specview.Phase2Output{Behaviors: behaviors}, usage, nil
 			},
 		}
 
@@ -203,9 +215,9 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 		}
 
 		aiProvider := &mockAIProvider{
-			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error) {
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
 				classifyDomainsCalled = true
-				return nil, nil
+				return nil, nil, nil
 			},
 		}
 
@@ -298,8 +310,8 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 		}
 
 		aiProvider := &mockAIProvider{
-			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error) {
-				return nil, errors.New("AI service unavailable")
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				return nil, nil, errors.New("AI service unavailable")
 			},
 		}
 
@@ -334,13 +346,13 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 
 		var callCount atomic.Int32
 		aiProvider := &mockAIProvider{
-			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error) {
-				return phase1Output, nil
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				return phase1Output, nil, nil
 			},
-			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, error) {
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
 				count := callCount.Add(1)
 				if count == 1 {
-					return nil, errors.New("AI error")
+					return nil, nil, errors.New("AI error")
 				}
 				behaviors := make([]specview.BehaviorSpec, len(input.Tests))
 				for i, test := range input.Tests {
@@ -350,7 +362,7 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 						Confidence:  0.9,
 					}
 				}
-				return &specview.Phase2Output{Behaviors: behaviors}, nil
+				return &specview.Phase2Output{Behaviors: behaviors}, nil, nil
 			},
 		}
 
@@ -380,11 +392,11 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 		}
 
 		aiProvider := &mockAIProvider{
-			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error) {
-				return phase1Output, nil
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				return phase1Output, nil, nil
 			},
-			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, error) {
-				return nil, errors.New("AI error")
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+				return nil, nil, errors.New("AI error")
 			},
 		}
 
@@ -417,10 +429,10 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 		}
 
 		aiProvider := &mockAIProvider{
-			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error) {
-				return phase1Output, nil
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				return phase1Output, nil, nil
 			},
-			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, error) {
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
 				behaviors := make([]specview.BehaviorSpec, len(input.Tests))
 				for i, test := range input.Tests {
 					behaviors[i] = specview.BehaviorSpec{
@@ -429,7 +441,7 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 						Confidence:  0.9,
 					}
 				}
-				return &specview.Phase2Output{Behaviors: behaviors}, nil
+				return &specview.Phase2Output{Behaviors: behaviors}, nil, nil
 			},
 		}
 
@@ -465,11 +477,11 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 		}
 
 		aiProvider := &mockAIProvider{
-			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error) {
-				return phase1Output, nil
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				return phase1Output, nil, nil
 			},
-			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, error) {
-				return &specview.Phase2Output{Behaviors: []specview.BehaviorSpec{}}, nil
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+				return &specview.Phase2Output{Behaviors: []specview.BehaviorSpec{}}, nil, nil
 			},
 		}
 

@@ -30,25 +30,26 @@ type phase1Feature struct {
 }
 
 // classifyDomains performs Phase 1: domain and feature classification.
-func (p *Provider) classifyDomains(ctx context.Context, input specview.Phase1Input, lang specview.Language) (*specview.Phase1Output, error) {
+func (p *Provider) classifyDomains(ctx context.Context, input specview.Phase1Input, lang specview.Language) (*specview.Phase1Output, *specview.TokenUsage, error) {
 	// Validate input
 	if len(input.Files) == 0 {
-		return nil, fmt.Errorf("%w: no files to classify", specview.ErrInvalidInput)
+		return nil, nil, fmt.Errorf("%w: no files to classify", specview.ErrInvalidInput)
 	}
 
 	systemPrompt := prompt.Phase1SystemPrompt
 	userPrompt := prompt.BuildPhase1UserPrompt(input, lang)
 
 	var result string
+	var usage *specview.TokenUsage
 
 	// Retry logic
 	err := p.phase1Retry.Do(ctx, func() error {
 		var innerErr error
-		result, innerErr = p.generateContent(ctx, p.phase1Model, systemPrompt, userPrompt, p.phase1CB)
+		result, usage, innerErr = p.generateContent(ctx, p.phase1Model, systemPrompt, userPrompt, p.phase1CB)
 		return innerErr
 	})
 	if err != nil {
-		return nil, fmt.Errorf("phase 1 classification failed: %w", err)
+		return nil, nil, fmt.Errorf("phase 1 classification failed: %w", err)
 	}
 
 	// Parse JSON response
@@ -58,7 +59,7 @@ func (p *Provider) classifyDomains(ctx context.Context, input specview.Phase1Inp
 			"error", err,
 			"response", truncateForLog(result, 500),
 		)
-		return nil, fmt.Errorf("failed to parse phase 1 response: %w", err)
+		return nil, nil, fmt.Errorf("failed to parse phase 1 response: %w", err)
 	}
 
 	// Validate output
@@ -66,10 +67,10 @@ func (p *Provider) classifyDomains(ctx context.Context, input specview.Phase1Inp
 		slog.WarnContext(ctx, "phase 1 output validation failed",
 			"error", err,
 		)
-		return nil, fmt.Errorf("phase 1 output validation failed: %w", err)
+		return nil, nil, fmt.Errorf("phase 1 output validation failed: %w", err)
 	}
 
-	return output, nil
+	return output, usage, nil
 }
 
 // parsePhase1Response parses the JSON response into Phase1Output.

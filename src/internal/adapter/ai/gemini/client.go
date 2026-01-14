@@ -83,12 +83,12 @@ func NewProvider(ctx context.Context, config Config) (*Provider, error) {
 }
 
 // ClassifyDomains performs Phase 1: domain and feature classification.
-func (p *Provider) ClassifyDomains(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, error) {
+func (p *Provider) ClassifyDomains(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
 	return p.classifyDomains(ctx, input, input.Language)
 }
 
 // ConvertTestNames performs Phase 2: test name to behavior conversion.
-func (p *Provider) ConvertTestNames(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, error) {
+func (p *Provider) ConvertTestNames(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
 	return p.convertTestNames(ctx, input, input.Language)
 }
 
@@ -99,18 +99,19 @@ func (p *Provider) Close() error {
 }
 
 // generateContent calls the Gemini API with rate limiting and circuit breaker.
-func (p *Provider) generateContent(ctx context.Context, model, systemPrompt, userPrompt string, cb *reliability.CircuitBreaker) (string, error) {
+// Returns the response text and token usage metadata.
+func (p *Provider) generateContent(ctx context.Context, model, systemPrompt, userPrompt string, cb *reliability.CircuitBreaker) (string, *specview.TokenUsage, error) {
 	// Check circuit breaker
 	if !cb.Allow() {
-		return "", fmt.Errorf("%w: circuit breaker open", specview.ErrAIUnavailable)
+		return "", nil, fmt.Errorf("%w: circuit breaker open", specview.ErrAIUnavailable)
 	}
 
 	// Wait for rate limiter
 	if err := p.rateLimiter.Wait(ctx); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
-			return "", err
+			return "", nil, err
 		}
-		return "", fmt.Errorf("%w: %v", specview.ErrRateLimited, err)
+		return "", nil, fmt.Errorf("%w: %v", specview.ErrRateLimited, err)
 	}
 
 	config := &genai.GenerateContentConfig{
@@ -131,18 +132,29 @@ func (p *Provider) generateContent(ctx context.Context, model, systemPrompt, use
 		)
 		// Only wrap as retryable if it's a server-side or transient error
 		if reliability.IsRetryable(err) {
-			return "", &reliability.RetryableError{Err: err}
+			return "", nil, &reliability.RetryableError{Err: err}
 		}
-		return "", err
+		return "", nil, err
 	}
 
 	// Extract text from response
 	text := result.Text()
 	if text == "" {
 		cb.RecordFailure()
-		return "", errors.New("empty response from Gemini")
+		return "", nil, errors.New("empty response from Gemini")
+	}
+
+	// Extract token usage from response metadata
+	var usage *specview.TokenUsage
+	if result.UsageMetadata != nil {
+		usage = &specview.TokenUsage{
+			CandidatesTokens: result.UsageMetadata.CandidatesTokenCount,
+			Model:            model,
+			PromptTokens:     result.UsageMetadata.PromptTokenCount,
+			TotalTokens:      result.UsageMetadata.TotalTokenCount,
+		}
 	}
 
 	cb.RecordSuccess()
-	return text, nil
+	return text, usage, nil
 }
