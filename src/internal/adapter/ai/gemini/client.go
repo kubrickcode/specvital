@@ -16,6 +16,11 @@ const (
 	defaultPhase1Model = "gemini-2.5-flash"
 	defaultPhase2Model = "gemini-2.5-flash-lite"
 	defaultSeed        = int32(42) // Fixed seed for deterministic output
+
+	// maxOutputTokens is the maximum output tokens for Gemini API.
+	// Gemini 2.5 models support up to 65,536 output tokens.
+	// Required for Phase 1 with large test sets (thousands of test indices in JSON).
+	maxOutputTokens = int32(65536)
 )
 
 // Config holds configuration for the Gemini provider.
@@ -117,6 +122,7 @@ func (p *Provider) generateContent(ctx context.Context, model, systemPrompt, use
 	config := &genai.GenerateContentConfig{
 		Temperature:      genai.Ptr(float32(0.0)), // Deterministic output
 		Seed:             genai.Ptr(defaultSeed),
+		MaxOutputTokens:  maxOutputTokens,
 		ResponseMIMEType: "application/json",
 		SystemInstruction: &genai.Content{
 			Parts: []*genai.Part{{Text: systemPrompt}},
