@@ -215,7 +215,7 @@ func uuidToString(u pgtype.UUID) string {
 
 func mapRiverJobState(state string) entity.GenerationStatus {
 	switch state {
-	case "available", "pending", "scheduled":
+	case "available", "pending", "scheduled", "retryable":
 		return entity.StatusPending
 	case "running":
 		return entity.StatusRunning
