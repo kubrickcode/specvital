@@ -1,6 +1,10 @@
+"use client";
+
 import { Check, Circle, CircleDashed, Crosshair, XCircle } from "lucide-react";
 
+import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import type { TestCase } from "@/lib/api";
+import { useTruncateDetection } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 type TestItemProps = {
@@ -38,6 +42,13 @@ const STATUS_CONFIG = {
 export const TestItem = ({ test }: TestItemProps) => {
   const config = STATUS_CONFIG[test.status];
   const Icon = config.icon;
+  const { isTruncated, ref } = useTruncateDetection<HTMLSpanElement>();
+
+  const nameElement = (
+    <span className="flex-1 text-sm truncate" ref={ref}>
+      {test.name}
+    </span>
+  );
 
   return (
     <div
@@ -47,7 +58,11 @@ export const TestItem = ({ test }: TestItemProps) => {
       )}
     >
       <Icon aria-label={config.label} className={cn("h-4 w-4 flex-shrink-0", config.color)} />
-      <span className="flex-1 text-sm truncate">{test.name}</span>
+      {isTruncated ? (
+        <ResponsiveTooltip content={test.name}>{nameElement}</ResponsiveTooltip>
+      ) : (
+        nameElement
+      )}
       <span className="text-xs text-muted-foreground font-mono flex-shrink-0">L:{test.line}</span>
     </div>
   );

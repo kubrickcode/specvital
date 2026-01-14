@@ -62,7 +62,9 @@ export const TreeNode = ({ isExpanded, item, onToggle }: TreeNodeProps) => {
         ) : (
           <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
         )}
-        <span className="flex-1 text-sm font-medium truncate">{node.name}</span>
+        <span className={cn("flex-1 text-sm font-medium", !isExpanded && "truncate")}>
+          {node.name}
+        </span>
         <span className="text-xs text-muted-foreground flex-shrink-0">{node.testCount}</span>
       </button>
     );
@@ -91,7 +93,7 @@ export const TreeNode = ({ isExpanded, item, onToggle }: TreeNodeProps) => {
           <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
         )}
         <FileText className="h-4 w-4 flex-shrink-0 text-blue-500" />
-        <span className="flex-1 text-sm truncate">{node.name}</span>
+        <span className={cn("flex-1 text-sm", !isExpanded && "truncate")}>{node.name}</span>
         {firstSuite && <FrameworkBadge framework={firstSuite.framework} />}
         <StatusMiniBar counts={statusCounts} />
         <span className="text-xs text-muted-foreground flex-shrink-0">{node.testCount}</span>

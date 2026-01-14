@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import type { components } from "@/lib/api/generated-types";
+import { useTruncateDetection } from "@/lib/hooks";
 import { fadeInUp } from "@/lib/motion";
 import { formatAnalysisDate, SHORT_SHA_LENGTH } from "@/lib/utils";
 
@@ -37,15 +38,25 @@ export const AnalysisHeader = ({
   repo,
 }: AnalysisHeaderProps) => {
   const t = useTranslations("analyze");
+  const { isTruncated, ref } = useTruncateDetection<HTMLHeadingElement>();
+  const fullName = `${owner}/${repo}`;
+
+  const titleElement = (
+    <h1 className="text-xl font-bold sm:text-2xl truncate" ref={ref}>
+      {fullName}
+    </h1>
+  );
 
   return (
     <motion.header variants={fadeInUp}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         {/* Repository info section */}
         <div className="space-y-1 min-w-0">
-          <h1 className="text-xl font-bold sm:text-2xl truncate">
-            {owner}/{repo}
-          </h1>
+          {isTruncated ? (
+            <ResponsiveTooltip content={fullName}>{titleElement}</ResponsiveTooltip>
+          ) : (
+            titleElement
+          )}
           <div className="flex items-center gap-4 text-sm text-muted-foreground [&_svg]:translate-y-[2px]">
             {branchName && (
               <span className="inline-flex items-center gap-1.5">

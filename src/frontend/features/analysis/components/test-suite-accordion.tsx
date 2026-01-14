@@ -53,7 +53,7 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
           <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform duration-200" />
         )}
         <FileText className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-        <span className="flex-1 text-left text-sm font-medium truncate">
+        <span className={cn("flex-1 text-left text-sm font-medium", !isExpanded && "truncate")}>
           {suite.filePath}
           {suite.suiteName && (
             <span className="ml-2 text-muted-foreground font-normal">› {suite.suiteName}</span>

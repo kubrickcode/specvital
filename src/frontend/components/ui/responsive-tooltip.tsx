@@ -48,7 +48,7 @@ export const ResponsiveTooltip = ({
       </PopoverTrigger>
       <PopoverContent
         className={cn(
-          "w-auto border-0 bg-foreground/95 px-3 py-1.5 text-xs text-background shadow-lg shadow-black/10 backdrop-blur-sm",
+          "w-auto max-w-[90vw] border-0 bg-foreground/95 px-3 py-1.5 text-xs text-background shadow-lg shadow-black/10 backdrop-blur-sm break-words",
           contentClassName
         )}
         side={side}
