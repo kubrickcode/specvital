@@ -105,6 +105,27 @@ Key file: `lib/api/token-refresh.ts`
 | --------------------- | ----------- | --------------------- |
 | `NEXT_PUBLIC_API_URL` | Backend URL | http://localhost:8000 |
 
+## React Compiler
+
+React Compiler is enabled (`next.config.ts`: `reactCompiler: true`)
+
+### Prohibited
+
+- **NEVER** use `useMemo`, `useCallback`, `React.memo`
+- React Compiler handles memoization automatically at build time
+
+### Escape Hatch
+
+Use `"use no memo"` directive only when compiler causes issues:
+
+```tsx
+"use no memo";
+
+export function SpecialComponent() {
+  // Excluded from React Compiler optimization
+}
+```
+
 ## Key Patterns
 
 ### Feature Barrel Export

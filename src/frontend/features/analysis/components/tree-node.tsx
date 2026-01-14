@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronDown, ChevronRight, FileText, Folder, FolderOpen } from "lucide-react";
-import { useMemo } from "react";
 
 import { FrameworkBadge } from "@/components/ui/framework-badge";
 import { cn } from "@/lib/utils";
@@ -23,13 +22,13 @@ export const TreeNode = ({ isExpanded, item, onToggle }: TreeNodeProps) => {
   const { depth, hasChildren, node } = item;
   const isDirectory = node.type === "directory";
 
-  const statusCounts = useMemo(() => {
+  const statusCounts = (() => {
     if (isDirectory) {
       return { active: 0, skipped: 0, todo: 0 };
     }
     const allTests = node.suites.flatMap((suite) => suite.tests);
     return calculateStatusCounts(allTests);
-  }, [isDirectory, node.suites]);
+  })();
 
   const handleClick = () => {
     onToggle(node.path);

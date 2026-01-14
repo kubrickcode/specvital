@@ -1,7 +1,6 @@
 "use client";
 
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
-import { useCallback, useMemo } from "react";
 
 import type { TestStatus } from "@/lib/api";
 
@@ -80,14 +79,13 @@ export const useDocumentFilter = (document: SpecDocument | null) => {
   const [rawStatuses, setRawStatuses] = useQueryState("statuses", arrayParser);
   const [frameworks, setFrameworks] = useQueryState("frameworks", arrayParser);
 
-  const statuses = useMemo(
-    () => rawStatuses.filter((s): s is TestStatus => VALID_STATUSES.includes(s as TestStatus)),
-    [rawStatuses]
+  const statuses = rawStatuses.filter((s): s is TestStatus =>
+    VALID_STATUSES.includes(s as TestStatus)
   );
 
   const hasFilter = query.length > 0 || statuses.length > 0 || frameworks.length > 0;
 
-  const filteredDocument = useMemo((): FilteredDocument | null => {
+  const computeFilteredDocument = (): FilteredDocument | null => {
     if (!document) return null;
 
     let totalCount = 0;
@@ -149,13 +147,15 @@ export const useDocumentFilter = (document: SpecDocument | null) => {
       matchCount,
       totalCount,
     };
-  }, [document, query, statuses, frameworks, hasFilter]);
+  };
 
-  const clearFilters = useCallback(() => {
+  const filteredDocument = computeFilteredDocument();
+
+  const clearFilters = () => {
     setQuery("");
     setRawStatuses([]);
     setFrameworks([]);
-  }, [setQuery, setRawStatuses, setFrameworks]);
+  };
 
   return {
     clearFilters,

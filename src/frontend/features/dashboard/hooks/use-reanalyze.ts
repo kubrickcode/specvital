@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 import type { RepositoryCard } from "@/lib/api/types";
@@ -46,7 +46,7 @@ export const useReanalyze = (): UseReanalyzeReturn => {
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const stopPolling = useCallback(() => {
+  const stopPolling = () => {
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
       pollIntervalRef.current = null;
@@ -55,29 +55,26 @@ export const useReanalyze = (): UseReanalyzeReturn => {
       clearTimeout(pollTimeoutRef.current);
       pollTimeoutRef.current = null;
     }
-  }, []);
+  };
 
-  const startPolling = useCallback(
-    (owner: string, repo: string) => {
-      stopPolling();
+  const startPolling = (owner: string, repo: string) => {
+    stopPolling();
 
-      const poll = async () => {
-        try {
-          const result = await checkUpdateStatus(owner, repo);
-          if (result.status === "up-to-date") {
-            stopPolling();
-            triggerInvalidation(invalidationEvents.ANALYSIS_COMPLETED);
-          }
-        } catch {
-          // Ignore polling errors and continue retrying
+    const poll = async () => {
+      try {
+        const result = await checkUpdateStatus(owner, repo);
+        if (result.status === "up-to-date") {
+          stopPolling();
+          triggerInvalidation(invalidationEvents.ANALYSIS_COMPLETED);
         }
-      };
+      } catch {
+        // Ignore polling errors and continue retrying
+      }
+    };
 
-      pollIntervalRef.current = setInterval(poll, POLL_INTERVAL_MS);
-      pollTimeoutRef.current = setTimeout(stopPolling, POLL_TIMEOUT_MS);
-    },
-    [stopPolling, triggerInvalidation]
-  );
+    pollIntervalRef.current = setInterval(poll, POLL_INTERVAL_MS);
+    pollTimeoutRef.current = setTimeout(stopPolling, POLL_TIMEOUT_MS);
+  };
 
   const mutation = useMutation({
     mutationFn: ({ owner, repo }: MutationVariables) => {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useMemo } from "react";
 
 import { useAuth } from "@/features/auth";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -27,10 +26,7 @@ export const NavigationTabs = ({ className }: NavigationTabsProps) => {
   const t = useTranslations("navigation");
   const { isAuthenticated } = useAuth();
 
-  const visibleItems = useMemo(
-    () => NAV_ITEMS.filter((item) => !item.requiresAuth || isAuthenticated),
-    [isAuthenticated]
-  );
+  const visibleItems = NAV_ITEMS.filter((item) => !item.requiresAuth || isAuthenticated);
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {

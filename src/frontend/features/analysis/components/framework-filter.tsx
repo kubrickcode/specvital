@@ -2,7 +2,6 @@
 
 import { Filter } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,17 +22,14 @@ type FrameworkFilterProps = {
 export const FrameworkFilter = ({ availableFrameworks, onChange, value }: FrameworkFilterProps) => {
   const t = useTranslations("analyze.filter");
 
-  const handleToggle = useCallback(
-    (framework: string) => {
-      const isSelected = value.includes(framework);
-      if (isSelected) {
-        onChange(value.filter((f) => f !== framework));
-      } else {
-        onChange([...value, framework]);
-      }
-    },
-    [onChange, value]
-  );
+  const handleToggle = (framework: string) => {
+    const isSelected = value.includes(framework);
+    if (isSelected) {
+      onChange(value.filter((f) => f !== framework));
+    } else {
+      onChange([...value, framework]);
+    }
+  };
 
   if (availableFrameworks.length <= 1) {
     return null;

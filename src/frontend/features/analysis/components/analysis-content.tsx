@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import {
   DocumentView,
@@ -64,32 +64,20 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
   const containerVariants = shouldReduceMotion ? {} : pageStaggerContainer;
   const itemVariants = shouldReduceMotion ? {} : fadeInUp;
 
-  const availableFrameworks = useMemo(
-    () => result.summary.frameworks.map((f) => f.framework),
-    [result.summary.frameworks]
-  );
+  const availableFrameworks = result.summary.frameworks.map((f) => f.framework);
 
-  const filteredSuites = useMemo(
-    () => filterSuites(result.suites, { frameworks, query, statuses }),
-    [result.suites, frameworks, query, statuses]
-  );
+  const filteredSuites = filterSuites(result.suites, { frameworks, query, statuses });
 
-  const filteredTestCount = useMemo(
-    () => filteredSuites.reduce((acc, suite) => acc + suite.tests.length, 0),
-    [filteredSuites]
-  );
+  const filteredTestCount = filteredSuites.reduce((acc, suite) => acc + suite.tests.length, 0);
 
   const hasFilter = query.trim().length > 0 || frameworks.length > 0 || statuses.length > 0;
   const hasResults = filteredSuites.length > 0;
 
-  const handleViewModeChange = useCallback(
-    (mode: ViewMode) => {
-      setViewMode(mode);
-    },
-    [setViewMode]
-  );
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+  };
 
-  const handleGenerateSpec = useCallback(() => {
+  const handleGenerateSpec = () => {
     if (isDocumentAvailable) {
       // Document already exists, switch to document view
       setViewMode("document");
@@ -97,7 +85,7 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
       // Trigger generation
       requestGenerate();
     }
-  }, [isDocumentAvailable, requestGenerate, setViewMode]);
+  };
 
   const renderContent = () => {
     if (viewMode === "document") {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { shouldUseNativeShare } from "@/lib/utils/device";
@@ -31,7 +31,7 @@ export const useShare = (): UseShareReturn => {
     }
   };
 
-  const copyToClipboard = useCallback(async () => {
+  const copyToClipboard = async () => {
     const url = window.location.href;
 
     if (!navigator.clipboard) {
@@ -61,9 +61,9 @@ export const useShare = (): UseShareReturn => {
         description: t("copyFailedDescription"),
       });
     }
-  }, [t]);
+  };
 
-  const shareNative = useCallback(async () => {
+  const shareNative = async () => {
     if (!isNativeShareSupported) {
       return copyToClipboard();
     }
@@ -80,7 +80,7 @@ export const useShare = (): UseShareReturn => {
       console.error("Native share failed:", error);
       return copyToClipboard();
     }
-  }, [copyToClipboard, isNativeShareSupported]);
+  };
 
   return {
     copyToClipboard,

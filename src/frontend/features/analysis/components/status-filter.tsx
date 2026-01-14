@@ -2,7 +2,6 @@
 
 import { Check, ChevronDown, Circle, CircleDashed, Crosshair, Filter, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -56,17 +55,14 @@ const TRANSLATION_KEYS: Record<StatusKey, string> = {
 export const StatusFilter = ({ onChange, value }: StatusFilterProps) => {
   const t = useTranslations("analyze.filter");
 
-  const handleToggle = useCallback(
-    (statusKey: TestStatus) => {
-      const isSelected = value.includes(statusKey);
-      if (isSelected) {
-        onChange(value.filter((v) => v !== statusKey));
-      } else {
-        onChange([...value, statusKey]);
-      }
-    },
-    [onChange, value]
-  );
+  const handleToggle = (statusKey: TestStatus) => {
+    const isSelected = value.includes(statusKey);
+    if (isSelected) {
+      onChange(value.filter((v) => v !== statusKey));
+    } else {
+      onChange([...value, statusKey]);
+    }
+  };
 
   const selectedCount = value.length;
 

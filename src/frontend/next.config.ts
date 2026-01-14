@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
       source: "/:path*",
     },
   ],
+  reactCompiler: true,
   reactStrictMode: true,
   // Proxy API requests to backend (solves CORS and localhost access issues)
   rewrites: async () => [

@@ -1,7 +1,6 @@
 "use client";
 
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
-import { useMemo } from "react";
 
 import type { TestStatus } from "@/lib/api";
 
@@ -15,9 +14,8 @@ export const useFilterState = () => {
   const [query, setQuery] = useQueryState("q", queryParser);
   const [rawStatuses, setRawStatuses] = useQueryState("statuses", arrayParser);
 
-  const statuses = useMemo(
-    () => rawStatuses.filter((s): s is TestStatus => VALID_STATUSES.includes(s as TestStatus)),
-    [rawStatuses]
+  const statuses = rawStatuses.filter((s): s is TestStatus =>
+    VALID_STATUSES.includes(s as TestStatus)
   );
 
   const setStatuses = (value: TestStatus[] | null) => {

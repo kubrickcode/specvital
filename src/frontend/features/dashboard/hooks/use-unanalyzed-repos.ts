@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
-
 import type { GitHubRepository, RepositoryCard } from "@/lib/api/types";
 
 type UseUnanalyzedReposParams = {
@@ -18,11 +16,10 @@ export const useUnanalyzedRepos = ({
   analyzedRepositories,
   githubRepositories,
 }: UseUnanalyzedReposParams): UseUnanalyzedReposReturn => {
-  const unanalyzedRepos = useMemo(() => {
-    const analyzedFullNames = new Set(analyzedRepositories.map((r) => r.fullName.toLowerCase()));
-
-    return githubRepositories.filter((repo) => !analyzedFullNames.has(repo.fullName.toLowerCase()));
-  }, [analyzedRepositories, githubRepositories]);
+  const analyzedFullNames = new Set(analyzedRepositories.map((r) => r.fullName.toLowerCase()));
+  const unanalyzedRepos = githubRepositories.filter(
+    (repo) => !analyzedFullNames.has(repo.fullName.toLowerCase())
+  );
 
   return {
     count: unanalyzedRepos.length,

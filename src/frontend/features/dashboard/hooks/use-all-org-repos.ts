@@ -1,7 +1,6 @@
 "use client";
 
 import { useQueries, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
 import { toast } from "sonner";
 
 import type { GitHubOrganization, GitHubRepository, RepositoryCard } from "@/lib/api/types";
@@ -34,10 +33,7 @@ export const useAllOrgRepos = ({
 }: UseAllOrgReposParams): UseAllOrgReposReturn => {
   const queryClient = useQueryClient();
 
-  const analyzedFullNames = useMemo(
-    () => new Set(analyzedRepositories.map((r) => r.fullName.toLowerCase())),
-    [analyzedRepositories]
-  );
+  const analyzedFullNames = new Set(analyzedRepositories.map((r) => r.fullName.toLowerCase()));
 
   const queries = useQueries({
     queries: organizations.map((org) => ({
@@ -50,7 +46,7 @@ export const useAllOrgRepos = ({
 
   const isLoading = queries.some((q) => q.isPending);
 
-  const orgData = useMemo(() => {
+  const orgData = (() => {
     const data: Record<string, OrgRepoData> = {};
 
     organizations.forEach((org, index) => {
@@ -69,11 +65,11 @@ export const useAllOrgRepos = ({
     });
 
     return data;
-  }, [analyzedFullNames, organizations, queries]);
+  })();
 
-  const totalUnanalyzedCount = useMemo(
-    () => Object.values(orgData).reduce((sum, data) => sum + data.unanalyzedCount, 0),
-    [orgData]
+  const totalUnanalyzedCount = Object.values(orgData).reduce(
+    (sum, data) => sum + data.unanalyzedCount,
+    0
   );
 
   const refreshOrg = async (org: string) => {

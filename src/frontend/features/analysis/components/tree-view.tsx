@@ -1,7 +1,7 @@
 "use client";
 
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import type { TestSuite } from "@/lib/api";
 
@@ -21,20 +21,17 @@ export const TreeView = ({ suites }: TreeViewProps) => {
   const listRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
 
-  const tree = useMemo(() => buildFileTree(suites), [suites]);
+  const tree = buildFileTree(suites);
 
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => new Set());
 
-  const flatItems: FlatTreeItem[] = useMemo(
-    () => flattenTree(tree, expandedPaths),
-    [tree, expandedPaths]
-  );
+  const flatItems: FlatTreeItem[] = flattenTree(tree, expandedPaths);
 
   useLayoutEffect(() => {
     setScrollMargin(listRef.current?.offsetTop ?? 0);
   }, []);
 
-  const handleToggle = useCallback((path: string) => {
+  const handleToggle = (path: string) => {
     setExpandedPaths((prev) => {
       const next = new Set(prev);
       if (next.has(path)) {
@@ -44,21 +41,18 @@ export const TreeView = ({ suites }: TreeViewProps) => {
       }
       return next;
     });
-  }, []);
+  };
 
-  const getItemHeight = useCallback(
-    (index: number) => {
-      const item = flatItems[index];
-      if (!item) return ESTIMATED_ITEM_HEIGHT;
+  const getItemHeight = (index: number) => {
+    const item = flatItems[index];
+    if (!item) return ESTIMATED_ITEM_HEIGHT;
 
-      if (item.node.type === "file" && expandedPaths.has(item.node.path)) {
-        return ESTIMATED_ITEM_HEIGHT + item.node.testCount * TEST_ITEM_HEIGHT;
-      }
+    if (item.node.type === "file" && expandedPaths.has(item.node.path)) {
+      return ESTIMATED_ITEM_HEIGHT + item.node.testCount * TEST_ITEM_HEIGHT;
+    }
 
-      return ESTIMATED_ITEM_HEIGHT;
-    },
-    [expandedPaths, flatItems]
-  );
+    return ESTIMATED_ITEM_HEIGHT;
+  };
 
   const virtualizer = useWindowVirtualizer({
     count: flatItems.length,

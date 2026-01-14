@@ -12,7 +12,7 @@ import {
   Search,
 } from "lucide-react";
 import { useFormatter, useNow, useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -68,17 +68,11 @@ export const OrgReposTab = () => {
   const currentOrg = selectedOrg ?? (organizations.length === 1 ? organizations[0] : null);
   const currentOrgData = currentOrg ? orgData[currentOrg.login] : null;
 
-  const analyzedFullNames = useMemo(
-    () => new Set(analyzedRepositories.map((r) => r.fullName.toLowerCase())),
-    [analyzedRepositories]
-  );
+  const analyzedFullNames = new Set(analyzedRepositories.map((r) => r.fullName.toLowerCase()));
 
-  const allRepositories = useMemo(() => {
-    if (!currentOrgData) return [];
-    return currentOrgData.repositories;
-  }, [currentOrgData]);
+  const allRepositories = currentOrgData ? currentOrgData.repositories : [];
 
-  const filteredRepositories = useMemo(() => {
+  const filteredRepositories = (() => {
     if (!searchQuery.trim()) return allRepositories;
     const query = searchQuery.toLowerCase();
     return allRepositories.filter(
@@ -87,21 +81,21 @@ export const OrgReposTab = () => {
         repo.fullName.toLowerCase().includes(query) ||
         repo.description?.toLowerCase().includes(query)
     );
-  }, [allRepositories, searchQuery]);
+  })();
 
   const isLoading = isLoadingAnalyzed || isLoadingOrgs || isLoadingOrgRepos;
   const isOrgRestricted = currentOrg && currentOrg.accessStatus !== "accessible";
 
-  const handleSelectOrg = useCallback((org: GitHubOrganization) => {
+  const handleSelectOrg = (org: GitHubOrganization) => {
     setSelectedOrg(org);
     setSearchQuery("");
-  }, []);
+  };
 
-  const handleRefreshCurrentOrg = useCallback(() => {
+  const handleRefreshCurrentOrg = () => {
     if (currentOrg) {
       refreshOrg(currentOrg.login);
     }
-  }, [currentOrg, refreshOrg]);
+  };
 
   const isRepoAnalyzed = (repo: GitHubRepository): boolean => {
     return analyzedFullNames.has(repo.fullName.toLowerCase());

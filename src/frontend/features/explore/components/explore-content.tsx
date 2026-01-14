@@ -2,7 +2,7 @@
 
 import { Building2, Globe, Lock, User } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/features/auth";
@@ -45,7 +45,7 @@ export const ExploreContent = () => {
     sortOrder: "desc",
   });
 
-  const filteredRepositories = useMemo(() => {
+  const filteredRepositories = (() => {
     if (!searchQuery.trim()) {
       return communityRepositories;
     }
@@ -57,22 +57,19 @@ export const ExploreContent = () => {
         repo.name.toLowerCase().includes(query) ||
         `${repo.owner}/${repo.name}`.toLowerCase().includes(query)
     );
-  }, [communityRepositories, searchQuery]);
+  })();
 
-  const handleReanalyze = useCallback(
-    (owner: string, repo: string) => {
-      reanalyze(owner, repo);
-    },
-    [reanalyze]
-  );
+  const handleReanalyze = (owner: string, repo: string) => {
+    reanalyze(owner, repo);
+  };
 
-  const handleLoadMore = useCallback(() => {
+  const handleLoadMore = () => {
     fetchNextPage();
-  }, [fetchNextPage]);
+  };
 
-  const handleRetry = useCallback(() => {
+  const handleRetry = () => {
     refetch();
-  }, [refetch]);
+  };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as ExploreTab);

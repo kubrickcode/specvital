@@ -4,7 +4,7 @@ import { Check, ClipboardCopy, Download, FileText } from "lucide-react";
 import type { Transition } from "motion/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -39,22 +39,22 @@ export const ExportButton = ({ data, size = "sm", variant = "outline" }: ExportB
   const shouldReduceMotion = useReducedMotion();
   const [state, setState] = useState<ExportState>("idle");
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = () => {
     const markdown = exportToMarkdown(data);
     const filename = `${data.owner}-${data.repo}-tests.md`;
     downloadMarkdown(markdown, filename);
     setState("downloaded");
     setTimeout(() => setState("idle"), 2000);
-  }, [data]);
+  };
 
-  const handleCopy = useCallback(async () => {
+  const handleCopy = async () => {
     const markdown = exportToMarkdown(data);
     const success = await copyToClipboard(markdown);
     if (success) {
       setState("copied");
       setTimeout(() => setState("idle"), 2000);
     }
-  }, [data]);
+  };
 
   const getIcon = () => {
     if (state === "copied" || state === "downloaded") {

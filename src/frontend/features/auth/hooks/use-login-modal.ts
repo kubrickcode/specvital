@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 
 type LoginModalStore = {
   isOpen: boolean;
@@ -42,13 +42,13 @@ const close = () => {
 export const useLoginModal = () => {
   const isOpen = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  const onOpenChange = useCallback((isOpen: boolean) => {
+  const onOpenChange = (isOpen: boolean) => {
     if (isOpen) {
       open();
     } else {
       close();
     }
-  }, []);
+  };
 
   return {
     close,

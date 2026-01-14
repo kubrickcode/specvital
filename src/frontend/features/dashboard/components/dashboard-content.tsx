@@ -2,7 +2,7 @@
 
 import { Compass } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { AnalyzeDialog } from "@/features/home";
@@ -50,7 +50,7 @@ export const DashboardContent = () => {
     view: "my",
   });
 
-  const filteredRepositories = useMemo(() => {
+  const filteredRepositories = (() => {
     let result = repositories;
 
     if (starredOnly) {
@@ -68,33 +68,27 @@ export const DashboardContent = () => {
     }
 
     return result;
-  }, [repositories, searchQuery, starredOnly]);
+  })();
 
-  const handleBookmarkToggle = useCallback(
-    (owner: string, repo: string, isBookmarked: boolean) => {
-      if (isBookmarked) {
-        removeBookmark(owner, repo);
-      } else {
-        addBookmark(owner, repo);
-      }
-    },
-    [addBookmark, removeBookmark]
-  );
+  const handleBookmarkToggle = (owner: string, repo: string, isBookmarked: boolean) => {
+    if (isBookmarked) {
+      removeBookmark(owner, repo);
+    } else {
+      addBookmark(owner, repo);
+    }
+  };
 
-  const handleReanalyze = useCallback(
-    (owner: string, repo: string) => {
-      reanalyze(owner, repo);
-    },
-    [reanalyze]
-  );
+  const handleReanalyze = (owner: string, repo: string) => {
+    reanalyze(owner, repo);
+  };
 
-  const handleLoadMore = useCallback(() => {
+  const handleLoadMore = () => {
     fetchNextPage();
-  }, [fetchNextPage]);
+  };
 
-  const handleRetry = useCallback(() => {
+  const handleRetry = () => {
     refetch();
-  }, [refetch]);
+  };
 
   const hasNoRepositories = !isLoading && repositories.length === 0 && !isError;
   const hasNoFilterResults =

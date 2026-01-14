@@ -2,7 +2,7 @@
 
 import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { FrameworkBadge } from "@/components/ui/framework-badge";
 import type { TestSuite } from "@/lib/api";
@@ -26,7 +26,7 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
   };
 
   const testCount = suite.tests.length;
-  const statusCounts = useMemo(() => calculateStatusCounts(suite.tests), [suite.tests]);
+  const statusCounts = calculateStatusCounts(suite.tests);
 
   return (
     <div

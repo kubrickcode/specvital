@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import type { RepositoryCard } from "@/lib/api/types";
 
@@ -18,7 +18,7 @@ export const useRepositorySearch = (repositories: RepositoryCard[]): UseReposito
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("recent");
 
-  const filteredRepositories = useMemo(() => {
+  const filteredRepositories = (() => {
     let result = [...repositories];
 
     if (searchQuery.trim()) {
@@ -54,7 +54,7 @@ export const useRepositorySearch = (repositories: RepositoryCard[]): UseReposito
     });
 
     return result;
-  }, [repositories, searchQuery, sortBy]);
+  })();
 
   return {
     filteredRepositories,

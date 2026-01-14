@@ -2,7 +2,7 @@
 
 import { ChevronDown, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import type {
@@ -78,13 +78,13 @@ export const DiscoverySection = ({ analyzedRepositories }: DiscoverySectionProps
     githubRepositories: myRepos,
   });
 
-  const unanalyzedCounts = useMemo(() => {
+  const unanalyzedCounts = (() => {
     const counts: Record<string, number> = {};
     Object.entries(orgData).forEach(([orgLogin, data]) => {
       counts[orgLogin] = data.unanalyzedCount;
     });
     return counts;
-  }, [orgData]);
+  })();
 
   const handlePersonalClick = () => {
     setSheetState({

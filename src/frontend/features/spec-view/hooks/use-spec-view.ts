@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { fetchSpecDocument, requestSpecGeneration } from "../api";
 import type {
@@ -98,12 +98,12 @@ export const useSpecView = (analysisId: string): UseSpecViewReturn => {
     },
   });
 
-  const requestGenerate = useCallback(
-    (language: SpecLanguage = DEFAULT_LANGUAGE, isForceRegenerate = false) => {
-      generateMutation.mutate({ isForceRegenerate, language });
-    },
-    [generateMutation]
-  );
+  const requestGenerate = (
+    language: SpecLanguage = DEFAULT_LANGUAGE,
+    isForceRegenerate = false
+  ) => {
+    generateMutation.mutate({ isForceRegenerate, language });
+  };
 
   const response: SpecDocumentResponse | undefined = query.data;
   const data = response && isDocumentCompleted(response) ? response.data : null;

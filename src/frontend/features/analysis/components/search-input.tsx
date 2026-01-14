@@ -3,7 +3,7 @@
 import { debounce } from "es-toolkit";
 import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -26,10 +26,7 @@ export const SearchInput = ({ matchCount, onChange, value }: SearchInputProps) =
     setLocalValue(value);
   }, [value]);
 
-  const debouncedOnChange = useMemo(
-    () => debounce((newValue: string) => onChange(newValue), DEBOUNCE_DELAY),
-    [onChange]
-  );
+  const debouncedOnChange = debounce((newValue: string) => onChange(newValue), DEBOUNCE_DELAY);
 
   useEffect(() => {
     return () => {
@@ -37,29 +34,23 @@ export const SearchInput = ({ matchCount, onChange, value }: SearchInputProps) =
     };
   }, [debouncedOnChange]);
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = e.target.value;
-      setLocalValue(newValue);
-      debouncedOnChange(newValue);
-    },
-    [debouncedOnChange]
-  );
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+    debouncedOnChange(newValue);
+  };
 
-  const handleClear = useCallback(() => {
+  const handleClear = () => {
     setLocalValue("");
     onChange("");
     inputRef.current?.focus();
-  }, [onChange]);
+  };
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Escape") {
-        handleClear();
-      }
-    },
-    [handleClear]
-  );
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      handleClear();
+    }
+  };
 
   const hasQuery = localValue.trim().length > 0;
   const showMatchCount = hasQuery && matchCount !== undefined;

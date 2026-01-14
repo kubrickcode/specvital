@@ -2,7 +2,7 @@
 
 import { ExternalLink, Lock, RefreshCw, Search } from "lucide-react";
 import { useFormatter, useNow, useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,15 +28,15 @@ export const MyReposTab = ({ className }: MyReposTabProps) => {
     view: "my",
   });
 
-  const analyzedRepoSet = useMemo(() => {
+  const analyzedRepoSet = (() => {
     const set = new Set<string>();
     for (const repo of analyzedRepos) {
       set.add(`${repo.owner}/${repo.name}`);
     }
     return set;
-  }, [analyzedRepos]);
+  })();
 
-  const filteredRepos = useMemo(() => {
+  const filteredRepos = (() => {
     if (!searchQuery.trim()) {
       return myRepos;
     }
@@ -47,15 +47,15 @@ export const MyReposTab = ({ className }: MyReposTabProps) => {
         repo.fullName.toLowerCase().includes(query) ||
         repo.description?.toLowerCase().includes(query)
     );
-  }, [myRepos, searchQuery]);
+  })();
 
   const isRepoAnalyzed = (repo: GitHubRepository): boolean => {
     return analyzedRepoSet.has(repo.fullName);
   };
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = () => {
     refresh();
-  }, [refresh]);
+  };
 
   if (isLoading) {
     return (

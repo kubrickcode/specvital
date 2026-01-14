@@ -1,5 +1,5 @@
 import { debounce } from "es-toolkit";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ValidationState = "idle" | "valid" | "invalid";
 
@@ -16,25 +16,29 @@ export const useDebouncedValidation = (
   const { delay = 500, minLength = 1 } = options;
   const [validationState, setValidationState] = useState<ValidationState>("idle");
 
-  const debouncedValidate = useMemo(
-    () =>
-      debounce((val: string) => {
-        setValidationState(validate(val) ? "valid" : "invalid");
-      }, delay),
-    [validate, delay]
+  const debouncedValidateRef = useRef(
+    debounce((val: string) => {
+      setValidationState(validate(val) ? "valid" : "invalid");
+    }, delay)
   );
+
+  useEffect(() => {
+    debouncedValidateRef.current = debounce((val: string) => {
+      setValidationState(validate(val) ? "valid" : "invalid");
+    }, delay);
+  }, [validate, delay]);
 
   useEffect(() => {
     if (value.length < minLength) {
       setValidationState("idle");
-      debouncedValidate.cancel();
+      debouncedValidateRef.current.cancel();
       return;
     }
 
-    debouncedValidate(value);
+    debouncedValidateRef.current(value);
 
-    return () => debouncedValidate.cancel();
-  }, [value, debouncedValidate, minLength]);
+    return () => debouncedValidateRef.current.cancel();
+  }, [value, minLength]);
 
   return validationState;
 };

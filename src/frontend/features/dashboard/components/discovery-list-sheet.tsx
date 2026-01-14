@@ -3,7 +3,7 @@
 import { ExternalLink, Lock, Search } from "lucide-react";
 import Link from "next/link";
 import { useFormatter, useNow, useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,7 @@ export const DiscoveryListSheet = ({
   const now = useNow({ updateInterval: 1000 * 60 });
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredRepos = useMemo(() => {
+  const filteredRepos = (() => {
     if (!searchQuery.trim()) return repositories;
     const query = searchQuery.toLowerCase();
     return repositories.filter(
@@ -47,7 +47,7 @@ export const DiscoveryListSheet = ({
         repo.fullName.toLowerCase().includes(query) ||
         repo.description?.toLowerCase().includes(query)
     );
-  }, [repositories, searchQuery]);
+  })();
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
