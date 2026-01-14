@@ -63,4 +63,4 @@ export const VirtualizedBehaviorList = ({ behaviors }: VirtualizedBehaviorListPr
 /**
  * Threshold for switching to virtualized list
  */
-export const VIRTUALIZATION_THRESHOLD = 100;
+export const VIRTUALIZATION_THRESHOLD = 30;

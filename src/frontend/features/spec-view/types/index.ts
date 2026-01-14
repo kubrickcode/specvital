@@ -1,5 +1,14 @@
 import type { components } from "@/lib/api/generated-types";
 
+// Flat spec item types for virtualization
+export type {
+  FlatSpecBehaviorItem,
+  FlatSpecDomainItem,
+  FlatSpecFeatureItem,
+  FlatSpecItem,
+  FlatSpecItemType,
+} from "./flat-spec-item";
+
 // Spec View domain types
 export type SpecDocument = components["schemas"]["SpecDocument"];
 export type SpecDomain = components["schemas"]["SpecDomain"];

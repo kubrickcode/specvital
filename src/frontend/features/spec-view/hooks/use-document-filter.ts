@@ -1,6 +1,7 @@
 "use client";
 
 import { parseAsArrayOf, parseAsString, useQueryState } from "nuqs";
+import { useDeferredValue } from "react";
 
 import type { TestStatus } from "@/lib/api";
 
@@ -79,11 +80,17 @@ export const useDocumentFilter = (document: SpecDocument | null) => {
   const [rawStatuses, setRawStatuses] = useQueryState("statuses", arrayParser);
   const [frameworks, setFrameworks] = useQueryState("frameworks", arrayParser);
 
-  const statuses = rawStatuses.filter((s): s is TestStatus =>
+  // Defer expensive filtering to keep UI responsive during input
+  const deferredQuery = useDeferredValue(query);
+  const deferredStatuses = useDeferredValue(rawStatuses);
+  const deferredFrameworks = useDeferredValue(frameworks);
+
+  const statuses = deferredStatuses.filter((s): s is TestStatus =>
     VALID_STATUSES.includes(s as TestStatus)
   );
 
-  const hasFilter = query.length > 0 || statuses.length > 0 || frameworks.length > 0;
+  const hasFilter =
+    deferredQuery.length > 0 || statuses.length > 0 || deferredFrameworks.length > 0;
 
   const computeFilteredDocument = (): FilteredDocument | null => {
     if (!document) return null;
@@ -104,9 +111,9 @@ export const useDocumentFilter = (document: SpecDocument | null) => {
                 totalCount++;
                 const { highlightRanges, matches } = matchesBehavior(
                   behavior,
-                  query,
+                  deferredQuery,
                   statuses,
-                  frameworks
+                  deferredFrameworks
                 );
 
                 if (matches) {

@@ -2,11 +2,11 @@
 
 import { useTranslations } from "next-intl";
 
-import { DomainSection } from "./domain-section";
 import { ExecutiveSummary } from "./executive-summary";
 import { FilterEmptyState } from "./filter-empty-state";
 import { ReadingProgressBar } from "./reading-progress-bar";
 import { TocSidebar } from "./toc-sidebar";
+import { VirtualizedDocumentView } from "./virtualized-document-view";
 import { useDocumentFilter } from "../hooks/use-document-filter";
 import { useScrollSync } from "../hooks/use-scroll-sync";
 import type { SpecDocument } from "../types";
@@ -38,13 +38,9 @@ export const DocumentView = ({ document }: DocumentViewProps) => {
               onClearFilters={clearFilters}
               title={t("noResults")}
             />
-          ) : (
-            <div className="space-y-6">
-              {filteredDocument?.domains.map((domain) => (
-                <DomainSection domain={domain} hasFilter={hasFilter} key={domain.id} />
-              ))}
-            </div>
-          )}
+          ) : filteredDocument ? (
+            <VirtualizedDocumentView document={filteredDocument} hasFilter={hasFilter} />
+          ) : null}
         </div>
       </div>
     </>

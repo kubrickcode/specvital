@@ -277,18 +277,12 @@ export const TocSidebar = ({
       }
     );
 
+    // Performance: observe only domain headers to reduce overhead with many features
     document.domains.forEach((domain) => {
       const domainEl = globalThis.document.getElementById(`domain-${domain.id}`);
       if (domainEl) {
         observerRef.current?.observe(domainEl);
       }
-
-      domain.features.forEach((feature) => {
-        const featureEl = globalThis.document.getElementById(`feature-${feature.id}`);
-        if (featureEl) {
-          observerRef.current?.observe(featureEl);
-        }
-      });
     });
 
     return () => {
