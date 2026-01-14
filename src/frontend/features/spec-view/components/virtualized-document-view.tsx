@@ -87,6 +87,7 @@ export const VirtualizedDocumentView = ({ document, hasFilter }: VirtualizedDocu
             domain={item.domain}
             hasFilter={hasFilter}
             isExpanded={item.isExpanded}
+            isLastInDomain={item.isLastInDomain}
             onToggle={() => handleDomainToggle(item.domainId)}
           />
         );
@@ -96,11 +97,12 @@ export const VirtualizedDocumentView = ({ document, hasFilter }: VirtualizedDocu
             feature={item.feature}
             hasFilter={hasFilter}
             isExpanded={item.isExpanded}
+            isLastInDomain={item.isLastInDomain}
             onToggle={() => handleFeatureToggle(item.featureId)}
           />
         );
       case "behavior":
-        return <BehaviorRow behavior={item.behavior} />;
+        return <BehaviorRow behavior={item.behavior} isLastInDomain={item.isLastInDomain} />;
     }
   };
 

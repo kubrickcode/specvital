@@ -12,6 +12,7 @@ type FeatureHeaderRowProps = {
   feature: FilteredFeature;
   hasFilter: boolean;
   isExpanded: boolean;
+  isLastInDomain: boolean;
   onToggle: () => void;
 };
 
@@ -19,6 +20,7 @@ export const FeatureHeaderRow = ({
   feature,
   hasFilter,
   isExpanded,
+  isLastInDomain,
   onToggle,
 }: FeatureHeaderRowProps) => {
   const visibleBehaviorCount = hasFilter
@@ -29,15 +31,22 @@ export const FeatureHeaderRow = ({
   const displayCount = hasFilter ? `${feature.matchCount}/${totalCount}` : visibleBehaviorCount;
 
   return (
-    <div className="pb-3">
+    <div
+      className={cn(
+        // Card middle styles - side borders and background
+        "bg-card border-x border-border/60 px-4 sm:px-6",
+        // If last in domain, add bottom border and margin
+        isLastInDomain && "border-b rounded-b-lg mb-6 pb-4"
+      )}
+      id={`feature-${feature.id}`}
+      role="region"
+    >
       <div
         className={cn(
-          "border-l-2 ml-3 pl-3",
+          "border-l-2 pl-3",
           isExpanded ? "border-primary/40" : "border-muted-foreground/20",
           "transition-colors"
         )}
-        id={`feature-${feature.id}`}
-        role="region"
       >
         <Button
           aria-expanded={isExpanded}

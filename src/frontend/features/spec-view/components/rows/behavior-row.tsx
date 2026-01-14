@@ -14,9 +14,10 @@ import { HighlightedText } from "../highlighted-text";
 
 type BehaviorRowProps = {
   behavior: FilteredBehavior;
+  isLastInDomain: boolean;
 };
 
-export const BehaviorRow = ({ behavior }: BehaviorRowProps) => {
+export const BehaviorRow = ({ behavior, isLastInDomain }: BehaviorRowProps) => {
   const t = useTranslations("specView.behavior");
   const tStatus = useTranslations("specView.statusLegend");
   const sourceInfo = behavior.sourceInfo;
@@ -27,10 +28,17 @@ export const BehaviorRow = ({ behavior }: BehaviorRowProps) => {
   const hasDifferentOriginal = behavior.originalName !== behavior.convertedDescription;
 
   const content = (
-    <div className="pb-0.5">
+    <div
+      className={cn(
+        // Card middle styles - side borders and background
+        "bg-card border-x border-border/60 px-4 sm:px-6",
+        // If last in domain, add bottom border and margin
+        isLastInDomain && "border-b rounded-b-lg mb-6 pb-4"
+      )}
+    >
       <div
         className={cn(
-          "group flex items-start gap-3 px-3 py-2.5 ml-6 rounded-lg",
+          "group flex items-start gap-3 px-3 py-2.5 ml-3 rounded-lg",
           "hover:bg-muted/50 active:bg-muted/70",
           "transition-colors duration-150",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"

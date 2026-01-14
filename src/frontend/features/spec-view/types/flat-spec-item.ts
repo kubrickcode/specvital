@@ -11,6 +11,7 @@ export type FlatSpecDomainItem = {
   domain: FilteredDomain;
   domainId: string;
   isExpanded: boolean;
+  isLastInDomain: boolean; // true when domain is collapsed (header is the last item)
   type: "domain-header";
 };
 
@@ -20,6 +21,7 @@ export type FlatSpecFeatureItem = {
   feature: FilteredFeature;
   featureId: string;
   isExpanded: boolean;
+  isLastInDomain: boolean;
   type: "feature-header";
 };
 
@@ -29,6 +31,7 @@ export type FlatSpecBehaviorItem = {
   depth: 2;
   domainId: string;
   featureId: string;
+  isLastInDomain: boolean;
   type: "behavior";
 };
 

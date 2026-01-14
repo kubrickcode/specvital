@@ -13,6 +13,7 @@ type DomainHeaderRowProps = {
   domain: FilteredDomain;
   hasFilter: boolean;
   isExpanded: boolean;
+  isLastInDomain: boolean;
   onToggle: () => void;
 };
 
@@ -44,6 +45,7 @@ export const DomainHeaderRow = ({
   domain,
   hasFilter,
   isExpanded,
+  isLastInDomain,
   onToggle,
 }: DomainHeaderRowProps) => {
   const featureCount = domain.features.length;
@@ -59,57 +61,60 @@ export const DomainHeaderRow = ({
       : null;
 
   return (
-    <div className="pb-6">
-      <div
-        className="bg-card border rounded-lg overflow-hidden"
-        id={`domain-${domain.id}`}
-        role="region"
-      >
-        <div className="px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <Button
-              aria-expanded={isExpanded}
-              className="justify-start gap-2 px-0 h-auto hover:bg-transparent min-w-0"
-              onClick={onToggle}
-              variant="ghost"
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-              )}
-              <h3 className="text-lg font-semibold tracking-tight">{domain.name}</h3>
-            </Button>
+    <div
+      className={cn(
+        // Card styles - always top border and rounded top
+        "bg-card border-t border-x border-border/60 rounded-t-lg",
+        // If last in domain (collapsed), add bottom border and margin
+        isLastInDomain && "border-b rounded-b-lg mb-6"
+      )}
+      id={`domain-${domain.id}`}
+      role="region"
+    >
+      <div className="px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Button
+            aria-expanded={isExpanded}
+            className="justify-start gap-2 px-0 h-auto hover:bg-transparent min-w-0"
+            onClick={onToggle}
+            variant="ghost"
+          >
+            {isExpanded ? (
+              <ChevronDown className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+            )}
+            <h3 className="text-lg font-semibold tracking-tight">{domain.name}</h3>
+          </Button>
 
-            <div className="flex items-center gap-2 flex-wrap ml-7 sm:ml-0 sm:flex-shrink-0">
-              {confidenceVariant && domain.classificationConfidence !== undefined && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge
-                      className={cn(
-                        "text-xs font-medium tabular-nums",
-                        confidenceVariant.bg,
-                        confidenceVariant.text,
-                        confidenceVariant.border
-                      )}
-                      variant="outline"
-                    >
-                      {formatConfidence(domain.classificationConfidence)}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>AI classification confidence</TooltipContent>
-                </Tooltip>
-              )}
-              <span className="text-xs text-muted-foreground">{displayCount}</span>
-            </div>
+          <div className="flex items-center gap-2 flex-wrap ml-7 sm:ml-0 sm:flex-shrink-0">
+            {confidenceVariant && domain.classificationConfidence !== undefined && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    className={cn(
+                      "text-xs font-medium tabular-nums",
+                      confidenceVariant.bg,
+                      confidenceVariant.text,
+                      confidenceVariant.border
+                    )}
+                    variant="outline"
+                  >
+                    {formatConfidence(domain.classificationConfidence)}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>AI classification confidence</TooltipContent>
+              </Tooltip>
+            )}
+            <span className="text-xs text-muted-foreground">{displayCount}</span>
           </div>
-
-          {domain.description && (
-            <p className="text-sm text-muted-foreground mt-2 ml-7 leading-relaxed">
-              {domain.description}
-            </p>
-          )}
         </div>
+
+        {domain.description && (
+          <p className="text-sm text-muted-foreground mt-2 ml-7 leading-relaxed">
+            {domain.description}
+          </p>
+        )}
       </div>
     </div>
   );
