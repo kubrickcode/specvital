@@ -4,7 +4,13 @@ import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
-import { DocumentView, EmptyDocument, GenerationStatus, useSpecView } from "@/features/spec-view";
+import {
+  DocumentView,
+  EmptyDocument,
+  GenerationStatus,
+  useDocumentFilter,
+  useSpecView,
+} from "@/features/spec-view";
 import type { AnalysisResult } from "@/lib/api";
 import { createStaggerContainer, fadeInUp, useReducedMotion } from "@/lib/motion";
 
@@ -41,6 +47,11 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
   } = useSpecView(result.id);
 
   const isDocumentAvailable = Boolean(specDocument);
+
+  // Get document match count for search feedback in document view
+  const { matchCount: documentMatchCount, query: documentQuery } = useDocumentFilter(
+    specDocument ?? null
+  );
 
   // Auto-switch to document view when document becomes available
   useEffect(() => {
@@ -152,6 +163,11 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
             isDocumentAvailable={isDocumentAvailable}
             isGenerating={isGenerating}
             isViewingDocument={viewMode === "document"}
+            matchCount={
+              viewMode === "document" && specDocument && documentQuery
+                ? documentMatchCount
+                : undefined
+            }
             onFrameworksChange={setFrameworks}
             onGenerateSpec={handleGenerateSpec}
             onQueryChange={setQuery}

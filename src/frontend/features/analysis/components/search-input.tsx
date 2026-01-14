@@ -5,17 +5,19 @@ import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const DEBOUNCE_DELAY = 300;
 
 type SearchInputProps = {
+  matchCount?: number;
   onChange: (value: string) => void;
   value: string;
 };
 
-export const SearchInput = ({ onChange, value }: SearchInputProps) => {
+export const SearchInput = ({ matchCount, onChange, value }: SearchInputProps) => {
   const t = useTranslations("analyze.filter");
   const inputRef = useRef<HTMLInputElement>(null);
   const [localValue, setLocalValue] = useState(value);
@@ -59,30 +61,44 @@ export const SearchInput = ({ onChange, value }: SearchInputProps) => {
     [handleClear]
   );
 
+  const hasQuery = localValue.trim().length > 0;
+  const showMatchCount = hasQuery && matchCount !== undefined;
+
   return (
-    <div className="relative flex-1" role="search">
-      <Search
-        aria-hidden="true"
-        className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-      />
-      <Input
-        className={cn("pl-9", localValue && "pr-9")}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder={t("searchPlaceholder")}
-        ref={inputRef}
-        type="text"
-        value={localValue}
-      />
-      {localValue && (
-        <button
-          aria-label={t("clearSearch")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-          onClick={handleClear}
-          type="button"
+    <div className="flex items-center gap-2 flex-1">
+      <div className="relative flex-1" role="search">
+        <Search
+          aria-hidden="true"
+          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          className={cn("pl-9", localValue && "pr-9")}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder={t("searchPlaceholder")}
+          ref={inputRef}
+          type="text"
+          value={localValue}
+        />
+        {localValue && (
+          <button
+            aria-label={t("clearSearch")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={handleClear}
+            type="button"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+      {showMatchCount && (
+        <Badge
+          aria-live="polite"
+          className="shrink-0"
+          variant={matchCount === 0 ? "destructive" : "secondary"}
         >
-          <X className="h-4 w-4" />
-        </button>
+          {t("matchCount", { count: matchCount })}
+        </Badge>
       )}
     </div>
   );

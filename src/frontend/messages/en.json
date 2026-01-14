@@ -100,6 +100,7 @@
       "statusSkipped": "Skipped",
       "statusTodo": "Todo",
       "statusXfail": "Expected Fail",
+      "matchCount": "{count} matches",
       "resultSummary": "{filtered} of {total} tests"
     },
     "viewMode": {

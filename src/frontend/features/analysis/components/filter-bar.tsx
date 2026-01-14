@@ -17,6 +17,7 @@ type FilterBarProps = {
   isDocumentAvailable: boolean;
   isGenerating: boolean;
   isViewingDocument: boolean;
+  matchCount?: number;
   onFrameworksChange: (value: string[]) => void;
   onGenerateSpec: () => void;
   onQueryChange: (value: string) => void;
@@ -54,6 +55,7 @@ export const FilterBar = ({
   isDocumentAvailable,
   isGenerating,
   isViewingDocument,
+  matchCount,
   onFrameworksChange,
   onGenerateSpec,
   onQueryChange,
@@ -67,7 +69,7 @@ export const FilterBar = ({
     <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex-1">
-          <SearchInput onChange={onQueryChange} value={query} />
+          <SearchInput matchCount={matchCount} onChange={onQueryChange} value={query} />
         </div>
         {/* Mobile: full-bleed horizontal scroll area with fixed ViewModeToggle */}
         <div className="flex items-center gap-2">

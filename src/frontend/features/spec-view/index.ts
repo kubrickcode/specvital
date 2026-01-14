@@ -10,7 +10,7 @@ export {
   TocSidebar,
 } from "./components";
 
-export { specViewKeys, useScrollSync, useSpecView } from "./hooks";
+export { specViewKeys, useDocumentFilter, useScrollSync, useSpecView } from "./hooks";
 
 export { calculateDocumentStats, calculateDomainStats } from "./utils";
 

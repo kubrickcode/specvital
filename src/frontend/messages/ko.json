@@ -100,6 +100,7 @@
       "statusSkipped": "건너뜀",
       "statusTodo": "할 일",
       "statusXfail": "예상 실패",
+      "matchCount": "{count}개 일치",
       "resultSummary": "{total}개 중 {filtered}개 테스트"
     },
     "viewMode": {
