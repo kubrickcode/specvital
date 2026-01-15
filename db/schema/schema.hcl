@@ -29,6 +29,16 @@ enum "usage_event_type" {
   values = ["specview", "analysis"]
 }
 
+enum "plan_tier" {
+  schema = schema.public
+  values = ["free", "pro", "pro_plus", "enterprise"]
+}
+
+enum "subscription_status" {
+  schema = schema.public
+  values = ["active", "canceled", "expired"]
+}
+
 // ==============================================================================
 // System Config
 // ==============================================================================
@@ -1286,6 +1296,131 @@ table "usage_events" {
   index "idx_usage_events_document" {
     columns = [column.document_id]
     where   = "document_id IS NOT NULL"
+  }
+}
+
+// ==============================================================================
+// Subscription Tables
+// ==============================================================================
+
+table "subscription_plans" {
+  schema = schema.public
+
+  column "id" {
+    type    = uuid
+    default = sql("gen_random_uuid()")
+  }
+
+  column "tier" {
+    type = enum.plan_tier
+  }
+
+  column "specview_monthly_limit" {
+    type = int
+    null = true
+  }
+
+  column "analysis_monthly_limit" {
+    type = int
+    null = true
+  }
+
+  column "retention_days" {
+    type = int
+    null = true
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  unique "uq_subscription_plans_tier" {
+    columns = [column.tier]
+  }
+}
+
+table "user_subscriptions" {
+  schema = schema.public
+
+  column "id" {
+    type    = uuid
+    default = sql("gen_random_uuid()")
+  }
+
+  column "user_id" {
+    type = uuid
+  }
+
+  column "plan_id" {
+    type = uuid
+  }
+
+  column "status" {
+    type    = enum.subscription_status
+    default = "active"
+  }
+
+  column "current_period_start" {
+    type = timestamptz
+  }
+
+  column "current_period_end" {
+    type = timestamptz
+  }
+
+  column "canceled_at" {
+    type = timestamptz
+    null = true
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  column "updated_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  foreign_key "fk_user_subscriptions_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete   = CASCADE
+  }
+
+  foreign_key "fk_user_subscriptions_plan" {
+    columns     = [column.plan_id]
+    ref_columns = [table.subscription_plans.column.id]
+    on_delete   = RESTRICT
+  }
+
+  check "chk_canceled_at_status" {
+    expr = "(status = 'canceled') = (canceled_at IS NOT NULL)"
+  }
+
+  index "idx_user_subscriptions_active" {
+    columns = [column.user_id]
+    unique  = true
+    where   = "status = 'active'"
+  }
+
+  index "idx_user_subscriptions_plan" {
+    columns = [column.plan_id]
+  }
+
+  index "idx_user_subscriptions_period_end" {
+    columns = [column.current_period_end]
+    where   = "status = 'active'"
   }
 }
 
