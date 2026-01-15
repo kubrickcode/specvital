@@ -92,6 +92,8 @@ migrate-local:
     PGPASSWORD=postgres psql -h local-postgres -U postgres -c "CREATE DATABASE specvital;"
     echo "Applying schema..."
     PGPASSWORD=postgres psql -h local-postgres -U postgres -d specvital -f src/backend/internal/db/schema.sql
+    echo "Inserting seed data..."
+    PGPASSWORD=postgres psql -h local-postgres -U postgres -d specvital -f src/backend/internal/db/seed.sql
     echo "✅ Migration complete!"
 
 run target *args:
