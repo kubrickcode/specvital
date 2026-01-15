@@ -2,6 +2,7 @@ package domain_hints
 
 import (
 	"context"
+	"regexp"
 	"strings"
 
 	sitter "github.com/smacker/go-tree-sitter"
@@ -10,6 +11,14 @@ import (
 	"github.com/specvital/core/pkg/parser/strategies/shared/dotnetast"
 	"github.com/specvital/core/pkg/parser/tspool"
 )
+
+// whitespaceRegex matches consecutive whitespace (spaces, tabs, newlines).
+var whitespaceRegex = regexp.MustCompile(`\s+`)
+
+// normalizeWhitespace replaces consecutive whitespace with a single space and trims.
+func normalizeWhitespace(s string) string {
+	return strings.TrimSpace(whitespaceRegex.ReplaceAllString(s, " "))
+}
 
 // CSharpExtractor extracts domain hints from C# source code.
 type CSharpExtractor struct{}
@@ -96,8 +105,9 @@ func extractCSharpUsingPath(node *sitter.Node, source []byte) string {
 		// Alias using: extract the qualified_name (the right side of =)
 		for i := 0; i < int(node.ChildCount()); i++ {
 			child := node.Child(i)
-			if child.Type() == dotnetast.NodeQualifiedName {
-				return child.Content(source)
+			if child.Type() == dotnetast.NodeQualifiedName || child.Type() == dotnetast.NodeGenericName {
+				// Normalize whitespace to handle multiline generic types
+				return normalizeWhitespace(child.Content(source))
 			}
 		}
 		return ""
@@ -149,6 +159,10 @@ func (e *CSharpExtractor) extractCalls(root *sitter.Node, source []byte) []strin
 			}
 			// Skip test framework calls
 			if isCSharpTestFrameworkCall(call) {
+				continue
+			}
+			// Skip Object base methods (ToString, Equals, etc.)
+			if isCSharpObjectMethod(call) {
 				continue
 			}
 			if _, exists := seen[call]; exists {
@@ -280,11 +294,32 @@ var csharpTestFrameworkCalls = map[string]struct{}{
 	"Fixture": {}, "Create": {}, "Build": {}, "Freeze": {},
 }
 
+// csharpObjectMethods contains System.Object base methods that should be
+// excluded from domain hints as they provide no domain signal.
+var csharpObjectMethods = map[string]struct{}{
+	"ToString":        {},
+	"Equals":          {},
+	"GetHashCode":     {},
+	"GetType":         {},
+	"ReferenceEquals": {},
+}
+
 func isCSharpTestFrameworkCall(call string) bool {
 	baseName := call
 	if idx := strings.Index(call, "."); idx > 0 {
 		baseName = call[:idx]
 	}
 	_, exists := csharpTestFrameworkCalls[baseName]
+	return exists
+}
+
+// isCSharpObjectMethod checks if the call is an Object base method.
+func isCSharpObjectMethod(call string) bool {
+	// Extract method name (last segment after dot)
+	methodName := call
+	if idx := strings.LastIndex(call, "."); idx >= 0 {
+		methodName = call[idx+1:]
+	}
+	_, exists := csharpObjectMethods[methodName]
 	return exists
 }

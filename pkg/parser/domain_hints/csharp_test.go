@@ -2,6 +2,7 @@ package domain_hints
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/specvital/core/pkg/domain"
@@ -410,4 +411,165 @@ namespace MyApp.Tests
 			}
 		}
 	})
+}
+
+func TestCSharpExtractor_Extract_ObjectMethods(t *testing.T) {
+	source := []byte(`
+namespace MyApp.Tests
+{
+    public class Test
+    {
+        void TestMethod()
+        {
+            // Object base methods should be filtered
+            var s = obj.ToString();
+            var eq = obj.Equals(other);
+            var hash = obj.GetHashCode();
+            var type = obj.GetType();
+
+            // Domain calls should be included
+            userService.Create(data);
+            paymentGateway.Process(amount);
+        }
+    }
+}
+`)
+
+	extractor := &CSharpExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("Object methods filtered", func(t *testing.T) {
+		excludedCalls := []string{"obj.ToString", "obj.Equals", "obj.GetHashCode", "obj.GetType"}
+		for _, call := range excludedCalls {
+			if callSet[call] {
+				t.Errorf("expected Object method %q to be excluded, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"userService.Create", "paymentGateway.Process"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}
+
+func TestCSharpExtractor_Extract_MultilineGenericUsing(t *testing.T) {
+	source := []byte(`
+using System;
+using VerifyCS = MSTest.Analyzers.Test.CSharpCodeFixVerifier<
+    MSTest.Analyzers.AssemblyCleanupShouldBeValidAnalyzer,
+    MSTest.Analyzers.AssemblyCleanupShouldBeValidFixer>;
+
+namespace MyApp {}
+`)
+
+	extractor := &CSharpExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	usingSet := make(map[string]bool)
+	for _, u := range hints.Imports {
+		usingSet[u] = true
+	}
+
+	t.Run("System using included", func(t *testing.T) {
+		if !usingSet["System"] {
+			t.Errorf("expected System using, got %v", hints.Imports)
+		}
+	})
+
+	t.Run("no newlines in imports", func(t *testing.T) {
+		for _, u := range hints.Imports {
+			if strings.Contains(u, "\n") {
+				t.Errorf("import should not contain newlines: %q", u)
+			}
+			if strings.Contains(u, "\t") {
+				t.Errorf("import should not contain tabs: %q", u)
+			}
+		}
+	})
+
+	t.Run("multiline generic normalized", func(t *testing.T) {
+		// The multiline generic type should be normalized to single line
+		found := false
+		for _, u := range hints.Imports {
+			if strings.Contains(u, "CSharpCodeFixVerifier") {
+				found = true
+				// Should contain the full type but normalized
+				if !strings.Contains(u, "AssemblyCleanupShouldBeValidAnalyzer") {
+					t.Errorf("expected normalized generic type import, got %q", u)
+				}
+				break
+			}
+		}
+		if !found {
+			t.Errorf("expected CSharpCodeFixVerifier import, got %v", hints.Imports)
+		}
+	})
+}
+
+func TestNormalizeWhitespace(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"simple string", "hello", "hello"},
+		{"leading space", "  hello", "hello"},
+		{"trailing space", "hello  ", "hello"},
+		{"newlines", "hello\nworld", "hello world"},
+		{"tabs", "hello\tworld", "hello world"},
+		{"mixed whitespace", "hello\n\t  world", "hello world"},
+		{"multiline generic", "Type<\n    A,\n    B>", "Type< A, B>"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := normalizeWhitespace(tt.input)
+			if got != tt.want {
+				t.Errorf("normalizeWhitespace(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsCSharpObjectMethod(t *testing.T) {
+	tests := []struct {
+		call string
+		want bool
+	}{
+		{"obj.ToString", true},
+		{"obj.Equals", true},
+		{"obj.GetHashCode", true},
+		{"obj.GetType", true},
+		{"ReferenceEquals", true},
+		{"obj.CustomMethod", false},
+		{"userService.Create", false},
+		{"ToString", true}, // standalone
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.call, func(t *testing.T) {
+			got := isCSharpObjectMethod(tt.call)
+			if got != tt.want {
+				t.Errorf("isCSharpObjectMethod(%q) = %v, want %v", tt.call, got, tt.want)
+			}
+		})
+	}
 }
