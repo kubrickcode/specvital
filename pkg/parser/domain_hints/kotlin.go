@@ -148,7 +148,7 @@ func extractKotlinCallExpression(node *sitter.Node, source []byte) string {
 }
 
 // kotlinTestFrameworkCalls contains base names from Kotlin test frameworks
-// that should be excluded from domain hints.
+// and stdlib functions that should be excluded from domain hints.
 var kotlinTestFrameworkCalls = map[string]struct{}{
 	// Kotest matchers
 	"shouldBe": {}, "shouldNotBe": {}, "shouldThrow": {}, "shouldNotThrow": {},
@@ -165,6 +165,15 @@ var kotlinTestFrameworkCalls = map[string]struct{}{
 	// Mockk
 	"mockk": {}, "every": {}, "verify": {}, "slot": {}, "spyk": {},
 	"confirmVerified": {}, "coEvery": {}, "coVerify": {},
+	// Kotlin stdlib - collection factory functions (no domain signal)
+	"listOf": {}, "mutableListOf": {}, "setOf": {}, "mutableSetOf": {},
+	"mapOf": {}, "mutableMapOf": {}, "arrayOf": {}, "arrayOfNulls": {},
+	// Kotlin stdlib - empty collections (no domain signal)
+	"emptyList": {}, "emptySet": {}, "emptyMap": {}, "emptyArray": {},
+	// Kotlin stdlib - utility functions (no domain signal)
+	"Pair": {}, "Triple": {},
+	// Kotlin stdlib - exception/validation functions (no domain signal)
+	"error": {}, "require": {}, "requireNotNull": {}, "check": {}, "checkNotNull": {},
 }
 
 func isKotlinTestFrameworkCall(call string) bool {

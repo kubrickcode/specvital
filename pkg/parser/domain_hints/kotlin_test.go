@@ -294,3 +294,59 @@ class DecimalTest {
 		}
 	})
 }
+
+func TestKotlinExtractor_Extract_StdlibFilter(t *testing.T) {
+	source := []byte(`
+package com.example
+
+class CollectionTest {
+    fun test() {
+        // Kotlin stdlib functions should be filtered (no domain signal)
+        val list = listOf(1, 2, 3)
+        val set = setOf("a", "b")
+        val map = mapOf("key" to "value")
+        val empty = emptyList<String>()
+        val pair = Pair("first", "second")
+        error("something went wrong")
+        require(list.isNotEmpty())
+        check(set.size > 0)
+
+        // Domain calls should be included
+        userService.findAll()
+        orderRepository.save(order)
+    }
+}
+`)
+
+	extractor := &KotlinExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("stdlib functions filtered", func(t *testing.T) {
+		excludedCalls := []string{
+			"listOf", "setOf", "mapOf", "emptyList", "Pair", "error", "require", "check",
+		}
+		for _, call := range excludedCalls {
+			if callSet[call] {
+				t.Errorf("expected stdlib call %q to be excluded, got %v", call, hints.Calls)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"userService.findAll", "orderRepository.save"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}

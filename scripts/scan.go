@@ -41,11 +41,15 @@ func main() {
 
 	files := make([]map[string]interface{}, 0, len(result.Inventory.Files))
 	for _, file := range result.Inventory.Files {
-		files = append(files, map[string]interface{}{
+		entry := map[string]interface{}{
 			"path":      file.Path,
 			"framework": file.Framework,
 			"testCount": file.CountTests(),
-		})
+		}
+		if file.DomainHints != nil {
+			entry["domainHints"] = file.DomainHints
+		}
+		files = append(files, entry)
 	}
 
 	output := map[string]interface{}{
