@@ -57,6 +57,18 @@ func TestShouldFilterNoise(t *testing.T) {
 		// Normal identifiers
 		{"normal identifier", "doSomething", false},
 		{"dotted identifier", "service.method", false},
+
+		// Unbalanced parentheses (parser artifact from method chaining)
+		{"unbalanced paren go", "json.NewDecoder(w", true},
+		{"unbalanced paren ts", "expect(mockChromeStorage.session", true},
+		{"unbalanced paren nested", "expect(badge.style", true},
+		{"unbalanced paren complex", "expect(dropdown?.classList", true},
+
+		// Balanced parentheses (normal calls - should pass)
+		{"balanced paren simple", "json.Marshal(data)", false},
+		{"balanced paren method chain", "expect(result).toEqual", false},
+		{"balanced paren empty", "func()", false},
+		{"balanced paren nested", "outer(inner(x))", false},
 	}
 
 	for _, tt := range tests {

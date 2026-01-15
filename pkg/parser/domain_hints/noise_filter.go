@@ -52,6 +52,13 @@ func ShouldFilterNoise(call string) bool {
 		return !IsValidIdentifierChar(rune(call[0]))
 	}
 
+	// Unbalanced parentheses: parser artifact from method chaining
+	// e.g., "json.NewDecoder(w" from "json.NewDecoder(w).Decode(...)"
+	// e.g., "expect(mockChromeStorage.session" from "expect(...).toBe(...)"
+	if strings.Count(call, "(") != strings.Count(call, ")") {
+		return true
+	}
+
 	return false
 }
 
