@@ -170,6 +170,8 @@ func (uc *GenerateSpecViewUseCase) Execute(
 		return nil, fmt.Errorf("%w: %w", ErrSaveFailed, err)
 	}
 
+	testCasesCount := countTotalTestCases(files)
+	uc.recordUsageEventIfNeeded(ctx, req.UserID, doc.ID, testCasesCount)
 	uc.recordUserHistoryIfNeeded(ctx, req.UserID, doc.ID)
 
 	// Log token usage summary
@@ -186,6 +188,26 @@ func (uc *GenerateSpecViewUseCase) Execute(
 		ContentHash: contentHash,
 		DocumentID:  doc.ID,
 	}, nil
+}
+
+func (uc *GenerateSpecViewUseCase) recordUsageEventIfNeeded(
+	ctx context.Context,
+	userID *string,
+	documentID string,
+	quotaAmount int,
+) {
+	if userID == nil || *userID == "" {
+		return
+	}
+
+	if err := uc.repository.RecordUsageEvent(ctx, *userID, documentID, quotaAmount); err != nil {
+		slog.WarnContext(ctx, "failed to record usage event (non-critical)",
+			"user_id", *userID,
+			"document_id", documentID,
+			"quota_amount", quotaAmount,
+			"error", err,
+		)
+	}
 }
 
 func (uc *GenerateSpecViewUseCase) recordUserHistoryIfNeeded(
@@ -481,6 +503,14 @@ func buildTestIndexMap(files []specview.FileInfo) map[int]specview.TestInfo {
 		}
 	}
 	return m
+}
+
+func countTotalTestCases(files []specview.FileInfo) int {
+	count := 0
+	for _, f := range files {
+		count += len(f.Tests)
+	}
+	return count
 }
 
 func (uc *GenerateSpecViewUseCase) logTokenUsage(

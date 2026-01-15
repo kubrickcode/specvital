@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"math/big"
 	"slices"
 	"strings"
@@ -398,6 +399,40 @@ func confidenceToNumeric(confidence float64) pgtype.Numeric {
 		Exp:   -2,
 		Valid: true,
 	}
+}
+
+func (r *SpecDocumentRepository) RecordUsageEvent(
+	ctx context.Context,
+	userID string,
+	documentID string,
+	quotaAmount int,
+) error {
+	parsedUserID, err := analysis.ParseUUID(userID)
+	if err != nil {
+		return fmt.Errorf("%w: invalid user ID format", specview.ErrInvalidInput)
+	}
+
+	parsedDocID, err := analysis.ParseUUID(documentID)
+	if err != nil {
+		return fmt.Errorf("%w: invalid document ID format", specview.ErrInvalidInput)
+	}
+
+	if quotaAmount < 0 || quotaAmount > math.MaxInt32 {
+		return fmt.Errorf("%w: quota amount out of valid range", specview.ErrInvalidInput)
+	}
+
+	queries := db.New(r.pool)
+
+	err = queries.RecordSpecViewUsageEvent(ctx, db.RecordSpecViewUsageEventParams{
+		UserID:      toPgUUID(parsedUserID),
+		DocumentID:  toPgUUID(parsedDocID),
+		QuotaAmount: int32(quotaAmount),
+	})
+	if err != nil {
+		return fmt.Errorf("record specview usage event: %w", err)
+	}
+
+	return nil
 }
 
 func (r *SpecDocumentRepository) RecordUserHistory(

@@ -231,6 +231,48 @@ func (ns NullTestStatus) Value() (driver.Value, error) {
 	return string(ns.TestStatus), nil
 }
 
+type UsageEventType string
+
+const (
+	UsageEventTypeSpecview UsageEventType = "specview"
+	UsageEventTypeAnalysis UsageEventType = "analysis"
+)
+
+func (e *UsageEventType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UsageEventType(s)
+	case string:
+		*e = UsageEventType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UsageEventType: %T", src)
+	}
+	return nil
+}
+
+type NullUsageEventType struct {
+	UsageEventType UsageEventType `json:"usage_event_type"`
+	Valid          bool           `json:"valid"` // Valid is true if UsageEventType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUsageEventType) Scan(value interface{}) error {
+	if value == nil {
+		ns.UsageEventType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UsageEventType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUsageEventType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UsageEventType), nil
+}
+
 type Analysis struct {
 	ID            pgtype.UUID        `json:"id"`
 	CodebaseID    pgtype.UUID        `json:"codebase_id"`
@@ -451,6 +493,16 @@ type TestSuite struct {
 	LineNumber pgtype.Int4 `json:"line_number"`
 	Depth      int32       `json:"depth"`
 	FileID     pgtype.UUID `json:"file_id"`
+}
+
+type UsageEvent struct {
+	ID          pgtype.UUID        `json:"id"`
+	UserID      pgtype.UUID        `json:"user_id"`
+	EventType   UsageEventType     `json:"event_type"`
+	AnalysisID  pgtype.UUID        `json:"analysis_id"`
+	DocumentID  pgtype.UUID        `json:"document_id"`
+	QuotaAmount int32              `json:"quota_amount"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
 type User struct {

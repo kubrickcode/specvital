@@ -12,6 +12,11 @@ type Repository interface {
 	// Returns ErrAnalysisNotFound if the analysis does not exist.
 	GetTestDataByAnalysisID(ctx context.Context, analysisID string) ([]FileInfo, error)
 
+	// RecordUsageEvent records a usage event for quota tracking.
+	// Only called on cache miss (when AI processing runs).
+	// quotaAmount is the number of test cases processed.
+	RecordUsageEvent(ctx context.Context, userID string, documentID string, quotaAmount int) error
+
 	// RecordUserHistory records a user's specview generation to user_specview_history.
 	// Uses UPSERT: creates new record or updates updated_at on re-request.
 	RecordUserHistory(ctx context.Context, userID string, documentID string) error

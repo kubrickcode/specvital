@@ -350,6 +350,21 @@ func (q *Queries) GetCodebasesForAutoRefresh(ctx context.Context) ([]GetCodebase
 	return items, nil
 }
 
+const getMonthlySpecViewUsage = `-- name: GetMonthlySpecViewUsage :one
+SELECT COALESCE(SUM(quota_amount), 0)::int as total
+FROM usage_events
+WHERE user_id = $1
+  AND event_type = 'specview'
+  AND created_at >= date_trunc('month', CURRENT_DATE)
+`
+
+func (q *Queries) GetMonthlySpecViewUsage(ctx context.Context, userID pgtype.UUID) (int32, error) {
+	row := q.db.QueryRow(ctx, getMonthlySpecViewUsage, userID)
+	var total int32
+	err := row.Scan(&total)
+	return total, err
+}
+
 const getOAuthAccountByUserAndProvider = `-- name: GetOAuthAccountByUserAndProvider :one
 SELECT id, user_id, provider, provider_user_id, provider_username, access_token, scope, created_at, updated_at FROM oauth_accounts WHERE user_id = $1 AND provider = $2
 `
@@ -648,6 +663,26 @@ UPDATE codebases SET is_stale = true, updated_at = now() WHERE id = $1
 
 func (q *Queries) MarkCodebaseStale(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, markCodebaseStale, id)
+	return err
+}
+
+const recordSpecViewUsageEvent = `-- name: RecordSpecViewUsageEvent :exec
+
+INSERT INTO usage_events (user_id, event_type, document_id, quota_amount)
+VALUES ($1, 'specview', $2, $3)
+`
+
+type RecordSpecViewUsageEventParams struct {
+	UserID      pgtype.UUID `json:"user_id"`
+	DocumentID  pgtype.UUID `json:"document_id"`
+	QuotaAmount int32       `json:"quota_amount"`
+}
+
+// =============================================================================
+// USAGE EVENTS
+// =============================================================================
+func (q *Queries) RecordSpecViewUsageEvent(ctx context.Context, arg RecordSpecViewUsageEventParams) error {
+	_, err := q.db.Exec(ctx, recordSpecViewUsageEvent, arg.UserID, arg.DocumentID, arg.QuotaAmount)
 	return err
 }
 

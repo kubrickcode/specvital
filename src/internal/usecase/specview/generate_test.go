@@ -13,6 +13,7 @@ import (
 type mockRepository struct {
 	findDocumentByContentHashFn func(ctx context.Context, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error)
 	getTestDataByAnalysisIDFn   func(ctx context.Context, analysisID string) ([]specview.FileInfo, error)
+	recordUsageEventFn          func(ctx context.Context, userID string, documentID string, quotaAmount int) error
 	recordUserHistoryFn         func(ctx context.Context, userID string, documentID string) error
 	saveDocumentFn              func(ctx context.Context, doc *specview.SpecDocument) error
 }
@@ -29,6 +30,13 @@ func (m *mockRepository) GetTestDataByAnalysisID(ctx context.Context, analysisID
 		return m.getTestDataByAnalysisIDFn(ctx, analysisID)
 	}
 	return nil, nil
+}
+
+func (m *mockRepository) RecordUsageEvent(ctx context.Context, userID string, documentID string, quotaAmount int) error {
+	if m.recordUsageEventFn != nil {
+		return m.recordUsageEventFn(ctx, userID, documentID, quotaAmount)
+	}
+	return nil
 }
 
 func (m *mockRepository) RecordUserHistory(ctx context.Context, userID string, documentID string) error {
@@ -913,6 +921,307 @@ func TestGenerateSpecViewUseCase_RecordUserHistory(t *testing.T) {
 		}
 		if result.DocumentID != "doc-001" {
 			t.Errorf("expected document ID 'doc-001', got '%s'", result.DocumentID)
+		}
+	})
+}
+
+func TestGenerateSpecViewUseCase_RecordUsageEvent(t *testing.T) {
+	t.Run("records usage event on cache miss", func(t *testing.T) {
+		files := newTestFiles()
+		phase1Output := newPhase1Output()
+
+		var recordedUserID, recordedDocID string
+		var recordedQuotaAmount int
+		repo := &mockRepository{
+			getTestDataByAnalysisIDFn: func(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
+				return files, nil
+			},
+			findDocumentByContentHashFn: func(ctx context.Context, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error) {
+				return nil, nil
+			},
+			saveDocumentFn: func(ctx context.Context, doc *specview.SpecDocument) error {
+				doc.ID = "doc-001"
+				return nil
+			},
+			recordUsageEventFn: func(ctx context.Context, userID string, documentID string, quotaAmount int) error {
+				recordedUserID = userID
+				recordedDocID = documentID
+				recordedQuotaAmount = quotaAmount
+				return nil
+			},
+		}
+
+		aiProvider := &mockAIProvider{
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				return phase1Output, nil, nil
+			},
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+				return &specview.Phase2Output{Behaviors: []specview.BehaviorSpec{}}, nil, nil
+			},
+		}
+
+		uc := NewGenerateSpecViewUseCase(repo, aiProvider, "gemini-2.5-flash")
+
+		userID := "user-001"
+		req := specview.SpecViewRequest{
+			AnalysisID: "550e8400-e29b-41d4-a716-446655440000",
+			Language:   "Korean",
+			UserID:     &userID,
+		}
+
+		_, err := uc.Execute(context.Background(), req)
+
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if recordedUserID != "user-001" {
+			t.Errorf("expected user ID 'user-001', got '%s'", recordedUserID)
+		}
+		if recordedDocID != "doc-001" {
+			t.Errorf("expected document ID 'doc-001', got '%s'", recordedDocID)
+		}
+		// files have 4 tests total (2 + 2)
+		if recordedQuotaAmount != 4 {
+			t.Errorf("expected quota amount 4, got %d", recordedQuotaAmount)
+		}
+	})
+
+	t.Run("no usage event on cache hit", func(t *testing.T) {
+		files := newTestFiles()
+		cachedDoc := &specview.SpecDocument{
+			ID:       "cached-doc-001",
+			Language: "Korean",
+		}
+
+		usageEventRecorded := false
+		repo := &mockRepository{
+			getTestDataByAnalysisIDFn: func(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
+				return files, nil
+			},
+			findDocumentByContentHashFn: func(ctx context.Context, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error) {
+				return cachedDoc, nil
+			},
+			recordUsageEventFn: func(ctx context.Context, userID string, documentID string, quotaAmount int) error {
+				usageEventRecorded = true
+				return nil
+			},
+		}
+
+		uc := NewGenerateSpecViewUseCase(repo, &mockAIProvider{}, "gemini-2.5-flash")
+
+		userID := "user-001"
+		req := specview.SpecViewRequest{
+			AnalysisID: "550e8400-e29b-41d4-a716-446655440000",
+			Language:   "Korean",
+			UserID:     &userID,
+		}
+
+		result, err := uc.Execute(context.Background(), req)
+
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if !result.CacheHit {
+			t.Error("expected cache hit")
+		}
+		if usageEventRecorded {
+			t.Error("expected usage event NOT to be recorded on cache hit")
+		}
+	})
+
+	t.Run("skips usage event when userID is nil", func(t *testing.T) {
+		files := newTestFiles()
+		phase1Output := newPhase1Output()
+
+		usageEventRecorded := false
+		repo := &mockRepository{
+			getTestDataByAnalysisIDFn: func(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
+				return files, nil
+			},
+			findDocumentByContentHashFn: func(ctx context.Context, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error) {
+				return nil, nil
+			},
+			saveDocumentFn: func(ctx context.Context, doc *specview.SpecDocument) error {
+				doc.ID = "doc-001"
+				return nil
+			},
+			recordUsageEventFn: func(ctx context.Context, userID string, documentID string, quotaAmount int) error {
+				usageEventRecorded = true
+				return nil
+			},
+		}
+
+		aiProvider := &mockAIProvider{
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				return phase1Output, nil, nil
+			},
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+				return &specview.Phase2Output{Behaviors: []specview.BehaviorSpec{}}, nil, nil
+			},
+		}
+
+		uc := NewGenerateSpecViewUseCase(repo, aiProvider, "gemini-2.5-flash")
+
+		req := specview.SpecViewRequest{
+			AnalysisID: "550e8400-e29b-41d4-a716-446655440000",
+			Language:   "Korean",
+			UserID:     nil,
+		}
+
+		_, err := uc.Execute(context.Background(), req)
+
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if usageEventRecorded {
+			t.Error("expected usage event NOT to be recorded when userID is nil")
+		}
+	})
+
+	t.Run("skips usage event when userID is empty string", func(t *testing.T) {
+		files := newTestFiles()
+		phase1Output := newPhase1Output()
+
+		usageEventRecorded := false
+		repo := &mockRepository{
+			getTestDataByAnalysisIDFn: func(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
+				return files, nil
+			},
+			findDocumentByContentHashFn: func(ctx context.Context, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error) {
+				return nil, nil
+			},
+			saveDocumentFn: func(ctx context.Context, doc *specview.SpecDocument) error {
+				doc.ID = "doc-001"
+				return nil
+			},
+			recordUsageEventFn: func(ctx context.Context, userID string, documentID string, quotaAmount int) error {
+				usageEventRecorded = true
+				return nil
+			},
+		}
+
+		aiProvider := &mockAIProvider{
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				return phase1Output, nil, nil
+			},
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+				return &specview.Phase2Output{Behaviors: []specview.BehaviorSpec{}}, nil, nil
+			},
+		}
+
+		uc := NewGenerateSpecViewUseCase(repo, aiProvider, "gemini-2.5-flash")
+
+		emptyUserID := ""
+		req := specview.SpecViewRequest{
+			AnalysisID: "550e8400-e29b-41d4-a716-446655440000",
+			Language:   "Korean",
+			UserID:     &emptyUserID,
+		}
+
+		_, err := uc.Execute(context.Background(), req)
+
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if usageEventRecorded {
+			t.Error("expected usage event NOT to be recorded when userID is empty string")
+		}
+	})
+
+	t.Run("usage event recording failure is non-blocking", func(t *testing.T) {
+		files := newTestFiles()
+		phase1Output := newPhase1Output()
+
+		repo := &mockRepository{
+			getTestDataByAnalysisIDFn: func(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
+				return files, nil
+			},
+			findDocumentByContentHashFn: func(ctx context.Context, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error) {
+				return nil, nil
+			},
+			saveDocumentFn: func(ctx context.Context, doc *specview.SpecDocument) error {
+				doc.ID = "doc-001"
+				return nil
+			},
+			recordUsageEventFn: func(ctx context.Context, userID string, documentID string, quotaAmount int) error {
+				return errors.New("usage event recording failed")
+			},
+		}
+
+		aiProvider := &mockAIProvider{
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				return phase1Output, nil, nil
+			},
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+				return &specview.Phase2Output{Behaviors: []specview.BehaviorSpec{}}, nil, nil
+			},
+		}
+
+		uc := NewGenerateSpecViewUseCase(repo, aiProvider, "gemini-2.5-flash")
+
+		userID := "user-001"
+		req := specview.SpecViewRequest{
+			AnalysisID: "550e8400-e29b-41d4-a716-446655440000",
+			Language:   "Korean",
+			UserID:     &userID,
+		}
+
+		result, err := uc.Execute(context.Background(), req)
+
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if result == nil {
+			t.Fatal("expected result, got nil")
+		}
+		if result.DocumentID != "doc-001" {
+			t.Errorf("expected document ID 'doc-001', got '%s'", result.DocumentID)
+		}
+	})
+}
+
+func TestCountTotalTestCases(t *testing.T) {
+	t.Run("counts all test cases across files", func(t *testing.T) {
+		files := []specview.FileInfo{
+			{
+				Tests: []specview.TestInfo{
+					{Index: 0, Name: "Test1"},
+					{Index: 1, Name: "Test2"},
+				},
+			},
+			{
+				Tests: []specview.TestInfo{
+					{Index: 2, Name: "Test3"},
+				},
+			},
+		}
+
+		count := countTotalTestCases(files)
+
+		if count != 3 {
+			t.Errorf("expected 3 test cases, got %d", count)
+		}
+	})
+
+	t.Run("returns zero for empty files", func(t *testing.T) {
+		files := []specview.FileInfo{}
+
+		count := countTotalTestCases(files)
+
+		if count != 0 {
+			t.Errorf("expected 0 test cases, got %d", count)
+		}
+	})
+
+	t.Run("returns zero for files with no tests", func(t *testing.T) {
+		files := []specview.FileInfo{
+			{Path: "empty.go", Tests: []specview.TestInfo{}},
+		}
+
+		count := countTotalTestCases(files)
+
+		if count != 0 {
+			t.Errorf("expected 0 test cases, got %d", count)
 		}
 	})
 }

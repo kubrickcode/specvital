@@ -193,3 +193,18 @@ INSERT INTO user_specview_history (user_id, document_id)
 VALUES ($1, $2)
 ON CONFLICT ON CONSTRAINT uq_user_specview_history_user_document
 DO UPDATE SET updated_at = now();
+
+-- =============================================================================
+-- USAGE EVENTS
+-- =============================================================================
+
+-- name: RecordSpecViewUsageEvent :exec
+INSERT INTO usage_events (user_id, event_type, document_id, quota_amount)
+VALUES ($1, 'specview', $2, $3);
+
+-- name: GetMonthlySpecViewUsage :one
+SELECT COALESCE(SUM(quota_amount), 0)::int as total
+FROM usage_events
+WHERE user_id = $1
+  AND event_type = 'specview'
+  AND created_at >= date_trunc('month', CURRENT_DATE);
