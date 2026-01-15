@@ -2,6 +2,41 @@ package domain_hints
 
 import "testing"
 
+func TestShouldFilterImportNoise(t *testing.T) {
+	tests := []struct {
+		name   string
+		path   string
+		filter bool
+	}{
+		// Empty string
+		{"empty string", "", true},
+
+		// Bare relative markers (noise - no domain signal)
+		{"bare dot", ".", true},
+		{"bare double dot", "..", true},
+
+		// Relative paths with content (valid - has domain signal)
+		{"relative parent with path", "../utils", false},
+		{"relative current with path", "./helper", false},
+		{"deep relative path", "../../config/settings", false},
+
+		// Normal imports (valid)
+		{"npm package", "lodash", false},
+		{"scoped package", "@types/node", false},
+		{"node builtin", "node:path", false},
+		{"absolute path", "/absolute/path", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ShouldFilterImportNoise(tt.path)
+			if got != tt.filter {
+				t.Errorf("ShouldFilterImportNoise(%q) = %v, want %v", tt.path, got, tt.filter)
+			}
+		})
+	}
+}
+
 func TestShouldFilterNoise(t *testing.T) {
 	tests := []struct {
 		name   string

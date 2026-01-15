@@ -197,6 +197,9 @@ var javaTestFrameworkCalls = map[string]struct{}{
 	"Mockito": {},
 	// AssertJ
 	"isEqualTo": {}, "isNotNull": {},
+	// Java Object methods (inherited from java.lang.Object, no domain signal)
+	"getClass": {}, "toString": {}, "hashCode": {}, "equals": {}, "clone": {},
+	"getClass()": {}, "toString()": {}, "hashCode()": {},
 }
 
 func isJavaTestFrameworkCall(call string) bool {

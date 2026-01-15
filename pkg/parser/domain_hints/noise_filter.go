@@ -2,6 +2,20 @@ package domain_hints
 
 import "strings"
 
+// ShouldFilterImportNoise filters out universal noise patterns from import paths.
+// Removes: empty strings, bare relative markers (., ..)
+func ShouldFilterImportNoise(importPath string) bool {
+	if importPath == "" {
+		return true
+	}
+	// Bare relative markers provide no domain classification value
+	// Note: "../utils" or "./helper" are preserved (only bare "." or ".." filtered)
+	if importPath == "." || importPath == ".." {
+		return true
+	}
+	return false
+}
+
 // ShouldFilterNoise filters out universal noise patterns from domain hints.
 // Removes: empty strings, malformed identifiers, and framework-specific noise.
 func ShouldFilterNoise(call string) bool {

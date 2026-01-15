@@ -78,11 +78,12 @@ func (e *JavaScriptExtractor) extractImports(root *sitter.Node, source []byte) [
 		for _, r := range es6Results {
 			if node, ok := r.Captures["import"]; ok {
 				path := trimJSQuotes(getNodeText(node, source))
-				if path != "" && !isTypeOnlyImportNode(node) {
-					if _, exists := seen[path]; !exists {
-						seen[path] = struct{}{}
-						imports = append(imports, path)
-					}
+				if ShouldFilterImportNoise(path) || isTypeOnlyImportNode(node) {
+					continue
+				}
+				if _, exists := seen[path]; !exists {
+					seen[path] = struct{}{}
+					imports = append(imports, path)
 				}
 			}
 		}
@@ -99,11 +100,12 @@ func (e *JavaScriptExtractor) extractImports(root *sitter.Node, source []byte) [
 			}
 			if node, ok := r.Captures["import"]; ok {
 				path := trimJSQuotes(getNodeText(node, source))
-				if path != "" {
-					if _, exists := seen[path]; !exists {
-						seen[path] = struct{}{}
-						imports = append(imports, path)
-					}
+				if ShouldFilterImportNoise(path) {
+					continue
+				}
+				if _, exists := seen[path]; !exists {
+					seen[path] = struct{}{}
+					imports = append(imports, path)
 				}
 			}
 		}
