@@ -47,10 +47,22 @@ func ShouldFilterNoise(call string) bool {
 		return true
 	}
 
-	// Single character calls: no domain signal regardless of validity
-	// Variables like x, y, f, i, j are all generic and don't contribute to domain classification
-	if len(call) == 1 {
+	// JavaScript/C-style inline comments leaked into call
+	// e.g., "res.json()//Byspec,theruntimecanonly..." from parser including trailing comment
+	if strings.Contains(call, "//") {
 		return true
+	}
+
+	// Short standalone calls (1-2 chars): no domain signal regardless of validity
+	// Variables like x, y, f, cb, fn are all generic and don't contribute to domain classification
+	// Exception: calls with dots like "io.Reader" are preserved as they indicate package usage
+	// But single dot "." or ".." are still noise
+	if len(call) <= 2 {
+		// Check if it's a valid package.method pattern (has dot with content on both sides)
+		dotIdx := strings.Index(call, ".")
+		if dotIdx == -1 || dotIdx == 0 || dotIdx == len(call)-1 {
+			return true
+		}
 	}
 
 	// Unbalanced parentheses: parser artifact from method chaining

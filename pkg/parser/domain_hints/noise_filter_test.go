@@ -45,7 +45,13 @@ func TestShouldFilterNoise(t *testing.T) {
 		{"fn callback", "fn", true},
 		{"fn prefixed", "fnCallback", false},
 
-		// Single character calls - all filtered (no domain signal)
+		// JavaScript inline comments leaked into call
+		{"inline comment simple", "res.json()//comment", true},
+		{"inline comment with text", "res.json()//Byspec,theruntimecanonly", true},
+		{"inline comment multiple", "func()//first//second", true},
+		{"no comment", "res.json()", false},
+
+		// Short standalone calls (1-2 chars) - all filtered (no domain signal)
 		{"single char lowercase", "a", true},
 		{"single char uppercase", "A", true},
 		{"single char digit", "1", true},
@@ -53,10 +59,19 @@ func TestShouldFilterNoise(t *testing.T) {
 		{"single char space", " ", true},
 		{"single char dot", ".", true},
 		{"single char bracket", "[", true},
+		{"two char callback", "cb", true},
+		{"two char temp var", "xy", true},
+		{"two char uppercase", "AB", true},
+
+		// Short calls with dot are preserved (package.method pattern)
+		{"two char with dot", "io.Reader", false},
+		{"two char pkg call", "os.Exit", false},
 
 		// Normal identifiers
 		{"normal identifier", "doSomething", false},
 		{"dotted identifier", "service.method", false},
+		{"three char identifier", "abc", false},
+		{"three char call", "fmt", false},
 
 		// Unbalanced parentheses (parser artifact from method chaining)
 		{"unbalanced paren go", "json.NewDecoder(w", true},
