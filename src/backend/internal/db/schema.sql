@@ -75,6 +75,16 @@ CREATE TYPE public.test_status AS ENUM (
 
 
 --
+-- Name: usage_event_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.usage_event_type AS ENUM (
+    'specview',
+    'analysis'
+);
+
+
+--
 -- Name: river_job_state_in_bitmask(bit, public.river_job_state); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -451,6 +461,22 @@ CREATE TABLE public.test_suites (
 
 
 --
+-- Name: usage_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.usage_events (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    event_type public.usage_event_type NOT NULL,
+    analysis_id uuid,
+    document_id uuid,
+    quota_amount integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT chk_usage_events_resource CHECK (((((analysis_id IS NOT NULL))::integer + ((document_id IS NOT NULL))::integer) = 1))
+);
+
+
+--
 -- Name: user_analysis_history; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -512,6 +538,19 @@ CREATE TABLE public.user_github_repositories (
     pushed_at timestamp with time zone,
     source_type character varying(20) DEFAULT 'personal'::character varying NOT NULL,
     org_id uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: user_specview_history; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_specview_history (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    document_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -789,6 +828,22 @@ ALTER TABLE ONLY public.user_github_repositories
 
 
 --
+-- Name: user_specview_history uq_user_specview_history_user_document; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_specview_history
+    ADD CONSTRAINT uq_user_specview_history_user_document UNIQUE (user_id, document_id);
+
+
+--
+-- Name: usage_events usage_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usage_events
+    ADD CONSTRAINT usage_events_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: user_analysis_history user_analysis_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -818,6 +873,14 @@ ALTER TABLE ONLY public.user_github_org_memberships
 
 ALTER TABLE ONLY public.user_github_repositories
     ADD CONSTRAINT user_github_repositories_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_specview_history user_specview_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_specview_history
+    ADD CONSTRAINT user_specview_history_pkey PRIMARY KEY (id);
 
 
 --
@@ -997,6 +1060,27 @@ CREATE INDEX idx_test_suites_parent ON public.test_suites USING btree (parent_id
 
 
 --
+-- Name: idx_usage_events_analysis; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_usage_events_analysis ON public.usage_events USING btree (analysis_id) WHERE (analysis_id IS NOT NULL);
+
+
+--
+-- Name: idx_usage_events_document; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_usage_events_document ON public.usage_events USING btree (document_id) WHERE (document_id IS NOT NULL);
+
+
+--
+-- Name: idx_usage_events_quota_lookup; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_usage_events_quota_lookup ON public.usage_events USING btree (user_id, event_type, created_at);
+
+
+--
 -- Name: idx_user_analysis_history_analysis; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1057,6 +1141,20 @@ CREATE INDEX idx_user_github_repositories_source ON public.user_github_repositor
 --
 
 CREATE INDEX idx_user_github_repositories_user ON public.user_github_repositories USING btree (user_id, updated_at);
+
+
+--
+-- Name: idx_user_specview_history_cursor; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_user_specview_history_cursor ON public.user_specview_history USING btree (user_id, updated_at, id);
+
+
+--
+-- Name: idx_user_specview_history_document; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_user_specview_history_document ON public.user_specview_history USING btree (document_id);
 
 
 --
@@ -1235,6 +1333,30 @@ ALTER TABLE ONLY public.test_suites
 
 
 --
+-- Name: usage_events fk_usage_events_analysis; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usage_events
+    ADD CONSTRAINT fk_usage_events_analysis FOREIGN KEY (analysis_id) REFERENCES public.analyses(id) ON DELETE SET NULL;
+
+
+--
+-- Name: usage_events fk_usage_events_document; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usage_events
+    ADD CONSTRAINT fk_usage_events_document FOREIGN KEY (document_id) REFERENCES public.spec_documents(id) ON DELETE SET NULL;
+
+
+--
+-- Name: usage_events fk_usage_events_user; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usage_events
+    ADD CONSTRAINT fk_usage_events_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: user_analysis_history fk_user_analysis_history_analysis; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1296,6 +1418,22 @@ ALTER TABLE ONLY public.user_github_repositories
 
 ALTER TABLE ONLY public.user_github_repositories
     ADD CONSTRAINT fk_user_github_repositories_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_specview_history fk_user_specview_history_document; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_specview_history
+    ADD CONSTRAINT fk_user_specview_history_document FOREIGN KEY (document_id) REFERENCES public.spec_documents(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_specview_history fk_user_specview_history_user; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_specview_history
+    ADD CONSTRAINT fk_user_specview_history_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
