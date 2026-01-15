@@ -46,6 +46,18 @@ CREATE TYPE public.oauth_provider AS ENUM (
 
 
 --
+-- Name: plan_tier; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.plan_tier AS ENUM (
+    'free',
+    'pro',
+    'pro_plus',
+    'enterprise'
+);
+
+
+--
 -- Name: river_job_state; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -58,6 +70,17 @@ CREATE TYPE public.river_job_state AS ENUM (
     'retryable',
     'running',
     'scheduled'
+);
+
+
+--
+-- Name: subscription_status; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.subscription_status AS ENUM (
+    'active',
+    'canceled',
+    'expired'
 );
 
 
@@ -407,6 +430,20 @@ CREATE TABLE public.spec_features (
 
 
 --
+-- Name: subscription_plans; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.subscription_plans (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    tier public.plan_tier NOT NULL,
+    specview_monthly_limit integer,
+    analysis_monthly_limit integer,
+    retention_days integer,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: system_config; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -553,6 +590,24 @@ CREATE TABLE public.user_specview_history (
     document_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: user_subscriptions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_subscriptions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    plan_id uuid NOT NULL,
+    status public.subscription_status DEFAULT 'active'::public.subscription_status NOT NULL,
+    current_period_start timestamp with time zone NOT NULL,
+    current_period_end timestamp with time zone NOT NULL,
+    canceled_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT chk_canceled_at_status CHECK (((status = 'canceled'::public.subscription_status) = (canceled_at IS NOT NULL)))
 );
 
 
@@ -708,6 +763,14 @@ ALTER TABLE ONLY public.spec_features
 
 
 --
+-- Name: subscription_plans subscription_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscription_plans
+    ADD CONSTRAINT subscription_plans_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: system_config system_config_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -785,6 +848,14 @@ ALTER TABLE ONLY public.refresh_tokens
 
 ALTER TABLE ONLY public.spec_documents
     ADD CONSTRAINT uq_spec_documents_hash_lang_model UNIQUE (content_hash, language, model_id);
+
+
+--
+-- Name: subscription_plans uq_subscription_plans_tier; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscription_plans
+    ADD CONSTRAINT uq_subscription_plans_tier UNIQUE (tier);
 
 
 --
@@ -881,6 +952,14 @@ ALTER TABLE ONLY public.user_github_repositories
 
 ALTER TABLE ONLY public.user_specview_history
     ADD CONSTRAINT user_specview_history_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_subscriptions user_subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_subscriptions
+    ADD CONSTRAINT user_subscriptions_pkey PRIMARY KEY (id);
 
 
 --
@@ -1155,6 +1234,27 @@ CREATE INDEX idx_user_specview_history_cursor ON public.user_specview_history US
 --
 
 CREATE INDEX idx_user_specview_history_document ON public.user_specview_history USING btree (document_id);
+
+
+--
+-- Name: idx_user_subscriptions_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_user_subscriptions_active ON public.user_subscriptions USING btree (user_id) WHERE (status = 'active'::public.subscription_status);
+
+
+--
+-- Name: idx_user_subscriptions_period_end; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_user_subscriptions_period_end ON public.user_subscriptions USING btree (current_period_end) WHERE (status = 'active'::public.subscription_status);
+
+
+--
+-- Name: idx_user_subscriptions_plan; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_user_subscriptions_plan ON public.user_subscriptions USING btree (plan_id);
 
 
 --
@@ -1434,6 +1534,22 @@ ALTER TABLE ONLY public.user_specview_history
 
 ALTER TABLE ONLY public.user_specview_history
     ADD CONSTRAINT fk_user_specview_history_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_subscriptions fk_user_subscriptions_plan; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_subscriptions
+    ADD CONSTRAINT fk_user_subscriptions_plan FOREIGN KEY (plan_id) REFERENCES public.subscription_plans(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: user_subscriptions fk_user_subscriptions_user; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_subscriptions
+    ADD CONSTRAINT fk_user_subscriptions_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
