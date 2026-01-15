@@ -431,5 +431,18 @@
       "installError": "Failed to get install URL",
       "cancel": "Cancel"
     }
+  },
+  "specLoginRequired": {
+    "title": "Sign in to Generate Specs",
+    "description": "Transform your test cases into organized specification documents with AI.",
+    "whySignIn": "What you get:",
+    "benefit1": "AI-powered spec documents",
+    "benefit1Description": "Automatically organize tests into domains, features, and behaviors",
+    "benefit2": "Unlimited generations",
+    "benefit2Description": "Generate as many spec documents as you need",
+    "benefit3": "Export & share",
+    "benefit3Description": "Download specs in Markdown or share with your team",
+    "continueWithGitHub": "Continue with GitHub",
+    "freeNote": "Test analysis stays free for everyone"
   }
 }

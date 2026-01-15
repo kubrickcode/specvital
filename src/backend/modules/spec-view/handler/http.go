@@ -105,6 +105,13 @@ func (h *Handler) RequestSpecGeneration(ctx context.Context, request api.Request
 		}, nil
 	}
 
+	userID := middleware.GetUserID(ctx)
+	if userID == "" {
+		return api.RequestSpecGeneration401ApplicationProblemPlusJSONResponse{
+			UnauthorizedApplicationProblemPlusJSONResponse: api.NewUnauthorized("authentication required for spec generation"),
+		}, nil
+	}
+
 	language := "English"
 	if request.Body.Language != nil {
 		language = string(*request.Body.Language)
@@ -114,8 +121,6 @@ func (h *Handler) RequestSpecGeneration(ctx context.Context, request api.Request
 	if request.Body.IsForceRegenerate != nil {
 		isForce = *request.Body.IsForceRegenerate
 	}
-
-	userID := middleware.GetUserID(ctx)
 
 	result, err := h.requestGeneration.Execute(ctx, usecase.RequestGenerationInput{
 		AnalysisID:        request.Body.AnalysisID.String(),

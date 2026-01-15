@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
+import { useAuth, useSpecLoginDialog } from "@/features/auth";
 import {
   DocumentView,
   EmptyDocument,
@@ -37,6 +38,9 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
   const { setViewMode, viewMode } = useViewMode();
   const shouldReduceMotion = useReducedMotion();
   const previousDocumentRef = useRef<boolean>(false);
+
+  const { isAuthenticated } = useAuth();
+  const { open: openSpecLoginDialog } = useSpecLoginDialog();
 
   const {
     data: specDocument,
@@ -79,12 +83,16 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
 
   const handleGenerateSpec = () => {
     if (isDocumentAvailable) {
-      // Document already exists, switch to document view
       setViewMode("document");
-    } else {
-      // Trigger generation
-      requestGenerate();
+      return;
     }
+
+    if (!isAuthenticated) {
+      openSpecLoginDialog();
+      return;
+    }
+
+    requestGenerate();
   };
 
   const renderContent = () => {
@@ -97,7 +105,7 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
         return <GenerationStatus onRetry={() => requestGenerate()} status={generationStatus} />;
       }
 
-      return <EmptyDocument isLoading={isSpecLoading} onGenerate={() => requestGenerate()} />;
+      return <EmptyDocument isLoading={isSpecLoading} onGenerate={handleGenerateSpec} />;
     }
 
     if (hasFilter && !hasResults) {

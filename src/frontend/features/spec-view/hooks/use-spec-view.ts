@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 import { fetchSpecDocument, requestSpecGeneration } from "../api";
 import type {
@@ -92,6 +93,11 @@ export const useSpecView = (analysisId: string): UseSpecViewReturn => {
         isForceRegenerate,
         language,
       }),
+    onError: (error) => {
+      toast.error("Failed to generate spec", {
+        description: error instanceof Error ? error.message : String(error),
+      });
+    },
     onSuccess: () => {
       pollingStartTimeRef.current = null;
       queryClient.invalidateQueries({ queryKey: specViewKeys.document(analysisId) });

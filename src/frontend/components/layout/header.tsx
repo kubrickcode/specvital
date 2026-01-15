@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { AuthErrorBoundary } from "@/components/feedback";
 import { NavigationTabs } from "@/components/layout/navigation-tabs";
 import { LanguageSelector, ThemeToggle } from "@/components/theme";
-import { AuthStatus, LoginModal, SignInTrigger } from "@/features/auth";
+import { AuthStatus, LoginModal, LoginRequiredForSpecDialog, SignInTrigger } from "@/features/auth";
 import { AnalyzeDialog } from "@/features/home";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -66,6 +66,7 @@ export const Header = () => {
         </div>
       </header>
       <LoginModal />
+      <LoginRequiredForSpecDialog />
     </>
   );
 };
