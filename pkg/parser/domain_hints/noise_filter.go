@@ -47,9 +47,10 @@ func ShouldFilterNoise(call string) bool {
 		return true
 	}
 
-	// Single character not matching valid identifier pattern
+	// Single character calls: no domain signal regardless of validity
+	// Variables like x, y, f, i, j are all generic and don't contribute to domain classification
 	if len(call) == 1 {
-		return !IsValidIdentifierChar(rune(call[0]))
+		return true
 	}
 
 	// Unbalanced parentheses: parser artifact from method chaining
@@ -60,10 +61,4 @@ func ShouldFilterNoise(call string) bool {
 	}
 
 	return false
-}
-
-// IsValidIdentifierChar checks if a rune is a valid identifier character.
-// Valid: A-Z, a-z, 0-9, underscore
-func IsValidIdentifierChar(r rune) bool {
-	return (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_'
 }

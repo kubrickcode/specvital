@@ -45,14 +45,14 @@ func TestShouldFilterNoise(t *testing.T) {
 		{"fn callback", "fn", true},
 		{"fn prefixed", "fnCallback", false},
 
-		// Single character identifiers
-		{"single valid identifier", "a", false},
-		{"single valid identifier upper", "A", false},
-		{"single valid identifier digit", "1", false},
-		{"single valid identifier underscore", "_", false},
-		{"single invalid identifier space", " ", true},
-		{"single invalid identifier dot", ".", true},
-		{"single invalid identifier bracket", "[", true},
+		// Single character calls - all filtered (no domain signal)
+		{"single char lowercase", "a", true},
+		{"single char uppercase", "A", true},
+		{"single char digit", "1", true},
+		{"single char underscore", "_", true},
+		{"single char space", " ", true},
+		{"single char dot", ".", true},
+		{"single char bracket", "[", true},
 
 		// Normal identifiers
 		{"normal identifier", "doSomething", false},
@@ -76,33 +76,6 @@ func TestShouldFilterNoise(t *testing.T) {
 			got := ShouldFilterNoise(tt.call)
 			if got != tt.filter {
 				t.Errorf("ShouldFilterNoise(%q) = %v, want %v", tt.call, got, tt.filter)
-			}
-		})
-	}
-}
-
-func TestIsValidIdentifierChar(t *testing.T) {
-	tests := []struct {
-		name  string
-		char  rune
-		valid bool
-	}{
-		{"lowercase", 'a', true},
-		{"uppercase", 'Z', true},
-		{"digit", '5', true},
-		{"underscore", '_', true},
-		{"dollar", '$', false},
-		{"space", ' ', false},
-		{"dot", '.', false},
-		{"bracket", '[', false},
-		{"paren", '(', false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := IsValidIdentifierChar(tt.char)
-			if got != tt.valid {
-				t.Errorf("IsValidIdentifierChar(%q) = %v, want %v", tt.char, got, tt.valid)
 			}
 		})
 	}
