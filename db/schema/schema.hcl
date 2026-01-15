@@ -1146,6 +1146,65 @@ table "spec_behaviors" {
 }
 
 // ==============================================================================
+// User History Tables
+// ==============================================================================
+
+table "user_specview_history" {
+  schema = schema.public
+
+  column "id" {
+    type    = uuid
+    default = sql("gen_random_uuid()")
+  }
+
+  column "user_id" {
+    type = uuid
+  }
+
+  column "document_id" {
+    type = uuid
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  column "updated_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  foreign_key "fk_user_specview_history_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete   = CASCADE
+  }
+
+  foreign_key "fk_user_specview_history_document" {
+    columns     = [column.document_id]
+    ref_columns = [table.spec_documents.column.id]
+    on_delete   = CASCADE
+  }
+
+  unique "uq_user_specview_history_user_document" {
+    columns = [column.user_id, column.document_id]
+  }
+
+  index "idx_user_specview_history_cursor" {
+    columns = [column.user_id, column.updated_at, column.id]
+  }
+
+  index "idx_user_specview_history_document" {
+    columns = [column.document_id]
+  }
+}
+
+// ==============================================================================
 // GitHub Cache Tables
 // ==============================================================================
 
