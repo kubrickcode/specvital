@@ -2,6 +2,7 @@ package domain_hints
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/specvital/core/pkg/domain"
@@ -338,6 +339,95 @@ def test_noise_patterns():
 
 	t.Run("domain calls included", func(t *testing.T) {
 		expectedCalls := []string{"user_service.create", "payment_gateway.process"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}
+
+func TestPythonExtractor_Extract_StringLiteralMethods(t *testing.T) {
+	source := []byte(`
+import pytest
+
+def test_string_methods():
+    # String literal method calls - should be filtered
+    result = "ööö".encode("utf-8")
+    url = "http://example.com".format()
+    data = 'hello'.upper()
+
+    # Normal method calls - should be included
+    user_service.create(data)
+    response.json()
+`)
+
+	extractor := &PythonExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("string literal methods filtered", func(t *testing.T) {
+		for call := range callSet {
+			if len(call) > 0 && (call[0] == '"' || call[0] == '\'') {
+				t.Errorf("string literal method %q should be filtered", call)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"user_service.create", "response.json"}
+		for _, call := range expectedCalls {
+			if !callSet[call] {
+				t.Errorf("expected domain call %q, got %v", call, hints.Calls)
+			}
+		}
+	})
+}
+
+func TestPythonExtractor_Extract_FunctionArgumentsFiltered(t *testing.T) {
+	source := []byte(`
+import requests
+
+def test_request():
+    # Function calls with arguments leaked - should be filtered
+    requests.Request(method="GET", url="http://example.com")
+    response = session.get("http://api.example.com", headers=headers)
+
+    # Normal calls - should be included
+    client.send(data)
+    parser.parse(content)
+`)
+
+	extractor := &PythonExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("arguments not included in calls", func(t *testing.T) {
+		for call := range callSet {
+			if strings.Contains(call, "=") {
+				t.Errorf("call %q should not contain arguments (=)", call)
+			}
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		expectedCalls := []string{"client.send", "parser.parse"}
 		for _, call := range expectedCalls {
 			if !callSet[call] {
 				t.Errorf("expected domain call %q, got %v", call, hints.Calls)

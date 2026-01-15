@@ -1,5 +1,7 @@
 package domain_hints
 
+import "strings"
+
 // ShouldFilterNoise filters out universal noise patterns from domain hints.
 // Removes: empty strings, malformed identifiers, and framework-specific noise.
 func ShouldFilterNoise(call string) bool {
@@ -14,6 +16,24 @@ func ShouldFilterNoise(call string) bool {
 
 	// Malformed patterns: starts with "(" (e.g., "(0.", "(1." from decimal literals)
 	if call[0] == '(' {
+		return true
+	}
+
+	// String literal method calls: starts with quote (e.g., "str".encode, 'str'.upper)
+	// These are parser artifacts from Python/JS where string literals call methods
+	if call[0] == '"' || call[0] == '\'' {
+		return true
+	}
+
+	// Function arguments leaked into call: contains "=" (e.g., func(key="value"))
+	// This indicates parser captured arguments along with function name
+	if strings.Contains(call, "=") {
+		return true
+	}
+
+	// URL patterns leaked into call (e.g., requests.Request("GET","http://example"))
+	// This indicates parser captured URL arguments along with function name
+	if strings.Contains(call, "http://") || strings.Contains(call, "https://") {
 		return true
 	}
 

@@ -21,6 +21,22 @@ func TestShouldFilterNoise(t *testing.T) {
 		{"starts with paren decimal 1", "(1.", true},
 		{"starts with paren complex", "(0.5).toFixed", true},
 
+		// String literal method calls (parser artifact)
+		{"double quote string method", `"str".encode`, true},
+		{"single quote string method", `'str'.upper`, true},
+		{"unicode string method", `"ööö".encode`, true},
+		{"url string literal", `"http://example.com".format`, true},
+
+		// Function arguments leaked (parser artifact)
+		{"function with kwarg", `func(key="value")`, true},
+		{"method with kwarg", `requests.Request(method="GET")`, true},
+		{"contains equals", `config=value`, true},
+
+		// URL patterns leaked (parser artifact)
+		{"url in call http", `requests.Request("GET","http://example`, true},
+		{"url in call https", `fetch("https://api.com/endpoint")`, true},
+		{"normal call without url", `requests.get`, false},
+
 		// Cheerio/jQuery selector
 		{"dollar singleton", "$", true},
 		{"dollar with method", "$.ajax", false},
