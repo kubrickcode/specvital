@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -51,13 +52,14 @@ export const DomainSection = ({
 }: DomainSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const shouldReduceMotion = useReducedMotion();
+  const t = useTranslations("specView");
 
   const featureCount = domain.features.length;
   const behaviorCount = domain.features.reduce((sum, f) => sum + f.behaviors.length, 0);
 
   const displayCount = hasFilter
     ? `${domain.matchCount} / ${behaviorCount}`
-    : `${featureCount} features, ${behaviorCount} behaviors`;
+    : t("domain.summary", { behaviorCount, featureCount });
 
   const confidenceVariant =
     domain.classificationConfidence !== undefined
@@ -118,7 +120,7 @@ export const DomainSection = ({
                     {formatConfidence(domain.classificationConfidence)}
                   </Badge>
                 </TooltipTrigger>
-                <TooltipContent>AI classification confidence</TooltipContent>
+                <TooltipContent>{t("domain.aiConfidence")}</TooltipContent>
               </Tooltip>
             )}
             <span className="text-xs text-muted-foreground">{displayCount}</span>

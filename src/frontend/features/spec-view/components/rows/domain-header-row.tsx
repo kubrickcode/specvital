@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,12 +49,13 @@ export const DomainHeaderRow = ({
   isLastInDomain,
   onToggle,
 }: DomainHeaderRowProps) => {
+  const t = useTranslations("specView");
   const featureCount = domain.features.length;
   const behaviorCount = domain.features.reduce((sum, f) => sum + f.behaviors.length, 0);
 
   const displayCount = hasFilter
     ? `${domain.matchCount} / ${behaviorCount}`
-    : `${featureCount} features, ${behaviorCount} behaviors`;
+    : t("domain.summary", { behaviorCount, featureCount });
 
   const confidenceVariant =
     domain.classificationConfidence !== undefined
@@ -103,7 +105,7 @@ export const DomainHeaderRow = ({
                     {formatConfidence(domain.classificationConfidence)}
                   </Badge>
                 </TooltipTrigger>
-                <TooltipContent>AI classification confidence</TooltipContent>
+                <TooltipContent>{t("domain.aiConfidence")}</TooltipContent>
               </Tooltip>
             )}
             <span className="text-xs text-muted-foreground">{displayCount}</span>

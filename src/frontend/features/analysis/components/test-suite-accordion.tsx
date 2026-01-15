@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { FrameworkBadge } from "@/components/ui/framework-badge";
@@ -20,6 +21,7 @@ type TestSuiteAccordionProps = {
 export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const shouldReduceMotion = useReducedMotion();
+  const t = useTranslations("analyze");
 
   const toggleExpanded = () => {
     setIsExpanded((prev) => !prev);
@@ -65,7 +67,7 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
         <FrameworkBadge framework={suite.framework} />
         <StatusMiniBar counts={statusCounts} />
         <span className="text-xs text-muted-foreground flex-shrink-0">
-          {testCount} {testCount === 1 ? "test" : "tests"}
+          {t("testCount", { count: testCount })}
         </span>
       </button>
 
@@ -81,7 +83,7 @@ export const TestSuiteAccordion = ({ suite }: TestSuiteAccordionProps) => {
             <div className="border-t border-accent/20 bg-accent/10 px-4 py-2">
               <div className="space-y-1 pl-6">
                 {suite.tests.length === 0 ? (
-                  <div className="py-2 text-sm text-muted-foreground">No tests in this suite.</div>
+                  <div className="py-2 text-sm text-muted-foreground">{t("noTestsInSuite")}</div>
                 ) : (
                   suite.tests.map((test) => (
                     <TestItem key={`${test.line}-${test.name}`} test={test} />

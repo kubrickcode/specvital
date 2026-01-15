@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 import type { SpecDocument, SpecDomain } from "../types";
 import { calculateDocumentStats, calculateDomainStats } from "../utils/stats";
 
@@ -6,12 +8,14 @@ type DomainStatsBadgeProps =
   | { document?: never; domain: SpecDomain };
 
 export const DomainStatsBadge = ({ document, domain }: DomainStatsBadgeProps) => {
+  const t = useTranslations("specView");
+
   if (document) {
     const { behaviorCount, domainCount, featureCount } = calculateDocumentStats(document);
 
     return (
       <span className="text-muted-foreground">
-        {domainCount} domains / {featureCount} features / {behaviorCount} behaviors
+        {t("statsBadge.full", { behaviorCount, domainCount, featureCount })}
       </span>
     );
   }
@@ -21,7 +25,7 @@ export const DomainStatsBadge = ({ document, domain }: DomainStatsBadgeProps) =>
 
     return (
       <span className="text-muted-foreground">
-        {featureCount} features / {behaviorCount} behaviors
+        {t("statsBadge.domainOnly", { behaviorCount, featureCount })}
       </span>
     );
   }

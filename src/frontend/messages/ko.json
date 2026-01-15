@@ -87,6 +87,8 @@
     "committedAt": "커밋 시각: {date}",
     "testSuites": "테스트 스위트",
     "noTestSuites": "이 저장소에서 테스트 스위트를 찾을 수 없습니다.",
+    "noTestsInSuite": "이 스위트에 테스트가 없습니다.",
+    "testCount": "{count}개 테스트",
     "retry": "다시 시도",
     "filter": {
       "clearSearch": "검색 지우기",
@@ -274,6 +276,20 @@
       "focusedDescription": "이 테스트만 실행됨 (디버깅 모드)",
       "xfail": "예상 실패",
       "xfailDescription": "테스트가 실패할 것으로 예상됨 (알려진 문제)"
+    },
+    "domain": {
+      "summary": "기능 {featureCount}개, 동작 {behaviorCount}개",
+      "aiConfidence": "AI 분류 신뢰도"
+    },
+    "statsBadge": {
+      "full": "도메인 {domainCount}개 / 기능 {featureCount}개 / 동작 {behaviorCount}개",
+      "domainOnly": "기능 {featureCount}개 / 동작 {behaviorCount}개"
+    },
+    "emptyDocument": {
+      "title": "스펙 문서 없음",
+      "description": "테스트 케이스를 기반으로 AI 스펙 문서를 생성하세요. 테스트가 도메인, 기능, 동작으로 정리됩니다.",
+      "generateButton": "문서 생성",
+      "generating": "생성 중..."
     }
   },
   "dashboard": {

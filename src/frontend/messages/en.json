@@ -87,6 +87,8 @@
     "committedAt": "Committed: {date}",
     "testSuites": "Test Suites",
     "noTestSuites": "No test suites found in this repository.",
+    "noTestsInSuite": "No tests in this suite.",
+    "testCount": "{count} {count, plural, =1 {test} other {tests}}",
     "retry": "Try Again",
     "filter": {
       "clearSearch": "Clear search",
@@ -274,6 +276,20 @@
       "focusedDescription": "Only this test runs (debugging mode)",
       "xfail": "Expected Fail",
       "xfailDescription": "Test is expected to fail (known issue)"
+    },
+    "domain": {
+      "summary": "{featureCount} {featureCount, plural, =1 {feature} other {features}}, {behaviorCount} {behaviorCount, plural, =1 {behavior} other {behaviors}}",
+      "aiConfidence": "AI classification confidence"
+    },
+    "statsBadge": {
+      "full": "{domainCount} {domainCount, plural, =1 {domain} other {domains}} / {featureCount} {featureCount, plural, =1 {feature} other {features}} / {behaviorCount} {behaviorCount, plural, =1 {behavior} other {behaviors}}",
+      "domainOnly": "{featureCount} {featureCount, plural, =1 {feature} other {features}} / {behaviorCount} {behaviorCount, plural, =1 {behavior} other {behaviors}}"
+    },
+    "emptyDocument": {
+      "title": "No Specification Document",
+      "description": "Generate an AI-powered specification document from your test cases. The document will organize your tests into domains, features, and behaviors.",
+      "generateButton": "Generate Document",
+      "generating": "Generating..."
     }
   },
   "dashboard": {
