@@ -8,6 +8,7 @@ type UsageProgressProps = {
   label: string;
   limit: number | null;
   percentage: number | null;
+  unit: string;
   used: number;
 };
 
@@ -18,7 +19,7 @@ const getColorClass = (percentage: number | null): string => {
   return "bg-primary";
 };
 
-export const UsageProgress = ({ label, limit, percentage, used }: UsageProgressProps) => {
+export const UsageProgress = ({ label, limit, percentage, unit, used }: UsageProgressProps) => {
   const isUnlimited = limit === null;
   const displayPercentage = percentage ?? 0;
 
@@ -49,7 +50,7 @@ export const UsageProgress = ({ label, limit, percentage, used }: UsageProgressP
       )}
 
       <p className="text-sm text-muted-foreground">
-        {formatNumber(used)} / {isUnlimited ? "∞" : formatNumber(limit)}
+        {formatNumber(used)} / {isUnlimited ? "∞" : formatNumber(limit)} {unit}
       </p>
     </div>
   );

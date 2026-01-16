@@ -18,6 +18,7 @@ type UsageSectionProps = {
 
 export const UsageSection = ({ error, isLoading, usage }: UsageSectionProps) => {
   const t = useTranslations("account");
+  const tFeatures = useTranslations("pricing.features");
   const locale = useLocale();
 
   if (isLoading) {
@@ -63,12 +64,14 @@ export const UsageSection = ({ error, isLoading, usage }: UsageSectionProps) => 
           label={t("usage.specview")}
           limit={usage.specview.limit ?? null}
           percentage={usage.specview.percentage ?? null}
+          unit={tFeatures("specview.unit")}
           used={usage.specview.used}
         />
         <UsageProgress
           label={t("usage.analysis")}
           limit={usage.analysis.limit ?? null}
           percentage={usage.analysis.percentage ?? null}
+          unit={tFeatures("analysis.unit")}
           used={usage.analysis.used}
         />
       </CardContent>
