@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl";
 
-
 import { ErrorFallback } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";

@@ -3,7 +3,6 @@
 import { RefreshCw, Star } from "lucide-react";
 import { useFormatter, useNow, useTranslations } from "next-intl";
 
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
