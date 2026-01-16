@@ -26,11 +26,6 @@ func (e *RateLimitError) Error() string {
 	return "github api rate limited"
 }
 
-func IsRateLimitError(err error) bool {
-	var rateLimitErr *RateLimitError
-	return errors.As(err, &rateLimitErr)
-}
-
 type GitHubRepository struct {
 	Archived      bool
 	DefaultBranch string

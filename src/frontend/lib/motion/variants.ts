@@ -12,11 +12,6 @@ export const easeOutTransition: Transition = {
   type: "tween",
 };
 
-export const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-};
-
 export const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -32,15 +27,6 @@ export const fadeInDown: Variants = {
     opacity: 1,
     transition: defaultTransition,
     y: 0,
-  },
-};
-
-export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: defaultTransition,
   },
 };
 

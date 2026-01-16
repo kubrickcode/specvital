@@ -77,13 +77,3 @@ func (c *GitHubAppClient) NewInstallationClient(installationID int64) *gh.Client
 	itr := ghinstallation.NewFromAppsTransport(c.appTransport, installationID)
 	return gh.NewClient(&http.Client{Transport: itr})
 }
-
-type GitHubAppInstallationClientFactory func(installationID int64) GitHubClient
-
-func NewGitHubAppInstallationClientFactory(appClient *GitHubAppClient) GitHubAppInstallationClientFactory {
-	return func(installationID int64) GitHubClient {
-		return &gitHubClient{
-			client: appClient.NewInstallationClient(installationID),
-		}
-	}
-}
