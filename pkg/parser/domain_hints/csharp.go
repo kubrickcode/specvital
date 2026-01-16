@@ -71,11 +71,16 @@ func (e *CSharpExtractor) extractUsings(root *sitter.Node, source []byte) []stri
 	for _, r := range results {
 		if node, ok := r.Captures["using"]; ok {
 			usingPath := extractCSharpUsingPath(node, source)
-			if usingPath != "" {
-				if _, exists := seen[usingPath]; !exists {
-					seen[usingPath] = struct{}{}
-					usings = append(usings, usingPath)
-				}
+			if usingPath == "" {
+				continue
+			}
+			// Filter C# standard library imports (System, System.*)
+			if isCSharpStdlibImport(usingPath) {
+				continue
+			}
+			if _, exists := seen[usingPath]; !exists {
+				seen[usingPath] = struct{}{}
+				usings = append(usings, usingPath)
 			}
 		}
 	}
@@ -272,6 +277,47 @@ func extractMemberAccessParts(node *sitter.Node, source []byte) []string {
 	return parts
 }
 
+// csharpStdlibImports contains C# standard library namespaces that provide
+// no domain classification signal and should be filtered from imports.
+var csharpStdlibImports = map[string]struct{}{
+	// Core System namespaces
+	"System":                          {},
+	"System.Collections":              {},
+	"System.Collections.Generic":      {},
+	"System.Collections.Concurrent":   {},
+	"System.Collections.ObjectModel":  {},
+	"System.Collections.Specialized":  {},
+	"System.ComponentModel":           {},
+	"System.Diagnostics":              {},
+	"System.Globalization":            {},
+	"System.IO":                       {},
+	"System.Linq":                     {},
+	"System.Net":                      {},
+	"System.Reflection":               {},
+	"System.Runtime":                  {},
+	"System.Runtime.InteropServices":  {},
+	"System.Security":                 {},
+	"System.Text":                     {},
+	"System.Text.RegularExpressions":  {},
+	"System.Threading":                {},
+	"System.Threading.Tasks":          {},
+}
+
+// isCSharpStdlibImport checks if the import path is a C# standard library namespace.
+func isCSharpStdlibImport(importPath string) bool {
+	// Check exact match first
+	if _, exists := csharpStdlibImports[importPath]; exists {
+		return true
+	}
+
+	// Check if it starts with "System." (covers all System sub-namespaces)
+	if strings.HasPrefix(importPath, "System.") {
+		return true
+	}
+
+	return false
+}
+
 // csharpTestFrameworkCalls contains base names from C# test frameworks
 // that should be excluded from domain hints.
 var csharpTestFrameworkCalls = map[string]struct{}{
@@ -292,6 +338,8 @@ var csharpTestFrameworkCalls = map[string]struct{}{
 	"Substitute": {}, "Received": {}, "DidNotReceive": {},
 	// AutoFixture
 	"Fixture": {}, "Create": {}, "Build": {}, "Freeze": {},
+	// C# language keywords that appear as function calls
+	"nameof": {},
 }
 
 // csharpObjectMethods contains System.Object base methods that should be

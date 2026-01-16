@@ -31,12 +31,11 @@ namespace MyApp.Tests
 		t.Fatal("expected hints, got nil")
 	}
 
+	// Domain usings should be included (System.* filtered as stdlib)
 	expectedUsings := map[string]bool{
-		"System":                     true,
-		"System.Collections.Generic": true,
-		"NUnit.Framework":            true,
-		"MyApp.Services":             true,
-		"MyApp.Models":               true,
+		"NUnit.Framework": true,
+		"MyApp.Services":  true,
+		"MyApp.Models":    true,
 	}
 
 	usingSet := make(map[string]bool)
@@ -47,6 +46,14 @@ namespace MyApp.Tests
 	for u := range expectedUsings {
 		if !usingSet[u] {
 			t.Errorf("expected using %q to be included, got %v", u, hints.Imports)
+		}
+	}
+
+	// System imports should be filtered
+	excludedUsings := []string{"System", "System.Collections.Generic"}
+	for _, u := range excludedUsings {
+		if usingSet[u] {
+			t.Errorf("expected System using %q to be filtered, got %v", u, hints.Imports)
 		}
 	}
 }
@@ -162,6 +169,7 @@ func TestCSharpExtractor_Extract_UsingAlias(t *testing.T) {
 using System;
 using Env = System.Environment;
 using Console = System.Console;
+using MyAlias = MyApp.CustomType;
 
 namespace MyApp {}
 `)
@@ -178,15 +186,17 @@ namespace MyApp {}
 		usingSet[u] = true
 	}
 
-	// Should include the aliased namespaces
-	if !usingSet["System"] {
-		t.Errorf("expected System using, got %v", hints.Imports)
+	// System.* should be filtered (even aliased)
+	excludedUsings := []string{"System", "System.Environment", "System.Console"}
+	for _, u := range excludedUsings {
+		if usingSet[u] {
+			t.Errorf("expected System using %q to be filtered, got %v", u, hints.Imports)
+		}
 	}
-	if !usingSet["System.Environment"] {
-		t.Errorf("expected System.Environment using (aliased), got %v", hints.Imports)
-	}
-	if !usingSet["System.Console"] {
-		t.Errorf("expected System.Console using (aliased), got %v", hints.Imports)
+
+	// Non-System aliased usings should be included
+	if !usingSet["MyApp.CustomType"] {
+		t.Errorf("expected MyApp.CustomType using (aliased), got %v", hints.Imports)
 	}
 }
 
@@ -232,6 +242,7 @@ func TestCSharpExtractor_Extract_StaticUsing(t *testing.T) {
 using System;
 using static System.Console;
 using static System.Math;
+using static MyApp.Helpers.StringHelper;
 
 namespace MyApp {}
 `)
@@ -248,15 +259,17 @@ namespace MyApp {}
 		usingSet[u] = true
 	}
 
-	// Static usings should be included
-	if !usingSet["System"] {
-		t.Errorf("expected System using, got %v", hints.Imports)
+	// System.* static usings should be filtered
+	excludedUsings := []string{"System", "System.Console", "System.Math"}
+	for _, u := range excludedUsings {
+		if usingSet[u] {
+			t.Errorf("expected System using %q to be filtered, got %v", u, hints.Imports)
+		}
 	}
-	if !usingSet["System.Console"] {
-		t.Errorf("expected System.Console using (static), got %v", hints.Imports)
-	}
-	if !usingSet["System.Math"] {
-		t.Errorf("expected System.Math using (static), got %v", hints.Imports)
+
+	// Non-System static usings should be included
+	if !usingSet["MyApp.Helpers.StringHelper"] {
+		t.Errorf("expected MyApp.Helpers.StringHelper using (static), got %v", hints.Imports)
 	}
 }
 
@@ -264,6 +277,7 @@ func TestCSharpExtractor_Extract_GlobalUsing(t *testing.T) {
 	source := []byte(`
 global using System;
 global using System.Linq;
+global using MyApp.Common;
 
 namespace MyApp {}
 `)
@@ -280,12 +294,17 @@ namespace MyApp {}
 		usingSet[u] = true
 	}
 
-	// Global usings should be included
-	if !usingSet["System"] {
-		t.Errorf("expected System using (global), got %v", hints.Imports)
+	// System.* global usings should be filtered
+	excludedUsings := []string{"System", "System.Linq"}
+	for _, u := range excludedUsings {
+		if usingSet[u] {
+			t.Errorf("expected System using %q to be filtered, got %v", u, hints.Imports)
+		}
 	}
-	if !usingSet["System.Linq"] {
-		t.Errorf("expected System.Linq using (global), got %v", hints.Imports)
+
+	// Non-System global usings should be included
+	if !usingSet["MyApp.Common"] {
+		t.Errorf("expected MyApp.Common using (global), got %v", hints.Imports)
 	}
 }
 
@@ -488,9 +507,9 @@ namespace MyApp {}
 		usingSet[u] = true
 	}
 
-	t.Run("System using included", func(t *testing.T) {
-		if !usingSet["System"] {
-			t.Errorf("expected System using, got %v", hints.Imports)
+	t.Run("System using filtered", func(t *testing.T) {
+		if usingSet["System"] {
+			t.Errorf("expected System using to be filtered, got %v", hints.Imports)
 		}
 	})
 
@@ -572,4 +591,145 @@ func TestIsCSharpObjectMethod(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIsCSharpStdlibImport(t *testing.T) {
+	tests := []struct {
+		importPath string
+		want       bool
+	}{
+		// Exact matches
+		{"System", true},
+		{"System.Collections.Generic", true},
+		{"System.Linq", true},
+		{"System.IO", true},
+		{"System.Threading.Tasks", true},
+		// Prefix matches (System.*)
+		{"System.Collections.Concurrent", true},
+		{"System.Text.Json", true},
+		{"System.Net.Http", true},
+		{"System.Security.Cryptography", true},
+		// Non-stdlib
+		{"NUnit.Framework", false},
+		{"MyApp.Services", false},
+		{"Xunit", false},
+		{"Microsoft.Extensions", false},
+		{"Newtonsoft.Json", false},
+		{"FluentAssertions", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.importPath, func(t *testing.T) {
+			got := isCSharpStdlibImport(tt.importPath)
+			if got != tt.want {
+				t.Errorf("isCSharpStdlibImport(%q) = %v, want %v", tt.importPath, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCSharpExtractor_Extract_NameofFiltered(t *testing.T) {
+	source := []byte(`
+using NUnit.Framework;
+
+namespace MyApp.Tests
+{
+    public class Test
+    {
+        void TestMethod()
+        {
+            // nameof is a C# compile-time operator, should be filtered
+            var name = nameof(TestMethod);
+            var propName = nameof(MyClass.Property);
+
+            // Real domain calls should be included
+            userService.Create(data);
+            logger.LogInfo(nameof(TestMethod));
+        }
+    }
+}
+`)
+
+	extractor := &CSharpExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	t.Run("nameof filtered", func(t *testing.T) {
+		if callSet["nameof"] {
+			t.Errorf("expected nameof to be filtered, got %v", hints.Calls)
+		}
+	})
+
+	t.Run("domain calls included", func(t *testing.T) {
+		if !callSet["userService.Create"] {
+			t.Errorf("expected userService.Create call, got %v", hints.Calls)
+		}
+		if !callSet["logger.LogInfo"] {
+			t.Errorf("expected logger.LogInfo call, got %v", hints.Calls)
+		}
+	})
+}
+
+func TestCSharpExtractor_Extract_StdlibFiltering(t *testing.T) {
+	source := []byte(`
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.IO;
+using System.Text.RegularExpressions;
+using NUnit.Framework;
+using MyApp.Services;
+using Newtonsoft.Json;
+
+namespace MyApp.Tests
+{
+    public class Test {}
+}
+`)
+
+	extractor := &CSharpExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	usingSet := make(map[string]bool)
+	for _, u := range hints.Imports {
+		usingSet[u] = true
+	}
+
+	t.Run("System imports filtered", func(t *testing.T) {
+		excludedUsings := []string{
+			"System",
+			"System.Collections.Generic",
+			"System.Linq",
+			"System.Threading.Tasks",
+			"System.IO",
+			"System.Text.RegularExpressions",
+		}
+		for _, u := range excludedUsings {
+			if usingSet[u] {
+				t.Errorf("expected System using %q to be filtered, got %v", u, hints.Imports)
+			}
+		}
+	})
+
+	t.Run("domain imports included", func(t *testing.T) {
+		expectedUsings := []string{"NUnit.Framework", "MyApp.Services", "Newtonsoft.Json"}
+		for _, u := range expectedUsings {
+			if !usingSet[u] {
+				t.Errorf("expected domain using %q to be included, got %v", u, hints.Imports)
+			}
+		}
+	})
 }
