@@ -666,6 +666,22 @@ func (q *Queries) MarkCodebaseStale(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const recordAnalysisUsageEvent = `-- name: RecordAnalysisUsageEvent :exec
+INSERT INTO usage_events (user_id, event_type, analysis_id, quota_amount)
+VALUES ($1, 'analysis', $2, $3)
+`
+
+type RecordAnalysisUsageEventParams struct {
+	UserID      pgtype.UUID `json:"user_id"`
+	AnalysisID  pgtype.UUID `json:"analysis_id"`
+	QuotaAmount int32       `json:"quota_amount"`
+}
+
+func (q *Queries) RecordAnalysisUsageEvent(ctx context.Context, arg RecordAnalysisUsageEventParams) error {
+	_, err := q.db.Exec(ctx, recordAnalysisUsageEvent, arg.UserID, arg.AnalysisID, arg.QuotaAmount)
+	return err
+}
+
 const recordSpecViewUsageEvent = `-- name: RecordSpecViewUsageEvent :exec
 
 INSERT INTO usage_events (user_id, event_type, document_id, quota_amount)

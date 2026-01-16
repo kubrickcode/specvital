@@ -208,3 +208,7 @@ FROM usage_events
 WHERE user_id = $1
   AND event_type = 'specview'
   AND created_at >= date_trunc('month', CURRENT_DATE);
+
+-- name: RecordAnalysisUsageEvent :exec
+INSERT INTO usage_events (user_id, event_type, analysis_id, quota_amount)
+VALUES ($1, 'analysis', $2, $3);

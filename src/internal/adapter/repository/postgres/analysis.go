@@ -233,6 +233,14 @@ func (r *AnalysisRepository) SaveAnalysisInventory(ctx context.Context, params a
 			}); err != nil {
 				return fmt.Errorf("record user analysis history: %w", err)
 			}
+
+			if err := queries.RecordAnalysisUsageEvent(ctx, db.RecordAnalysisUsageEventParams{
+				UserID:      toPgUUID(userUUID),
+				AnalysisID:  pgID,
+				QuotaAmount: 1,
+			}); err != nil {
+				return fmt.Errorf("record analysis usage event: %w", err)
+			}
 		}
 	}
 
