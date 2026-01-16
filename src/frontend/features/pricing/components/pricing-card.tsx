@@ -40,7 +40,7 @@ export const PricingCard = ({ currentTier, plan }: PricingCardProps) => {
     <Card
       className={cn(
         "relative flex flex-col transition-all duration-200",
-        plan.highlighted && "scale-[1.02] border-primary shadow-lg md:scale-105"
+        plan.highlighted && "ring-2 ring-primary shadow-xl"
       )}
     >
       {plan.highlighted && (
