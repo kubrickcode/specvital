@@ -524,19 +524,19 @@
     "tiers": {
       "free": {
         "name": "Free",
-        "description": "For individuals getting started"
+        "description": "Get started free"
       },
       "pro": {
         "name": "Pro",
-        "description": "For professionals and small teams"
+        "description": "More power, longer retention"
       },
       "pro_plus": {
         "name": "Pro+",
-        "description": "For growing teams with higher needs"
+        "description": "For power users"
       },
       "enterprise": {
         "name": "Enterprise",
-        "description": "For large organizations"
+        "description": "Custom for your organization"
       }
     },
     "features": {

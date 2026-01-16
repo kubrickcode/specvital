@@ -524,19 +524,19 @@
     "tiers": {
       "free": {
         "name": "무료",
-        "description": "시작하는 개인 사용자를 위해"
+        "description": "무료로 시작하기"
       },
       "pro": {
         "name": "Pro",
-        "description": "전문가와 소규모 팀을 위해"
+        "description": "더 많이, 더 오래"
       },
       "pro_plus": {
         "name": "Pro+",
-        "description": "더 많은 기능이 필요한 성장하는 팀을 위해"
+        "description": "파워 유저를 위해"
       },
       "enterprise": {
         "name": "Enterprise",
-        "description": "대규모 조직을 위해"
+        "description": "조직 맞춤 지원"
       }
     },
     "features": {

@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-import { ComingSoonBadge } from "./coming-soon-badge";
 import { PricingCta } from "./pricing-cta";
 import type { PlanTier, PricingPlan } from "../types";
 
@@ -34,8 +33,6 @@ export const PricingCard = ({ currentTier, plan }: PricingCardProps) => {
   const tTiers = useTranslations("pricing.tiers");
   const tFeatures = useTranslations("pricing.features");
 
-  const isPaidPlan = plan.monthlyPrice !== null && plan.monthlyPrice > 0;
-
   return (
     <Card
       className={cn(
@@ -51,7 +48,9 @@ export const PricingCard = ({ currentTier, plan }: PricingCardProps) => {
 
       <CardHeader className="text-center">
         <CardTitle className="text-xl">{tTiers(`${plan.tier}.name`)}</CardTitle>
-        <CardDescription className="mt-1">{tTiers(`${plan.tier}.description`)}</CardDescription>
+        <CardDescription className="mt-1 min-h-[40px]">
+          {tTiers(`${plan.tier}.description`)}
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="flex-1">
@@ -62,11 +61,6 @@ export const PricingCard = ({ currentTier, plan }: PricingCardProps) => {
             <div className="flex items-baseline justify-center gap-1">
               <span className="text-4xl font-bold">${plan.monthlyPrice}</span>
               <span className="text-muted-foreground">/{t("month")}</span>
-            </div>
-          )}
-          {isPaidPlan && (
-            <div className="mt-2">
-              <ComingSoonBadge />
             </div>
           )}
         </div>
