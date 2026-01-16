@@ -1315,6 +1315,11 @@ table "subscription_plans" {
     type = enum.plan_tier
   }
 
+  column "monthly_price" {
+    type = int
+    null = true
+  }
+
   column "specview_monthly_limit" {
     type = int
     null = true

@@ -1,4 +1,4 @@
-h1:7gjwgEeN4AtrqzpvpTZ83B0QyczGTNETZe0j9XYWJyc=
+h1:VDD0GRH3msikLfTqs0O+I8jZkfsNkb0XzhgN+Jjs3fs=
 20251208122222_init.sql h1:4hgvsY53Nx2aws2BPLM/x4kV27qXTRYTAKd/GlGciis=
 20251209084551_add_test_status_focused_xfail_modifier.sql h1:+pY+6sow5rDMVE7Nbl0OLatQfVtHF9YH9Cr621wP+Uc=
 20251211134507_test_case_length.sql h1:Nbzl0u5eBOLpsLhZlfx4MGb6nY4P9e0136YaQYZwvvE=
@@ -24,3 +24,4 @@ h1:7gjwgEeN4AtrqzpvpTZ83B0QyczGTNETZe0j9XYWJyc=
 20260115105055_add_user_specview_history.sql h1:gSTOWqb+T7Ea7A/gspcRHoTJIt0Zh0TdhzBi9l1V1wc=
 20260115113318_add_usage_events.sql h1:YHNM9bb6YHF3+xNMGS1/LApykT2yUIlnITEnlZSc2nI=
 20260115121617_add_subscription_plans.sql h1:hdR+UffGI55qRgri6yIhlyJb35ZQfufKMjCkmAHpt5c=
+20260116052626_add_monthly_price.sql h1:Vk3JWwFi1Aa19nACsDMOrgqc1zmDInl1gXViTNsGtHw=
