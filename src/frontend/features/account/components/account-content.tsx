@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { useAuth } from "@/features/auth";
 import { useRouter } from "@/i18n/navigation";
+import { ROUTES } from "@/lib/routes";
 
 import { useSubscription, useUsage } from "../hooks";
 import { PlanSection } from "./plan-section";
@@ -23,7 +24,7 @@ export const AccountContent = () => {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push("/");
+      router.push(ROUTES.HOME);
     }
   }, [authLoading, isAuthenticated, router]);
 

@@ -6,6 +6,7 @@ const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL ?? "http://localhost:5
 const AUTH_COOKIE_NAME = "auth_token";
 const REFRESH_COOKIE_NAME = "refresh_token";
 const SESSION_INDICATOR_COOKIE = "has_session";
+const RETURN_TO_COOKIE = "auth_return_to";
 const ACCESS_TOKEN_MAX_AGE = 15 * 60;
 const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60;
 
@@ -64,7 +65,16 @@ export async function GET(request: NextRequest) {
         secure: isProduction,
       });
 
-      return NextResponse.redirect(FRONTEND_URL, { status: 302 });
+      // Read and clear returnTo cookie
+      const returnToCookie = request.cookies.get(RETURN_TO_COOKIE);
+      const returnTo = returnToCookie?.value ? decodeURIComponent(returnToCookie.value) : null;
+      cookieStore.delete(RETURN_TO_COOKIE);
+
+      // Redirect to returnTo path or home (validate to prevent open redirect)
+      const isValidReturnTo = returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//");
+      const redirectUrl = isValidReturnTo ? `${FRONTEND_URL}${returnTo}` : FRONTEND_URL;
+
+      return NextResponse.redirect(redirectUrl, { status: 302 });
     }
 
     return NextResponse.redirect(`${FRONTEND_URL}?error=auth_failed`, { status: 302 });

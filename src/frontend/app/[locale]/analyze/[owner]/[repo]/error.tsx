@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
+
 
 import { ErrorFallback } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 type ErrorProps = {
   error: Error & { digest?: string };

@@ -1,7 +1,6 @@
 "use client";
 
 import { ExternalLink, Lock, Search } from "lucide-react";
-import Link from "next/link";
 import { useFormatter, useNow, useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -14,6 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Link } from "@/i18n/navigation";
 import type { GitHubRepository, OrganizationAccessStatus } from "@/lib/api/types";
 
 import { OrgConnectionBanner } from "./org-connection-banner";

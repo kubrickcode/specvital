@@ -5,6 +5,9 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+import { useRouter } from "@/i18n/navigation";
+import { ROUTES } from "@/lib/routes";
+
 import { fetchSpecDocument, QuotaExceededError, requestSpecGeneration } from "../api";
 import type {
   SpecDocument,
@@ -36,6 +39,7 @@ type UseSpecViewReturn = {
 export const useSpecView = (analysisId: string): UseSpecViewReturn => {
   const t = useTranslations("specView.toast");
   const queryClient = useQueryClient();
+  const router = useRouter();
   const pollingStartTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -101,7 +105,7 @@ export const useSpecView = (analysisId: string): UseSpecViewReturn => {
           action: {
             label: t("quotaExceeded.viewAccount"),
             onClick: () => {
-              window.location.href = "/account";
+              router.push(ROUTES.ACCOUNT);
             },
           },
           description: t("quotaExceeded.description", {

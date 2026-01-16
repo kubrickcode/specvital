@@ -1,12 +1,14 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { usePathname } from "next/navigation";
+import { usePathname as useNextPathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { authKeys } from "@/lib/api/error-handler";
 import type { UserInfo } from "@/lib/api/types";
+import { RETURN_TO_KEY, ROUTES } from "@/lib/routes";
 
 import { fetchCurrentUser, fetchLogin, fetchLogout } from "../api";
 
@@ -27,14 +29,18 @@ const checkSessionCookie = (): boolean => {
 
 export const useAuth = (): UseAuthReturn => {
   const queryClient = useQueryClient();
+  const nextPathname = useNextPathname();
   const pathname = usePathname();
+  const router = useRouter();
 
   // Prevent hydration mismatch: check cookie only on client
   // Re-check on pathname change to detect cookie changes during SPA navigation
   const [hasSession, setHasSession] = useState(false);
+  const [isSessionChecked, setIsSessionChecked] = useState(false);
   useEffect(() => {
     setHasSession(checkSessionCookie());
-  }, [pathname]);
+    setIsSessionChecked(true);
+  }, [nextPathname]);
 
   const userQuery = useQuery({
     enabled: hasSession,
@@ -48,6 +54,10 @@ export const useAuth = (): UseAuthReturn => {
     mutationFn: fetchLogin,
     onError: () => toast.error("Failed to start login process"),
     onSuccess: (data) => {
+      if (typeof window !== "undefined") {
+        // Store returnTo in cookie (readable by server)
+        document.cookie = `${RETURN_TO_KEY}=${encodeURIComponent(pathname)}; path=/; max-age=300; SameSite=Lax`;
+      }
       window.location.href = data.authUrl;
     },
   });
@@ -57,11 +67,11 @@ export const useAuth = (): UseAuthReturn => {
     onSuccess: () => {
       document.cookie = "has_session=; path=/; max-age=0";
       queryClient.setQueryData(authKeys.user(), null);
-      window.location.href = "/";
+      router.push(ROUTES.HOME);
     },
   });
 
-  const isLoading = userQuery.isFetching;
+  const isLoading = !isSessionChecked || userQuery.isFetching;
 
   return {
     isAuthenticated: !!userQuery.data,

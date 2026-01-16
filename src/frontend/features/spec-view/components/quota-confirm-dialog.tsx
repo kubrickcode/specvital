@@ -1,8 +1,8 @@
 "use client";
 
 import { AlertTriangle, Gauge, Infinity as InfinityIcon, Sparkles } from "lucide-react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
+
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import { useQuotaConfirmDialog } from "../hooks/use-quota-confirm-dialog";

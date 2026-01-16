@@ -1,14 +1,15 @@
 "use client";
 
 import { RefreshCw, Star } from "lucide-react";
-import Link from "next/link";
 import { useFormatter, useNow, useTranslations } from "next-intl";
+
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useLoginModal } from "@/features/auth/hooks/use-login-modal";
+import { Link } from "@/i18n/navigation";
 import type { RepositoryCard as RepositoryCardType } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 

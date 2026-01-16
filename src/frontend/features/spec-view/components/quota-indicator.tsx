@@ -1,9 +1,9 @@
 "use client";
 
 import { AlertTriangle, Gauge, Infinity as InfinityIcon, TrendingUp } from "lucide-react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import { formatQuotaNumber, getQuotaLevel, isQuotaExceeded, type QuotaLevel } from "../utils/quota";
