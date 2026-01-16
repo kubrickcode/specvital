@@ -536,3 +536,107 @@ test('jQuery ajax', () => {
 		})
 	}
 }
+
+func TestExtractCalls_TRPCWebSocketsAnalysis(t *testing.T) {
+	// Analysis of actual noise patterns from tRPC v10.45.2
+	// Files: packages/tests/server/interop/websockets.test.ts
+	//        packages/tests/server/websockets.test.ts
+	source := []byte(`
+import WebSocket, { Server } from 'ws';
+import { createWSClient, wsLink } from '@trpc/client/src';
+
+test('basic subscription test', async () => {
+  const { client, close, ee } = factory();
+  const onStartedMock = vi.fn();
+  const onDataMock = vi.fn();
+  const subscription = client.subscription('onMessage', undefined, {
+    onStarted() {
+      onStartedMock();
+    },
+    onData(data) {
+      onDataMock(data);
+    },
+  });
+
+  await waitFor(() => {
+    expect(onStartedMock).toHaveBeenCalledTimes(1);
+    expect(onDataMock).toHaveBeenCalledTimes(2);
+  });
+
+  subscription.unsubscribe();
+  await waitFor(() => {
+    expect(ee.listenerCount('server:msg')).toBe(0);
+    expect(ee.listenerCount('server:error')).toBe(0);
+  });
+  await close();
+});
+`)
+
+	extractor := &JavaScriptExtractor{lang: domain.LanguageTypeScript}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	// Check: ws should NOT appear as a call (it's a module, not a function call)
+	if callSet["ws"] {
+		t.Errorf("unexpected 'ws' in calls: %v", hints.Calls)
+	}
+
+	// Verify legitimate calls are captured
+	expectedCalls := []string{"vi.fn", "client.subscription"}
+	for _, call := range expectedCalls {
+		if !callSet[call] {
+			t.Logf("expected call %q not found (may be filtered), got: %v", call, hints.Calls)
+		}
+	}
+}
+
+func TestExtractCalls_TRPCFileSystemAnalysis(t *testing.T) {
+	// Analysis of actual noise patterns from tRPC v10.45.2
+	// File: packages/tests/server/react/formData.test.tsx
+	source := []byte(`
+import * as fs from 'fs';
+import { routerToServerAndClientNew } from '../___testHelpers';
+import { QueryClientProvider } from '@tanstack/react-query';
+
+test('upload file', async () => {
+  const form = new FormData();
+  form.append('file', new File(['hi bob'], 'bob.txt', {
+    type: 'text/plain',
+  }));
+
+  const fileContents = await ctx.proxy.uploadFile.mutate(form);
+
+  expect(fileContents).toMatchInlineSnapshot("Object");
+});
+`)
+
+	extractor := &JavaScriptExtractor{lang: domain.LanguageTSX}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	callSet := make(map[string]bool)
+	for _, call := range hints.Calls {
+		callSet[call] = true
+	}
+
+	// Check: fs should NOT appear as a call (it's imported but never used)
+	if callSet["fs"] {
+		t.Errorf("unexpected 'fs' in calls: %v", hints.Calls)
+	}
+
+	// Verify legitimate calls are captured
+	if !callSet["ctx.proxy"] && !callSet["fileContents"] {
+		t.Logf("expected some domain calls, got: %v", hints.Calls)
+	}
+}

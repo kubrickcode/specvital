@@ -119,6 +119,22 @@ func TestShouldFilterNoise(t *testing.T) {
 		{"balanced paren method chain", "expect(result).toEqual", false},
 		{"balanced paren empty", "func()", false},
 		{"balanced paren nested", "outer(inner(x))", false},
+
+		// Two-letter module names without dots (NOISE - no domain signal)
+		// Files: tRPC v10.45.2 analysis
+		//   - packages/tests/server/interop/websockets.test.ts: import WebSocket from 'ws'
+		//   - packages/tests/server/websockets.test.ts: import WebSocket from 'ws'
+		{"ws module import", "ws", true},
+		// Files: tRPC v10.45.2 analysis
+		//   - packages/tests/server/react/formData.test.tsx: import * as fs from 'fs'
+		{"fs module import", "fs", true},
+		// Other common node builtins
+		{"os module", "os", true},
+		{"io module", "io", true},
+
+		// Two-letter calls WITH dots (domain signal preserved)
+		{"ws.Server call", "ws.Server", false},
+		{"fs.read call", "fs.readFile", false},
 	}
 
 	for _, tt := range tests {
