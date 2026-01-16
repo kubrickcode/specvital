@@ -271,3 +271,103 @@ func TestSpread(t *testing.T) {
 		}
 	})
 }
+
+func TestGoExtractor_Extract_BuiltinFiltering(t *testing.T) {
+	source := []byte(`package test
+
+import "testing"
+
+func TestBuiltins(t *testing.T) {
+	slice := make([]int, 10)
+	slice = append(slice, 1)
+	length := len(slice)
+	capacity := cap(slice)
+	newSlice := copy(slice, []int{1, 2})
+	close(ch)
+	ptr := new(int)
+	delete(m, "key")
+	panic("error")
+	recover()
+	print("debug")
+	println("debug")
+
+	// Valid calls should be kept
+	authService.ValidateToken("token")
+	userRepo.FindByID(1)
+}
+`)
+
+	extractor := &GoExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	t.Run("builtin functions filtered", func(t *testing.T) {
+		builtins := []string{"append", "cap", "clear", "close", "complex", "copy", "delete", "imag", "len", "make", "new", "panic", "print", "println", "real", "recover"}
+		for _, builtin := range builtins {
+			for _, call := range hints.Calls {
+				if call == builtin {
+					t.Errorf("builtin function %q should be filtered", builtin)
+				}
+			}
+		}
+	})
+
+	t.Run("valid calls kept", func(t *testing.T) {
+		validCalls := map[string]bool{
+			"authService.ValidateToken": false,
+			"userRepo.FindByID":         false,
+		}
+		for _, call := range hints.Calls {
+			if _, exists := validCalls[call]; exists {
+				validCalls[call] = true
+			}
+		}
+		for call, found := range validCalls {
+			if !found {
+				t.Errorf("valid call %q should be kept, got calls: %v", call, hints.Calls)
+			}
+		}
+	})
+}
+
+func TestIsGoBuiltinFunction(t *testing.T) {
+	tests := []struct {
+		call       string
+		wantFilter bool
+	}{
+		{"append", true},
+		{"cap", true},
+		{"clear", true},
+		{"close", true},
+		{"complex", true},
+		{"copy", true},
+		{"delete", true},
+		{"imag", true},
+		{"len", true},
+		{"make", true},
+		{"new", true},
+		{"panic", true},
+		{"print", true},
+		{"println", true},
+		{"real", true},
+		{"recover", true},
+		// Non-builtins
+		{"doSomething", false},
+		{"authService.ValidateToken", false},
+		{"userRepo.FindByID", false},
+		{"integration.NewCluster", false},
+		{"require.NoError", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.call, func(t *testing.T) {
+			got := isGoBuiltinFunction(tt.call)
+			if got != tt.wantFilter {
+				t.Errorf("isGoBuiltinFunction(%q) = %v, want %v", tt.call, got, tt.wantFilter)
+			}
+		})
+	}
+}

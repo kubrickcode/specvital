@@ -90,6 +90,34 @@ func extractGoImports(root *sitter.Node, source []byte) []string {
 	return imports
 }
 
+// goBuiltinFunctions contains Go builtin functions that provide
+// no domain classification signal and should be filtered from calls.
+// These are universal language primitives without domain-specific meaning.
+var goBuiltinFunctions = map[string]struct{}{
+	"append":  {},
+	"cap":     {},
+	"clear":   {},
+	"close":   {},
+	"complex": {},
+	"copy":    {},
+	"delete":  {},
+	"imag":    {},
+	"len":     {},
+	"make":    {},
+	"new":     {},
+	"panic":   {},
+	"print":   {},
+	"println": {},
+	"real":    {},
+	"recover": {},
+}
+
+// isGoBuiltinFunction checks if the call is a Go builtin function.
+func isGoBuiltinFunction(call string) bool {
+	_, exists := goBuiltinFunctions[call]
+	return exists
+}
+
 // goStdlibImports contains Go standard library packages that provide
 // no domain classification signal and should be filtered from imports.
 var goStdlibImports = map[string]struct{}{
@@ -185,6 +213,10 @@ func extractGoCalls(root *sitter.Node, source []byte) []string {
 			// Normalize: remove whitespace and limit to 2 segments
 			call = normalizeCall(call)
 			if call == "" {
+				continue
+			}
+			// Filter Go builtin functions (Go-specific noise)
+			if isGoBuiltinFunction(call) {
 				continue
 			}
 			// Filter noise patterns
