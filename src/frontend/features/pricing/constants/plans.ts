@@ -19,7 +19,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       { label: "retention", value: 180 },
     ],
     highlighted: true,
-    monthlyPrice: 29,
+    monthlyPrice: 15,
     tier: "pro",
   },
   {
@@ -29,7 +29,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       { label: "analysis", value: 5000 },
       { label: "retention", value: 365 },
     ],
-    monthlyPrice: 99,
+    monthlyPrice: 59,
     tier: "pro_plus",
   },
   {
