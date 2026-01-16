@@ -66,6 +66,11 @@ func (e *CppExtractor) extractImports(root *sitter.Node, source []byte) []string
 				continue
 			}
 
+			// Filter C++ stdlib headers (no domain classification value)
+			if isCppStdlibImport(path) {
+				continue
+			}
+
 			if _, exists := seen[path]; exists {
 				continue
 			}
@@ -213,4 +218,181 @@ func isCppTestFrameworkCall(call string) bool {
 	_, existsBase := cppTestFrameworkCalls[baseName]
 	_, existsFull := cppTestFrameworkCalls[call]
 	return existsBase || existsFull
+}
+
+// cppStdlibHeaders contains C++ standard library headers that provide
+// no domain classification signal and should be filtered from imports.
+// These are universal language primitives without domain-specific meaning.
+var cppStdlibHeaders = map[string]struct{}{
+	// C++ STL containers
+	"array":         {},
+	"deque":         {},
+	"forward_list":  {},
+	"list":          {},
+	"map":           {},
+	"queue":         {},
+	"set":           {},
+	"span":          {},
+	"stack":         {},
+	"unordered_map": {},
+	"unordered_set": {},
+	"vector":        {},
+	// C++ STL algorithms and utilities
+	"algorithm":        {},
+	"any":              {},
+	"bitset":           {},
+	"charconv":         {}, // C++17
+	"chrono":           {},
+	"compare":          {},
+	"complex":          {},
+	"concepts":         {}, // C++20
+	"coroutine":        {}, // C++20
+	"exception":        {},
+	"execution":        {}, // C++17
+	"expected":         {},
+	"filesystem":       {}, // C++17
+	"format":           {}, // C++20
+	"functional":       {},
+	"initializer_list": {},
+	"iterator":         {},
+	"limits":           {},
+	"locale":           {},
+	"memory":           {},
+	"numbers":          {}, // C++20
+	"numeric":          {},
+	"optional":         {},
+	"random":           {},
+	"ranges":           {},
+	"ratio":            {},
+	"regex":            {},
+	"source_location":  {}, // C++20
+	"string":           {},
+	"string_view":      {},
+	"tuple":            {},
+	"type_traits":      {},
+	"typeinfo":         {},
+	"utility":          {},
+	"valarray":         {},
+	"variant":          {},
+	// C++ I/O streams
+	"fstream":   {},
+	"iomanip":   {},
+	"ios":       {},
+	"iosfwd":    {},
+	"iostream":  {},
+	"istream":   {},
+	"ostream":   {},
+	"sstream":   {},
+	"streambuf": {},
+	// C++ threading and synchronization
+	"atomic":            {},
+	"barrier":           {},
+	"condition_variable": {},
+	"future":            {},
+	"latch":             {},
+	"mutex":             {},
+	"semaphore":         {},
+	"shared_mutex":      {},
+	"stop_token":        {},
+	"thread":            {},
+	// C++ error handling
+	"stdexcept":    {},
+	"system_error": {},
+	// C++ memory management
+	"new":           {},
+	"memory_resource": {},
+	"scoped_allocator": {},
+	// C compatibility headers
+	"cassert":  {},
+	"cctype":   {},
+	"cerrno":   {},
+	"cfenv":    {},
+	"cfloat":   {},
+	"cinttypes": {},
+	"climits":  {},
+	"clocale":  {},
+	"cmath":    {},
+	"csetjmp":  {},
+	"csignal":  {},
+	"cstdarg":  {},
+	"cstddef":  {},
+	"cstdint":  {},
+	"cstdio":   {},
+	"cstdlib":  {},
+	"cstring":  {},
+	"ctime":    {},
+	"cuchar":   {},
+	"cwchar":   {},
+	"cwctype":  {},
+	// C headers (legacy)
+	"assert.h":   {},
+	"ctype.h":    {},
+	"errno.h":    {},
+	"fenv.h":     {},
+	"float.h":    {},
+	"inttypes.h": {},
+	"limits.h":   {},
+	"locale.h":   {},
+	"math.h":     {},
+	"setjmp.h":   {},
+	"signal.h":   {},
+	"stdarg.h":   {},
+	"stddef.h":   {},
+	"stdint.h":   {},
+	"stdio.h":    {},
+	"stdlib.h":   {},
+	"string.h":   {},
+	"time.h":     {},
+	"uchar.h":    {},
+	"wchar.h":    {},
+	"wctype.h":   {},
+	// Platform-specific (POSIX)
+	"dirent.h":    {},
+	"dlfcn.h":     {},
+	"fcntl.h":     {},
+	"fnmatch.h":   {},
+	"glob.h":      {},
+	"grp.h":       {},
+	"poll.h":      {},
+	"pthread.h":   {},
+	"pwd.h":       {},
+	"sched.h":     {},
+	"semaphore.h": {},
+	"strings.h":   {},
+	"syslog.h":    {},
+	"termios.h":   {},
+	"unistd.h":    {},
+	// Platform-specific (Windows)
+	"windows.h": {},
+	"direct.h":  {},
+	"io.h":      {},
+	"objbase.h": {},
+}
+
+// isCppStdlibImport checks if the import path is a C++ standard library header.
+func isCppStdlibImport(importPath string) bool {
+	// Exact match
+	if _, exists := cppStdlibHeaders[importPath]; exists {
+		return true
+	}
+
+	// Prefix match for POSIX system directories
+	// These are universal OS primitives without domain-specific signal
+	for _, prefix := range cppStdlibPrefixes {
+		if strings.HasPrefix(importPath, prefix) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// cppStdlibPrefixes contains directory prefixes for system headers
+// that should be filtered regardless of specific filename.
+var cppStdlibPrefixes = []string{
+	"sys/",      // POSIX system headers (sys/socket.h, sys/mman.h, etc.)
+	"netinet/",  // Network headers (netinet/in.h, netinet/tcp.h, etc.)
+	"arpa/",     // ARPA headers (arpa/inet.h, etc.)
+	"linux/",    // Linux-specific headers
+	"bits/",     // glibc implementation details
 }

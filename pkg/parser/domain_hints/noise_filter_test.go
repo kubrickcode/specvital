@@ -80,6 +80,18 @@ func TestShouldFilterNoise(t *testing.T) {
 		{"fn callback", "fn", true},
 		{"fn prefixed", "fnCallback", false},
 
+		// Dot-prefix patterns (C++ :: scope operator conversion artifact)
+		// e.g., "::testing::" → ".testing" or "::CreateEvent" → ".CreateEvent"
+		{"dot prefix testing", ".testing", true},
+		{"dot prefix std", ".std", true},
+		{"dot prefix CreateEvent", ".CreateEvent", true},
+		{"dot prefix InterlockedIncrement", ".InterlockedIncrement", true},
+		{"dot prefix foo", ".foo", true},
+		{"dot prefix method", ".foo.bar", true},
+		// Valid calls with dots (not at start)
+		{"dotted normal", "std.string", false},
+		{"dotted method", "userService.create", false},
+
 		// JavaScript inline comments leaked into call
 		{"inline comment simple", "res.json()//comment", true},
 		{"inline comment with text", "res.json()//Byspec,theruntimecanonly", true},

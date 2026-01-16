@@ -61,6 +61,13 @@ func ShouldFilterNoise(call string) bool {
 		return true
 	}
 
+	// Dot-prefix patterns: leading dot from C++ `::` scope operator conversion
+	// e.g., "::testing::" → ".testing" or "::CreateEvent" → ".CreateEvent"
+	// Valid calls never start with a dot
+	if call[0] == '.' {
+		return true
+	}
+
 	// JavaScript/C-style inline comments leaked into call
 	// e.g., "res.json()//Byspec,theruntimecanonly..." from parser including trailing comment
 	if strings.Contains(call, "//") {
