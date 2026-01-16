@@ -503,7 +503,7 @@
       "title": "Usage This Period",
       "specview": "AI Spec Docs",
       "analysis": "Analysis Runs",
-      "resetIn": "Resets in {days}",
+      "resetIn": "Resets in {days} days ({date})",
       "unavailable": "Usage information unavailable"
     }
   },

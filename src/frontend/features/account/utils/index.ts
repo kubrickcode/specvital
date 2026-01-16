@@ -1,1 +1,1 @@
-export { formatNumber, formatResetDate } from "./format";
+export { formatNumber, getResetInfo } from "./format";

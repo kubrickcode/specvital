@@ -3,7 +3,12 @@ export const formatNumber = (value: number | null | undefined, unlimitedSymbol =
   return value.toLocaleString();
 };
 
-export const formatResetDate = (resetAt: string, locale: string): string => {
+type ResetInfo = {
+  date: string;
+  days: number;
+};
+
+export const getResetInfo = (resetAt: string, locale: string): ResetInfo => {
   const resetDate = new Date(resetAt);
   const now = new Date();
   const diffMs = resetDate.getTime() - now.getTime();
@@ -14,5 +19,5 @@ export const formatResetDate = (resetAt: string, locale: string): string => {
     month: "short",
   });
 
-  return `${diffDays} (${dateStr})`;
+  return { date: dateStr, days: diffDays };
 };

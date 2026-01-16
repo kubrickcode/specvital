@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 
 import type { UsageStatusResponse } from "../api";
-import { formatResetDate } from "../utils";
+import { getResetInfo } from "../utils";
 import { UsageProgress } from "./usage-progress";
 
 type UsageSectionProps = {
@@ -55,7 +55,7 @@ export const UsageSection = ({ error, isLoading, usage }: UsageSectionProps) => 
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{t("usage.title")}</CardTitle>
           <CardDescription>
-            {t("usage.resetIn", { days: formatResetDate(usage.resetAt, locale) })}
+            {t("usage.resetIn", getResetInfo(usage.resetAt, locale))}
           </CardDescription>
         </div>
       </CardHeader>

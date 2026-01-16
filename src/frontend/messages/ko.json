@@ -503,7 +503,7 @@
       "title": "이번 기간 사용량",
       "specview": "AI 스펙 문서",
       "analysis": "분석 실행",
-      "resetIn": "{days} 후 초기화",
+      "resetIn": "{days}일 후 초기화 ({date})",
       "unavailable": "사용량 정보를 불러올 수 없습니다"
     }
   },
