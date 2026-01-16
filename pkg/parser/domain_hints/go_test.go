@@ -36,8 +36,8 @@ func TestCreateOrder(t *testing.T) {
 	}
 
 	t.Run("imports", func(t *testing.T) {
+		// "testing" is filtered as Go stdlib
 		expectedImports := []string{
-			"testing",
 			"github.com/stretchr/testify/assert",
 			"myapp/repository",
 			"myapp/services/inventory",
@@ -130,6 +130,110 @@ func TestGetExtractor(t *testing.T) {
 	}
 }
 
+
+func TestGoExtractor_Extract_StdlibFiltering(t *testing.T) {
+	source := []byte(`package test
+
+import (
+	"io"
+	"os"
+	"fs"
+	"fmt"
+	"context"
+	"time"
+	"encoding/json"
+	"net/http"
+	"testing"
+	"github.com/stretchr/testify/require"
+	"myapp/domain/order"
+	"myapp/services/payment"
+)
+
+func TestSomething(t *testing.T) {
+	require.NoError(t, nil)
+}
+`)
+
+	extractor := &GoExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	t.Run("stdlib imports filtered", func(t *testing.T) {
+		stdlibPackages := []string{"io", "os", "fs", "fmt", "context", "time", "encoding/json", "net/http", "testing"}
+		for _, stdlib := range stdlibPackages {
+			for _, imp := range hints.Imports {
+				if imp == stdlib {
+					t.Errorf("stdlib import %q should be filtered", stdlib)
+				}
+			}
+		}
+	})
+
+	t.Run("domain imports kept", func(t *testing.T) {
+		domainImports := map[string]bool{
+			"github.com/stretchr/testify/require": false,
+			"myapp/domain/order":                  false,
+			"myapp/services/payment":              false,
+		}
+		for _, imp := range hints.Imports {
+			if _, exists := domainImports[imp]; exists {
+				domainImports[imp] = true
+			}
+		}
+		for imp, found := range domainImports {
+			if !found {
+				t.Errorf("domain import %q should be kept, got imports: %v", imp, hints.Imports)
+			}
+		}
+	})
+}
+
+func TestIsGoStdlibImport(t *testing.T) {
+	tests := []struct {
+		importPath string
+		wantFilter bool
+	}{
+		// Direct stdlib packages
+		{"io", true},
+		{"os", true},
+		{"fs", true},
+		{"fmt", true},
+		{"context", true},
+		{"time", true},
+		{"testing", true},
+		{"errors", true},
+		{"strings", true},
+		{"bytes", true},
+		// Nested stdlib packages
+		{"encoding/json", true},
+		{"encoding/xml", true},
+		{"encoding/gob", true},
+		{"net/http", true},
+		{"net/url", true},
+		{"crypto/sha256", true},
+		{"io/fs", true},
+		{"io/ioutil", true},
+		// Non-stdlib (should NOT be filtered)
+		{"github.com/stretchr/testify/require", false},
+		{"github.com/stretchr/testify/assert", false},
+		{"myapp/domain/order", false},
+		{"myapp/services/payment", false},
+		{"golang.org/x/sync/errgroup", false},
+		{"google.golang.org/grpc", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.importPath, func(t *testing.T) {
+			got := isGoStdlibImport(tt.importPath)
+			if got != tt.wantFilter {
+				t.Errorf("isGoStdlibImport(%q) = %v, want %v", tt.importPath, got, tt.wantFilter)
+			}
+		})
+	}
+}
 
 func TestGoExtractor_Extract_NoiseFiltering(t *testing.T) {
 	source := []byte(`package test

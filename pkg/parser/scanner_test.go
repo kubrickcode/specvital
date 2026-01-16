@@ -1194,8 +1194,8 @@ func TestCreateOrder(t *testing.T) {
 			t.Fatal("expected DomainHints, got nil")
 		}
 
+		// "testing" is filtered as Go stdlib
 		expectedImports := map[string]bool{
-			"testing":                            true,
 			"github.com/stretchr/testify/assert": true,
 			"myapp/services/inventory":           true,
 		}
