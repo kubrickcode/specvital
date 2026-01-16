@@ -62,11 +62,13 @@ func (e *RustExtractor) extractImports(root *sitter.Node, source []byte) []strin
 	if err == nil {
 		for _, r := range useResults {
 			if node, ok := r.Captures["use"]; ok {
-				path := extractRustUsePath(node, source)
-				if path != "" {
-					if _, exists := seen[path]; !exists {
-						seen[path] = struct{}{}
-						imports = append(imports, path)
+				paths := extractRustUsePaths(node, source)
+				for _, path := range paths {
+					if path != "" {
+						if _, exists := seen[path]; !exists {
+							seen[path] = struct{}{}
+							imports = append(imports, path)
+						}
 					}
 				}
 			}
@@ -134,15 +136,16 @@ func (e *RustExtractor) extractCalls(root *sitter.Node, source []byte) []string 
 	return calls
 }
 
-// extractRustUsePath extracts the path from a use_declaration node.
+// extractRustUsePaths extracts paths from a use_declaration node.
 // Handles: use std::collections::HashMap;
 //          use crate::models::{User, Order};
 //          use super::helpers;
-func extractRustUsePath(node *sitter.Node, source []byte) string {
+//          use {anyhow::Context, bstr::ByteVec}; (multiline use list)
+func extractRustUsePaths(node *sitter.Node, source []byte) []string {
 	// Get the full use declaration text and extract the path
 	text := getNodeText(node, source)
 	if text == "" {
-		return ""
+		return nil
 	}
 
 	// Remove "use " prefix and trailing ";"
@@ -150,7 +153,12 @@ func extractRustUsePath(node *sitter.Node, source []byte) string {
 	text = strings.TrimSuffix(text, ";")
 	text = strings.TrimSpace(text)
 
-	// Handle use lists: use crate::{a, b} -> crate
+	// Handle direct use list: use { item1, item2 } or use {item1, item2}
+	if strings.HasPrefix(text, "{") {
+		return parseRustUseList(text)
+	}
+
+	// Handle use lists with base path: use crate::{a, b} -> crate
 	if idx := strings.Index(text, "::{"); idx > 0 {
 		text = text[:idx]
 	}
@@ -166,7 +174,88 @@ func extractRustUsePath(node *sitter.Node, source []byte) string {
 	// Convert :: to / for consistency with other languages
 	text = strings.ReplaceAll(text, "::", "/")
 
-	return text
+	return []string{text}
+}
+
+// parseRustUseList parses a use list like "{ item1::path, item2::path }" into individual paths.
+// Handles nested braces: { a::{b, c}, d } -> ["a", "d"] (base paths only)
+func parseRustUseList(text string) []string {
+	// Remove surrounding braces
+	text = strings.TrimPrefix(text, "{")
+	text = strings.TrimSuffix(text, "}")
+	text = strings.TrimSpace(text)
+
+	if text == "" {
+		return nil
+	}
+
+	// Split by comma, respecting nested braces
+	items := splitRustUseItems(text)
+	var paths []string
+
+	for _, item := range items {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+
+		// Handle nested use list: item::{a, b} -> item (base path only)
+		if idx := strings.Index(item, "::{"); idx > 0 {
+			item = item[:idx]
+		}
+
+		// Handle alias: item::path as Alias -> item::path
+		if idx := strings.Index(item, " as "); idx > 0 {
+			item = item[:idx]
+		}
+
+		// Handle wildcard: item::* -> item
+		item = strings.TrimSuffix(item, "::*")
+
+		// Convert :: to / for consistency with other languages
+		item = strings.ReplaceAll(item, "::", "/")
+
+		if item != "" {
+			paths = append(paths, item)
+		}
+	}
+
+	return paths
+}
+
+// splitRustUseItems splits use list items by comma, respecting nested braces.
+// Example: "a::{b, c}, d" -> ["a::{b, c}", "d"]
+func splitRustUseItems(text string) []string {
+	var items []string
+	var current strings.Builder
+	depth := 0
+
+	for _, ch := range text {
+		switch ch {
+		case '{':
+			depth++
+			current.WriteRune(ch)
+		case '}':
+			depth--
+			current.WriteRune(ch)
+		case ',':
+			if depth == 0 {
+				items = append(items, current.String())
+				current.Reset()
+			} else {
+				current.WriteRune(ch)
+			}
+		default:
+			current.WriteRune(ch)
+		}
+	}
+
+	// Add the last item
+	if current.Len() > 0 {
+		items = append(items, current.String())
+	}
+
+	return items
 }
 
 // rustTestFrameworkCalls contains patterns from Rust test frameworks

@@ -477,41 +477,109 @@ fn test_decimal_literals() {
 	})
 }
 
-func TestExtractRustUsePath(t *testing.T) {
+func TestParseRustUseList(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
-		want  string
+		want  []string
 	}{
-		{"simple path", "use std::collections::HashMap;", "std/collections/HashMap"},
-		{"crate path", "use crate::models::User;", "crate/models/User"},
-		{"super path", "use super::helpers;", "super/helpers"},
-		{"wildcard", "use std::prelude::*;", "std/prelude"},
-		{"alias", "use std::collections::HashMap as Map;", "std/collections/HashMap"},
-		{"list", "use std::collections::{HashMap, HashSet};", "std/collections"},
+		{
+			"simple list",
+			"{ anyhow::Context, bstr::ByteVec }",
+			[]string{"anyhow/Context", "bstr/ByteVec"},
+		},
+		{
+			"multiline list",
+			"{\n    grep_matcher,\n    bstr,\n}",
+			[]string{"grep_matcher", "bstr"},
+		},
+		{
+			"list with alias",
+			"{ anyhow::Context as Ctx, bstr::ByteVec }",
+			[]string{"anyhow/Context", "bstr/ByteVec"},
+		},
+		{
+			"single item",
+			"{ single::item }",
+			[]string{"single/item"},
+		},
+		{
+			"nested path",
+			"{ std::collections::HashMap, tokio::sync::mpsc }",
+			[]string{"std/collections/HashMap", "tokio/sync/mpsc"},
+		},
+		{
+			"with trailing comma",
+			"{ item1, item2, }",
+			[]string{"item1", "item2"},
+		},
+		{
+			"nested braces",
+			"{ regex_automata::{PatternSet, meta::Regex}, bstr::ByteSlice }",
+			[]string{"regex_automata", "bstr/ByteSlice"},
+		},
+		{
+			"deeply nested multiline",
+			"{\n    aho_corasick::AhoCorasick,\n    regex_automata::{\n        PatternSet,\n        meta::Regex,\n    },\n}",
+			[]string{"aho_corasick/AhoCorasick", "regex_automata"},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Since we can't easily create tree-sitter nodes, test the string processing
-			// by calling the function logic directly
-			text := tt.input
-			text = text[4:]           // Remove "use "
-			text = text[:len(text)-1] // Remove ";"
-
-			// Apply the same logic as extractRustUsePath
-			if idx := strings.Index(text, "::{"); idx > 0 {
-				text = text[:idx]
+			got := parseRustUseList(tt.input)
+			if len(got) != len(tt.want) {
+				t.Errorf("parseRustUseList(%q) = %v (len=%d), want %v (len=%d)",
+					tt.input, got, len(got), tt.want, len(tt.want))
+				return
 			}
-			if idx := strings.Index(text, " as "); idx > 0 {
-				text = text[:idx]
-			}
-			text = strings.TrimSuffix(text, "::*")
-			text = strings.ReplaceAll(text, "::", "/")
-
-			if text != tt.want {
-				t.Errorf("extractRustUsePath logic for %q = %q, want %q", tt.input, text, tt.want)
+			for i, g := range got {
+				if g != tt.want[i] {
+					t.Errorf("parseRustUseList(%q)[%d] = %q, want %q", tt.input, i, g, tt.want[i])
+				}
 			}
 		})
+	}
+}
+
+func TestRustExtractor_Extract_DirectUseList(t *testing.T) {
+	source := []byte(`
+use {anyhow::Context, bstr::ByteVec};
+use {
+    grep_matcher::LineTerminator,
+    grep_searcher::SearcherBuilder,
+};
+`)
+
+	extractor := &RustExtractor{}
+	hints := extractor.Extract(context.Background(), source)
+
+	if hints == nil {
+		t.Fatal("expected hints, got nil")
+	}
+
+	expectedImports := map[string]bool{
+		"anyhow/Context":               true,
+		"bstr/ByteVec":                 true,
+		"grep_matcher/LineTerminator":  true,
+		"grep_searcher/SearcherBuilder": true,
+	}
+
+	importSet := make(map[string]bool)
+	for _, imp := range hints.Imports {
+		importSet[imp] = true
+	}
+
+	for imp := range expectedImports {
+		if !importSet[imp] {
+			t.Errorf("expected import %q to be included, got %v", imp, hints.Imports)
+		}
+	}
+
+	// Verify no noise patterns (imports starting with "{")
+	for _, imp := range hints.Imports {
+		if strings.HasPrefix(imp, "{") {
+			t.Errorf("found noise pattern starting with '{': %q", imp)
+		}
 	}
 }
