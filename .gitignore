@@ -8,3 +8,9 @@ docs/work
 .claude-sessions/
 src/backend/tmp
 *.tsbuildinfo
+
+# E2E Test
+test-results/
+playwright-report/
+e2e/.auth/user.json
+blob-report/

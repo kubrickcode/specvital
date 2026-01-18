@@ -8,9 +8,14 @@
   },
   "license": "MIT",
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report --host 0.0.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.50.1",
+    "@types/node": "22.15.21",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/commit-analyzer": "13.0.1",
     "@semantic-release/exec": "7.1.0",

@@ -219,3 +219,12 @@ test target="all":
 
 update-core:
     cd src/backend && GOPROXY=direct go get -u github.com/specvital/core@main && go mod tidy
+
+test-e2e *args:
+    pnpm test:e2e {{ args }}
+
+test-e2e-ui:
+    pnpm test:e2e:ui
+
+test-e2e-report:
+    pnpm test:e2e:report
