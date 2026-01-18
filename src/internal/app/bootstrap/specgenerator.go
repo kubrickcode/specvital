@@ -11,6 +11,7 @@ import (
 
 	"github.com/specvital/worker/internal/adapter/queue/specview"
 	"github.com/specvital/worker/internal/app"
+	"github.com/specvital/worker/internal/infra/config"
 	"github.com/specvital/worker/internal/infra/db"
 	infraqueue "github.com/specvital/worker/internal/infra/queue"
 )
@@ -18,12 +19,13 @@ import (
 // SpecGeneratorConfig holds configuration for the spec-generator service.
 type SpecGeneratorConfig struct {
 	ServiceName       string
-	Concurrency       int
+	Concurrency       int               // Deprecated: Use QueueWorkers instead
 	ShutdownTimeout   time.Duration
 	DatabaseURL       string
 	GeminiAPIKey      string
 	GeminiPhase1Model string
 	GeminiPhase2Model string
+	QueueWorkers      config.QueueWorkers // Worker allocation per queue
 }
 
 // Validate checks that required spec-generator configuration fields are set.
@@ -87,10 +89,10 @@ func StartSpecGenerator(cfg SpecGeneratorConfig) error {
 		}
 	}()
 
+	queues := buildSpecGeneratorQueues(cfg.QueueWorkers, cfg.Concurrency)
 	srv, err := infraqueue.NewServer(ctx, infraqueue.ServerConfig{
 		Pool:            pool,
-		Concurrency:     cfg.Concurrency,
-		QueueName:       specview.QueueName,
+		Queues:          queues,
 		ShutdownTimeout: cfg.ShutdownTimeout,
 		Workers:         container.Workers,
 	})
@@ -98,11 +100,11 @@ func StartSpecGenerator(cfg SpecGeneratorConfig) error {
 		return fmt.Errorf("queue server: %w", err)
 	}
 
-	slog.Info("spec-generator starting", "concurrency", cfg.Concurrency)
+	logQueueSubscription("spec-generator", queues)
 	if err := srv.Start(ctx); err != nil {
 		return fmt.Errorf("start server: %w", err)
 	}
-	slog.Info("spec-generator ready", "concurrency", cfg.Concurrency)
+	slog.Info("spec-generator ready")
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
@@ -117,4 +119,26 @@ func StartSpecGenerator(cfg SpecGeneratorConfig) error {
 
 	slog.Info("service shutdown complete", "name", cfg.ServiceName)
 	return nil
+}
+
+// buildSpecGeneratorQueues creates queue allocations for spec-generator service.
+// Subscribes to both legacy queue (for backward compatibility) and new tier-based queues.
+func buildSpecGeneratorQueues(qw config.QueueWorkers, legacyConcurrency int) []infraqueue.QueueAllocation {
+	// If QueueWorkers is zero-valued, fall back to legacy single-queue mode
+	if qw.Priority == 0 && qw.Default == 0 && qw.Scheduled == 0 {
+		concurrency := legacyConcurrency
+		if concurrency <= 0 {
+			concurrency = defaultConcurrency
+		}
+		return []infraqueue.QueueAllocation{
+			{Name: specview.QueueLegacy, MaxWorkers: concurrency},
+		}
+	}
+
+	return []infraqueue.QueueAllocation{
+		{Name: specview.QueueLegacy, MaxWorkers: qw.Default},    // Legacy uses default workers
+		{Name: specview.QueuePriority, MaxWorkers: qw.Priority},
+		{Name: specview.QueueDefault, MaxWorkers: qw.Default},
+		{Name: specview.QueueScheduled, MaxWorkers: qw.Scheduled},
+	}
 }

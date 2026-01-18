@@ -24,6 +24,7 @@ func main() {
 		ServiceName:   "analyzer",
 		DatabaseURL:   cfg.DatabaseURL,
 		EncryptionKey: cfg.EncryptionKey,
+		QueueWorkers:  cfg.Queue.Analyzer,
 	}); err != nil {
 		slog.Error("analyzer failed", "error", err)
 		os.Exit(1)

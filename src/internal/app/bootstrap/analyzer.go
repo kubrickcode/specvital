@@ -13,6 +13,7 @@ import (
 	"github.com/specvital/worker/internal/adapter/queue/analyze"
 	"github.com/specvital/worker/internal/app"
 	"github.com/specvital/worker/internal/infra/buildinfo"
+	"github.com/specvital/worker/internal/infra/config"
 	"github.com/specvital/worker/internal/infra/db"
 	infraqueue "github.com/specvital/worker/internal/infra/queue"
 )
@@ -20,10 +21,11 @@ import (
 // AnalyzerConfig holds configuration for the analyzer service.
 type AnalyzerConfig struct {
 	ServiceName     string
-	Concurrency     int
+	Concurrency     int               // Deprecated: Use QueueWorkers instead
 	ShutdownTimeout time.Duration
 	DatabaseURL     string
 	EncryptionKey   string
+	QueueWorkers    config.QueueWorkers // Worker allocation per queue
 }
 
 // Validate checks that required analyzer configuration fields are set.
@@ -91,10 +93,10 @@ func StartAnalyzer(cfg AnalyzerConfig) error {
 		}
 	}()
 
+	queues := buildAnalyzerQueues(cfg.QueueWorkers, cfg.Concurrency)
 	srv, err := infraqueue.NewServer(ctx, infraqueue.ServerConfig{
 		Pool:            pool,
-		Concurrency:     cfg.Concurrency,
-		QueueName:       analyze.QueueName,
+		Queues:          queues,
 		ShutdownTimeout: cfg.ShutdownTimeout,
 		Workers:         container.Workers,
 	})
@@ -102,11 +104,11 @@ func StartAnalyzer(cfg AnalyzerConfig) error {
 		return fmt.Errorf("queue server: %w", err)
 	}
 
-	slog.Info("analyzer starting", "concurrency", cfg.Concurrency)
+	logQueueSubscription("analyzer", queues)
 	if err := srv.Start(ctx); err != nil {
 		return fmt.Errorf("start server: %w", err)
 	}
-	slog.Info("analyzer ready", "concurrency", cfg.Concurrency)
+	slog.Info("analyzer ready")
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
@@ -121,4 +123,26 @@ func StartAnalyzer(cfg AnalyzerConfig) error {
 
 	slog.Info("service shutdown complete", "name", cfg.ServiceName)
 	return nil
+}
+
+// buildAnalyzerQueues creates queue allocations for analyzer service.
+// Subscribes to both legacy queue (for backward compatibility) and new tier-based queues.
+func buildAnalyzerQueues(qw config.QueueWorkers, legacyConcurrency int) []infraqueue.QueueAllocation {
+	// If QueueWorkers is zero-valued, fall back to legacy single-queue mode
+	if qw.Priority == 0 && qw.Default == 0 && qw.Scheduled == 0 {
+		concurrency := legacyConcurrency
+		if concurrency <= 0 {
+			concurrency = defaultConcurrency
+		}
+		return []infraqueue.QueueAllocation{
+			{Name: analyze.QueueLegacy, MaxWorkers: concurrency},
+		}
+	}
+
+	return []infraqueue.QueueAllocation{
+		{Name: analyze.QueueLegacy, MaxWorkers: qw.Default},    // Legacy uses default workers
+		{Name: analyze.QueuePriority, MaxWorkers: qw.Priority},
+		{Name: analyze.QueueDefault, MaxWorkers: qw.Default},
+		{Name: analyze.QueueScheduled, MaxWorkers: qw.Scheduled},
+	}
 }

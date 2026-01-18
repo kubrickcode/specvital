@@ -29,6 +29,7 @@ func main() {
 		GeminiAPIKey:      cfg.GeminiAPIKey,
 		GeminiPhase1Model: cfg.GeminiPhase1Model,
 		GeminiPhase2Model: cfg.GeminiPhase2Model,
+		QueueWorkers:      cfg.Queue.Specgen,
 	}); err != nil {
 		slog.Error("spec-generator failed", "error", err)
 		os.Exit(1)
