@@ -12,7 +12,13 @@ import (
 )
 
 const (
-	QueueName        = "analysis"
+	// Queue names for analysis jobs
+	QueueLegacy    = "analysis"           // Deprecated: kept for backward compatibility
+	QueuePriority  = "analysis:priority"  // Pro/Enterprise tier users
+	QueueDefault   = "analysis:default"   // Free tier users
+	QueueScheduled = "analysis:scheduled" // Scheduler/cron jobs
+
+	QueueName        = QueueLegacy // Deprecated: use specific queue constants
 	maxRetryAttempts = 3
 )
 

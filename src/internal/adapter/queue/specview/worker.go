@@ -13,7 +13,13 @@ import (
 )
 
 const (
-	QueueName        = "specview"
+	// Queue names for specview jobs
+	QueueLegacy    = "specview"           // Deprecated: kept for backward compatibility
+	QueuePriority  = "specview:priority"  // Pro/Enterprise tier users
+	QueueDefault   = "specview:default"   // Free tier users
+	QueueScheduled = "specview:scheduled" // Scheduler/cron jobs
+
+	QueueName        = QueueLegacy // Deprecated: use specific queue constants
 	jobKind          = "specview:generate"
 	maxRetryAttempts = 3
 	jobTimeout       = 10 * time.Minute
