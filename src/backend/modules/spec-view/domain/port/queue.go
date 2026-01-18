@@ -1,7 +1,11 @@
 package port
 
-import "context"
+import (
+	"context"
+
+	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+)
 
 type QueueService interface {
-	EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string) error
+	EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string, tier subscription.PlanTier) error
 }

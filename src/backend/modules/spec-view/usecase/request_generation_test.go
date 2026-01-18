@@ -43,7 +43,7 @@ type mockQueueService struct {
 	enqueueErr error
 }
 
-func (m *mockQueueService) EnqueueSpecGeneration(_ context.Context, _ string, _ string, _ *string) error {
+func (m *mockQueueService) EnqueueSpecGeneration(_ context.Context, _ string, _ string, _ *string, _ subscriptionentity.PlanTier) error {
 	return m.enqueueErr
 }
 

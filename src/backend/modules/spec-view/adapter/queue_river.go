@@ -8,7 +8,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
+	"github.com/specvital/web/src/backend/common/queue"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/port"
+	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 )
 
 var _ port.QueueService = (*RiverQueueService)(nil)
@@ -16,7 +18,6 @@ var _ port.QueueService = (*RiverQueueService)(nil)
 const (
 	TypeSpecGeneration = "specview:generate"
 
-	queueName      = "specview"
 	maxRetries     = 3
 	enqueueTimeout = 5 * time.Second
 )
@@ -40,7 +41,7 @@ func NewRiverQueueService(client *river.Client[pgx.Tx]) *RiverQueueService {
 	return &RiverQueueService{client: client}
 }
 
-func (s *RiverQueueService) EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string) error {
+func (s *RiverQueueService) EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string, tier subscription.PlanTier) error {
 	ctx, cancel := context.WithTimeout(ctx, enqueueTimeout)
 	defer cancel()
 
@@ -51,9 +52,11 @@ func (s *RiverQueueService) EnqueueSpecGeneration(ctx context.Context, analysisI
 		UserID:     userID,
 	}
 
+	targetQueue := queue.SelectQueueForSpecView(tier, false)
+
 	_, err := s.client.Insert(ctx, args, &river.InsertOpts{
 		MaxAttempts: maxRetries,
-		Queue:       queueName,
+		Queue:       targetQueue,
 		UniqueOpts: river.UniqueOpts{
 			ByArgs: true,
 			ByState: []rivertype.JobState{

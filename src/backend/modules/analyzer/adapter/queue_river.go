@@ -8,7 +8,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
+	"github.com/specvital/web/src/backend/common/queue"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
+	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 )
 
 var _ port.QueueService = (*RiverQueueService)(nil)
@@ -16,7 +18,6 @@ var _ port.QueueService = (*RiverQueueService)(nil)
 const (
 	TypeAnalyze = "analysis:analyze"
 
-	queueName      = "analysis"
 	maxRetries     = 3
 	enqueueTimeout = 5 * time.Second
 )
@@ -39,7 +40,7 @@ func NewRiverQueueService(client *river.Client[pgx.Tx], repo port.Repository) *R
 	return &RiverQueueService{client: client, repo: repo}
 }
 
-func (s *RiverQueueService) Enqueue(ctx context.Context, owner, repo, commitSHA string, userID *string) error {
+func (s *RiverQueueService) Enqueue(ctx context.Context, owner, repo, commitSHA string, userID *string, tier subscription.PlanTier) error {
 	ctx, cancel := context.WithTimeout(ctx, enqueueTimeout)
 	defer cancel()
 
@@ -50,9 +51,11 @@ func (s *RiverQueueService) Enqueue(ctx context.Context, owner, repo, commitSHA 
 		UserID:    userID,
 	}
 
+	targetQueue := queue.SelectQueueForAnalysis(tier, false)
+
 	_, err := s.client.Insert(ctx, args, &river.InsertOpts{
 		MaxAttempts: maxRetries,
-		Queue:       queueName,
+		Queue:       targetQueue,
 		UniqueOpts: river.UniqueOpts{
 			ByArgs: true,
 			ByState: []rivertype.JobState{

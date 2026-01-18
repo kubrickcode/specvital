@@ -8,11 +8,13 @@ import (
 
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
+	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 )
 
 type ReanalyzeRepositoryInput struct {
 	Owner  string
 	Repo   string
+	Tier   subscription.PlanTier
 	UserID string
 }
 
@@ -54,7 +56,7 @@ func (uc *ReanalyzeRepositoryUseCase) Execute(ctx context.Context, input Reanaly
 		userIDPtr = &input.UserID
 	}
 
-	if err := uc.queue.Enqueue(ctx, input.Owner, input.Repo, latestSHA, userIDPtr); err != nil {
+	if err := uc.queue.Enqueue(ctx, input.Owner, input.Repo, latestSHA, userIDPtr, input.Tier); err != nil {
 		return nil, fmt.Errorf("queue reanalysis for %s/%s: %w", input.Owner, input.Repo, err)
 	}
 

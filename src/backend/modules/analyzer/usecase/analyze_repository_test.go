@@ -10,6 +10,7 @@ import (
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
 	"github.com/specvital/web/src/backend/modules/analyzer/usecase"
+	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 )
 
 type analyzeRepoMocks struct {
@@ -85,13 +86,15 @@ func (m *mockRepositoryForAnalyze) UpdateLastViewed(_ context.Context, _, _ stri
 type mockQueueServiceForAnalyze struct {
 	enqueueCalled     bool
 	enqueuedCommitSHA string
+	enqueuedTier      subscription.PlanTier
 	enqueueErr        error
 	taskInfo          *port.TaskInfo
 }
 
-func (m *mockQueueServiceForAnalyze) Enqueue(_ context.Context, _, _, commitSHA string, _ *string) error {
+func (m *mockQueueServiceForAnalyze) Enqueue(_ context.Context, _, _, commitSHA string, _ *string, tier subscription.PlanTier) error {
 	m.enqueueCalled = true
 	m.enqueuedCommitSHA = commitSHA
+	m.enqueuedTier = tier
 	return m.enqueueErr
 }
 func (m *mockQueueServiceForAnalyze) FindTaskByRepo(_ context.Context, _, _ string) (*port.TaskInfo, error) {

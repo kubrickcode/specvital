@@ -7,6 +7,7 @@ import (
 	"github.com/specvital/web/src/backend/modules/spec-view/domain"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/entity"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/port"
+	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 	usageentity "github.com/specvital/web/src/backend/modules/usage/domain/entity"
 	usageusecase "github.com/specvital/web/src/backend/modules/usage/usecase"
 )
@@ -15,6 +16,7 @@ type RequestGenerationInput struct {
 	AnalysisID        string
 	IsForceRegenerate bool
 	Language          string
+	Tier              subscription.PlanTier
 	UserID            string
 }
 
@@ -106,7 +108,7 @@ func (uc *RequestGenerationUseCase) Execute(ctx context.Context, input RequestGe
 		userIDPtr = &input.UserID
 	}
 
-	if err := uc.queue.EnqueueSpecGeneration(ctx, input.AnalysisID, language, userIDPtr); err != nil {
+	if err := uc.queue.EnqueueSpecGeneration(ctx, input.AnalysisID, language, userIDPtr, input.Tier); err != nil {
 		return nil, err
 	}
 

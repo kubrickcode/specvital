@@ -14,6 +14,7 @@ import (
 	"github.com/specvital/web/src/backend/modules/analyzer/usecase"
 	authhandler "github.com/specvital/web/src/backend/modules/auth/handler"
 	specviewhandler "github.com/specvital/web/src/backend/modules/spec-view/handler"
+	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 	"github.com/specvital/web/src/backend/modules/user"
 )
 
@@ -98,6 +99,7 @@ type mockQueueService struct {
 	enqueuedOwner     string
 	enqueuedRepo      string
 	enqueuedCommitSHA string
+	enqueuedTier      subscription.PlanTier
 	enqueuedUserID    *string
 	err               error
 	findTaskInfo      *port.TaskInfo
@@ -105,12 +107,13 @@ type mockQueueService struct {
 
 var _ port.QueueService = (*mockQueueService)(nil)
 
-func (m *mockQueueService) Enqueue(ctx context.Context, owner, repo, commitSHA string, userID *string) error {
+func (m *mockQueueService) Enqueue(ctx context.Context, owner, repo, commitSHA string, userID *string, tier subscription.PlanTier) error {
 	m.enqueueCalled = true
 	m.enqueuedOwner = owner
 	m.enqueuedRepo = repo
 	m.enqueuedCommitSHA = commitSHA
 	m.enqueuedUserID = userID
+	m.enqueuedTier = tier
 	return m.err
 }
 
