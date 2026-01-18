@@ -86,3 +86,7 @@ type PreviousAnalysis struct {
 type HistoryChecker interface {
 	CheckUserHistoryExists(ctx context.Context, userID, owner, repo string) (bool, error)
 }
+
+type TierLookup interface {
+	GetUserTier(ctx context.Context, userID string) (string, error)
+}

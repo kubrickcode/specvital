@@ -87,7 +87,7 @@ func TestGetRecentRepositories_DefaultParams(t *testing.T) {
 
 	log := newTestLogger()
 	listUC := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, mock, &mockTokenProvider{})
-	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil, nil)
+	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil, nil, nil)
 
 	req := api.GetRecentRepositoriesRequestObject{
 		Params: api.GetRecentRepositoriesParams{},
@@ -129,7 +129,7 @@ func TestGetRecentRepositories_WithPaginationParams(t *testing.T) {
 
 	log := newTestLogger()
 	listUC := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, mock, &mockTokenProvider{})
-	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil, nil)
+	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil, nil, nil)
 
 	limit := 20
 
@@ -168,7 +168,7 @@ func TestGetRecentRepositories_InvalidCursor(t *testing.T) {
 
 	log := newTestLogger()
 	listUC := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, mock, &mockTokenProvider{})
-	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil, nil)
+	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil, nil, nil)
 
 	invalidCursor := "invalid-cursor-data"
 	req := api.GetRecentRepositoriesRequestObject{
@@ -193,7 +193,7 @@ func TestGetRecentRepositories_SortByMismatch(t *testing.T) {
 
 	log := newTestLogger()
 	listUC := usecase.NewListRepositoryCardsUseCase(&mockGitClient{}, mock, &mockTokenProvider{})
-	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil, nil)
+	h := NewHandler(log, nil, nil, listUC, nil, nil, nil, nil, nil, nil)
 
 	cursor := entity.EncodeCursor(entity.RepositoryCursor{
 		ID:         "c1",

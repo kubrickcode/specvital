@@ -18,6 +18,7 @@ import (
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
 	"github.com/specvital/web/src/backend/modules/analyzer/usecase"
+	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 )
 
 var validNamePattern = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
@@ -32,6 +33,7 @@ type Handler struct {
 	listRepositoryCards  *usecase.ListRepositoryCardsUseCase
 	logger               *logger.Logger
 	reanalyzeRepository  *usecase.ReanalyzeRepositoryUseCase
+	tierLookup           port.TierLookup
 }
 
 var _ api.AnalyzerHandlers = (*Handler)(nil)
@@ -47,6 +49,7 @@ func NewHandler(
 	reanalyzeRepository *usecase.ReanalyzeRepositoryUseCase,
 	historyChecker port.HistoryChecker,
 	anonymousRateLimiter *ratelimit.IPRateLimiter,
+	tierLookup port.TierLookup,
 ) *Handler {
 	return &Handler{
 		analyzeRepository:    analyzeRepository,
@@ -58,6 +61,7 @@ func NewHandler(
 		listRepositoryCards:  listRepositoryCards,
 		logger:               logger,
 		reanalyzeRepository:  reanalyzeRepository,
+		tierLookup:           tierLookup,
 	}
 }
 
@@ -90,9 +94,12 @@ func (h *Handler) AnalyzeRepository(ctx context.Context, request api.AnalyzeRepo
 		}
 	}
 
+	tier := h.lookupUserTier(ctx, log, userID)
+
 	result, err := h.analyzeRepository.Execute(ctx, usecase.AnalyzeRepositoryInput{
 		Owner:  owner,
 		Repo:   repo,
+		Tier:   tier,
 		UserID: userID,
 	})
 	if err != nil {
@@ -317,9 +324,12 @@ func (h *Handler) ReanalyzeRepository(ctx context.Context, request api.Reanalyze
 	}
 
 	userID := middleware.GetUserID(ctx)
+	tier := h.lookupUserTier(ctx, log, userID)
+
 	result, err := h.reanalyzeRepository.Execute(ctx, usecase.ReanalyzeRepositoryInput{
 		Owner:  owner,
 		Repo:   repo,
+		Tier:   tier,
 		UserID: userID,
 	})
 	if err != nil {
@@ -448,4 +458,16 @@ func (h *Handler) buildHistoryOptions(ctx context.Context, userID, owner, repo s
 	}
 
 	return mapper.CompletedResponseOptions{IsInMyHistory: &exists}
+}
+
+func (h *Handler) lookupUserTier(ctx context.Context, log *logger.Logger, userID string) subscription.PlanTier {
+	if userID == "" || h.tierLookup == nil {
+		return ""
+	}
+	tierStr, err := h.tierLookup.GetUserTier(ctx, userID)
+	if err != nil {
+		log.Warn(ctx, "failed to lookup user tier, using default", "error", err)
+		return ""
+	}
+	return subscription.PlanTier(tierStr)
 }

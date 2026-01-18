@@ -178,6 +178,8 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 	anonymousRateLimiter := ratelimit.NewIPRateLimiter(10, time.Minute)
 	closers = append(closers, anonymousRateLimiter)
 
+	tierLookup := subscriptionadapter.NewTierLookupAdapter(subscriptionRepo)
+
 	analyzerHandler := analyzerhandler.NewHandler(
 		log,
 		analyzeRepositoryUC,
@@ -188,6 +190,7 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 		reanalyzeRepositoryUC,
 		historyRepo,
 		anonymousRateLimiter,
+		tierLookup,
 	)
 
 	githubRepo := githubadapter.NewPostgresRepository(container.DB, queries)
