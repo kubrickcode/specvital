@@ -242,20 +242,11 @@ const proxy = async (request: NextRequest) => {
     return response;
   }
 
-  // Exception: authenticated users on home → redirect to dashboard
+  // Optimistic redirect: authenticated users on home → redirect to dashboard
+  // No backend API call here - token validation happens in dashboard's protected route logic
   if (isHomePage(pathname) && hasCookie) {
-    const authResult = await verifyAuthToken(request);
-    if (authResult.isValid) {
-      const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
-      const response = NextResponse.redirect(dashboardUrl, 307);
-      if (authResult.newTokens) {
-        setTokenCookies(response, authResult.newTokens);
-      } else {
-        setSessionIndicator(response);
-      }
-      return response;
-    }
-    // Token verification failed - stay on home, let client handle refresh
+    const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
+    return NextResponse.redirect(dashboardUrl, 307);
   }
 
   return intlMiddleware(request);
