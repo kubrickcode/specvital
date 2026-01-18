@@ -254,6 +254,7 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 		GetSpecDocument:     getSpecDocumentUC,
 		Logger:              log,
 		RequestGeneration:   requestGenerationUC,
+		TierLookup:          tierLookup,
 	})
 	if err != nil {
 		return nil, nil, fmt.Errorf("create spec-view handler: %w", err)

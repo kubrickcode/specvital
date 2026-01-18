@@ -5,11 +5,13 @@ import (
 	"errors"
 
 	analyzerport "github.com/specvital/web/src/backend/modules/analyzer/domain/port"
+	specviewport "github.com/specvital/web/src/backend/modules/spec-view/domain/port"
 	"github.com/specvital/web/src/backend/modules/subscription/domain"
 	"github.com/specvital/web/src/backend/modules/subscription/domain/port"
 )
 
 var _ analyzerport.TierLookup = (*TierLookupAdapter)(nil)
+var _ specviewport.TierLookup = (*TierLookupAdapter)(nil)
 
 type TierLookupAdapter struct {
 	repo port.SubscriptionRepository

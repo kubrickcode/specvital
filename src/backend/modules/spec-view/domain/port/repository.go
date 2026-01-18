@@ -12,3 +12,7 @@ type SpecViewRepository interface {
 	GetSpecDocument(ctx context.Context, analysisID string) (*entity.SpecDocument, error)
 	GetGenerationStatus(ctx context.Context, analysisID string) (*entity.SpecGenerationStatus, error)
 }
+
+type TierLookup interface {
+	GetUserTier(ctx context.Context, userID string) (string, error)
+}

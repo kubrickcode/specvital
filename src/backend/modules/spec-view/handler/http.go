@@ -12,7 +12,9 @@ import (
 	"github.com/specvital/web/src/backend/modules/spec-view/adapter/mapper"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/entity"
+	"github.com/specvital/web/src/backend/modules/spec-view/domain/port"
 	"github.com/specvital/web/src/backend/modules/spec-view/usecase"
+	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 )
 
 type Handler struct {
@@ -20,6 +22,7 @@ type Handler struct {
 	getSpecDocument     *usecase.GetSpecDocumentUseCase
 	logger              *logger.Logger
 	requestGeneration   *usecase.RequestGenerationUseCase
+	tierLookup          port.TierLookup
 }
 
 var _ api.SpecViewHandlers = (*Handler)(nil)
@@ -29,6 +32,8 @@ type HandlerConfig struct {
 	GetSpecDocument     *usecase.GetSpecDocumentUseCase
 	Logger              *logger.Logger
 	RequestGeneration   *usecase.RequestGenerationUseCase
+	// TierLookup is optional. If nil, all requests use default queue.
+	TierLookup port.TierLookup
 }
 
 func NewHandler(cfg *HandlerConfig) (*Handler, error) {
@@ -50,6 +55,7 @@ func NewHandler(cfg *HandlerConfig) (*Handler, error) {
 		getSpecDocument:     cfg.GetSpecDocument,
 		logger:              cfg.Logger,
 		requestGeneration:   cfg.RequestGeneration,
+		tierLookup:          cfg.TierLookup,
 	}, nil
 }
 
@@ -122,10 +128,13 @@ func (h *Handler) RequestSpecGeneration(ctx context.Context, request api.Request
 		isForce = *request.Body.IsForceRegenerate
 	}
 
+	tier := h.lookupUserTier(ctx, userID)
+
 	result, err := h.requestGeneration.Execute(ctx, usecase.RequestGenerationInput{
 		AnalysisID:        request.Body.AnalysisID.String(),
 		IsForceRegenerate: isForce,
 		Language:          language,
+		Tier:              tier,
 		UserID:            userID,
 	})
 	if err != nil {
@@ -232,4 +241,16 @@ func (r specDocument200Response) VisitGetSpecDocumentResponse(w http.ResponseWri
 
 func ptr(s string) *string {
 	return &s
+}
+
+func (h *Handler) lookupUserTier(ctx context.Context, userID string) subscription.PlanTier {
+	if userID == "" || h.tierLookup == nil {
+		return ""
+	}
+	tierStr, err := h.tierLookup.GetUserTier(ctx, userID)
+	if err != nil {
+		h.logger.Warn(ctx, "failed to lookup user tier, using default", "error", err)
+		return ""
+	}
+	return subscription.PlanTier(tierStr)
 }
