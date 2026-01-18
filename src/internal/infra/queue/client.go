@@ -57,3 +57,17 @@ func (c *Client) EnqueueAnalysisWithUser(ctx context.Context, owner, repo, commi
 	})
 	return err
 }
+
+func (c *Client) EnqueueScheduledAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
+	_, err := c.client.Insert(ctx, analyze.AnalyzeArgs{
+		Owner:     owner,
+		Repo:      repo,
+		CommitSHA: commitSHA,
+	}, &river.InsertOpts{
+		Queue: analyze.QueueScheduled,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs: true,
+		},
+	})
+	return err
+}

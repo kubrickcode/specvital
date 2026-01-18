@@ -106,7 +106,7 @@ func (uc *AutoRefreshUseCase) Execute(ctx context.Context) error {
 			continue
 		}
 
-		if err := uc.taskQueue.EnqueueAnalysis(ctx, codebase.Owner, codebase.Name, commitInfo.SHA); err != nil {
+		if err := uc.taskQueue.EnqueueScheduledAnalysis(ctx, codebase.Owner, codebase.Name, commitInfo.SHA); err != nil {
 			consecutiveFailures++
 			slog.ErrorContext(ctx, "failed to enqueue auto-refresh task",
 				"owner", codebase.Owner,

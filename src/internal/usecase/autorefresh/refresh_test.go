@@ -39,6 +39,18 @@ func (m *mockTaskQueue) EnqueueAnalysis(ctx context.Context, owner, repo, commit
 	return nil
 }
 
+func (m *mockTaskQueue) EnqueueScheduledAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
+	if m.err != nil {
+		return m.err
+	}
+	m.enqueuedTasks = append(m.enqueuedTasks, struct {
+		owner     string
+		repo      string
+		commitSHA string
+	}{owner, repo, commitSHA})
+	return nil
+}
+
 type mockVCS struct {
 	commitSHA string
 	err       error
@@ -282,6 +294,10 @@ type errorOnFirstTaskQueue struct {
 }
 
 func (m *errorOnFirstTaskQueue) EnqueueAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
+	return nil
+}
+
+func (m *errorOnFirstTaskQueue) EnqueueScheduledAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
 	m.callCount++
 	if m.callCount == 1 {
 		return errors.New("enqueue error")
@@ -340,6 +356,10 @@ type alwaysFailingTaskQueue struct {
 }
 
 func (m *alwaysFailingTaskQueue) EnqueueAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
+	return errors.New("enqueue error")
+}
+
+func (m *alwaysFailingTaskQueue) EnqueueScheduledAnalysis(ctx context.Context, owner, repo, commitSHA string) error {
 	m.callCount++
 	return errors.New("enqueue error")
 }

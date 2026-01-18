@@ -27,4 +27,5 @@ type ParserVersionProvider interface {
 
 type TaskQueue interface {
 	EnqueueAnalysis(ctx context.Context, owner, repo, commitSHA string) error
+	EnqueueScheduledAnalysis(ctx context.Context, owner, repo, commitSHA string) error
 }
