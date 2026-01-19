@@ -83,13 +83,15 @@ func TestDecodeCursor_SortByMismatch(t *testing.T) {
 	}
 	encoded := entity.EncodeCursor(cursor)
 
-	_, err := entity.DecodeCursor(encoded, entity.SortByName)
+	// When sortBy mismatches, should return nil cursor (fresh start) not an error
+	// This allows graceful handling of sort changes without breaking pagination
+	decoded, err := entity.DecodeCursor(encoded, entity.SortByName)
 
-	if err == nil {
-		t.Error("expected error for sortBy mismatch")
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
 	}
-	if err != entity.ErrInvalidCursor {
-		t.Errorf("expected ErrInvalidCursor, got %v", err)
+	if decoded != nil {
+		t.Error("expected nil cursor for sortBy mismatch")
 	}
 }
 

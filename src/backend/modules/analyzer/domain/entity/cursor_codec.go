@@ -44,8 +44,10 @@ func DecodeCursor(encoded string, expectedSortBy SortBy) (*RepositoryCursor, err
 		return nil, ErrInvalidCursor
 	}
 
+	// When sortBy changes, treat as fresh pagination request (return nil cursor)
+	// This gracefully handles sort changes without breaking the UI
 	if SortBy(payload.SortBy) != expectedSortBy {
-		return nil, ErrInvalidCursor
+		return nil, nil
 	}
 
 	return &RepositoryCursor{

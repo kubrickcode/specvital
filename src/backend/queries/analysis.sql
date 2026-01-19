@@ -280,7 +280,7 @@ WHERE c.is_stale = false
         AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
-    sqlc.arg(cursor_name)::text IS NULL
+    sqlc.arg(cursor_id)::uuid IS NULL
     OR (
       (sqlc.arg(sort_order)::text = 'asc' AND (c.name, c.id) > (sqlc.arg(cursor_name)::text, sqlc.arg(cursor_id)::uuid))
       OR (sqlc.arg(sort_order)::text = 'desc' AND (c.name, c.id) < (sqlc.arg(cursor_name)::text, sqlc.arg(cursor_id)::uuid))
@@ -372,7 +372,7 @@ WHERE c.is_stale = false
         AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
-    sqlc.arg(cursor_test_count)::int IS NULL
+    sqlc.arg(cursor_id)::uuid IS NULL
     OR (
       (sqlc.arg(sort_order)::text = 'desc' AND (a.total_tests, c.id) < (sqlc.arg(cursor_test_count)::int, sqlc.arg(cursor_id)::uuid))
       OR (sqlc.arg(sort_order)::text = 'asc' AND (a.total_tests, c.id) > (sqlc.arg(cursor_test_count)::int, sqlc.arg(cursor_id)::uuid))

@@ -225,10 +225,10 @@ WHERE c.is_stale = false
         AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
-    $4::text IS NULL
+    $4::uuid IS NULL
     OR (
-      ($5::text = 'asc' AND (c.name, c.id) > ($4::text, $6::uuid))
-      OR ($5::text = 'desc' AND (c.name, c.id) < ($4::text, $6::uuid))
+      ($5::text = 'asc' AND (c.name, c.id) > ($6::text, $4::uuid))
+      OR ($5::text = 'desc' AND (c.name, c.id) < ($6::text, $4::uuid))
     )
   )
 ORDER BY
@@ -243,9 +243,9 @@ type GetPaginatedRepositoriesByNameParams struct {
 	UserID          pgtype.UUID `json:"user_id"`
 	ViewFilter      string      `json:"view_filter"`
 	OwnershipFilter string      `json:"ownership_filter"`
-	CursorName      string      `json:"cursor_name"`
-	SortOrder       string      `json:"sort_order"`
 	CursorID        pgtype.UUID `json:"cursor_id"`
+	SortOrder       string      `json:"sort_order"`
+	CursorName      string      `json:"cursor_name"`
 	PageLimit       int32       `json:"page_limit"`
 }
 
@@ -270,9 +270,9 @@ func (q *Queries) GetPaginatedRepositoriesByName(ctx context.Context, arg GetPag
 		arg.UserID,
 		arg.ViewFilter,
 		arg.OwnershipFilter,
-		arg.CursorName,
-		arg.SortOrder,
 		arg.CursorID,
+		arg.SortOrder,
+		arg.CursorName,
 		arg.PageLimit,
 	)
 	if err != nil {
@@ -547,10 +547,10 @@ WHERE c.is_stale = false
         AND c.owner NOT IN (SELECT login FROM user_orgs))
   )
   AND (
-    $4::int IS NULL
+    $4::uuid IS NULL
     OR (
-      ($5::text = 'desc' AND (a.total_tests, c.id) < ($4::int, $6::uuid))
-      OR ($5::text = 'asc' AND (a.total_tests, c.id) > ($4::int, $6::uuid))
+      ($5::text = 'desc' AND (a.total_tests, c.id) < ($6::int, $4::uuid))
+      OR ($5::text = 'asc' AND (a.total_tests, c.id) > ($6::int, $4::uuid))
     )
   )
 ORDER BY
@@ -565,9 +565,9 @@ type GetPaginatedRepositoriesByTestsParams struct {
 	UserID          pgtype.UUID `json:"user_id"`
 	ViewFilter      string      `json:"view_filter"`
 	OwnershipFilter string      `json:"ownership_filter"`
-	CursorTestCount int32       `json:"cursor_test_count"`
-	SortOrder       string      `json:"sort_order"`
 	CursorID        pgtype.UUID `json:"cursor_id"`
+	SortOrder       string      `json:"sort_order"`
+	CursorTestCount int32       `json:"cursor_test_count"`
 	PageLimit       int32       `json:"page_limit"`
 }
 
@@ -592,9 +592,9 @@ func (q *Queries) GetPaginatedRepositoriesByTests(ctx context.Context, arg GetPa
 		arg.UserID,
 		arg.ViewFilter,
 		arg.OwnershipFilter,
-		arg.CursorTestCount,
-		arg.SortOrder,
 		arg.CursorID,
+		arg.SortOrder,
+		arg.CursorTestCount,
 		arg.PageLimit,
 	)
 	if err != nil {
