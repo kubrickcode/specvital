@@ -27,24 +27,13 @@ test.describe("Dashboard Page (Authenticated)", () => {
   });
 
   test("should display repository list or empty state", async ({ page }) => {
-    // Wait for content to load
-    await page.waitForLoadState("networkidle");
-
-    // Either repository cards are shown or empty state
-    const hasRepositories = await page
-      .locator('[data-testid="repository-card"]')
-      .or(page.getByRole("link", { name: /analyze/i }))
-      .first()
-      .isVisible({ timeout: 10000 })
-      .catch(() => false);
-
-    const hasEmptyState = await page
-      .getByText(/no repositories|get started|add your first/i)
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    // One of them should be visible
-    expect(hasRepositories || hasEmptyState).toBeTruthy();
+    // Wait for content to fully load (not just network idle)
+    // Either repository cards appear or empty state heading appears
+    await expect(
+      page
+        .getByRole("heading", { name: /no repositories yet/i })
+        .or(page.getByRole("button", { name: /add bookmark|remove bookmark/i }).first())
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test("should have filter controls", async ({ page }) => {
@@ -105,5 +94,108 @@ test.describe("Dashboard Page (Authenticated)", () => {
     if (hasOrgPicker) {
       await expect(orgPicker).toBeEnabled();
     }
+  });
+
+  test("should toggle bookmark on repository card", async ({ page }) => {
+    // Wait for repository list to load
+    await page.waitForLoadState("networkidle");
+
+    // Find a repository card with bookmark button
+    const bookmarkButton = page
+      .getByRole("button", { name: /add bookmark|remove bookmark/i })
+      .first();
+
+    const hasBookmarkButton = await bookmarkButton
+      .isVisible({ timeout: 10000 })
+      .catch(() => false);
+
+    if (!hasBookmarkButton) {
+      // No repositories available - skip test
+      test.skip();
+      return;
+    }
+
+    // Get initial bookmark state
+    const initialLabel = await bookmarkButton.getAttribute("aria-label");
+
+    // Click to toggle bookmark
+    await bookmarkButton.click();
+
+    // Wait for state change
+    await page.waitForTimeout(500);
+
+    // Verify the button label changed
+    if (initialLabel === "Add bookmark") {
+      await expect(bookmarkButton).toHaveAttribute("aria-label", "Remove bookmark");
+      await expect(bookmarkButton).toHaveAttribute("aria-pressed", "true");
+    } else {
+      await expect(bookmarkButton).toHaveAttribute("aria-label", "Add bookmark");
+      await expect(bookmarkButton).toHaveAttribute("aria-pressed", "false");
+    }
+
+    // Toggle back to original state
+    await bookmarkButton.click();
+
+    // Verify returned to original state
+    await expect(bookmarkButton).toHaveAttribute("aria-label", initialLabel!);
+  });
+
+  test("should filter by bookmarked repositories", async ({ page }) => {
+    // Wait for content to fully load
+    await expect(
+      page
+        .getByRole("heading", { name: /no repositories yet/i })
+        .or(page.getByRole("button", { name: /add bookmark|remove bookmark/i }).first())
+    ).toBeVisible({ timeout: 15000 });
+
+    // Check if user has any repositories first
+    const hasNoRepos = await page
+      .getByRole("heading", { name: /no repositories yet/i })
+      .isVisible()
+      .catch(() => false);
+
+    if (hasNoRepos) {
+      // No repositories to filter - skip test
+      // Note: When there are 0 repositories, "No repositories yet" is shown
+      // even with starred filter enabled. "No bookmarked repositories" only
+      // shows when there are some repos but none are bookmarked.
+      test.skip();
+      return;
+    }
+
+    // Look for starred toggle button
+    const starredToggle = page.getByRole("button", { name: /show starred only/i });
+
+    const hasStarredControl = await starredToggle.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (!hasStarredControl) {
+      // Filter control not available
+      test.skip();
+      return;
+    }
+
+    // Click the starred toggle
+    await starredToggle.click();
+
+    // Verify toggle is pressed
+    await expect(starredToggle).toHaveAttribute("aria-pressed", "true");
+
+    // After clicking starred filter, either shows bookmarked repos or empty state
+    const hasEmptyState = await page
+      .getByRole("heading", { name: /no bookmarked repositories/i })
+      .isVisible({ timeout: 5000 })
+      .catch(() => false);
+
+    const hasBookmarkedRepos = await page
+      .getByRole("button", { name: "Remove bookmark" })
+      .isVisible({ timeout: 5000 })
+      .catch(() => false);
+
+    // Either state is valid (empty or has bookmarked repos)
+    expect(hasEmptyState || hasBookmarkedRepos).toBeTruthy();
+
+    // Toggle off
+    await starredToggle.click();
+    await expect(starredToggle).toHaveAttribute("aria-pressed", "false");
   });
 });

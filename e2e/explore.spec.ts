@@ -126,4 +126,63 @@ test.describe("Explore Page", () => {
       page.getByRole("heading", { name: "Test Statistics" })
     ).toBeVisible({ timeout: 30000 });
   });
+
+  test("should sort repositories by different criteria", async ({ page }) => {
+    // Wait for repository list to load
+    await expect(page.getByText(/Showing all \d+ repositories/)).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Verify default sort is "Recent"
+    const sortButton = page.getByRole("button", { name: /Sort: Recent/i });
+    await expect(sortButton).toBeVisible();
+
+    // Open sort dropdown
+    await sortButton.click();
+
+    // Verify dropdown options are visible
+    await expect(page.getByRole("menuitemradio", { name: "Recent" })).toBeVisible();
+    await expect(page.getByRole("menuitemradio", { name: "Name" })).toBeVisible();
+    await expect(page.getByRole("menuitemradio", { name: "Tests" })).toBeVisible();
+
+    // Select "Name" sort option
+    await page.getByRole("menuitemradio", { name: "Name" }).click();
+
+    // Verify sort button text updated
+    await expect(page.getByRole("button", { name: /Sort: Name/i })).toBeVisible();
+
+    // Sort by "Tests"
+    await page.getByRole("button", { name: /Sort: Name/i }).click();
+    await page.getByRole("menuitemradio", { name: "Tests" }).click();
+
+    // Verify sort button text updated to "Tests"
+    await expect(page.getByRole("button", { name: /Sort: Tests/i })).toBeVisible();
+  });
+
+  test("should maintain sort selection while searching", async ({ page }) => {
+    // Wait for repository list to load
+    await expect(page.getByText(/Showing all \d+ repositories/)).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Change sort to "Name"
+    await page.getByRole("button", { name: /Sort: Recent/i }).click();
+    await page.getByRole("menuitemradio", { name: "Name" }).click();
+    await expect(page.getByRole("button", { name: /Sort: Name/i })).toBeVisible();
+
+    // Search for repository
+    const searchbox = page.getByRole("searchbox", {
+      name: "Search repositories...",
+    });
+    await searchbox.fill("react");
+
+    // Verify sort is still "Name"
+    await expect(page.getByRole("button", { name: /Sort: Name/i })).toBeVisible();
+
+    // Clear search
+    await searchbox.fill("");
+
+    // Verify sort is still "Name"
+    await expect(page.getByRole("button", { name: /Sort: Name/i })).toBeVisible();
+  });
 });
