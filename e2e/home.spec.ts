@@ -6,7 +6,7 @@ test.describe("Homepage", () => {
 
     // Verify main heading
     await expect(
-      page.getByRole("heading", { name: /spec/i }).first()
+      page.getByRole("heading", { name: /test suite/i }).first()
     ).toBeVisible();
 
     // Verify URL input exists
