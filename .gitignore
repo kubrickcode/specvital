@@ -4,6 +4,7 @@ node_modules
 .next
 next-env.d.ts
 docs/work
+docs/e2e-ui
 .claude/settings.local.json
 .claude-sessions/
 src/backend/tmp
