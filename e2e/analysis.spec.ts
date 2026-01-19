@@ -199,4 +199,82 @@ test.describe("Analysis Page", () => {
       page.getByRole("menu", { name: "Export analysis results" })
     ).not.toBeVisible();
   });
+
+  test("should filter by framework", async ({ page }) => {
+    // Click Framework filter button
+    await page.getByRole("button", { name: "Framework" }).click();
+
+    // Verify filter dialog is open with framework checkboxes
+    await expect(page.getByRole("checkbox", { name: "Jest" })).toBeVisible();
+    await expect(
+      page.getByRole("checkbox", { name: "Playwright" })
+    ).toBeVisible();
+
+    // Select Jest framework
+    await page.getByRole("checkbox", { name: "Jest" }).click();
+
+    // Verify URL updated with frameworks parameter
+    await expect(page).toHaveURL(/\?frameworks=jest/);
+
+    // Verify button text updated with count
+    await expect(
+      page.getByRole("button", { name: /Framework \(1\)/ })
+    ).toBeVisible();
+
+    // Verify filtered results (status shows "X of Y tests")
+    await expect(page.getByRole("status")).toContainText(/of.*tests/i);
+
+    // Close dialog
+    await page.keyboard.press("Escape");
+  });
+
+  test("should show login prompt for AI Spec generation when unauthenticated", async ({
+    page,
+  }) => {
+    // Click Generate AI Spec button
+    await page
+      .getByRole("button", { name: "Generate test specification document with AI" })
+      .click();
+
+    // Verify login dialog is shown
+    await expect(
+      page.getByRole("dialog", { name: "Sign in to Generate Specs" })
+    ).toBeVisible();
+
+    // Verify dialog content
+    await expect(
+      page.getByRole("heading", { name: "Sign in to Generate Specs" })
+    ).toBeVisible();
+    await expect(
+      page.getByText(/Transform your test cases into organized specification/i)
+    ).toBeVisible();
+
+    // Verify Continue with GitHub button
+    await expect(
+      page.getByRole("button", { name: "Continue with GitHub" })
+    ).toBeVisible();
+
+    // Close dialog
+    await page.getByRole("button", { name: "Close" }).click();
+    await expect(
+      page.getByRole("dialog", { name: "Sign in to Generate Specs" })
+    ).not.toBeVisible();
+  });
+
+  test("should display commit info in header", async ({ page }) => {
+    // Verify branch name is displayed
+    await expect(page.getByText("main")).toBeVisible();
+
+    // Verify commit SHA button exists (short hash format)
+    const commitButton = page.getByRole("button", { name: /^[a-f0-9]{7}$/i });
+    await expect(commitButton).toBeVisible();
+
+    // Verify View on GitHub link
+    const githubLink = page.getByRole("link", { name: "View on GitHub" });
+    await expect(githubLink).toBeVisible();
+    await expect(githubLink).toHaveAttribute(
+      "href",
+      "https://github.com/facebook/react"
+    );
+  });
 });

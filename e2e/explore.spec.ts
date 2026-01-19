@@ -58,4 +58,72 @@ test.describe("Explore Page", () => {
       page.getByRole("tabpanel", { name: "Community" })
     ).toBeVisible();
   });
+
+  test("should filter repositories by search", async ({ page }) => {
+    // Wait for repository list to load
+    await expect(page.getByText(/Showing all \d+ repositories/)).toBeVisible({
+      timeout: 15000,
+    });
+
+    const searchbox = page.getByRole("searchbox", {
+      name: "Search repositories...",
+    });
+
+    // Search for specific repository
+    await searchbox.fill("react");
+
+    // Verify filtered results show matching repository
+    await expect(page.getByRole("heading", { name: "facebook/react" })).toBeVisible();
+
+    // Clear search
+    await searchbox.fill("");
+
+    // Verify all repositories are shown again
+    await expect(page.getByText(/Showing all \d+ repositories/)).toBeVisible();
+  });
+
+  test("should show no results message for non-matching search", async ({
+    page,
+  }) => {
+    // Wait for repository list to load
+    await expect(page.getByText(/Showing all \d+ repositories/)).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Search for non-existent repository
+    await page
+      .getByRole("searchbox", { name: "Search repositories..." })
+      .fill("nonexistent");
+
+    // Verify no results message
+    await expect(
+      page.getByRole("heading", { name: "No matching repositories" })
+    ).toBeVisible();
+    await expect(page.getByText(/No results found for "nonexistent"/)).toBeVisible();
+  });
+
+  test("should navigate to analysis page when clicking repository card", async ({
+    page,
+  }) => {
+    // Wait for repository list to load
+    await expect(page.getByText(/Showing all \d+ repositories/)).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Click on first repository card (facebook/react)
+    await page
+      .getByRole("link", { name: /facebook\/react.*tests/i })
+      .click();
+
+    // Verify navigation to analysis page
+    await expect(page).toHaveURL(/\/analyze\/facebook\/react/);
+
+    // Verify analysis page content
+    await expect(
+      page.getByRole("heading", { name: "facebook/react" })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Test Statistics" })
+    ).toBeVisible({ timeout: 30000 });
+  });
 });

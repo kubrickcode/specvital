@@ -52,4 +52,42 @@ test.describe("Homepage", () => {
     // Verify URL hasn't changed (still on homepage)
     await expect(page).not.toHaveURL(/\/analyze/);
   });
+
+  test("should display URL format help button", async ({ page }) => {
+    await page.goto("/");
+
+    // Verify help button exists with proper aria-label
+    const helpButton = page.getByRole("button", {
+      name: /view supported formats|지원되는 형식/i,
+    });
+    await expect(helpButton).toBeVisible();
+
+    // Verify button is accessible (has icon)
+    await expect(helpButton.locator("svg")).toBeVisible();
+  });
+
+  test("should display 20+ frameworks button", async ({ page }) => {
+    await page.goto("/");
+
+    // Verify frameworks button exists
+    const frameworksButton = page.getByRole("button", {
+      name: /20\+ frameworks/i,
+    });
+    await expect(frameworksButton).toBeVisible();
+
+    // Click the button to show framework list
+    await frameworksButton.click();
+
+    // Verify popover/dialog with framework list appears
+    await expect(page.getByRole("dialog")).toBeVisible();
+
+    // Verify some framework names are listed
+    await expect(page.getByText(/jest/i)).toBeVisible();
+    await expect(page.getByText(/vitest/i)).toBeVisible();
+    await expect(page.getByText(/playwright/i)).toBeVisible();
+
+    // Close dialog
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+  });
 });
