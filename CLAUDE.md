@@ -48,6 +48,15 @@ Always modify `openapi.yaml` first, then regenerate. Never edit generated files.
 - Test file parsing: `github.com/specvital/core`
 - For parser changes → open issue in core repo first, NOT here
 
+### E2E Test Maintenance
+
+When implementing changes that affect user-facing behavior:
+
+- **MUST** add or update E2E tests in `e2e/` directory
+- UI changes (buttons, forms, navigation) → update corresponding `.spec.ts`
+- New pages/features → create new E2E test file
+- API-dependent tests → use mocked version (`*.mocked.spec.ts`)
+
 ## Data Flow
 
 ```
