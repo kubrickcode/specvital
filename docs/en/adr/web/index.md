@@ -33,6 +33,7 @@ Architecture Decision Records for the [specvital/web](https://github.com/specvit
 | 18  | [next-themes Dark Mode](./18-next-themes-dark-mode.md)                         | 2025-01-03 |
 | 19  | [CSS Variable Design Token System](./19-css-variable-design-token-system.md)   | 2025-01-03 |
 | 20  | [Skeleton Loading Pattern](./20-skeleton-loading-pattern.md)                   | 2025-01-03 |
+| 21  | [Anonymous User Rate Limiting](./21-anonymous-rate-limiting.md)                | 2026-01-15 |
 
 ## Related
 

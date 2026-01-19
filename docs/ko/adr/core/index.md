@@ -28,6 +28,7 @@ description: 코어 라이브러리(테스트 파서 엔진) 아키텍처 의사
 | 13  | [NaCl SecretBox 암호화](./13-nacl-secretbox-encryption.md)                                  | 2024-12-23 |
 | 14  | [간접 Import Alias 감지 미지원](./14-indirect-import-unsupported.md)                        | 2025-12-29 |
 | 15  | [C# 전처리기 블록 내 Attribute 감지 한계](./15-csharp-preprocessor-attribute-limitation.md) | 2026-01-04 |
+| 16  | [도메인 힌트 추출 시스템](./16-domain-hints-extraction.md)                                  | 2026-01-18 |
 
 ## 관련 문서
 

@@ -93,6 +93,18 @@ export default defineConfig({
                   link: "/en/adr/12-worker-centric-analysis-lifecycle",
                 },
                 {
+                  text: "Billing and Quota",
+                  link: "/en/adr/13-billing-quota-architecture",
+                },
+                {
+                  text: "AI Spec Generation Pipeline",
+                  link: "/en/adr/14-ai-spec-generation-pipeline",
+                },
+                {
+                  text: "Parser Version Tracking",
+                  link: "/en/adr/15-parser-version-tracking",
+                },
+                {
                   text: "Core",
                   collapsed: true,
                   items: [
@@ -112,6 +124,7 @@ export default defineConfig({
                     { text: "NaCl SecretBox Encryption", link: "/en/adr/core/13-nacl-secretbox-encryption" },
                     { text: "Indirect Import Unsupported", link: "/en/adr/core/14-indirect-import-unsupported" },
                     { text: "C# Preprocessor Limitation", link: "/en/adr/core/15-csharp-preprocessor-attribute-limitation" },
+                    { text: "Domain Hints Extraction", link: "/en/adr/core/16-domain-hints-extraction" },
                   ],
                 },
                 {
@@ -141,6 +154,7 @@ export default defineConfig({
                       link: "/en/adr/worker/06-semaphore-clone-concurrency",
                     },
                     { text: "Repository Pattern", link: "/en/adr/worker/07-repository-pattern" },
+                    { text: "SpecView Worker Separation", link: "/en/adr/worker/08-specview-worker-separation" },
                   ],
                 },
                 {
@@ -168,6 +182,7 @@ export default defineConfig({
                     { text: "next-themes Dark Mode", link: "/en/adr/web/18-next-themes-dark-mode" },
                     { text: "CSS Variable Tokens", link: "/en/adr/web/19-css-variable-design-token-system" },
                     { text: "Skeleton Loading", link: "/en/adr/web/20-skeleton-loading-pattern" },
+                    { text: "Anonymous Rate Limiting", link: "/en/adr/web/21-anonymous-rate-limiting" },
                   ],
                 },
               ],
@@ -229,6 +244,9 @@ export default defineConfig({
                 { text: "TestStatus 데이터 계약", link: "/ko/adr/10-test-status-data-contract" },
                 { text: "Visibility 접근 제어", link: "/ko/adr/11-community-private-repo-filtering" },
                 { text: "Worker 중심 라이프사이클", link: "/ko/adr/12-worker-centric-analysis-lifecycle" },
+                { text: "빌링 및 쿼터", link: "/ko/adr/13-billing-quota-architecture" },
+                { text: "AI 스펙 생성 파이프라인", link: "/ko/adr/14-ai-spec-generation-pipeline" },
+                { text: "파서 버전 추적", link: "/ko/adr/15-parser-version-tracking" },
                 {
                   text: "Core",
                   collapsed: true,
@@ -249,6 +267,7 @@ export default defineConfig({
                     { text: "NaCl SecretBox 암호화", link: "/ko/adr/core/13-nacl-secretbox-encryption" },
                     { text: "간접 Import 미지원", link: "/ko/adr/core/14-indirect-import-unsupported" },
                     { text: "C# 전처리기 한계", link: "/ko/adr/core/15-csharp-preprocessor-attribute-limitation" },
+                    { text: "도메인 힌트 추출", link: "/ko/adr/core/16-domain-hints-extraction" },
                   ],
                 },
                 {
@@ -278,6 +297,7 @@ export default defineConfig({
                       link: "/ko/adr/worker/06-semaphore-clone-concurrency",
                     },
                     { text: "Repository 패턴", link: "/ko/adr/worker/07-repository-pattern" },
+                    { text: "SpecView Worker 분리", link: "/ko/adr/worker/08-specview-worker-separation" },
                   ],
                 },
                 {
@@ -305,6 +325,7 @@ export default defineConfig({
                     { text: "next-themes 다크 모드", link: "/ko/adr/web/18-next-themes-dark-mode" },
                     { text: "CSS 변수 토큰", link: "/ko/adr/web/19-css-variable-design-token-system" },
                     { text: "스켈레톤 로딩", link: "/ko/adr/web/20-skeleton-loading-pattern" },
+                    { text: "익명 Rate Limiting", link: "/ko/adr/web/21-anonymous-rate-limiting" },
                   ],
                 },
               ],

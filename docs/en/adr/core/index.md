@@ -28,6 +28,7 @@ Architecture Decision Records for the [specvital/core](https://github.com/specvi
 | 13  | [NaCl SecretBox Encryption](./13-nacl-secretbox-encryption.md)                                           | 2024-12-23 |
 | 14  | [Indirect Import Alias Detection Unsupported](./14-indirect-import-unsupported.md)                       | 2025-12-29 |
 | 15  | [C# Preprocessor Block Attribute Detection Limitation](./15-csharp-preprocessor-attribute-limitation.md) | 2026-01-04 |
+| 16  | [Domain Hints Extraction System](./16-domain-hints-extraction.md)                                        | 2026-01-18 |
 
 ## Related
 

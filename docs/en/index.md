@@ -42,6 +42,9 @@ Documentation of architectural decisions made during the development of Specvita
 - [TestStatus Data Contract](./adr/10-test-status-data-contract.md)
 - [Repository Visibility-Based Access Control](./adr/11-community-private-repo-filtering.md)
 - [Worker-Centric Analysis Lifecycle](./adr/12-worker-centric-analysis-lifecycle.md)
+- [Billing and Quota Architecture](./adr/13-billing-quota-architecture.md)
+- [AI-Based Spec Document Generation Pipeline](./adr/14-ai-spec-generation-pipeline.md)
+- [Parser Version Tracking](./adr/15-parser-version-tracking.md)
 
 **[Core](./adr/core/)**
 
@@ -60,6 +63,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [NaCl SecretBox Encryption](./adr/core/13-nacl-secretbox-encryption.md)
 - [Indirect Import Alias Detection Unsupported](./adr/core/14-indirect-import-unsupported.md)
 - [C# Preprocessor Block Attribute Detection Limitation](./adr/core/15-csharp-preprocessor-attribute-limitation.md)
+- [Domain Hints Extraction System](./adr/core/16-domain-hints-extraction.md)
 
 **[Worker](./adr/worker/)**
 
@@ -70,6 +74,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [Analyzer-Scheduler Separation](./adr/worker/05-worker-scheduler-separation.md)
 - [Semaphore Clone Concurrency](./adr/worker/06-semaphore-clone-concurrency.md)
 - [Repository Pattern](./adr/worker/07-repository-pattern.md)
+- [SpecView Worker Binary Separation](./adr/worker/08-specview-worker-separation.md)
 
 **[Web](./adr/web/)**
 
@@ -93,6 +98,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [next-themes Dark Mode](./adr/web/18-next-themes-dark-mode.md)
 - [CSS Variable Design Token System](./adr/web/19-css-variable-design-token-system.md)
 - [Skeleton Loading Pattern](./adr/web/20-skeleton-loading-pattern.md)
+- [Anonymous User Rate Limiting](./adr/web/21-anonymous-rate-limiting.md)
 
 ### [Tech Radar](./tech-radar.md)
 

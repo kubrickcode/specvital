@@ -33,6 +33,7 @@ description: 웹 플랫폼(대시보드 및 API) 아키텍처 의사결정 기�
 | 18  | [next-themes 다크 모드](./18-next-themes-dark-mode.md)                  | 2025-01-03 |
 | 19  | [CSS 변수 디자인 토큰 시스템](./19-css-variable-design-token-system.md) | 2025-01-03 |
 | 20  | [스켈레톤 로딩 패턴](./20-skeleton-loading-pattern.md)                  | 2025-01-03 |
+| 21  | [익명 사용자 Rate Limiting](./21-anonymous-rate-limiting.md)            | 2026-01-15 |
 
 ## 관련 문서
 

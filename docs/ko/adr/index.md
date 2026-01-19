@@ -69,6 +69,9 @@ XX-brief-decision-title.md
 | 10  | [TestStatus 데이터 계약](./10-test-status-data-contract.md)                      | Data Integrity | 2024-12-29 |
 | 11  | [Repository Visibility 기반 접근 제어](./11-community-private-repo-filtering.md) | Security       | 2026-01-03 |
 | 12  | [Worker 중심 분석 라이프사이클](./12-worker-centric-analysis-lifecycle.md)       | Architecture   | 2024-12-16 |
+| 13  | [빌링 및 쿼터 아키텍처](./13-billing-quota-architecture.md)                      | Billing        | 2026-01-18 |
+| 14  | [AI 기반 스펙 문서 생성 파이프라인](./14-ai-spec-generation-pipeline.md)         | AI/ML          | 2026-01-18 |
+| 15  | [재분석을 위한 파서 버전 추적](./15-parser-version-tracking.md)                  | Data Integrity | 2026-01-18 |
 
 ### Core 리포지토리
 
@@ -89,6 +92,7 @@ XX-brief-decision-title.md
 | 13  | [NaCl SecretBox 암호화](./core/13-nacl-secretbox-encryption.md)                                  | Crypto  | 2024-12-23 |
 | 14  | [간접 Import Alias 감지 미지원](./core/14-indirect-import-unsupported.md)                        | Parser  | 2025-12-29 |
 | 15  | [C# 전처리기 블록 내 Attribute 감지 한계](./core/15-csharp-preprocessor-attribute-limitation.md) | Parser  | 2026-01-04 |
+| 16  | [도메인 힌트 추출 시스템](./core/16-domain-hints-extraction.md)                                  | AI/ML   | 2026-01-18 |
 
 ### Worker 리포지토리
 
@@ -101,6 +105,7 @@ XX-brief-decision-title.md
 | 05  | [Analyzer-Scheduler 프로세스 분리](./worker/05-worker-scheduler-separation.md)      | Architecture | 2024-12-18 |
 | 06  | [Semaphore 기반 Clone 동시성 제어](./worker/06-semaphore-clone-concurrency.md)      | Concurrency  | 2024-12-18 |
 | 07  | [Repository 패턴 데이터 접근 추상화](./worker/07-repository-pattern.md)             | Architecture | 2024-12-18 |
+| 08  | [SpecView Worker 바이너리 분리](./worker/08-specview-worker-separation.md)          | Architecture | 2026-01-13 |
 
 ### Web 리포지토리
 
@@ -126,6 +131,7 @@ XX-brief-decision-title.md
 | 18  | [next-themes 다크 모드](./web/18-next-themes-dark-mode.md)                  | Frontend      | 2025-01-03 |
 | 19  | [CSS 변수 디자인 토큰 시스템](./web/19-css-variable-design-token-system.md) | Frontend      | 2025-01-03 |
 | 20  | [스켈레톤 로딩 패턴](./web/20-skeleton-loading-pattern.md)                  | Frontend      | 2025-01-03 |
+| 21  | [익명 사용자 Rate Limiting](./web/21-anonymous-rate-limiting.md)            | Security      | 2026-01-15 |
 
 ## 프로세스
 
