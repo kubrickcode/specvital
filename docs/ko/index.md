@@ -45,6 +45,8 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [빌링 및 쿼터 아키텍처](./adr/13-billing-quota-architecture.md)
 - [AI 기반 스펙 문서 생성 파이프라인](./adr/14-ai-spec-generation-pipeline.md)
 - [파서 버전 추적](./adr/15-parser-version-tracking.md)
+- [멀티큐 우선순위 라우팅](./adr/16-multi-queue-priority-routing.md)
+- [테스트 파일 스키마 정규화](./adr/17-test-file-schema-normalization.md)
 
 **[Core](./adr/core/)**
 
@@ -64,6 +66,11 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [간접 Import Alias 감지 미지원](./adr/core/14-indirect-import-unsupported.md)
 - [C# 전처리기 블록 내 Attribute 감지 한계](./adr/core/15-csharp-preprocessor-attribute-limitation.md)
 - [도메인 힌트 추출 시스템](./adr/core/16-domain-hints-extraction.md)
+- [Swift Testing 프레임워크 지원](./adr/core/17-swift-testing-framework-support.md)
+- [JUnit 4 프레임워크 분리](./adr/core/18-junit4-framework-separation.md)
+- [Vitest 4.0+ test.for/it.for API 지원](./adr/core/19-vitest-4-api-support.md)
+- [Java 21+ 암시적 클래스 감지](./adr/core/20-java21-implicit-class-detection.md)
+- [Rust 매크로 기반 테스트 감지](./adr/core/21-rust-macro-test-detection.md)
 
 **[Worker](./adr/worker/)**
 
@@ -99,6 +106,16 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [CSS 변수 디자인 토큰 시스템](./adr/web/19-css-variable-design-token-system.md)
 - [스켈레톤 로딩 패턴](./adr/web/20-skeleton-loading-pattern.md)
 - [익명 사용자 Rate Limiting](./adr/web/21-anonymous-rate-limiting.md)
+- [React Compiler 도입](./adr/web/22-react-compiler-adoption.md)
+- [윈도우 레벨 가상화 패턴](./adr/web/23-window-level-virtualization.md)
+- [구독 기간 일할 계산](./adr/web/24-subscription-period-prorata.md)
+- [OAuth 리턴 URL 처리](./adr/web/25-oauth-return-url-handling.md)
+
+**[Infra](./adr/infra/)**
+
+- [GitHub App 설치 스키마](./adr/infra/01-github-app-installation-schema.md)
+- [계층적 스펙 문서 스키마](./adr/infra/02-hierarchical-spec-document-schema.md)
+- [GitHub API 캐시 테이블](./adr/infra/03-github-api-cache-tables.md)
 
 ### [기술 레이더](./tech-radar.md)
 

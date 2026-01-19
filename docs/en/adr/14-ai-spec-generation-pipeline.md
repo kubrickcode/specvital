@@ -136,6 +136,48 @@ Phase 2: Conversion (gemini-2.5-flash-lite)
 
 ## Implementation Details
 
+### Model Configuration
+
+**Deterministic Output Settings:**
+
+| Parameter        | Value            | Rationale                                    |
+| ---------------- | ---------------- | -------------------------------------------- |
+| Temperature      | 0.0              | Eliminate randomness for reproducible output |
+| Seed             | 42               | Fixed seed for consistent classification     |
+| MaxOutputTokens  | 65,536           | Gemini maximum to prevent truncation         |
+| ResponseMIMEType | application/json | Structured output enforcement                |
+| ThinkingBudget   | 0                | Disable dynamic thinking overhead            |
+
+### Token Usage Tracking
+
+Real-time token tracking per analysis for cost monitoring:
+
+```go
+type TokenUsage struct {
+    CandidatesTokens int32   // Output tokens
+    Model            string  // Model identifier
+    PromptTokens     int32   // Input tokens
+    TotalTokens      int32   // Sum of input + output
+}
+```
+
+- Extract from `GenerateContentResponse.UsageMetadata`
+- Aggregate across Phase 1/2 calls per `analysis_id`
+- Structured log output: `specview_token_usage`
+
+**Rationale**: Google AI Studio usage statistics are delayed ~1 day, making real-time per-repository cost tracking impossible without custom extraction.
+
+### Chunk Size Evolution
+
+Progressive reduction to resolve 504 DEADLINE_EXCEEDED errors:
+
+| Iteration | Tests/Chunk | Result                          |
+| --------- | ----------- | ------------------------------- |
+| Initial   | 10,000      | JSON truncation                 |
+| v2        | 3,000       | Still 504 errors on large repos |
+| v3        | 1,000       | Improved but occasional timeout |
+| Final     | 500         | Stable 15-25s processing time   |
+
 ### Prompt Engineering
 
 **Phase 1 (Classification):**
@@ -163,6 +205,18 @@ Phase 2 Failure (per feature)
 ├── Fallback: Original test name with 0.0 confidence
 └── Continue processing other features
 ```
+
+**Retryable Error Patterns:**
+
+```go
+retryablePatterns := []string{
+    "rate limit", "quota exceeded", "too many requests",
+    "service unavailable", "internal server error", "timeout",
+    "connection reset", "connection refused", "temporary failure",
+}
+```
+
+**JSON Parse Error Handling**: Gemini occasionally returns truncated JSON responses. JSON parse errors are wrapped as `RetryableError` to trigger automatic retry with exponential backoff.
 
 ### Data Flow
 

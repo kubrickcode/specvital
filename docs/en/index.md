@@ -45,6 +45,8 @@ Documentation of architectural decisions made during the development of Specvita
 - [Billing and Quota Architecture](./adr/13-billing-quota-architecture.md)
 - [AI-Based Spec Document Generation Pipeline](./adr/14-ai-spec-generation-pipeline.md)
 - [Parser Version Tracking](./adr/15-parser-version-tracking.md)
+- [Multi-Queue Priority Routing](./adr/16-multi-queue-priority-routing.md)
+- [Test File Schema Normalization](./adr/17-test-file-schema-normalization.md)
 
 **[Core](./adr/core/)**
 
@@ -64,6 +66,11 @@ Documentation of architectural decisions made during the development of Specvita
 - [Indirect Import Alias Detection Unsupported](./adr/core/14-indirect-import-unsupported.md)
 - [C# Preprocessor Block Attribute Detection Limitation](./adr/core/15-csharp-preprocessor-attribute-limitation.md)
 - [Domain Hints Extraction System](./adr/core/16-domain-hints-extraction.md)
+- [Swift Testing Framework Support](./adr/core/17-swift-testing-framework-support.md)
+- [JUnit 4 Framework Separation](./adr/core/18-junit4-framework-separation.md)
+- [Vitest 4.0+ API Support](./adr/core/19-vitest-4-api-support.md)
+- [Java 21+ Implicit Class Detection](./adr/core/20-java21-implicit-class-detection.md)
+- [Rust Macro-Based Test Detection](./adr/core/21-rust-macro-test-detection.md)
 
 **[Worker](./adr/worker/)**
 
@@ -99,6 +106,16 @@ Documentation of architectural decisions made during the development of Specvita
 - [CSS Variable Design Token System](./adr/web/19-css-variable-design-token-system.md)
 - [Skeleton Loading Pattern](./adr/web/20-skeleton-loading-pattern.md)
 - [Anonymous User Rate Limiting](./adr/web/21-anonymous-rate-limiting.md)
+- [React Compiler Adoption](./adr/web/22-react-compiler-adoption.md)
+- [Window-Level Virtualization Pattern](./adr/web/23-window-level-virtualization.md)
+- [Subscription Period Pro-rata Calculation](./adr/web/24-subscription-period-prorata.md)
+- [OAuth Return URL Handling](./adr/web/25-oauth-return-url-handling.md)
+
+**[Infra](./adr/infra/)**
+
+- [GitHub App Installation Schema](./adr/infra/01-github-app-installation-schema.md)
+- [Hierarchical Spec Document Schema](./adr/infra/02-hierarchical-spec-document-schema.md)
+- [GitHub API Cache Tables](./adr/infra/03-github-api-cache-tables.md)
 
 ### [Tech Radar](./tech-radar.md)
 

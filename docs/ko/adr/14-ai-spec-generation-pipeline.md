@@ -136,6 +136,48 @@ Phase 2: 변환 (gemini-2.5-flash-lite)
 
 ## 구현 세부사항
 
+### 모델 설정
+
+**결정론적 출력 설정:**
+
+| 파라미터         | 값               | 근거                                  |
+| ---------------- | ---------------- | ------------------------------------- |
+| Temperature      | 0.0              | 재현 가능한 출력을 위한 무작위성 제거 |
+| Seed             | 42               | 일관된 분류를 위한 고정 시드          |
+| MaxOutputTokens  | 65,536           | 잘림 방지를 위한 Gemini 최대값        |
+| ResponseMIMEType | application/json | 구조화된 출력 강제                    |
+| ThinkingBudget   | 0                | 동적 Thinking 오버헤드 비활성화       |
+
+### 토큰 사용량 추적
+
+비용 모니터링을 위한 분석별 실시간 토큰 추적:
+
+```go
+type TokenUsage struct {
+    CandidatesTokens int32   // 출력 토큰
+    Model            string  // 모델 식별자
+    PromptTokens     int32   // 입력 토큰
+    TotalTokens      int32   // 입력 + 출력 합계
+}
+```
+
+- `GenerateContentResponse.UsageMetadata`에서 추출
+- `analysis_id`별 Phase 1/2 호출 전체 집계
+- 구조화된 로그 출력: `specview_token_usage`
+
+**근거**: Google AI Studio 사용량 통계는 약 1일 지연되어 커스텀 추출 없이는 실시간 리포지토리별 비용 추적 불가능.
+
+### 청크 크기 진화
+
+504 DEADLINE_EXCEEDED 오류 해결을 위한 점진적 축소:
+
+| 반복 | 테스트/청크 | 결과                            |
+| ---- | ----------- | ------------------------------- |
+| 초기 | 10,000      | JSON 잘림                       |
+| v2   | 3,000       | 대규모 리포에서 여전히 504 오류 |
+| v3   | 1,000       | 개선되었으나 간헐적 타임아웃    |
+| 최종 | 500         | 안정적인 15-25초 처리 시간      |
+
 ### 프롬프트 엔지니어링
 
 **Phase 1 (분류):**
@@ -163,6 +205,18 @@ Phase 2 실패 (기능별)
 ├── 폴백: 원본 테스트 이름 + 0.0 신뢰도
 └── 다른 기능 처리 계속
 ```
+
+**재시도 가능 오류 패턴:**
+
+```go
+retryablePatterns := []string{
+    "rate limit", "quota exceeded", "too many requests",
+    "service unavailable", "internal server error", "timeout",
+    "connection reset", "connection refused", "temporary failure",
+}
+```
+
+**JSON 파싱 오류 처리**: Gemini가 간헐적으로 잘린 JSON 응답 반환. JSON 파싱 오류는 `RetryableError`로 래핑하여 지수 백오프를 통한 자동 재시도 트리거.
 
 ### 데이터 흐름
 

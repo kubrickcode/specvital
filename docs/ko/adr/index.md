@@ -72,6 +72,8 @@ XX-brief-decision-title.md
 | 13  | [빌링 및 쿼터 아키텍처](./13-billing-quota-architecture.md)                      | Billing        | 2026-01-18 |
 | 14  | [AI 기반 스펙 문서 생성 파이프라인](./14-ai-spec-generation-pipeline.md)         | AI/ML          | 2026-01-18 |
 | 15  | [재분석을 위한 파서 버전 추적](./15-parser-version-tracking.md)                  | Data Integrity | 2026-01-18 |
+| 16  | [멀티큐 우선순위 라우팅 아키텍처](./16-multi-queue-priority-routing.md)          | Architecture   | 2026-01-19 |
+| 17  | [테스트 파일 스키마 정규화](./17-test-file-schema-normalization.md)              | Database       | 2026-01-19 |
 
 ### Core 리포지토리
 
@@ -93,6 +95,11 @@ XX-brief-decision-title.md
 | 14  | [간접 Import Alias 감지 미지원](./core/14-indirect-import-unsupported.md)                        | Parser  | 2025-12-29 |
 | 15  | [C# 전처리기 블록 내 Attribute 감지 한계](./core/15-csharp-preprocessor-attribute-limitation.md) | Parser  | 2026-01-04 |
 | 16  | [도메인 힌트 추출 시스템](./core/16-domain-hints-extraction.md)                                  | AI/ML   | 2026-01-18 |
+| 17  | [Swift Testing 프레임워크 지원](./core/17-swift-testing-framework-support.md)                    | Parser  | 2026-01-04 |
+| 18  | [JUnit 4 프레임워크 분리](./core/18-junit4-framework-separation.md)                              | Parser  | 2025-12-26 |
+| 19  | [Vitest 4.0+ test.for/it.for API 지원](./core/19-vitest-4-api-support.md)                        | Parser  | 2026-01-03 |
+| 20  | [Java 21+ 암시적 클래스 감지](./core/20-java21-implicit-class-detection.md)                      | Parser  | 2026-01-04 |
+| 21  | [Rust 매크로 기반 테스트 감지](./core/21-rust-macro-test-detection.md)                           | Parser  | 2025-12-27 |
 
 ### Worker 리포지토리
 
@@ -132,6 +139,18 @@ XX-brief-decision-title.md
 | 19  | [CSS 변수 디자인 토큰 시스템](./web/19-css-variable-design-token-system.md) | Frontend      | 2025-01-03 |
 | 20  | [스켈레톤 로딩 패턴](./web/20-skeleton-loading-pattern.md)                  | Frontend      | 2025-01-03 |
 | 21  | [익명 사용자 Rate Limiting](./web/21-anonymous-rate-limiting.md)            | Security      | 2026-01-15 |
+| 22  | [React Compiler 도입](./web/22-react-compiler-adoption.md)                  | Frontend      | 2026-01-19 |
+| 23  | [윈도우 레벨 가상화 패턴](./web/23-window-level-virtualization.md)          | Frontend      | 2026-01-19 |
+| 24  | [구독 기간 일할 계산](./web/24-subscription-period-prorata.md)              | Billing       | 2026-01-16 |
+| 25  | [OAuth 리턴 URL 처리](./web/25-oauth-return-url-handling.md)                | Security      | 2026-01-16 |
+
+### Infra 리포지토리
+
+| #   | 제목                                                                       | 영역     | 날짜       |
+| --- | -------------------------------------------------------------------------- | -------- | ---------- |
+| 01  | [GitHub App 설치 스키마](./infra/01-github-app-installation-schema.md)     | Database | 2026-01-19 |
+| 02  | [계층적 스펙 문서 스키마](./infra/02-hierarchical-spec-document-schema.md) | Database | 2026-01-12 |
+| 03  | [GitHub API 캐시 테이블](./infra/03-github-api-cache-tables.md)            | Database | 2025-12-24 |
 
 ## 프로세스
 
