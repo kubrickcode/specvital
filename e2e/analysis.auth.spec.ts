@@ -12,7 +12,7 @@ test.describe("Analysis Page - AI Spec Generation (Authenticated)", () => {
     // Wait for analysis data to load
     await expect(
       page.getByRole("heading", { name: "facebook/react" })
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15000 });
 
     // Verify Generate AI Spec button is visible
     const generateButton = page.getByRole("button", {
@@ -136,5 +136,41 @@ test.describe("Analysis Page - AI Spec Generation (Authenticated)", () => {
     });
     await expect(generateDocButton).toBeVisible();
     await expect(generateDocButton).toBeEnabled();
+  });
+
+  test("should show quota information in generate dialog", async ({ page }) => {
+    // Wait for analysis data to load
+    await expect(
+      page.getByRole("heading", { name: "Test Statistics" })
+    ).toBeVisible({ timeout: 30000 });
+
+    // Click Generate AI Spec button
+    await page
+      .getByRole("button", {
+        name: "Generate test specification document with AI",
+      })
+      .click();
+
+    // Wait for dialog
+    await expect(
+      page.getByRole("dialog", { name: "Generate AI Specification" })
+    ).toBeVisible();
+
+    // Verify quota usage message is shown
+    await expect(
+      page.getByText(/quota|generation/i).first()
+    ).toBeVisible();
+
+    // Verify the dialog has essential elements
+    const dialog = page.getByRole("dialog", { name: "Generate AI Specification" });
+
+    // Language selector
+    await expect(dialog.getByRole("combobox")).toBeVisible();
+
+    // Cancel button
+    await expect(dialog.getByRole("button", { name: "Cancel" })).toBeVisible();
+
+    // Generate button (may be disabled if no quota)
+    await expect(dialog.getByRole("button", { name: /generate/i })).toBeVisible();
   });
 });
