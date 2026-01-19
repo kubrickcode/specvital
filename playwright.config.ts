@@ -5,6 +5,10 @@ import { AUTH_FILE, BACKEND_URL, FRONTEND_URL } from "./e2e/constants";
 const WEBSERVER_TIMEOUT_MS = 3 * 60 * 1000;
 const isCI = !!process.env.CI;
 
+const backendCommand = isCI
+  ? "cd src/backend && go run ./cmd/server"
+  : 'cd src/backend && DATABASE_URL="$LOCAL_DATABASE_URL" air';
+
 export default defineConfig({
   testDir: "./e2e",
   outputDir: "./test-results",
@@ -52,7 +56,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "cd src/backend && DATABASE_URL=\"$LOCAL_DATABASE_URL\" air",
+      command: backendCommand,
       url: `${BACKEND_URL}/health`,
       reuseExistingServer: !isCI,
       timeout: WEBSERVER_TIMEOUT_MS,
