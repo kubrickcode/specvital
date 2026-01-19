@@ -101,7 +101,7 @@ jobs:
           ALLOWED_ORIGINS: http://localhost:5173
           FRONTEND_URL: http://localhost:5173
           JWT_SECRET: test-jwt-secret-key-for-e2e-tests-min-32-chars
-          ENCRYPTION_KEY: dGVzdC1lbmNyeXB0aW9uLWtleS1mb3ItZTJlLXRlc3Rz
+          ENCRYPTION_KEY: dGVzdC1lbmNyeXB0aW9uLWtleS1lMmUtdGVzdHMhIQ==
           SECURE_COOKIE: "false"
           GITHUB_OAUTH_CLIENT_ID: test-client-id
           GITHUB_OAUTH_CLIENT_SECRET: test-client-secret
@@ -152,7 +152,7 @@ jobs:
           FRONTEND_URL: http://localhost:5173
           # Auth (test values)
           JWT_SECRET: test-jwt-secret-key-for-e2e-tests-min-32-chars
-          ENCRYPTION_KEY: dGVzdC1lbmNyeXB0aW9uLWtleS1mb3ItZTJlLXRlc3Rz
+          ENCRYPTION_KEY: dGVzdC1lbmNyeXB0aW9uLWtleS1lMmUtdGVzdHMhIQ==
           SECURE_COOKIE: false
           # GitHub OAuth (dummy values for test - not used in mocked tests)
           GITHUB_OAUTH_CLIENT_ID: test-client-id
