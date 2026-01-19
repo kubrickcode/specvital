@@ -1,0 +1,158 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    types:
+      - synchronize
+      - opened
+      - reopened
+      - unlocked
+    paths:
+      - "src/frontend/**"
+      - "src/backend/**"
+      - "e2e/**"
+      - "playwright.config.ts"
+      - ".github/workflows/e2e-tests.yml"
+      - "justfile"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/frontend/**"
+      - "src/backend/**"
+      - "e2e/**"
+      - "playwright.config.ts"
+      - ".github/workflows/e2e-tests.yml"
+      - "justfile"
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    name: E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: specvital_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Just
+        uses: extractions/setup-just@v2
+
+      - name: Install air (Go hot reload)
+        run: go install github.com/air-verse/air@latest
+
+      - name: Install PostgreSQL client
+        run: just install-psql
+
+      - name: Setup database
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d specvital_test -f src/backend/internal/db/schema.sql
+
+      - name: Install dependencies
+        run: just deps
+
+      - name: Install Playwright browsers
+        run: just install-playwright
+
+      - name: Run E2E tests
+        run: just test-e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        env:
+          CI: true
+          # Database
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/specvital_test?sslmode=disable
+          LOCAL_DATABASE_URL: postgres://postgres:postgres@localhost:5432/specvital_test?sslmode=disable
+          # Server
+          PORT: 8000
+          ENV: test
+          ALLOWED_ORIGINS: http://localhost:5173
+          FRONTEND_URL: http://localhost:5173
+          # Auth (test values)
+          JWT_SECRET: test-jwt-secret-key-for-e2e-tests-min-32-chars
+          ENCRYPTION_KEY: dGVzdC1lbmNyeXB0aW9uLWtleS1mb3ItZTJlLXRlc3Rz
+          SECURE_COOKIE: false
+          # GitHub OAuth (dummy values for test - not used in mocked tests)
+          GITHUB_OAUTH_CLIENT_ID: test-client-id
+          GITHUB_OAUTH_CLIENT_SECRET: test-client-secret
+          GITHUB_OAUTH_REDIRECT_URL: http://localhost:8000/api/auth/callback
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-${{ matrix.shardIndex }}
+          path: blob-report/
+          retention-days: 1
+
+  e2e-report-merge:
+    name: Merge E2E Reports
+    needs: e2e-tests
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Merge reports
+        run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
