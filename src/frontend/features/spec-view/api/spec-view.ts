@@ -5,6 +5,7 @@ import type {
   RequestSpecGenerationResponse,
   SpecDocumentResponse,
   SpecGenerationStatusResponse,
+  SpecLanguage,
 } from "../types";
 
 export class QuotaExceededError extends Error {
@@ -19,8 +20,14 @@ export class QuotaExceededError extends Error {
   }
 }
 
-export async function fetchSpecDocument(analysisId: string): Promise<SpecDocumentResponse> {
-  const response = await apiFetch(`/api/spec-view/${analysisId}`);
+export async function fetchSpecDocument(
+  analysisId: string,
+  language?: SpecLanguage
+): Promise<SpecDocumentResponse> {
+  const url = language
+    ? `/api/spec-view/${analysisId}?language=${encodeURIComponent(language)}`
+    : `/api/spec-view/${analysisId}`;
+  const response = await apiFetch(url);
 
   if (!response.ok && response.status !== 404) {
     const errorBody = await response.json().catch(() => ({}));

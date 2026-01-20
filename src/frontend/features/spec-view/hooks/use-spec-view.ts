@@ -23,10 +23,18 @@ const DEFAULT_LANGUAGE: SpecLanguage = "Korean";
 
 export const specViewKeys = {
   all: ["spec-view"] as const,
-  document: (analysisId: string) => [...specViewKeys.all, "document", analysisId] as const,
+  document: (analysisId: string, language?: SpecLanguage) =>
+    language
+      ? ([...specViewKeys.all, "document", analysisId, language] as const)
+      : ([...specViewKeys.all, "document", analysisId] as const),
+};
+
+type UseSpecViewOptions = {
+  language?: SpecLanguage;
 };
 
 type UseSpecViewReturn = {
+  currentLanguage: SpecLanguage | undefined;
   data: SpecDocument | null;
   error: Error | null;
   generationStatus: SpecGenerationStatusEnum | null;
@@ -36,7 +44,11 @@ type UseSpecViewReturn = {
   requestGenerate: (language?: SpecLanguage, isForceRegenerate?: boolean) => void;
 };
 
-export const useSpecView = (analysisId: string): UseSpecViewReturn => {
+export const useSpecView = (
+  analysisId: string,
+  options: UseSpecViewOptions = {}
+): UseSpecViewReturn => {
+  const { language } = options;
   const t = useTranslations("specView.toast");
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -44,12 +56,12 @@ export const useSpecView = (analysisId: string): UseSpecViewReturn => {
 
   useEffect(() => {
     pollingStartTimeRef.current = null;
-  }, [analysisId]);
+  }, [analysisId, language]);
 
   const query = useQuery({
     enabled: Boolean(analysisId),
-    queryFn: () => fetchSpecDocument(analysisId),
-    queryKey: specViewKeys.document(analysisId),
+    queryFn: () => fetchSpecDocument(analysisId, language),
+    queryKey: specViewKeys.document(analysisId, language),
     refetchInterval: (query) => {
       const response = query.state.data;
 
@@ -120,9 +132,12 @@ export const useSpecView = (analysisId: string): UseSpecViewReturn => {
         description: error instanceof Error ? error.message : String(error),
       });
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       pollingStartTimeRef.current = null;
-      queryClient.invalidateQueries({ queryKey: specViewKeys.document(analysisId) });
+      // Invalidate the cache for the specific language being generated
+      queryClient.invalidateQueries({
+        queryKey: specViewKeys.document(analysisId, variables.language),
+      });
     },
   });
 
@@ -147,7 +162,11 @@ export const useSpecView = (analysisId: string): UseSpecViewReturn => {
     Date.now() - pollingStartTimeRef.current > MAX_POLLING_DURATION_MS &&
     isGenerating;
 
+  // Extract language from completed document data
+  const currentLanguage = data?.language;
+
   return {
+    currentLanguage,
     data,
     error: query.error || generateMutation.error,
     generationStatus,
