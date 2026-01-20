@@ -1,11 +1,13 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@/i18n/navigation";
 import type { components } from "@/lib/api/generated-types";
 
 import { formatNumber } from "../utils";
@@ -93,6 +95,23 @@ export const PlanSection = ({ error, isLoading, plan }: PlanSectionProps) => {
           </div>
         </div>
       </CardContent>
+      <CardFooter>
+        {plan.tier === "enterprise" ? (
+          <Button asChild className="w-full" variant="outline">
+            <a href="mailto:support@specvital.com">
+              <Mail className="size-4" />
+              {t("plan.contactUs")}
+            </a>
+          </Button>
+        ) : (
+          <Button asChild className="w-full" variant="cta">
+            <Link href="/pricing">
+              <ArrowUpRight className="size-4" />
+              {t("plan.upgrade")}
+            </Link>
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 };

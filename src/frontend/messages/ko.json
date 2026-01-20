@@ -537,7 +537,9 @@
       "month": "월",
       "days": "{days}일",
       "unlimited": "무제한",
-      "unavailable": "플랜 정보를 불러올 수 없습니다"
+      "unavailable": "플랜 정보를 불러올 수 없습니다",
+      "upgrade": "플랜 업그레이드",
+      "contactUs": "문의하기"
     },
     "usage": {
       "title": "이번 기간 사용량",

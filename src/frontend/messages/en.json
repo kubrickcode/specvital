@@ -537,7 +537,9 @@
       "month": "month",
       "days": "{days} days",
       "unlimited": "Unlimited",
-      "unavailable": "Plan information unavailable"
+      "unavailable": "Plan information unavailable",
+      "upgrade": "Upgrade Plan",
+      "contactUs": "Contact Us"
     },
     "usage": {
       "title": "Usage This Period",
