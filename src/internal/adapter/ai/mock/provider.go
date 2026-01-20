@@ -3,30 +3,67 @@ package mock
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/specvital/worker/internal/domain/specview"
 )
 
-const defaultConfidence = 0.95
+const (
+	defaultConfidence = 0.95
+	defaultDelayMS    = 3000 // Default delay in milliseconds to simulate AI API latency (~30s for 1000 tests)
+)
 
 // Provider implements specview.AIProvider with deterministic mock responses.
 // Intended for local development and testing without AI API calls.
-type Provider struct{}
+// Set MOCK_DELAY_MS environment variable to control response delay (default: 3000ms).
+type Provider struct {
+	delay time.Duration
+}
 
 // NewProvider creates a new mock AI provider.
+// Reads MOCK_DELAY_MS environment variable for response delay configuration.
 func NewProvider() *Provider {
-	return &Provider{}
+	delay := defaultDelayMS
+	if val := os.Getenv("MOCK_DELAY_MS"); val != "" {
+		if parsed, err := strconv.Atoi(val); err == nil && parsed >= 0 {
+			delay = parsed
+		}
+	}
+	return &Provider{
+		delay: time.Duration(delay) * time.Millisecond,
+	}
 }
 
 // ClassifyDomains returns mock domain classification based on input test structure.
 func (p *Provider) ClassifyDomains(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+	if err := p.simulateDelay(ctx); err != nil {
+		return nil, nil, err
+	}
 	return generatePhase1Output(input), nil, nil
 }
 
 // ConvertTestNames returns mock behavior descriptions based on test names.
 func (p *Provider) ConvertTestNames(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+	if err := p.simulateDelay(ctx); err != nil {
+		return nil, nil, err
+	}
 	return generatePhase2Output(input), nil, nil
+}
+
+// simulateDelay waits for the configured delay duration, respecting context cancellation.
+func (p *Provider) simulateDelay(ctx context.Context) error {
+	if p.delay <= 0 {
+		return nil
+	}
+	select {
+	case <-time.After(p.delay):
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 // Close releases resources (no-op for mock).

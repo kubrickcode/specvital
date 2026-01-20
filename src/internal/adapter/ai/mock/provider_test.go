@@ -3,6 +3,7 @@ package mock
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/specvital/worker/internal/domain/specview"
 )
@@ -228,4 +229,30 @@ func TestCamelCaseToReadable(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestProvider_SimulateDelay(t *testing.T) {
+	t.Run("context cancellation returns error", func(t *testing.T) {
+		provider := &Provider{delay: 1 * time.Second}
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+
+		err := provider.simulateDelay(ctx)
+		if err != context.Canceled {
+			t.Errorf("expected context.Canceled, got %v", err)
+		}
+	})
+
+	t.Run("zero delay returns immediately", func(t *testing.T) {
+		provider := &Provider{delay: 0}
+		start := time.Now()
+
+		err := provider.simulateDelay(context.Background())
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if time.Since(start) > 10*time.Millisecond {
+			t.Error("zero delay should return immediately")
+		}
+	})
 }
