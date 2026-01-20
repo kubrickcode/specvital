@@ -172,6 +172,103 @@ func TestSpecDocumentRepository_SaveDocument(t *testing.T) {
 	})
 }
 
+func TestSpecDocumentRepository_VersionManagement(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool, cleanup := testdb.SetupTestDB(t)
+	defer cleanup()
+
+	analysisRepo := NewAnalysisRepository(pool)
+	specRepo := NewSpecDocumentRepository(pool)
+	ctx := context.Background()
+
+	t.Run("should auto-increment version on save", func(t *testing.T) {
+		analysisID := setupTestAnalysisWithNestedSuites(t, ctx, analysisRepo, pool)
+
+		doc1 := &specview.SpecDocument{
+			AnalysisID:  analysisID.String(),
+			ContentHash: []byte("hash-v1"),
+			Language:    "Korean",
+			ModelID:     "gemini-2.5-flash",
+			Domains:     []specview.Domain{},
+		}
+
+		if err := specRepo.SaveDocument(ctx, doc1); err != nil {
+			t.Fatalf("SaveDocument v1 failed: %v", err)
+		}
+
+		var version1 int32
+		pool.QueryRow(ctx, "SELECT version FROM spec_documents WHERE id = $1", doc1.ID).Scan(&version1)
+		if version1 != 1 {
+			t.Errorf("expected version 1, got %d", version1)
+		}
+
+		doc2 := &specview.SpecDocument{
+			AnalysisID:  analysisID.String(),
+			ContentHash: []byte("hash-v2"),
+			Language:    "Korean",
+			ModelID:     "gemini-2.5-flash",
+			Domains:     []specview.Domain{},
+		}
+
+		if err := specRepo.SaveDocument(ctx, doc2); err != nil {
+			t.Fatalf("SaveDocument v2 failed: %v", err)
+		}
+
+		var version2 int32
+		pool.QueryRow(ctx, "SELECT version FROM spec_documents WHERE id = $1", doc2.ID).Scan(&version2)
+		if version2 != 2 {
+			t.Errorf("expected version 2, got %d", version2)
+		}
+	})
+
+	t.Run("should find only latest version by content hash", func(t *testing.T) {
+		analysisID := setupTestAnalysisWithNestedSuites(t, ctx, analysisRepo, pool)
+		contentHash := []byte("shared-hash-for-version-test")
+
+		doc1 := &specview.SpecDocument{
+			AnalysisID:  analysisID.String(),
+			ContentHash: contentHash,
+			Language:    "English",
+			ModelID:     "gemini-2.5-flash",
+			Domains:     []specview.Domain{},
+		}
+		if err := specRepo.SaveDocument(ctx, doc1); err != nil {
+			t.Fatalf("SaveDocument v1 failed: %v", err)
+		}
+
+		doc2 := &specview.SpecDocument{
+			AnalysisID:  analysisID.String(),
+			ContentHash: contentHash,
+			Language:    "English",
+			ModelID:     "gemini-2.5-flash",
+			Domains:     []specview.Domain{},
+		}
+		if err := specRepo.SaveDocument(ctx, doc2); err != nil {
+			t.Fatalf("SaveDocument v2 failed: %v", err)
+		}
+
+		found, err := specRepo.FindDocumentByContentHash(ctx, contentHash, "English", "gemini-2.5-flash")
+		if err != nil {
+			t.Fatalf("FindDocumentByContentHash failed: %v", err)
+		}
+
+		if found == nil {
+			t.Fatal("expected to find document")
+		}
+
+		if found.ID != doc2.ID {
+			t.Errorf("expected latest version ID %s, got %s", doc2.ID, found.ID)
+		}
+
+		if found.Version != 2 {
+			t.Errorf("expected version 2, got %d", found.Version)
+		}
+	})
+}
+
 func TestSpecDocumentRepository_FindDocumentByContentHash(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")

@@ -219,9 +219,16 @@ func (q *Queries) FindCodebaseWithLastCommitByOwnerName(ctx context.Context, arg
 }
 
 const findSpecDocumentByContentHash = `-- name: FindSpecDocumentByContentHash :one
-
-SELECT id, analysis_id, content_hash, language, executive_summary, model_id, created_at, updated_at FROM spec_documents
-WHERE content_hash = $1 AND language = $2 AND model_id = $3
+SELECT sd.id, sd.analysis_id, sd.content_hash, sd.language, sd.executive_summary, sd.model_id, sd.created_at, sd.updated_at, sd.version FROM spec_documents sd
+WHERE sd.content_hash = $1
+  AND sd.language = $2
+  AND sd.model_id = $3
+  AND sd.version = (
+    SELECT MAX(version)
+    FROM spec_documents
+    WHERE analysis_id = sd.analysis_id
+      AND language = sd.language
+  )
 `
 
 type FindSpecDocumentByContentHashParams struct {
@@ -230,9 +237,6 @@ type FindSpecDocumentByContentHashParams struct {
 	ModelID     string `json:"model_id"`
 }
 
-// =============================================================================
-// SPEC DOCUMENTS
-// =============================================================================
 func (q *Queries) FindSpecDocumentByContentHash(ctx context.Context, arg FindSpecDocumentByContentHashParams) (SpecDocument, error) {
 	row := q.db.QueryRow(ctx, findSpecDocumentByContentHash, arg.ContentHash, arg.Language, arg.ModelID)
 	var i SpecDocument
@@ -245,6 +249,7 @@ func (q *Queries) FindSpecDocumentByContentHash(ctx context.Context, arg FindSpe
 		&i.ModelID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Version,
 	)
 	return i, err
 }
@@ -348,6 +353,28 @@ func (q *Queries) GetCodebasesForAutoRefresh(ctx context.Context) ([]GetCodebase
 		return nil, err
 	}
 	return items, nil
+}
+
+const getMaxVersionByAnalysisAndLanguage = `-- name: GetMaxVersionByAnalysisAndLanguage :one
+
+SELECT COALESCE(MAX(version), 0)::int as max_version
+FROM spec_documents
+WHERE analysis_id = $1 AND language = $2
+`
+
+type GetMaxVersionByAnalysisAndLanguageParams struct {
+	AnalysisID pgtype.UUID `json:"analysis_id"`
+	Language   string      `json:"language"`
+}
+
+// =============================================================================
+// SPEC DOCUMENTS
+// =============================================================================
+func (q *Queries) GetMaxVersionByAnalysisAndLanguage(ctx context.Context, arg GetMaxVersionByAnalysisAndLanguageParams) (int32, error) {
+	row := q.db.QueryRow(ctx, getMaxVersionByAnalysisAndLanguage, arg.AnalysisID, arg.Language)
+	var max_version int32
+	err := row.Scan(&max_version)
+	return max_version, err
 }
 
 const getMonthlySpecViewUsage = `-- name: GetMonthlySpecViewUsage :one
@@ -529,8 +556,8 @@ func (q *Queries) GetTestSuitesByFileID(ctx context.Context, fileID pgtype.UUID)
 }
 
 const insertSpecDocument = `-- name: InsertSpecDocument :one
-INSERT INTO spec_documents (analysis_id, content_hash, language, model_id)
-VALUES ($1, $2, $3, $4)
+INSERT INTO spec_documents (analysis_id, content_hash, language, model_id, version)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id
 `
 
@@ -539,6 +566,7 @@ type InsertSpecDocumentParams struct {
 	ContentHash []byte      `json:"content_hash"`
 	Language    string      `json:"language"`
 	ModelID     string      `json:"model_id"`
+	Version     int32       `json:"version"`
 }
 
 func (q *Queries) InsertSpecDocument(ctx context.Context, arg InsertSpecDocumentParams) (pgtype.UUID, error) {
@@ -547,6 +575,7 @@ func (q *Queries) InsertSpecDocument(ctx context.Context, arg InsertSpecDocument
 		arg.ContentHash,
 		arg.Language,
 		arg.ModelID,
+		arg.Version,
 	)
 	var id pgtype.UUID
 	err := row.Scan(&id)

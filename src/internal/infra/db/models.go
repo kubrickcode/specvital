@@ -138,6 +138,50 @@ func (ns NullOauthProvider) Value() (driver.Value, error) {
 	return string(ns.OauthProvider), nil
 }
 
+type PlanTier string
+
+const (
+	PlanTierFree       PlanTier = "free"
+	PlanTierPro        PlanTier = "pro"
+	PlanTierProPlus    PlanTier = "pro_plus"
+	PlanTierEnterprise PlanTier = "enterprise"
+)
+
+func (e *PlanTier) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PlanTier(s)
+	case string:
+		*e = PlanTier(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PlanTier: %T", src)
+	}
+	return nil
+}
+
+type NullPlanTier struct {
+	PlanTier PlanTier `json:"plan_tier"`
+	Valid    bool     `json:"valid"` // Valid is true if PlanTier is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPlanTier) Scan(value interface{}) error {
+	if value == nil {
+		ns.PlanTier, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PlanTier.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPlanTier) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PlanTier), nil
+}
+
 type RiverJobState string
 
 const (
@@ -184,6 +228,49 @@ func (ns NullRiverJobState) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.RiverJobState), nil
+}
+
+type SubscriptionStatus string
+
+const (
+	SubscriptionStatusActive   SubscriptionStatus = "active"
+	SubscriptionStatusCanceled SubscriptionStatus = "canceled"
+	SubscriptionStatusExpired  SubscriptionStatus = "expired"
+)
+
+func (e *SubscriptionStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SubscriptionStatus(s)
+	case string:
+		*e = SubscriptionStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SubscriptionStatus: %T", src)
+	}
+	return nil
+}
+
+type NullSubscriptionStatus struct {
+	SubscriptionStatus SubscriptionStatus `json:"subscription_status"`
+	Valid              bool               `json:"valid"` // Valid is true if SubscriptionStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSubscriptionStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.SubscriptionStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SubscriptionStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSubscriptionStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SubscriptionStatus), nil
 }
 
 type TestStatus string
@@ -439,6 +526,7 @@ type SpecDocument struct {
 	ModelID          string             `json:"model_id"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+	Version          int32              `json:"version"`
 }
 
 type SpecDomain struct {
@@ -460,6 +548,16 @@ type SpecFeature struct {
 	SortOrder   int32              `json:"sort_order"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type SubscriptionPlan struct {
+	ID                   pgtype.UUID        `json:"id"`
+	Tier                 PlanTier           `json:"tier"`
+	SpecviewMonthlyLimit pgtype.Int4        `json:"specview_monthly_limit"`
+	AnalysisMonthlyLimit pgtype.Int4        `json:"analysis_monthly_limit"`
+	RetentionDays        pgtype.Int4        `json:"retention_days"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	MonthlyPrice         pgtype.Int4        `json:"monthly_price"`
 }
 
 type SystemConfig struct {
@@ -569,4 +667,16 @@ type UserSpecviewHistory struct {
 	DocumentID pgtype.UUID        `json:"document_id"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+}
+
+type UserSubscription struct {
+	ID                 pgtype.UUID        `json:"id"`
+	UserID             pgtype.UUID        `json:"user_id"`
+	PlanID             pgtype.UUID        `json:"plan_id"`
+	Status             SubscriptionStatus `json:"status"`
+	CurrentPeriodStart pgtype.Timestamptz `json:"current_period_start"`
+	CurrentPeriodEnd   pgtype.Timestamptz `json:"current_period_end"`
+	CanceledAt         pgtype.Timestamptz `json:"canceled_at"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
 }

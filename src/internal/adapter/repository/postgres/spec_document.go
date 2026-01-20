@@ -63,6 +63,7 @@ func (r *SpecDocumentRepository) FindDocumentByContentHash(
 		ID:          fromPgUUID(doc.ID).String(),
 		Language:    specview.Language(doc.Language),
 		ModelID:     doc.ModelID,
+		Version:     doc.Version,
 	}, nil
 }
 
@@ -213,11 +214,20 @@ func (r *SpecDocumentRepository) SaveDocument(
 		return fmt.Errorf("%w: invalid analysis ID", specview.ErrInvalidInput)
 	}
 
+	currentVersion, err := queries.GetMaxVersionByAnalysisAndLanguage(ctx, db.GetMaxVersionByAnalysisAndLanguageParams{
+		AnalysisID: toPgUUID(analysisID),
+		Language:   string(doc.Language),
+	})
+	if err != nil {
+		return fmt.Errorf("get max version: %w", err)
+	}
+
 	docID, err := queries.InsertSpecDocument(ctx, db.InsertSpecDocumentParams{
 		AnalysisID:  toPgUUID(analysisID),
 		ContentHash: doc.ContentHash,
 		Language:    string(doc.Language),
 		ModelID:     doc.ModelID,
+		Version:     currentVersion + 1,
 	})
 	if err != nil {
 		return fmt.Errorf("insert spec document: %w", err)

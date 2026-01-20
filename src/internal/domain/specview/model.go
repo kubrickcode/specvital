@@ -127,6 +127,7 @@ type SpecDocument struct {
 	ID          string
 	Language    Language
 	ModelID     string
+	Version     int32
 }
 
 // Domain represents a domain within a spec document.
