@@ -132,24 +132,26 @@ func (uc *GenerateSpecViewUseCase) Execute(
 
 	contentHash := specview.GenerateContentHash(files, req.Language)
 
-	existingDoc, err := uc.repository.FindDocumentByContentHash(ctx, contentHash, req.Language, modelID)
-	if err != nil {
-		return nil, fmt.Errorf("check cache: %w", err)
-	}
+	if !req.ForceRegenerate {
+		existingDoc, err := uc.repository.FindDocumentByContentHash(ctx, contentHash, req.Language, modelID)
+		if err != nil {
+			return nil, fmt.Errorf("check cache: %w", err)
+		}
 
-	if existingDoc != nil {
-		slog.InfoContext(ctx, "cache hit",
-			"analysis_id", req.AnalysisID,
-			"document_id", existingDoc.ID,
-		)
+		if existingDoc != nil {
+			slog.InfoContext(ctx, "cache hit",
+				"analysis_id", req.AnalysisID,
+				"document_id", existingDoc.ID,
+			)
 
-		uc.recordUserHistoryIfNeeded(ctx, req.UserID, existingDoc.ID)
+			uc.recordUserHistoryIfNeeded(ctx, req.UserID, existingDoc.ID)
 
-		return &specview.SpecViewResult{
-			CacheHit:    true,
-			ContentHash: contentHash,
-			DocumentID:  existingDoc.ID,
-		}, nil
+			return &specview.SpecViewResult{
+				CacheHit:    true,
+				ContentHash: contentHash,
+				DocumentID:  existingDoc.ID,
+			}, nil
+		}
 	}
 
 	phase1Output, phase1Usage, err := uc.executePhase1(ctx, files, req.Language, req.AnalysisID)

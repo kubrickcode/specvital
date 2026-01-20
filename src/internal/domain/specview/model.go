@@ -11,10 +11,11 @@ type Language string
 
 // SpecViewRequest represents a request to generate a spec-view document.
 type SpecViewRequest struct {
-	AnalysisID string
-	Language   Language
-	ModelID    string  // optional: AI model override
-	UserID     *string // optional: for history recording
+	AnalysisID      string
+	ForceRegenerate bool    // skip cache and create new version
+	Language        Language
+	ModelID         string  // optional: AI model override
+	UserID          *string // optional: for history recording
 }
 
 func (r SpecViewRequest) Validate() error {
