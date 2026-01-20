@@ -42,21 +42,6 @@ func (q *Queries) CheckSpecDocumentExistsByLanguage(ctx context.Context, arg Che
 	return exists, err
 }
 
-const deleteSpecDocumentByLanguage = `-- name: DeleteSpecDocumentByLanguage :exec
-DELETE FROM spec_documents
-WHERE analysis_id = $1 AND language = $2
-`
-
-type DeleteSpecDocumentByLanguageParams struct {
-	AnalysisID pgtype.UUID `json:"analysis_id"`
-	Language   string      `json:"language"`
-}
-
-func (q *Queries) DeleteSpecDocumentByLanguage(ctx context.Context, arg DeleteSpecDocumentByLanguageParams) error {
-	_, err := q.db.Exec(ctx, deleteSpecDocumentByLanguage, arg.AnalysisID, arg.Language)
-	return err
-}
-
 const getSpecBehaviorSourceInfo = `-- name: GetSpecBehaviorSourceInfo :many
 SELECT
     b.id AS behavior_id,
@@ -164,7 +149,7 @@ SELECT
     sd.created_at
 FROM spec_documents sd
 WHERE sd.analysis_id = $1
-ORDER BY sd.created_at DESC
+ORDER BY sd.version DESC
 LIMIT 1
 `
 
@@ -201,7 +186,7 @@ SELECT
     sd.created_at
 FROM spec_documents sd
 WHERE sd.analysis_id = $1 AND sd.language = $2
-ORDER BY sd.created_at DESC
+ORDER BY sd.version DESC
 LIMIT 1
 `
 

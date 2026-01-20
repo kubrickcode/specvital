@@ -21,9 +21,6 @@ type mockSpecViewRepository struct {
 	analysisErr    error
 	documentErr    error
 	statusErr      error
-	deleteErr      error
-	deleteCalled   bool
-	deleteLanguage string
 }
 
 func (m *mockSpecViewRepository) CheckAnalysisExists(_ context.Context, _ string) (bool, error) {
@@ -32,12 +29,6 @@ func (m *mockSpecViewRepository) CheckAnalysisExists(_ context.Context, _ string
 
 func (m *mockSpecViewRepository) CheckSpecDocumentExistsByLanguage(_ context.Context, _ string, _ string) (bool, error) {
 	return m.documentExists, m.documentErr
-}
-
-func (m *mockSpecViewRepository) DeleteSpecDocumentByLanguage(_ context.Context, _ string, language string) error {
-	m.deleteCalled = true
-	m.deleteLanguage = language
-	return m.deleteErr
 }
 
 func (m *mockSpecViewRepository) GetSpecDocumentByLanguage(_ context.Context, _ string, _ string) (*entity.SpecDocument, error) {
@@ -56,7 +47,7 @@ type mockQueueService struct {
 	enqueueErr error
 }
 
-func (m *mockQueueService) EnqueueSpecGeneration(_ context.Context, _ string, _ string, _ *string, _ subscriptionentity.PlanTier) error {
+func (m *mockQueueService) EnqueueSpecGeneration(_ context.Context, _ string, _ string, _ *string, _ subscriptionentity.PlanTier, _ bool) error {
 	return m.enqueueErr
 }
 
@@ -294,17 +285,15 @@ func ptr[T any](v T) *T {
 
 func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 	tests := []struct {
-		name               string
-		input              RequestGenerationInput
-		mockRepo           *mockSpecViewRepository
-		mockQueue          *mockQueueService
-		wantDeleteCalled   bool
-		wantDeleteLanguage string
-		wantErr            bool
-		wantErrContains    string
+		name            string
+		input           RequestGenerationInput
+		mockRepo        *mockSpecViewRepository
+		mockQueue       *mockQueueService
+		wantErr         bool
+		wantErrContains string
 	}{
 		{
-			name: "should delete existing document when force regenerate with explicit language",
+			name: "should enqueue when force regenerate with explicit language (version management)",
 			input: RequestGenerationInput{
 				AnalysisID:        "test-analysis-id",
 				IsForceRegenerate: true,
@@ -313,10 +302,8 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 			mockRepo: &mockSpecViewRepository{
 				analysisExists: true,
 			},
-			mockQueue:          &mockQueueService{},
-			wantDeleteCalled:   true,
-			wantDeleteLanguage: "Korean",
-			wantErr:            false,
+			mockQueue: &mockQueueService{},
+			wantErr:   false,
 		},
 		{
 			name: "should use default language (English) when force regenerate without language",
@@ -328,13 +315,11 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 			mockRepo: &mockSpecViewRepository{
 				analysisExists: true,
 			},
-			mockQueue:          &mockQueueService{},
-			wantDeleteCalled:   true,
-			wantDeleteLanguage: "English",
-			wantErr:            false,
+			mockQueue: &mockQueueService{},
+			wantErr:   false,
 		},
 		{
-			name: "should not delete when not force regenerate",
+			name: "should check document exists when not force regenerate",
 			input: RequestGenerationInput{
 				AnalysisID:        "test-analysis-id",
 				IsForceRegenerate: false,
@@ -343,25 +328,22 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 				analysisExists: true,
 				documentExists: false,
 			},
-			mockQueue:        &mockQueueService{},
-			wantDeleteCalled: false,
-			wantErr:          false,
+			mockQueue: &mockQueueService{},
+			wantErr:   false,
 		},
 		{
-			name: "should propagate delete error",
+			name: "should return already exists when document exists and not force regenerate",
 			input: RequestGenerationInput{
 				AnalysisID:        "test-analysis-id",
-				IsForceRegenerate: true,
-				Language:          "English",
+				IsForceRegenerate: false,
 			},
 			mockRepo: &mockSpecViewRepository{
 				analysisExists: true,
-				deleteErr:      errors.New("database error"),
+				documentExists: true,
 			},
-			mockQueue:        &mockQueueService{},
-			wantDeleteCalled: true,
-			wantErr:          true,
-			wantErrContains:  "delete existing spec document",
+			mockQueue:       &mockQueueService{},
+			wantErr:         true,
+			wantErrContains: domain.ErrAlreadyExists.Error(),
 		},
 		{
 			name: "should reject force regenerate when generation is pending",
@@ -374,10 +356,9 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 				analysisExists: true,
 				status:         &entity.SpecGenerationStatus{Status: entity.StatusPending},
 			},
-			mockQueue:        &mockQueueService{},
-			wantDeleteCalled: false,
-			wantErr:          true,
-			wantErrContains:  domain.ErrGenerationPending.Error(),
+			mockQueue:       &mockQueueService{},
+			wantErr:         true,
+			wantErrContains: domain.ErrGenerationPending.Error(),
 		},
 		{
 			name: "should reject force regenerate when generation is running",
@@ -390,10 +371,9 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 				analysisExists: true,
 				status:         &entity.SpecGenerationStatus{Status: entity.StatusRunning},
 			},
-			mockQueue:        &mockQueueService{},
-			wantDeleteCalled: false,
-			wantErr:          true,
-			wantErrContains:  domain.ErrGenerationRunning.Error(),
+			mockQueue:       &mockQueueService{},
+			wantErr:         true,
+			wantErrContains: domain.ErrGenerationRunning.Error(),
 		},
 	}
 
@@ -403,12 +383,6 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 
 			_, err := uc.Execute(context.Background(), tt.input)
 
-			if tt.wantDeleteCalled != tt.mockRepo.deleteCalled {
-				t.Errorf("deleteCalled: want %v, got %v", tt.wantDeleteCalled, tt.mockRepo.deleteCalled)
-			}
-			if tt.wantDeleteLanguage != "" && tt.mockRepo.deleteLanguage != tt.wantDeleteLanguage {
-				t.Errorf("deleteLanguage: want %q, got %q", tt.wantDeleteLanguage, tt.mockRepo.deleteLanguage)
-			}
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("expected error, got nil")

@@ -9,14 +9,11 @@ import (
 type SpecViewRepository interface {
 	CheckAnalysisExists(ctx context.Context, analysisID string) (bool, error)
 	CheckSpecDocumentExistsByLanguage(ctx context.Context, analysisID string, language string) (bool, error)
-	// DeleteSpecDocumentByLanguage deletes a spec document for a given analysis and language.
-	// CASCADE will automatically delete child tables (domains, features, behaviors).
-	DeleteSpecDocumentByLanguage(ctx context.Context, analysisID string, language string) error
 	// GetGenerationStatus returns the latest generation status for an analysis (any language).
 	GetGenerationStatus(ctx context.Context, analysisID string) (*entity.SpecGenerationStatus, error)
 	// GetGenerationStatusByLanguage returns status for a specific analysis + language combination.
 	GetGenerationStatusByLanguage(ctx context.Context, analysisID string, language string) (*entity.SpecGenerationStatus, error)
-	// GetSpecDocumentByLanguage retrieves a spec document for a given analysis and language.
+	// GetSpecDocumentByLanguage retrieves the latest version spec document for a given analysis and language.
 	// If language is empty, returns the most recent document regardless of language.
 	GetSpecDocumentByLanguage(ctx context.Context, analysisID string, language string) (*entity.SpecDocument, error)
 }

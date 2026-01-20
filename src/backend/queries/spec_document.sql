@@ -8,7 +8,7 @@ SELECT
     sd.created_at
 FROM spec_documents sd
 WHERE sd.analysis_id = $1
-ORDER BY sd.created_at DESC
+ORDER BY sd.version DESC
 LIMIT 1;
 
 -- name: GetSpecDocumentByAnalysisIDAndLanguage :one
@@ -21,7 +21,7 @@ SELECT
     sd.created_at
 FROM spec_documents sd
 WHERE sd.analysis_id = $1 AND sd.language = $2
-ORDER BY sd.created_at DESC
+ORDER BY sd.version DESC
 LIMIT 1;
 
 -- name: GetSpecDomainsByDocumentID :many
@@ -108,6 +108,3 @@ SELECT EXISTS(
     SELECT 1 FROM analyses WHERE id = $1 AND status = 'completed'
 ) AS exists;
 
--- name: DeleteSpecDocumentByLanguage :exec
-DELETE FROM spec_documents
-WHERE analysis_id = $1 AND language = $2;

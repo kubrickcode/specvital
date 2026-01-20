@@ -27,10 +27,11 @@ const (
 // Unique key: (AnalysisID, Language) - allows different languages for same analysis,
 // but prevents duplicate jobs for the same analysis+language combination.
 type SpecGenerationArgs struct {
-	AnalysisID string  `json:"analysis_id" river:"unique"`
-	Language   string  `json:"language" river:"unique"`
-	ModelID    string  `json:"model_id"`
-	UserID     *string `json:"user_id,omitempty"`
+	AnalysisID      string  `json:"analysis_id" river:"unique"`
+	Language        string  `json:"language" river:"unique"`
+	ModelID         string  `json:"model_id"`
+	UserID          *string `json:"user_id,omitempty"`
+	ForceRegenerate bool    `json:"force_regenerate,omitempty"`
 }
 
 func (SpecGenerationArgs) Kind() string { return TypeSpecGeneration }
@@ -43,15 +44,16 @@ func NewRiverQueueService(client *river.Client[pgx.Tx]) *RiverQueueService {
 	return &RiverQueueService{client: client}
 }
 
-func (s *RiverQueueService) EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string, tier subscription.PlanTier) error {
+func (s *RiverQueueService) EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string, tier subscription.PlanTier, forceRegenerate bool) error {
 	ctx, cancel := context.WithTimeout(ctx, enqueueTimeout)
 	defer cancel()
 
 	args := SpecGenerationArgs{
-		AnalysisID: analysisID,
-		Language:   language,
-		ModelID:    "gemini-2.5-pro",
-		UserID:     userID,
+		AnalysisID:      analysisID,
+		Language:        language,
+		ModelID:         "gemini-2.5-pro",
+		UserID:          userID,
+		ForceRegenerate: forceRegenerate,
 	}
 
 	targetQueue := queue.SelectQueueForSpecView(tier, false)

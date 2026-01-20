@@ -394,7 +394,8 @@ CREATE TABLE public.spec_documents (
     executive_summary text,
     model_id character varying(100) NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    version integer DEFAULT 1 NOT NULL
 );
 
 
@@ -844,11 +845,19 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- Name: spec_documents uq_spec_documents_hash_lang_model; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: spec_documents uq_spec_documents_analysis_lang_version; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.spec_documents
-    ADD CONSTRAINT uq_spec_documents_hash_lang_model UNIQUE (content_hash, language, model_id);
+    ADD CONSTRAINT uq_spec_documents_analysis_lang_version UNIQUE (analysis_id, language, version);
+
+
+--
+-- Name: spec_documents uq_spec_documents_hash_lang_model_version; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.spec_documents
+    ADD CONSTRAINT uq_spec_documents_hash_lang_model_version UNIQUE (content_hash, language, model_id, version);
 
 
 --

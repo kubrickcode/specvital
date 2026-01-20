@@ -60,9 +60,11 @@ type UseSpecViewReturn = {
   data: SpecDocument | null;
   error: Error | null;
   generationState: GenerationState;
+  isFetching: boolean;
   isLoading: boolean;
   isPollingTimeout: boolean;
   requestGenerate: (language?: SpecLanguage, isForceRegenerate?: boolean) => void;
+  serverStatus: SpecGenerationStatusEnum | null;
 };
 
 export const useSpecView = (
@@ -228,12 +230,13 @@ export const useSpecView = (
   const currentLanguage = data?.language;
 
   // Compute unified generation state
+  // Note: serverStatus takes priority over data existence for regeneration scenarios
   const generationState: GenerationState = (() => {
     if (isRequesting) return "requesting";
-    if (data) return "completed";
     if (serverStatus === "pending") return "pending";
     if (serverStatus === "running") return "running";
     if (serverStatus === "failed") return "failed";
+    if (data) return "completed";
     return "idle";
   })();
 
@@ -242,8 +245,10 @@ export const useSpecView = (
     data,
     error: query.error || generateMutation.error,
     generationState,
+    isFetching: query.isFetching,
     isLoading,
     isPollingTimeout,
     requestGenerate,
+    serverStatus,
   };
 };

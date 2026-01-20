@@ -59,7 +59,9 @@ export const SpecPanel = ({ analysisId, availableFrameworks, totalTests }: SpecP
   const {
     data: specDocument,
     generationState,
+    isFetching,
     requestGenerate,
+    serverStatus,
   } = useSpecView(analysisId, {
     language: pendingLanguage ?? undefined,
   });
@@ -82,11 +84,16 @@ export const SpecPanel = ({ analysisId, availableFrameworks, totalTests }: SpecP
     if (!isWaitingForGeneration) {
       return generationState;
     }
-    // While waiting, treat idle as pending to handle the transition period after mutation success
-    if (generationState === "idle") {
-      return "pending";
-    }
-    return generationState;
+    // While waiting for generation, only trust server-provided status
+    if (serverStatus === "pending") return "pending";
+    if (serverStatus === "running") return "running";
+    if (serverStatus === "completed") return "completed";
+    if (serverStatus === "failed") return "failed";
+    // Server returned document instead of status → generation completed
+    // But only if fetch completed (to avoid treating cached data as new completion)
+    if (generationState === "completed" && !isFetching) return "completed";
+    // Still fetching or no server status yet
+    return "pending";
   })();
 
   // Single effect to handle generation state changes

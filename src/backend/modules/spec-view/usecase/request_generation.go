@@ -76,11 +76,9 @@ func (uc *RequestGenerationUseCase) Execute(ctx context.Context, input RequestGe
 		}
 	}
 
-	if input.IsForceRegenerate {
-		if err := uc.repo.DeleteSpecDocumentByLanguage(ctx, input.AnalysisID, language); err != nil {
-			return nil, fmt.Errorf("delete existing spec document: %w", err)
-		}
-	} else {
+	// Force regenerate: Worker will create a new version (no delete needed)
+	// Normal generation: Check if any version already exists
+	if !input.IsForceRegenerate {
 		docExists, err := uc.repo.CheckSpecDocumentExistsByLanguage(ctx, input.AnalysisID, language)
 		if err != nil {
 			return nil, err
@@ -113,7 +111,7 @@ func (uc *RequestGenerationUseCase) Execute(ctx context.Context, input RequestGe
 		userIDPtr = &input.UserID
 	}
 
-	if err := uc.queue.EnqueueSpecGeneration(ctx, input.AnalysisID, language, userIDPtr, input.Tier); err != nil {
+	if err := uc.queue.EnqueueSpecGeneration(ctx, input.AnalysisID, language, userIDPtr, input.Tier, input.IsForceRegenerate); err != nil {
 		return nil, err
 	}
 

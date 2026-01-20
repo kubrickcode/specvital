@@ -7,5 +7,5 @@ import (
 )
 
 type QueueService interface {
-	EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string, tier subscription.PlanTier) error
+	EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string, tier subscription.PlanTier, forceRegenerate bool) error
 }
