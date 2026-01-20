@@ -235,6 +235,14 @@
         },
         {
           "color": "",
+          "command": "just run-mock-spec-generator",
+          "name": "mock-spec-generator",
+          "shortcut": "m",
+          "terminalName": "mock-spec-generator",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
           "executeAll": true,
           "name": "All Integration",
           "shortcut": "i",

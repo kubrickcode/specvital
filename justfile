@@ -197,6 +197,21 @@ run-spec-generator:
     DATABASE_URL="$LOCAL_DATABASE_URL" \
     go run ./cmd/spec-generator
 
+run-mock-spec-generator:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -d "/tmp/worker" ]; then
+        echo "Cloning worker repository..."
+        git clone https://github.com/specvital/worker.git /tmp/worker
+    else
+        echo "Updating worker repository..."
+        cd /tmp/worker && git pull
+    fi
+    cd /tmp/worker/src && \
+    DATABASE_URL="$LOCAL_DATABASE_URL" \
+    MOCK_MODE=true \
+    go run ./cmd/spec-generator
+
 test target="all":
     #!/usr/bin/env bash
     set -euox pipefail
