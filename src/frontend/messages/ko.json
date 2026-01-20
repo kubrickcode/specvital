@@ -258,7 +258,10 @@
     "executiveSummary": {
       "title": "요약",
       "modelTooltip": "생성에 사용된 AI 모델",
-      "dateTooltip": "문서 생성 시각"
+      "dateTooltip": "문서 생성 시각",
+      "languageTooltip": "문서 언어",
+      "regenerateTooltip": "문서 재생성",
+      "regenerateAriaLabel": "AI 스펙 문서 재생성"
     },
     "stats": {
       "domains": "도메인 {count}개",
@@ -316,6 +319,9 @@
     "quotaConfirm": {
       "title": "AI 스펙 문서 생성",
       "description": "AI 스펙 문서 생성 할당량이 사용됩니다. 진행하기 전에 현재 사용량을 확인해주세요.",
+      "regenerateTitle": "AI 스펙 문서 재생성",
+      "regenerateDescription": "기존 문서가 새로 생성된 문서로 대체됩니다.",
+      "regenerateWarning": "현재 문서가 영구적으로 대체됩니다. 이 작업은 되돌릴 수 없습니다.",
       "outputLanguage": "출력 언어",
       "selectLanguage": "언어 선택",
       "specviewUsage": "이번 달 사용량",
@@ -331,7 +337,8 @@
       "wouldExceedMessage": "이번 생성이 월별 할당량 한도를 초과합니다.",
       "viewAccount": "계정 보기 →",
       "cancel": "취소",
-      "generate": "문서 생성"
+      "generate": "문서 생성",
+      "regenerate": "문서 재생성"
     },
     "toast": {
       "quotaExceeded": {

@@ -70,6 +70,7 @@ export const QuotaConfirmDialog = () => {
     confirm,
     estimatedCost,
     isOpen,
+    isRegenerate,
     onOpenChange,
     selectedLanguage,
     setSelectedLanguage,
@@ -103,8 +104,10 @@ export const QuotaConfirmDialog = () => {
           >
             <Icon className={cn("h-6 w-6", config.iconColor)} />
           </div>
-          <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
+          <DialogTitle>{isRegenerate ? t("regenerateTitle") : t("title")}</DialogTitle>
+          <DialogDescription>
+            {isRegenerate ? t("regenerateDescription") : t("description")}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="mt-4 space-y-4">
@@ -204,6 +207,14 @@ export const QuotaConfirmDialog = () => {
               </div>
             )}
 
+            {isRegenerate && (
+              <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
+                <p className="text-sm text-amber-600 dark:text-amber-500">
+                  {t("regenerateWarning")}
+                </p>
+              </div>
+            )}
+
             {level === "warning" && (
               <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
                 <p className="text-sm text-amber-600 dark:text-amber-500">{t("warningMessage")}</p>
@@ -242,7 +253,7 @@ export const QuotaConfirmDialog = () => {
             variant="default"
           >
             <Sparkles className="mr-2 h-4 w-4" />
-            {t("generate")}
+            {isRegenerate ? t("regenerate") : t("generate")}
           </Button>
         </DialogFooter>
       </DialogContent>

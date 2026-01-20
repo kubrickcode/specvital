@@ -1,9 +1,10 @@
 "use client";
 
-import { Bot, Calendar, FileText } from "lucide-react";
+import { Bot, Calendar, FileText, Globe, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -13,6 +14,8 @@ import { calculateDocumentStats } from "../utils/stats";
 
 type ExecutiveSummaryProps = {
   document: SpecDocument;
+  isRegenerating?: boolean;
+  onRegenerate?: () => void;
 };
 
 const formatDate = (dateString: string): string => {
@@ -25,7 +28,11 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-export const ExecutiveSummary = ({ document }: ExecutiveSummaryProps) => {
+export const ExecutiveSummary = ({
+  document,
+  isRegenerating = false,
+  onRegenerate,
+}: ExecutiveSummaryProps) => {
   const t = useTranslations("specView");
 
   if (!document.executiveSummary) {
@@ -43,6 +50,17 @@ export const ExecutiveSummary = ({ document }: ExecutiveSummaryProps) => {
             <CardTitle className="text-lg">{t("executiveSummary.title")}</CardTitle>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            {document.language && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge className="text-xs gap-1" variant="outline">
+                    <Globe className="h-3 w-3" />
+                    {document.language}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>{t("executiveSummary.languageTooltip")}</TooltipContent>
+              </Tooltip>
+            )}
             {document.modelId && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -63,6 +81,22 @@ export const ExecutiveSummary = ({ document }: ExecutiveSummaryProps) => {
               </TooltipTrigger>
               <TooltipContent>{t("executiveSummary.dateTooltip")}</TooltipContent>
             </Tooltip>
+            {onRegenerate && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label={t("executiveSummary.regenerateAriaLabel")}
+                    disabled={isRegenerating}
+                    onClick={onRegenerate}
+                    size="icon"
+                    variant="ghost"
+                  >
+                    <RefreshCw className={isRegenerating ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t("executiveSummary.regenerateTooltip")}</TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
         <CardDescription>

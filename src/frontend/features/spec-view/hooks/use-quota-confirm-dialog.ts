@@ -10,8 +10,9 @@ type QuotaConfirmDialogStore = {
   analysisId: string | null;
   estimatedCost: number | null;
   isOpen: boolean;
+  isRegenerate: boolean;
   listeners: Set<() => void>;
-  onConfirm: ((language: SpecLanguage) => void) | null;
+  onConfirm: ((language: SpecLanguage, isForceRegenerate: boolean) => void) | null;
   selectedLanguage: SpecLanguage;
   usage: UsageStatusResponse | null;
 };
@@ -20,6 +21,7 @@ const store: QuotaConfirmDialogStore = {
   analysisId: null,
   estimatedCost: null,
   isOpen: false,
+  isRegenerate: false,
   listeners: new Set(),
   onConfirm: null,
   selectedLanguage: "English",
@@ -48,6 +50,8 @@ const getEstimatedCostSnapshot = () => store.estimatedCost;
 const getSelectedLanguageSnapshot = () => store.selectedLanguage;
 
 const getAnalysisIdSnapshot = () => store.analysisId;
+
+const getIsRegenerateSnapshot = () => store.isRegenerate;
 
 /**
  * Get the stored language preference for a specific analysis
@@ -136,12 +140,20 @@ const localeToSpecLanguage = (locale: string): SpecLanguage | null => {
 type OpenOptions = {
   analysisId: string;
   estimatedCost?: number;
+  isRegenerate?: boolean;
   locale?: string;
-  onConfirm: (language: SpecLanguage) => void;
+  onConfirm: (language: SpecLanguage, isForceRegenerate: boolean) => void;
   usage: UsageStatusResponse | null;
 };
 
-const open = ({ analysisId, estimatedCost, locale, onConfirm, usage }: OpenOptions) => {
+const open = ({
+  analysisId,
+  estimatedCost,
+  isRegenerate = false,
+  locale,
+  onConfirm,
+  usage,
+}: OpenOptions) => {
   if (!store.isOpen) {
     // Determine default language: stored preference > locale > English
     let defaultLanguage: SpecLanguage = "English";
@@ -156,6 +168,7 @@ const open = ({ analysisId, estimatedCost, locale, onConfirm, usage }: OpenOptio
     }
 
     store.isOpen = true;
+    store.isRegenerate = isRegenerate;
     store.usage = usage;
     store.onConfirm = onConfirm;
     store.estimatedCost = estimatedCost ?? null;
@@ -168,6 +181,7 @@ const open = ({ analysisId, estimatedCost, locale, onConfirm, usage }: OpenOptio
 const close = () => {
   if (store.isOpen) {
     store.isOpen = false;
+    store.isRegenerate = false;
     store.usage = null;
     store.onConfirm = null;
     store.estimatedCost = null;
@@ -190,7 +204,7 @@ const setSelectedLanguage = (language: SpecLanguage) => {
 
 const confirm = () => {
   if (store.onConfirm) {
-    store.onConfirm(store.selectedLanguage);
+    store.onConfirm(store.selectedLanguage, store.isRegenerate);
   }
   close();
 };
@@ -206,6 +220,7 @@ export const useQuotaConfirmDialog = () => {
     () => "English" as SpecLanguage
   );
   const analysisId = useSyncExternalStore(subscribe, getAnalysisIdSnapshot, () => null);
+  const isRegenerate = useSyncExternalStore(subscribe, getIsRegenerateSnapshot, () => false);
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
@@ -219,6 +234,7 @@ export const useQuotaConfirmDialog = () => {
     confirm,
     estimatedCost,
     isOpen,
+    isRegenerate,
     onConfirm,
     onOpenChange,
     open,
