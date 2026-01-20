@@ -59,8 +59,12 @@ export const useSpecView = (
   const router = useRouter();
   const pollingStartTimeRef = useRef<number | null>(null);
 
+  // Track previous status to detect completion transition
+  const previousStatusRef = useRef<string | null>(null);
+
   useEffect(() => {
     pollingStartTimeRef.current = null;
+    previousStatusRef.current = null;
   }, [analysisId, language]);
 
   const query = useQuery({
@@ -79,6 +83,24 @@ export const useSpecView = (
 
       if (isDocumentGenerating(response)) {
         const status = response.generationStatus.status;
+
+        // Detect completion transition and invalidate query for fresh document data
+        if (
+          status === "completed" &&
+          previousStatusRef.current !== "completed" &&
+          previousStatusRef.current !== null
+        ) {
+          previousStatusRef.current = status;
+          // Invalidate to fetch completed document data
+          queryClient.invalidateQueries({
+            queryKey: specViewKeys.document(analysisId, language),
+          });
+          pollingStartTimeRef.current = null;
+          return false;
+        }
+
+        previousStatusRef.current = status;
+
         if (status === "completed" || status === "failed" || status === "not_found") {
           pollingStartTimeRef.current = null;
           return false;
@@ -152,9 +174,14 @@ export const useSpecView = (
     },
     onSuccess: (_data, variables) => {
       pollingStartTimeRef.current = null;
-      // Invalidate the cache for the specific language being generated
+      previousStatusRef.current = null;
+      // Invalidate language-specific query
       queryClient.invalidateQueries({
         queryKey: specViewKeys.document(analysisId, variables.language),
+      });
+      // Also invalidate language-less query to trigger polling in spec-panel
+      queryClient.invalidateQueries({
+        queryKey: specViewKeys.document(analysisId),
       });
     },
   });
