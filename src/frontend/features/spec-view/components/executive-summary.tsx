@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Calendar, ChevronDown, FileText, Globe, Languages, RefreshCw } from "lucide-react";
+import { Calendar, ChevronDown, FileText, Globe, Languages, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
@@ -112,17 +112,6 @@ export const ExecutiveSummary = ({
                   <TooltipContent>{t("executiveSummary.languageTooltip")}</TooltipContent>
                 </Tooltip>
               )
-            )}
-            {document.modelId && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge className="text-xs gap-1" variant="outline">
-                    <Bot className="h-3 w-3" />
-                    {document.modelId}
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent>{t("executiveSummary.modelTooltip")}</TooltipContent>
-              </Tooltip>
             )}
             <Tooltip>
               <TooltipTrigger asChild>
