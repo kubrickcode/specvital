@@ -369,14 +369,17 @@
       }
     },
     "generationProgress": {
-      "title": "Generating Spec Document",
-      "description": "AI is analyzing your test cases and generating documentation.",
-      "phase": "Phase {current} of {total}",
       "estimatedTime": "Estimated: 2-5 minutes",
       "continueBrowsing": "Continue Browsing",
       "viewDocument": "View Document",
       "retryButton": "Try Again",
       "tip": "You can close this dialog and continue browsing. We'll notify you when it's done.",
+      "status": {
+        "pending": "Waiting",
+        "pendingDescription": "Waiting in queue...",
+        "running": "Generating",
+        "runningDescription": "AI is writing specification documentation..."
+      },
       "completed": {
         "title": "Generation Complete",
         "description": "Your specification document has been successfully generated."
@@ -384,16 +387,6 @@
       "failed": {
         "title": "Generation Failed",
         "description": "An error occurred while generating the specification document."
-      },
-      "steps": {
-        "queued": "Queued",
-        "queuedDescription": "Waiting in queue...",
-        "analyzing": "Analyzing",
-        "analyzingDescription": "Scanning test cases and repository structure...",
-        "generating": "Generating",
-        "generatingDescription": "AI is writing specification documentation...",
-        "finalizing": "Finalizing",
-        "finalizingDescription": "Formatting and finalizing document..."
       }
     }
   },
