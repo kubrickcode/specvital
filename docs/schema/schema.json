@@ -1649,6 +1649,12 @@
           "type": "timestamp with time zone",
           "nullable": false,
           "default": "now()"
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false,
+          "default": "1"
         }
       ],
       "indexes": [
@@ -1669,6 +1675,12 @@
           "def": "CREATE INDEX idx_spec_documents_analysis ON public.spec_documents USING btree (analysis_id)",
           "table": "public.spec_documents",
           "columns": ["analysis_id"]
+        },
+        {
+          "name": "idx_spec_documents_latest_version",
+          "def": "CREATE INDEX idx_spec_documents_latest_version ON public.spec_documents USING btree (analysis_id, language, version)",
+          "table": "public.spec_documents",
+          "columns": ["analysis_id", "language", "version"]
         }
       ],
       "constraints": [

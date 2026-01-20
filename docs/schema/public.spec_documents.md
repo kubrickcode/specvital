@@ -14,6 +14,7 @@
 | model_id          | varchar(100)             |                         | false    |                                                                                                                                                             |                                       |         |
 | created_at        | timestamp with time zone | now()                   | false    |                                                                                                                                                             |                                       |         |
 | updated_at        | timestamp with time zone | now()                   | false    |                                                                                                                                                             |                                       |         |
+| version           | integer                  | 1                       | false    |                                                                                                                                                             |                                       |         |
 
 ## Constraints
 
@@ -30,6 +31,7 @@
 | spec_documents_pkey               | CREATE UNIQUE INDEX spec_documents_pkey ON public.spec_documents USING btree (id)                                             |
 | uq_spec_documents_hash_lang_model | CREATE UNIQUE INDEX uq_spec_documents_hash_lang_model ON public.spec_documents USING btree (content_hash, language, model_id) |
 | idx_spec_documents_analysis       | CREATE INDEX idx_spec_documents_analysis ON public.spec_documents USING btree (analysis_id)                                   |
+| idx_spec_documents_latest_version | CREATE INDEX idx_spec_documents_latest_version ON public.spec_documents USING btree (analysis_id, language, version)          |
 
 ## Relations
 
@@ -50,6 +52,7 @@ erDiagram
   varchar_100_ model_id
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
+  integer version
 }
 "public.spec_domains" {
   uuid id

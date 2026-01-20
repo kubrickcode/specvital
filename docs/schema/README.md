@@ -20,7 +20,7 @@
 | [public.refresh_tokens](public.refresh_tokens.md)                                                 | 8       |         | BASE TABLE |
 | [public.test_files](public.test_files.md)                                                         | 5       |         | BASE TABLE |
 | [public.system_config](public.system_config.md)                                                   | 3       |         | BASE TABLE |
-| [public.spec_documents](public.spec_documents.md)                                                 | 8       |         | BASE TABLE |
+| [public.spec_documents](public.spec_documents.md)                                                 | 9       |         | BASE TABLE |
 | [public.spec_domains](public.spec_domains.md)                                                     | 8       |         | BASE TABLE |
 | [public.spec_features](public.spec_features.md)                                                   | 7       |         | BASE TABLE |
 | [public.spec_behaviors](public.spec_behaviors.md)                                                 | 7       |         | BASE TABLE |
@@ -253,6 +253,7 @@ erDiagram
   varchar_100_ model_id
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
+  integer version
 }
 "public.spec_domains" {
   uuid id
