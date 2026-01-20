@@ -444,7 +444,7 @@
     "exploreCta": "Browse other repositories",
     "status": {
       "analyzing": "Analyzing...",
-      "newCommits": "New commits available",
+      "newCommits": "New commits - tap to update",
       "unknown": "Status unknown",
       "upToDate": "Up to date"
     },

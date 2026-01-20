@@ -444,7 +444,7 @@
     "exploreCta": "다른 저장소 둘러보기",
     "status": {
       "analyzing": "분석 중...",
-      "newCommits": "새 커밋 있음",
+      "newCommits": "새 커밋 - 탭하여 업데이트",
       "unknown": "상태 알 수 없음",
       "upToDate": "최신 상태"
     },
