@@ -85,6 +85,7 @@ erDiagram
   varchar_100_ model_id
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
+  integer version
 }
 ```
 
