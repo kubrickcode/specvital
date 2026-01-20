@@ -131,9 +131,75 @@ func TestPhase2SystemPrompt_ContainsRequiredSections(t *testing.T) {
 	}
 }
 
-func TestPhase2SystemPrompt_ContainsLanguageStyles(t *testing.T) {
-	// Prompt now uses Korean as primary example, others apply same principle
-	if !strings.Contains(Phase2SystemPrompt, "Korean") {
-		t.Error("system prompt should contain Korean as primary example")
+func TestPhase2SystemPrompt_ContainsLanguageInstructions(t *testing.T) {
+	// System prompt should contain language-neutral instructions
+	// Actual examples are injected dynamically in user prompt
+	if !strings.Contains(Phase2SystemPrompt, "Target Language") {
+		t.Error("system prompt should reference Target Language")
+	}
+	if !strings.Contains(Phase2SystemPrompt, "CRITICAL") {
+		t.Error("system prompt should contain critical language instruction")
+	}
+}
+
+func TestBuildPhase2UserPrompt_InjectsLanguageExamples(t *testing.T) {
+	input := specview.Phase2Input{
+		DomainContext: "Authentication",
+		FeatureName:   "Login",
+		Tests: []specview.TestForConversion{
+			{Index: 0, Name: "TestLogin"},
+		},
+	}
+
+	tests := []struct {
+		lang            specview.Language
+		expectedExample string
+	}{
+		{"Korean", "유효한 자격 증명으로 로그인 성공"},
+		{"Japanese", "有効な資格情報でログイン成功"},
+		{"English", "Successfully logs in with valid credentials"},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.lang), func(t *testing.T) {
+			prompt, _ := BuildPhase2UserPrompt(input, tt.lang)
+			if !strings.Contains(prompt, "## Examples:") {
+				t.Error("prompt should contain Examples section")
+			}
+			if !strings.Contains(prompt, tt.expectedExample) {
+				t.Errorf("prompt should contain %s example: %s", tt.lang, tt.expectedExample)
+			}
+		})
+	}
+}
+
+func TestBuildPhase2UserPrompt_UnsupportedLanguageFallback(t *testing.T) {
+	input := specview.Phase2Input{
+		DomainContext: "Authentication",
+		FeatureName:   "Login",
+		Tests: []specview.TestForConversion{
+			{Index: 0, Name: "TestLogin"},
+		},
+	}
+
+	// Unsupported language should use English examples as fallback
+	prompt, _ := BuildPhase2UserPrompt(input, "French")
+
+	// Should have reference examples section (not regular examples)
+	if !strings.Contains(prompt, "## Reference Examples (English):") {
+		t.Error("prompt should contain Reference Examples section for unsupported language")
+	}
+
+	// Should contain English example
+	if !strings.Contains(prompt, "Successfully logs in with valid credentials") {
+		t.Error("prompt should contain English fallback example")
+	}
+
+	// Should have strong translation instruction
+	if !strings.Contains(prompt, "MUST translate ALL output to French") {
+		t.Error("prompt should contain strong translation instruction")
+	}
+	if !strings.Contains(prompt, "Do NOT output in English") {
+		t.Error("prompt should explicitly forbid English output")
 	}
 }

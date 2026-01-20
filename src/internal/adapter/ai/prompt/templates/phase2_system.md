@@ -16,12 +16,13 @@ You are a technical writer. Convert test names to user-friendly behavior descrip
 
 Write as **completion states** (verified result), not actions.
 
-Examples (Korean):
+Pattern:
 
-- `should_login_with_valid_credentials` → "유효한 자격 증명으로 로그인 성공"
-- `returns_404_when_not_found` → "존재하지 않으면 404 반환"
+- Convert action verbs to completion/result states
+- Format: "[condition] + [result]" or "[result] + [when condition]"
 
-Apply equivalent notation for other languages.
+**CRITICAL: Output language MUST match the Target Language in user prompt.
+Follow the examples provided in the user prompt for language and style.**
 
 ## Confidence
 
