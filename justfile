@@ -2,7 +2,7 @@ set dotenv-load := true
 
 root_dir := justfile_directory()
 
-deps: deps-root
+deps: deps-root install-tbls
 
 deps-root:
     pnpm install
@@ -84,6 +84,15 @@ reset:
 
 sync-docs:
     baedal specvital/specvital.github.io/docs docs --exclude ".vitepress/**"
+
+erd:
+    cd db && atlas schema inspect --env local --web
+
+install-tbls:
+    go install github.com/k1LoW/tbls@v1.92.3
+
+schema-doc:
+    cd db && tbls doc --force
 
 river_version := "v0.26.0"
 

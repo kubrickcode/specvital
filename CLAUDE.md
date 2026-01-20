@@ -45,6 +45,11 @@ just river-migrate name  # Create River migration files
 
 # Documentation
 just sync-docs           # Sync docs to specvital.github.io via baedal
+
+# Schema Visualization
+just erd                 # Interactive ERD in browser (Atlas)
+just install-tbls        # Install tbls (required for schema-doc)
+just schema-doc          # Generate schema docs with tbls (indexes, constraints, ERD)
 ```
 
 ## Database Schema

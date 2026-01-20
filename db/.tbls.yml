@@ -1,0 +1,10 @@
+# tbls configuration
+dsn: ${DATABASE_URL}
+docPath: docs/schema
+
+er:
+  format: mermaid
+
+exclude:
+  - atlas_schema_revisions
+  - river_*

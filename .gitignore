@@ -4,3 +4,4 @@ node_modules
 docs/work
 .claude/settings.local.json
 .claude-sessions/
+db/docs/schema
