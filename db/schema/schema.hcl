@@ -963,6 +963,11 @@ table "spec_documents" {
     type = varchar(100)
   }
 
+  column "version" {
+    type    = integer
+    default = 1
+  }
+
   column "created_at" {
     type    = timestamptz
     default = sql("now()")
@@ -989,6 +994,10 @@ table "spec_documents" {
 
   index "idx_spec_documents_analysis" {
     columns = [column.analysis_id]
+  }
+
+  index "idx_spec_documents_latest_version" {
+    columns = [column.analysis_id, column.language, column.version]
   }
 }
 
