@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useUsage } from "@/features/account";
@@ -17,6 +17,7 @@ import {
   useQuotaConfirmDialog,
   useSpecView,
 } from "@/features/spec-view";
+import type { SpecLanguage } from "@/features/spec-view";
 
 import { FilterEmptyState } from "./filter-empty-state";
 import { SpecToolbar } from "./spec-toolbar";
@@ -57,6 +58,10 @@ export const SpecPanel = ({ analysisId, availableFrameworks, totalTests }: SpecP
     isGenerating,
     requestGenerate,
   } = useSpecView(analysisId);
+
+  // Language switch state
+  const [isGeneratingOtherLanguage, setIsGeneratingOtherLanguage] = useState(false);
+  const [pendingLanguage, setPendingLanguage] = useState<SpecLanguage | null>(null);
 
   // Document filter
   const { matchCount } = useDocumentFilter(specDocument);
@@ -147,12 +152,80 @@ export const SpecPanel = ({ analysisId, availableFrameworks, totalTests }: SpecP
     });
   };
 
+  const handleRegenerate = () => {
+    if (!isAuthenticated) {
+      openSpecLoginDialog();
+      return;
+    }
+
+    openQuotaConfirmDialog({
+      analysisId,
+      estimatedCost: totalTests,
+      isRegenerate: true,
+      locale,
+      onConfirm: (selectedLanguage, isForceRegenerate) => {
+        requestGenerate(selectedLanguage, isForceRegenerate);
+        openProgressModal({
+          analysisId,
+          onViewDocument: () => {},
+          status: "pending",
+        });
+      },
+      usage: usageData ?? null,
+    });
+  };
+
+  const handleLanguageSwitch = (language: SpecLanguage) => {
+    if (!isAuthenticated) {
+      openSpecLoginDialog();
+      return;
+    }
+
+    setPendingLanguage(language);
+    openQuotaConfirmDialog({
+      analysisId,
+      estimatedCost: totalTests,
+      locale,
+      onConfirm: () => {
+        setIsGeneratingOtherLanguage(true);
+        requestGenerate(language, false);
+        openProgressModal({
+          analysisId,
+          onViewDocument: () => {},
+          status: "pending",
+        });
+      },
+      usage: usageData ?? null,
+    });
+  };
+
+  // Reset language switch state when generation completes or language matches
+  useEffect(() => {
+    const shouldReset =
+      (pendingLanguage && specDocument?.language === pendingLanguage) ||
+      generationStatus === "completed" ||
+      generationStatus === "failed";
+
+    if (shouldReset) {
+      setIsGeneratingOtherLanguage(false);
+      setPendingLanguage(null);
+    }
+  }, [specDocument?.language, pendingLanguage, generationStatus]);
+
   const renderContent = () => {
     if (specDocument) {
       if (hasFilter && matchCount === 0) {
         return <FilterEmptyState />;
       }
-      return <DocumentView document={specDocument} />;
+      return (
+        <DocumentView
+          document={specDocument}
+          isGeneratingOtherLanguage={isGeneratingOtherLanguage}
+          isRegenerating={isGenerating && !isGeneratingOtherLanguage}
+          onLanguageSwitch={handleLanguageSwitch}
+          onRegenerate={handleRegenerate}
+        />
+      );
     }
 
     if (isGenerating && generationStatus) {

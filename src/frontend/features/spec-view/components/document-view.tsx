@@ -9,13 +9,23 @@ import { TocSidebar } from "./toc-sidebar";
 import { VirtualizedDocumentView } from "./virtualized-document-view";
 import { useDocumentFilter } from "../hooks/use-document-filter";
 import { useScrollSync } from "../hooks/use-scroll-sync";
-import type { SpecDocument } from "../types";
+import type { SpecDocument, SpecLanguage } from "../types";
 
 type DocumentViewProps = {
   document: SpecDocument;
+  isGeneratingOtherLanguage?: boolean;
+  isRegenerating?: boolean;
+  onLanguageSwitch?: (language: SpecLanguage) => void;
+  onRegenerate?: () => void;
 };
 
-export const DocumentView = ({ document }: DocumentViewProps) => {
+export const DocumentView = ({
+  document,
+  isGeneratingOtherLanguage,
+  isRegenerating,
+  onLanguageSwitch,
+  onRegenerate,
+}: DocumentViewProps) => {
   const t = useTranslations("analyze.filter");
   useScrollSync();
 
@@ -30,7 +40,13 @@ export const DocumentView = ({ document }: DocumentViewProps) => {
         <TocSidebar document={document} filteredDocument={filteredDocument} hasFilter={hasFilter} />
 
         <div className="flex-1 space-y-6 min-w-0">
-          <ExecutiveSummary document={document} />
+          <ExecutiveSummary
+            document={document}
+            isGeneratingOtherLanguage={isGeneratingOtherLanguage}
+            isRegenerating={isRegenerating}
+            onLanguageSwitch={onLanguageSwitch}
+            onRegenerate={onRegenerate}
+          />
 
           {showEmptyState ? (
             <FilterEmptyState

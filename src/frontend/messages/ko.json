@@ -260,6 +260,8 @@
       "modelTooltip": "생성에 사용된 AI 모델",
       "dateTooltip": "문서 생성 시각",
       "languageTooltip": "문서 언어",
+      "switchLanguageTooltip": "다른 언어로 생성",
+      "currentLanguage": "현재",
       "regenerateTooltip": "문서 재생성",
       "regenerateAriaLabel": "AI 스펙 문서 재생성"
     },

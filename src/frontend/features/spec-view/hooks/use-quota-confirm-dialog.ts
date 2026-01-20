@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 
 import type { UsageStatusResponse } from "@/features/account/api/usage";
 
+import { SPEC_LANGUAGES, isValidSpecLanguage } from "../constants/spec-languages";
 import type { SpecLanguage } from "../types";
 
 type QuotaConfirmDialogStore = {
@@ -71,37 +72,6 @@ const getStoredLanguagePreference = (analysisId: string): SpecLanguage | null =>
 const saveLanguagePreference = (analysisId: string, language: SpecLanguage) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(`spec-language-${analysisId}`, language);
-};
-
-const SPEC_LANGUAGES: SpecLanguage[] = [
-  "Arabic",
-  "Chinese",
-  "Czech",
-  "Danish",
-  "Dutch",
-  "English",
-  "Finnish",
-  "French",
-  "German",
-  "Greek",
-  "Hindi",
-  "Indonesian",
-  "Italian",
-  "Japanese",
-  "Korean",
-  "Polish",
-  "Portuguese",
-  "Russian",
-  "Spanish",
-  "Swedish",
-  "Thai",
-  "Turkish",
-  "Ukrainian",
-  "Vietnamese",
-];
-
-const isValidSpecLanguage = (value: string): value is SpecLanguage => {
-  return SPEC_LANGUAGES.includes(value as SpecLanguage);
 };
 
 /**

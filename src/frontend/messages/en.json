@@ -260,6 +260,8 @@
       "modelTooltip": "AI model used for generation",
       "dateTooltip": "Document generated at",
       "languageTooltip": "Document language",
+      "switchLanguageTooltip": "Generate in different language",
+      "currentLanguage": "Current",
       "regenerateTooltip": "Regenerate document",
       "regenerateAriaLabel": "Regenerate AI specification document"
     },
