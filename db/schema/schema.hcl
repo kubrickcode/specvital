@@ -988,16 +988,16 @@ table "spec_documents" {
     on_delete   = CASCADE
   }
 
-  unique "uq_spec_documents_hash_lang_model" {
-    columns = [column.content_hash, column.language, column.model_id]
+  unique "uq_spec_documents_hash_lang_model_version" {
+    columns = [column.content_hash, column.language, column.model_id, column.version]
+  }
+
+  unique "uq_spec_documents_analysis_lang_version" {
+    columns = [column.analysis_id, column.language, column.version]
   }
 
   index "idx_spec_documents_analysis" {
     columns = [column.analysis_id]
-  }
-
-  index "idx_spec_documents_latest_version" {
-    columns = [column.analysis_id, column.language, column.version]
   }
 }
 
