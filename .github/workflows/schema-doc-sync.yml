@@ -64,6 +64,24 @@ jobs:
           rm -rf github-io/docs/schema
           cp -r db/docs/schema github-io/docs/
 
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22.18.0"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: extractions/setup-just@v3
+
+      - name: Install dependencies
+        run: just deps-root
+
+      - name: Lint docs
+        run: just lint config
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
