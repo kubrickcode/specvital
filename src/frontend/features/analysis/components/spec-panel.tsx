@@ -4,12 +4,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { FilterEmptyState } from "@/components/feedback";
 import { useUsage } from "@/features/account";
 import { useAuth, useSpecLoginDialog } from "@/features/auth";
 import {
   DocumentView,
   EmptyDocument,
-  FilterEmptyState,
   GenerationProgressModal,
   GenerationStatus,
   QuotaConfirmDialog,
@@ -232,10 +232,16 @@ export const SpecPanel = ({ analysisId, availableFrameworks, totalTests }: SpecP
     setStatuses(null);
   };
 
+  const filterInfo = {
+    frameworks,
+    query,
+    statuses,
+  };
+
   const renderContent = () => {
     if (specDocument) {
       if (hasFilter && matchCount === 0) {
-        return <FilterEmptyState onClearFilters={resetFilters} />;
+        return <FilterEmptyState filterInfo={filterInfo} onReset={resetFilters} />;
       }
       return (
         <DocumentView

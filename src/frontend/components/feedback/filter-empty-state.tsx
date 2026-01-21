@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { TestStatus } from "@/lib/api";
 
-type FilterInfo = {
+export type FilterInfo = {
   frameworks: string[];
   query: string;
   statuses: TestStatus[];

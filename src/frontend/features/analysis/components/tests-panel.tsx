@@ -1,8 +1,8 @@
 "use client";
 
+import { FilterEmptyState } from "@/components/feedback";
 import type { TestSuite } from "@/lib/api";
 
-import { FilterEmptyState } from "./filter-empty-state";
 import { TestList } from "./test-list";
 import { TestsToolbar } from "./tests-toolbar";
 import { TreeView } from "./tree-view";

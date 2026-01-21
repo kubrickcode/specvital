@@ -1,9 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { FilterEmptyState } from "@/components/feedback";
 
 import { ExecutiveSummary } from "./executive-summary";
-import { FilterEmptyState } from "./filter-empty-state";
 import { ReadingProgressBar } from "./reading-progress-bar";
 import { TocSidebar } from "./toc-sidebar";
 import { VirtualizedDocumentView } from "./virtualized-document-view";
@@ -26,10 +25,10 @@ export const DocumentView = ({
   onLanguageSwitch,
   onRegenerate,
 }: DocumentViewProps) => {
-  const t = useTranslations("analyze.filter");
   useScrollSync();
 
-  const { clearFilters, filteredDocument, hasFilter, matchCount } = useDocumentFilter(document);
+  const { clearFilters, filteredDocument, filterInfo, hasFilter, matchCount } =
+    useDocumentFilter(document);
 
   const showEmptyState = hasFilter && matchCount === 0;
 
@@ -49,11 +48,7 @@ export const DocumentView = ({
           />
 
           {showEmptyState ? (
-            <FilterEmptyState
-              description={t("noResultsDescription")}
-              onClearFilters={clearFilters}
-              title={t("noResults")}
-            />
+            <FilterEmptyState filterInfo={filterInfo} onReset={clearFilters} />
           ) : filteredDocument ? (
             <VirtualizedDocumentView document={filteredDocument} hasFilter={hasFilter} />
           ) : null}

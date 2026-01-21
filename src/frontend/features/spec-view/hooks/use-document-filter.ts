@@ -164,9 +164,16 @@ export const useDocumentFilter = (document: SpecDocument | null) => {
     setFrameworks([]);
   };
 
+  const filterInfo = {
+    frameworks: deferredFrameworks,
+    query: deferredQuery,
+    statuses,
+  };
+
   return {
     clearFilters,
     filteredDocument,
+    filterInfo,
     hasFilter,
     matchCount: filteredDocument?.matchCount ?? 0,
     query,
