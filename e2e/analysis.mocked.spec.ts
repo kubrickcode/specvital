@@ -28,7 +28,7 @@ test.describe("Analysis Page - Primary Tab Navigation (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for analysis to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -49,7 +49,7 @@ test.describe("Analysis Page - Primary Tab Navigation (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for analysis to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -68,7 +68,9 @@ test.describe("Analysis Page - Primary Tab Navigation (Mocked API)", () => {
     await expect(testsTab).toHaveAttribute("data-state", "active");
   });
 
-  test("should show Re-analyze button in header", async ({ page }) => {
+  // Skip: Re-analyze button removed from analysis page header in UI redesign (cff5b21)
+  // Reanalyze functionality moved to dashboard repository cards and update banner
+  test.skip("should show Re-analyze button in header", async ({ page }) => {
     await setupMockHandlers(page, {
       analysis: mockAnalysisCompleted,
       specDocument: mockSpecDocumentNotFound,
@@ -79,7 +81,7 @@ test.describe("Analysis Page - Primary Tab Navigation (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for analysis to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -99,7 +101,7 @@ test.describe("Analysis Page - Primary Tab Navigation (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for analysis to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -125,7 +127,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for analysis to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -134,7 +136,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await specTab.click();
 
     // Generate button should be visible
-    const generateButton = page.getByRole("button", { name: /generate.*ai/i });
+    const generateButton = page.getByRole("button", { name: /generate document/i });
     await expect(generateButton).toBeVisible();
   });
 
@@ -150,7 +152,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -159,7 +161,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await specTab.click();
 
     // Click Generate button
-    const generateButton = page.getByRole("button", { name: /generate.*ai/i });
+    const generateButton = page.getByRole("button", { name: /generate document/i });
     await generateButton.click();
 
     // Verify dialog opens
@@ -180,7 +182,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -189,7 +191,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await specTab.click();
 
     // Click Generate button
-    const generateButton = page.getByRole("button", { name: /generate.*ai/i });
+    const generateButton = page.getByRole("button", { name: /generate document/i });
     await generateButton.click();
 
     // Verify dialog opened
@@ -223,7 +225,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -232,7 +234,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await specTab.click();
 
     // Click Generate button
-    const generateButton = page.getByRole("button", { name: /generate.*ai/i });
+    const generateButton = page.getByRole("button", { name: /generate document/i });
     await generateButton.click();
 
     const dialog = page.getByRole("dialog");
@@ -255,7 +257,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -264,7 +266,7 @@ test.describe("Analysis Page - AI Spec Tab (Mocked API)", () => {
     await specTab.click();
 
     // Click Generate button
-    const generateButton = page.getByRole("button", { name: /generate.*ai/i });
+    const generateButton = page.getByRole("button", { name: /generate document/i });
     await generateButton.click();
 
     const dialog = page.getByRole("dialog");
@@ -291,7 +293,7 @@ test.describe("Analysis Page - Quota States (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -299,16 +301,10 @@ test.describe("Analysis Page - Quota States (Mocked API)", () => {
     const specTab = page.getByRole("tab", { name: /ai spec/i });
     await specTab.click();
 
-    // Click Generate button
-    const generateButton = page.getByRole("button", { name: /generate.*ai/i });
-    await generateButton.click();
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-
     // Generate Document button should be disabled when quota exceeded
-    const confirmButton = dialog.getByRole("button", { name: /generate document/i });
-    await expect(confirmButton).toBeDisabled();
+    // (button on EmptyDocument card is disabled when quota is exceeded)
+    const generateButton = page.getByRole("button", { name: /generate document/i });
+    await expect(generateButton).toBeDisabled();
   });
 
   test("should display quota exceeded message", async ({ page }) => {
@@ -323,7 +319,7 @@ test.describe("Analysis Page - Quota States (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -331,15 +327,12 @@ test.describe("Analysis Page - Quota States (Mocked API)", () => {
     const specTab = page.getByRole("tab", { name: /ai spec/i });
     await specTab.click();
 
-    // Click Generate button
-    const generateButton = page.getByRole("button", { name: /generate.*ai/i });
-    await generateButton.click();
+    // When quota is exceeded, the Generate Document button should be disabled
+    const generateButton = page.getByRole("button", { name: /generate document/i });
+    await expect(generateButton).toBeDisabled();
 
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-
-    // Should show quota exceeded message or warning
-    await expect(dialog.getByText(/exceeded|limit|upgrade/i)).toBeVisible();
+    // Should show "View Account" link in quota indicator when quota is exceeded
+    await expect(page.getByRole("link", { name: /view account/i })).toBeVisible();
   });
 
   test("should show usage percentage in dialog", async ({ page }) => {
@@ -354,7 +347,7 @@ test.describe("Analysis Page - Quota States (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -363,7 +356,7 @@ test.describe("Analysis Page - Quota States (Mocked API)", () => {
     await specTab.click();
 
     // Click Generate button
-    const generateButton = page.getByRole("button", { name: /generate.*ai/i });
+    const generateButton = page.getByRole("button", { name: /generate document/i });
     await generateButton.click();
 
     const dialog = page.getByRole("dialog");
@@ -386,12 +379,12 @@ test.describe("Analysis Page - Virtual Scroll Performance (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for analysis to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
-    // Verify total test count is displayed (1000 tests)
-    await expect(page.getByText("1000")).toBeVisible({ timeout: 10000 });
+    // Verify total test count is displayed (1000 tests formatted with comma)
+    await expect(page.getByText("1,000")).toBeVisible({ timeout: 10000 });
 
     // Verify test suites section is rendered
     const testSuitesSection = page.getByText(/test suite/i).first();
@@ -419,7 +412,7 @@ test.describe("Analysis Page - Virtual Scroll Performance (Mocked API)", () => {
     await page.waitForTimeout(500);
 
     // Page should still be responsive
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible();
+    await expect(page.getByText("Total")).toBeVisible();
   });
 
   test("should display correct summary statistics for large dataset", async ({ page }) => {
@@ -433,7 +426,7 @@ test.describe("Analysis Page - Virtual Scroll Performance (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for analysis to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 
@@ -456,7 +449,7 @@ test.describe("Analysis Page - URL Backward Compatibility (Mocked API)", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for analysis to load
-    await expect(page.getByRole("heading", { name: "Test Statistics" })).toBeVisible({
+    await expect(page.getByText("Total")).toBeVisible({
       timeout: 15000,
     });
 

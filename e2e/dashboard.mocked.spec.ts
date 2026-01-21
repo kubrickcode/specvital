@@ -218,13 +218,13 @@ test.describe("Dashboard Page (Mocked API)", () => {
         page.getByRole("button", { name: /add bookmark|remove bookmark/i }).first()
       ).toBeVisible({ timeout: 10000 });
 
-      // Click starred toggle
-      const starredToggle = page.getByRole("button", { name: /show starred only/i });
+      // Click bookmarked toggle
+      const bookmarkedToggle = page.getByRole("button", { name: /show bookmarked only/i });
       showBookmarkedOnly = true;
-      await starredToggle.click();
+      await bookmarkedToggle.click();
 
       // Verify toggle is pressed
-      await expect(starredToggle).toHaveAttribute("aria-pressed", "true");
+      await expect(bookmarkedToggle).toHaveAttribute("aria-pressed", "true");
 
       // Wait for filter to apply
       await page.waitForLoadState("networkidle");
