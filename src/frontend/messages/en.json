@@ -1164,6 +1164,173 @@
           }
         }
       }
+    },
+    "queueProcessing": {
+      "meta": {
+        "title": "Queue Processing | SpecVital Docs",
+        "description": "Learn how analysis queues work and priority tiers for different plans."
+      },
+      "title": "Queue Processing",
+      "subtitle": "Understanding how analysis queues work and priority tiers for different plans.",
+      "sections": {
+        "overview": {
+          "title": "How Queue Processing Works",
+          "description": "When you submit a repository for analysis, it enters a processing queue. SpecVital uses a multi-queue architecture to ensure fair processing while providing faster service for premium plans.",
+          "keyPoint": {
+            "title": "Fair & Prioritized",
+            "description": "All jobs are processed fairly within their tier. Premium plans get dedicated queues with shorter wait times and higher concurrency."
+          }
+        },
+        "architecture": {
+          "title": "Multi-Queue Architecture",
+          "description": "SpecVital operates three separate queues to balance fairness and premium benefits.",
+          "standard": {
+            "title": "Standard Queue",
+            "description": "Shared queue for free tier users. Jobs are processed in order of submission.",
+            "plans": "Free"
+          },
+          "priority": {
+            "title": "Priority Queue",
+            "description": "Dedicated queue with faster processing and higher worker allocation.",
+            "plans": "Pro"
+          },
+          "dedicated": {
+            "title": "Dedicated Queue",
+            "description": "Highest priority with dedicated workers and minimal wait times.",
+            "plans": "Pro+ / Enterprise"
+          }
+        },
+        "tiers": {
+          "title": "Priority Tiers",
+          "description": "Each plan tier has different queue characteristics:",
+          "table": {
+            "plan": "Plan",
+            "queue": "Queue",
+            "typicalWait": "Typical Wait",
+            "concurrency": "Concurrency"
+          },
+          "priorities": {
+            "free": {
+              "plan": "Free",
+              "queue": "Standard",
+              "wait": "30s - 2min",
+              "concurrency": "1 job at a time"
+            },
+            "pro": {
+              "plan": "Pro",
+              "queue": "Priority",
+              "wait": "5s - 30s",
+              "concurrency": "3 concurrent jobs"
+            },
+            "proPlusEnterprise": {
+              "plan": "Pro+ / Enterprise",
+              "queue": "Dedicated",
+              "wait": "< 5s",
+              "concurrency": "Unlimited"
+            }
+          }
+        },
+        "howItWorks": {
+          "title": "Processing Flow",
+          "description": "Here's what happens when you submit an analysis request:",
+          "steps": {
+            "title": "Processing Steps",
+            "submit": {
+              "title": "Submit Request",
+              "description": "You enter a repository URL and click Analyze. The request is received by our API."
+            },
+            "route": {
+              "title": "Queue Routing",
+              "description": "Based on your plan tier, the job is routed to the appropriate queue (Standard, Priority, or Dedicated)."
+            },
+            "process": {
+              "title": "Worker Processing",
+              "description": "A worker picks up your job, clones the repository, and runs the test parser on all detected test files."
+            },
+            "complete": {
+              "title": "Results Ready",
+              "description": "Analysis results are cached and immediately available. You're redirected to the results page."
+            }
+          }
+        },
+        "waitFactors": {
+          "title": "What Affects Wait Time?",
+          "description": "Several factors influence how long you wait in the queue:",
+          "factors": {
+            "queueLength": {
+              "title": "Queue Length",
+              "description": "More jobs ahead means longer wait. Premium queues typically have fewer jobs."
+            },
+            "jobSize": {
+              "title": "Repository Size",
+              "description": "Larger repositories with more test files take longer to process, affecting overall queue throughput."
+            },
+            "planTier": {
+              "title": "Your Plan Tier",
+              "description": "Higher tiers get dedicated queues with more workers and less competition."
+            },
+            "timeOfDay": {
+              "title": "Time of Day",
+              "description": "Peak hours (weekday business hours) may have longer queues. Off-peak times are typically faster."
+            }
+          }
+        },
+        "whyPriority": {
+          "title": "Why Priority Queues?",
+          "description": "Our multi-queue system balances accessibility with premium service:",
+          "benefits": {
+            "fairness": {
+              "title": "Fairness for Free Users",
+              "description": "Free tier users always have access to analysis. Their queue is processed continuously, ensuring everyone can use the service."
+            },
+            "predictability": {
+              "title": "Predictable Performance",
+              "description": "Premium users get predictable, fast response times. Important for CI/CD integration and professional workflows."
+            },
+            "scalability": {
+              "title": "System Scalability",
+              "description": "Separate queues allow us to scale each tier independently based on demand patterns."
+            }
+          }
+        },
+        "status": {
+          "title": "Real-Time Status",
+          "description": "You can track your analysis status in the UI:",
+          "states": {
+            "queued": {
+              "label": "Queued",
+              "description": "Your job is waiting in the queue. Position and estimated time are displayed."
+            },
+            "processing": {
+              "label": "Processing",
+              "description": "A worker is actively analyzing your repository."
+            },
+            "complete": {
+              "label": "Complete",
+              "description": "Analysis finished. Results are cached and ready to view."
+            }
+          }
+        },
+        "faq": {
+          "title": "FAQ",
+          "q1": {
+            "question": "Why is my analysis taking longer than expected?",
+            "answer": "Wait times depend on current queue load and your repository size. Large repositories with thousands of test files take longer to process. During peak hours, standard queue may experience longer waits."
+          },
+          "q2": {
+            "question": "Can I cancel a queued analysis?",
+            "answer": "Currently, you cannot cancel a queued job. Once submitted, it will be processed. If you need to analyze a different branch, submit a new request."
+          },
+          "q3": {
+            "question": "Do cached results skip the queue?",
+            "answer": "Yes! If your repository was previously analyzed at the same commit, results are served instantly from cache without entering any queue."
+          },
+          "q4": {
+            "question": "What happens during system maintenance?",
+            "answer": "During maintenance windows, queues pause temporarily. Your job remains queued and will be processed when maintenance completes. We announce scheduled maintenance in advance."
+          }
+        }
+      }
     }
   }
 }
