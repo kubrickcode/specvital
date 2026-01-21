@@ -652,5 +652,39 @@
     "explore": "탐색",
     "pricing": "요금제",
     "docs": "문서"
+  },
+  "docs": {
+    "landing": {
+      "title": "문서",
+      "description": "SpecVital 작동 방식을 이해하고 테스트 분석을 최대한 활용하세요.",
+      "howItWorksTitle": "작동 원리"
+    },
+    "topics": {
+      "testDetection": {
+        "title": "테스트 감지",
+        "description": "SpecVital이 저장소에서 테스트를 찾고 세는 방법을 알아보세요.",
+        "slug": "test-detection"
+      },
+      "usageBilling": {
+        "title": "사용량 및 요금",
+        "description": "사용량 추적, 할당량, 결제 주기에 대해 알아보세요.",
+        "slug": "usage-billing"
+      },
+      "githubAccess": {
+        "title": "GitHub 접근 권한",
+        "description": "OAuth 권한과 조직 저장소용 GitHub 앱 설치 방법을 알아보세요.",
+        "slug": "github-access"
+      },
+      "queueProcessing": {
+        "title": "대기열 처리",
+        "description": "분석 대기열 작동 방식과 플랜별 우선순위를 알아보세요.",
+        "slug": "queue-processing"
+      },
+      "specviewGeneration": {
+        "title": "AI 스펙 생성",
+        "description": "AI가 테스트를 구조화된 스펙 문서로 변환하는 방법을 알아보세요.",
+        "slug": "specview-generation"
+      }
+    }
   }
 }

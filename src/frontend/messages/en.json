@@ -652,5 +652,39 @@
     "explore": "Explore",
     "pricing": "Pricing",
     "docs": "Docs"
+  },
+  "docs": {
+    "landing": {
+      "title": "Documentation",
+      "description": "Learn how SpecVital works and get the most out of your test analysis.",
+      "howItWorksTitle": "How It Works"
+    },
+    "topics": {
+      "testDetection": {
+        "title": "Test Detection",
+        "description": "Understanding how SpecVital finds and counts tests in your repository.",
+        "slug": "test-detection"
+      },
+      "usageBilling": {
+        "title": "Usage & Billing",
+        "description": "Learn about usage tracking, quotas, and billing cycles.",
+        "slug": "usage-billing"
+      },
+      "githubAccess": {
+        "title": "GitHub Access",
+        "description": "OAuth permissions and GitHub App installation for organization repos.",
+        "slug": "github-access"
+      },
+      "queueProcessing": {
+        "title": "Queue Processing",
+        "description": "How analysis queues work and priority tiers for different plans.",
+        "slug": "queue-processing"
+      },
+      "specviewGeneration": {
+        "title": "AI Spec Generation",
+        "description": "How AI transforms your tests into structured specification documents.",
+        "slug": "specview-generation"
+      }
+    }
   }
 }
