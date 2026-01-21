@@ -3,7 +3,6 @@
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -12,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 import { PricingCta } from "./pricing-cta";
 import type { PlanTier, PricingPlan } from "../types";
@@ -34,18 +32,7 @@ export const PricingCard = ({ currentTier, plan }: PricingCardProps) => {
   const tFeatures = useTranslations("pricing.features");
 
   return (
-    <Card
-      className={cn(
-        "relative flex flex-col transition-all duration-200",
-        plan.highlighted && "ring-2 ring-primary shadow-xl"
-      )}
-    >
-      {plan.highlighted && (
-        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2" variant="default">
-          {t("mostPopular")}
-        </Badge>
-      )}
-
+    <Card className="relative flex flex-col transition-all duration-200">
       <CardHeader className="text-center">
         <CardTitle className="text-xl">{tTiers(`${plan.tier}.name`)}</CardTitle>
         <CardDescription className="mt-1 min-h-[40px]">
