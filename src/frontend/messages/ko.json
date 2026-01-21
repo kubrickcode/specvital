@@ -659,6 +659,12 @@
       "description": "SpecVital 작동 방식을 이해하고 테스트 분석을 최대한 활용하세요.",
       "howItWorksTitle": "작동 원리"
     },
+    "sidebar": {
+      "title": "작동 원리",
+      "ariaLabel": "문서 네비게이션",
+      "openMenu": "네비게이션 메뉴 열기",
+      "description": "문서 주제를 탐색합니다"
+    },
     "topics": {
       "testDetection": {
         "title": "테스트 감지",

@@ -659,6 +659,12 @@
       "description": "Learn how SpecVital works and get the most out of your test analysis.",
       "howItWorksTitle": "How It Works"
     },
+    "sidebar": {
+      "title": "How It Works",
+      "ariaLabel": "Documentation navigation",
+      "openMenu": "Open navigation menu",
+      "description": "Navigate through documentation topics"
+    },
     "topics": {
       "testDetection": {
         "title": "Test Detection",
