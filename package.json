@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/specvital/worker.git"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "prepare": "husky"
   },
