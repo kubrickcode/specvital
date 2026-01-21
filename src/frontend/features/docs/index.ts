@@ -1,1 +1,7 @@
-export { DocsLandingContent, DocsSidebar, DocsSidebarItem, DocsTopicCard } from "./components";
+export {
+  DocsLandingContent,
+  DocsSidebar,
+  DocsSidebarItem,
+  DocsTopicCard,
+  TestDetectionContent,
+} from "./components";

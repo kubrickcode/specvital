@@ -691,6 +691,126 @@
         "description": "AI가 테스트를 구조화된 스펙 문서로 변환하는 방법을 알아보세요.",
         "slug": "specview-generation"
       }
+    },
+    "testDetection": {
+      "meta": {
+        "title": "테스트 감지 | SpecVital 문서",
+        "description": "SpecVital이 AST 기반 정적 분석으로 저장소의 테스트를 감지하고 세는 방법을 알아보세요."
+      },
+      "title": "테스트 감지",
+      "subtitle": "SpecVital이 저장소에서 테스트를 찾고 세는 방법을 알아보세요.",
+      "sections": {
+        "what": {
+          "title": "테스트 감지란?",
+          "description": "SpecVital은 AST(추상 구문 트리) 기반 정적 분석으로 코드베이스의 테스트를 감지합니다. 테스트를 실행하는 CLI 도구와 달리, SpecVital은 소스 코드를 직접 파싱하여 테스트 함수, 스위트, 상태를 식별합니다.",
+          "keyPoint": {
+            "title": "정적 분석",
+            "description": "테스트 실행 없이 분석합니다. 몇 시간이 아닌 몇 초 만에 결과를 얻을 수 있으며, CI/CD 설정이 필요 없습니다."
+          }
+        },
+        "how": {
+          "title": "작동 방식",
+          "description": "SpecVital은 Tree-sitter 파싱을 사용하여 10개 이상의 프로그래밍 언어에서 소스 코드를 분석합니다. 프레임워크 감지는 우선순위 기반으로 진행됩니다:",
+          "detectionOrder": {
+            "title": "감지 우선순위",
+            "step1Title": "Import 문",
+            "step1Desc": "가장 높은 신뢰도. 예: import '{' test '}' from 'vitest'",
+            "step2Title": "설정 범위",
+            "step2Desc": "프레임워크 설정 파일 범위 내 파일. 예: jest.config.js",
+            "step3Title": "콘텐츠 패턴",
+            "step3Desc": "프레임워크별 패턴. 예: jest.fn(), vi.mock()"
+          }
+        },
+        "frameworks": {
+          "title": "지원 프레임워크",
+          "description": "SpecVital은 10개 이상의 프로그래밍 언어에서 20개 이상의 테스트 프레임워크를 지원합니다:",
+          "table": {
+            "language": "언어",
+            "frameworks": "프레임워크"
+          }
+        },
+        "filePatterns": {
+          "title": "파일 패턴",
+          "description": "테스트는 각 언어의 표준 명명 규칙에 따라 감지됩니다:",
+          "table": {
+            "language": "언어",
+            "patterns": "파일 패턴"
+          }
+        },
+        "countDifference": {
+          "title": "CLI와 테스트 수가 다른 이유",
+          "description": "SpecVital은 동적으로 생성되는 테스트(매개변수화된 테스트)를 실제 런타임 수와 관계없이 1개로 계산합니다. 정적 분석으로는 런타임 값을 평가할 수 없기 때문입니다.",
+          "table": {
+            "pattern": "패턴",
+            "specvital": "SpecVital",
+            "cli": "CLI"
+          },
+          "tip": {
+            "title": "C# 어트리뷰트는 정확히 계산",
+            "description": "C#의 [TestCase], [InlineData] 같은 어트리뷰트 기반 테스트는 AST에서 각 어트리뷰트가 개별적으로 감지되므로 정확하게 계산됩니다."
+          }
+        },
+        "status": {
+          "title": "테스트 상태 감지",
+          "description": "SpecVital은 프레임워크별 수정자와 어트리뷰트를 기반으로 테스트 상태를 감지합니다:",
+          "active": {
+            "label": "활성",
+            "description": "정상적으로 실행되는 테스트"
+          },
+          "skipped": {
+            "label": "건너뜀",
+            "description": "건너뛰도록 표시됨 (.skip, @Disabled, @pytest.mark.skip)"
+          },
+          "todo": {
+            "label": "할 일",
+            "description": "아직 구현되지 않은 플레이스홀더 (.todo)"
+          },
+          "focused": {
+            "label": "집중",
+            "description": "단독으로 실행되도록 표시됨 (.only)"
+          },
+          "xfail": {
+            "label": "예상 실패",
+            "description": "실패가 예상됨 (@pytest.mark.xfail)"
+          }
+        },
+        "limitations": {
+          "title": "알려진 제한사항",
+          "description": "정적 분석의 특성상 일부 패턴은 완전히 감지할 수 없습니다:",
+          "indirect": {
+            "title": "간접 Import 미지원",
+            "description": "re-export 체인을 통해 테스트 함수를 가져오는 파일은 0개로 표시될 수 있습니다. SpecVital은 import 체인을 따라가지 않고 각 파일을 독립적으로 파싱합니다."
+          },
+          "items": {
+            "singleFile": "단일 파일 파싱 - 파일 간 별칭 해석 불가",
+            "dynamicImports": "동적 import 및 런타임 생성 테스트 이름",
+            "macros": "외부 매크로 기반 테스트 (이름에 'test'가 없는 Rust 크레이트)"
+          }
+        },
+        "accuracy": {
+          "title": "정확도 기대치",
+          "description": "표준 테스트 패턴을 사용하는 프로젝트에서 SpecVital은 높은 정확도를 달성합니다. 매개변수화가 많거나 커스텀 테스트 인프라를 사용하는 프로젝트는 정확도가 낮을 수 있습니다.",
+          "typical": {
+            "title": "95-99% 정확도",
+            "description": "표준 패턴을 사용하는 대부분의 프로젝트는 매우 정확한 테스트 수를 확인할 수 있습니다. 정확한 수치가 필요하면 프레임워크의 네이티브 CLI(jest --listTests, pytest --collect-only)를 사용하세요."
+          }
+        },
+        "faq": {
+          "title": "자주 묻는 질문",
+          "q1": {
+            "question": "jest --listTests와 테스트 수가 다른 이유는?",
+            "answer": "매개변수화된 테스트(it.each, test.each)는 반복 횟수가 런타임에만 알려지기 때문에 SpecVital에서 1개로 계산됩니다. Jest는 각 반복을 별도로 계산합니다."
+          },
+          "q2": {
+            "question": "일부 테스트가 0개로 표시되는 이유는?",
+            "answer": "re-export 체인을 통해 테스트 유틸리티를 가져올 때 발생합니다. SpecVital은 여러 파일에 걸쳐 import를 추적할 수 없습니다. 테스트 프레임워크에서 직접 가져오세요."
+          },
+          "q3": {
+            "question": "파서는 얼마나 자주 업데이트되나요?",
+            "answer": "파서는 새로운 프레임워크 버전과 패턴을 지원하기 위해 정기적으로 업데이트됩니다. 업데이트가 결과에 영향을 미치면 재분석을 권장하는 배너가 표시됩니다."
+          }
+        }
+      }
     }
   }
 }

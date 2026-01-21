@@ -691,6 +691,126 @@
         "description": "How AI transforms your tests into structured specification documents.",
         "slug": "specview-generation"
       }
+    },
+    "testDetection": {
+      "meta": {
+        "title": "Test Detection | SpecVital Docs",
+        "description": "Learn how SpecVital detects and counts tests in your repository using AST-based static analysis."
+      },
+      "title": "Test Detection",
+      "subtitle": "Understanding how SpecVital finds and counts tests in your repository.",
+      "sections": {
+        "what": {
+          "title": "What is Test Detection?",
+          "description": "SpecVital uses AST (Abstract Syntax Tree) based static analysis to detect tests in your codebase. Unlike CLI tools that execute tests, SpecVital parses source code directly to identify test functions, suites, and their status.",
+          "keyPoint": {
+            "title": "Static Analysis",
+            "description": "Tests are analyzed without execution. This means results are available in seconds, not hours - no CI/CD setup required."
+          }
+        },
+        "how": {
+          "title": "How It Works",
+          "description": "SpecVital uses Tree-sitter parsing to analyze source code across 10+ programming languages. Framework detection follows a priority-based approach:",
+          "detectionOrder": {
+            "title": "Detection Priority",
+            "step1Title": "Import Statements",
+            "step1Desc": "Highest reliability. e.g., import '{' test '}' from 'vitest'",
+            "step2Title": "Config Scope",
+            "step2Desc": "Files within a framework's config scope. e.g., jest.config.js",
+            "step3Title": "Content Patterns",
+            "step3Desc": "Framework-specific patterns. e.g., jest.fn(), vi.mock()"
+          }
+        },
+        "frameworks": {
+          "title": "Supported Frameworks",
+          "description": "SpecVital supports 20+ testing frameworks across 10+ programming languages:",
+          "table": {
+            "language": "Language",
+            "frameworks": "Frameworks"
+          }
+        },
+        "filePatterns": {
+          "title": "File Patterns",
+          "description": "Tests are detected based on standard naming conventions for each language:",
+          "table": {
+            "language": "Language",
+            "patterns": "File Patterns"
+          }
+        },
+        "countDifference": {
+          "title": "Why Counts May Differ from CLI",
+          "description": "SpecVital counts dynamically generated tests (parameterized tests) as 1 test, regardless of actual runtime count. This is because static analysis cannot evaluate runtime values.",
+          "table": {
+            "pattern": "Pattern",
+            "specvital": "SpecVital",
+            "cli": "CLI"
+          },
+          "tip": {
+            "title": "Accurate Counts with C# Attributes",
+            "description": "C# attribute-based tests like [TestCase] and [InlineData] are accurately counted because each attribute is individually detected in the AST."
+          }
+        },
+        "status": {
+          "title": "Test Status Detection",
+          "description": "SpecVital detects test status based on framework-specific modifiers and attributes:",
+          "active": {
+            "label": "Active",
+            "description": "Normal test that will run"
+          },
+          "skipped": {
+            "label": "Skipped",
+            "description": "Marked to be skipped (.skip, @Disabled, @pytest.mark.skip)"
+          },
+          "todo": {
+            "label": "Todo",
+            "description": "Placeholder not yet implemented (.todo)"
+          },
+          "focused": {
+            "label": "Focused",
+            "description": "Marked to run exclusively (.only)"
+          },
+          "xfail": {
+            "label": "Expected Fail",
+            "description": "Expected to fail (@pytest.mark.xfail)"
+          }
+        },
+        "limitations": {
+          "title": "Known Limitations",
+          "description": "Due to the nature of static analysis, some patterns cannot be fully detected:",
+          "indirect": {
+            "title": "Indirect Imports Not Supported",
+            "description": "Files that import test functions via re-export chains may show 0 tests. SpecVital parses each file independently without following import chains."
+          },
+          "items": {
+            "singleFile": "Single-file parsing - cannot resolve aliases across files",
+            "dynamicImports": "Dynamic imports and runtime-generated test names",
+            "macros": "External macro-based tests (Rust crates without 'test' in name)"
+          }
+        },
+        "accuracy": {
+          "title": "Accuracy Expectations",
+          "description": "For projects using standard testing patterns, SpecVital achieves high accuracy. Projects with heavy parameterization or custom test infrastructure may see lower accuracy.",
+          "typical": {
+            "title": "95-99% Accuracy",
+            "description": "Most projects using standard patterns will see highly accurate test counts. For exact counts, use your framework's native CLI (jest --listTests, pytest --collect-only)."
+          }
+        },
+        "faq": {
+          "title": "FAQ",
+          "q1": {
+            "question": "Why does my test count differ from jest --listTests?",
+            "answer": "Parameterized tests (it.each, test.each) are counted as 1 test in SpecVital because the number of iterations is only known at runtime. Jest counts each iteration separately."
+          },
+          "q2": {
+            "question": "Why are some of my tests showing 0 tests?",
+            "answer": "This usually happens when tests import test utilities through re-export chains. SpecVital cannot trace imports across multiple files. Try importing directly from the testing framework."
+          },
+          "q3": {
+            "question": "How often is the parser updated?",
+            "answer": "The parser is updated regularly to support new framework versions and patterns. When an update affects your results, you'll see a banner suggesting reanalysis."
+          }
+        }
+      }
     }
   }
 }
