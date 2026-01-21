@@ -83,4 +83,10 @@ This repository contains the web application (Frontend + Backend API). The full 
 
 ## License
 
-MIT
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+### Trademark Notice
+
+"SpecVital" and the SpecVital logo are trademarks of KubrickCode. Forks and derivative works must use a different name and branding. See the [NOTICE](NOTICE) file for details.

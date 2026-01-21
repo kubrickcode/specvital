@@ -83,4 +83,10 @@ SpecVital은 활발히 개발 중입니다. 현재 제공 기능:
 
 ## 라이선스
 
-MIT
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+이 프로젝트는 Apache License 2.0 하에 라이선스됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+### 상표 고지
+
+"SpecVital" 및 SpecVital 로고는 KubrickCode의 상표입니다. Fork 및 파생 저작물은 다른 이름과 브랜딩을 사용해야 합니다. 자세한 내용은 [NOTICE](NOTICE) 파일을 참조하세요.
