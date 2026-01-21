@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 
+import { HIGHLIGHTED_FRAMEWORKS, TOTAL_FRAMEWORK_COUNT } from "@/lib/constants/frameworks";
+
 import { EmptyState } from "./empty-state";
 
 const mockPush = vi.fn();
@@ -39,21 +41,28 @@ describe("EmptyState", () => {
     ).toBeInTheDocument();
   });
 
-  it("displays supported frameworks list", () => {
+  it("displays highlighted frameworks as badges", () => {
     renderEmptyState();
 
     expect(screen.getByText("Supported frameworks:")).toBeInTheDocument();
-    expect(screen.getByText("Jest")).toBeInTheDocument();
-    expect(screen.getByText("Vitest")).toBeInTheDocument();
-    expect(screen.getByText("Playwright")).toBeInTheDocument();
-    expect(screen.getByText("Go")).toBeInTheDocument();
+    for (const framework of HIGHLIGHTED_FRAMEWORKS) {
+      expect(screen.getAllByText(framework).length).toBeGreaterThanOrEqual(1);
+    }
   });
 
-  it("shows framework file patterns", () => {
+  it("shows remaining framework count badge", () => {
     renderEmptyState();
 
-    expect(screen.getByText("*.test.ts, *.test.tsx, *.test.js, __tests__/*")).toBeInTheDocument();
-    expect(screen.getByText("*_test.go")).toBeInTheDocument();
+    const remainingCount = TOTAL_FRAMEWORK_COUNT - HIGHLIGHTED_FRAMEWORKS.length;
+    expect(screen.getByText(`+${remainingCount} more`)).toBeInTheDocument();
+  });
+
+  it("displays all framework names in detail section", () => {
+    renderEmptyState();
+
+    expect(screen.getByText(/Jest, Vitest, Mocha, Playwright, Cypress/)).toBeInTheDocument();
+    expect(screen.getByText(/pytest, unittest/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Go Testing/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders analyze another repository button", () => {
