@@ -270,7 +270,7 @@ export const SpecPanel = ({ analysisId, availableFrameworks, totalTests }: SpecP
   };
 
   return (
-    <div aria-labelledby="tab-spec" className="space-y-4" id="tabpanel-spec" role="tabpanel">
+    <div aria-labelledby="tab-spec" className="p-5 space-y-4" id="tabpanel-spec" role="tabpanel">
       <SpecToolbar
         availableFrameworks={availableFrameworks}
         frameworks={frameworks}

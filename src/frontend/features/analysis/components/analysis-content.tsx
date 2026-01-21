@@ -1,14 +1,13 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useTranslations } from "next-intl";
 
 import type { AnalysisResult } from "@/lib/api";
 import { createStaggerContainer, fadeInUp, useReducedMotion } from "@/lib/motion";
 
 import { AnalysisHeader } from "./analysis-header";
+import { InlineStats } from "./inline-stats";
 import { SpecPanel } from "./spec-panel";
-import { StatsCard } from "./stats-card";
 import { TabNavigation } from "./tab-navigation";
 import { TestsPanel } from "./tests-panel";
 import { UpdateBanner } from "./update-banner";
@@ -18,10 +17,9 @@ type AnalysisContentProps = {
   result: AnalysisResult;
 };
 
-const pageStaggerContainer = createStaggerContainer(0.1, 0);
+const pageStaggerContainer = createStaggerContainer(0.08, 0);
 
 export const AnalysisContent = ({ result }: AnalysisContentProps) => {
-  const t = useTranslations("analyze");
   const { setTab, tab } = usePrimaryTab();
   const shouldReduceMotion = useReducedMotion();
 
@@ -33,32 +31,40 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
   return (
     <motion.main
       animate="visible"
-      className="container mx-auto px-4 py-8"
+      className="container mx-auto px-4 py-6"
       initial={shouldReduceMotion ? false : "hidden"}
       variants={containerVariants}
     >
       <UpdateBanner owner={result.owner} repo={result.repo} />
 
       <div className="space-y-6">
-        <AnalysisHeader
-          analyzedAt={result.analyzedAt}
-          branchName={result.branchName}
-          commitSha={result.commitSha}
-          committedAt={result.committedAt}
-          data={result}
-          owner={result.owner}
-          parserVersion={result.parserVersion}
-          repo={result.repo}
-        />
-
+        {/* Header Section */}
         <motion.div variants={itemVariants}>
-          <StatsCard summary={result.summary} />
+          <AnalysisHeader
+            analyzedAt={result.analyzedAt}
+            branchName={result.branchName}
+            commitSha={result.commitSha}
+            committedAt={result.committedAt}
+            data={result}
+            owner={result.owner}
+            parserVersion={result.parserVersion}
+            repo={result.repo}
+          />
         </motion.div>
 
-        <motion.section className="space-y-4" variants={itemVariants}>
-          <h2 className="text-xl font-semibold">{t("testSuites")}</h2>
+        {/* Stats Section */}
+        <motion.div variants={itemVariants}>
+          <InlineStats summary={result.summary} />
+        </motion.div>
 
-          <TabNavigation activeTab={tab} onTabChange={setTab} />
+        {/* Content Section */}
+        <motion.section
+          className="rounded-lg border border-border/60 bg-card/30"
+          variants={itemVariants}
+        >
+          <div className="px-5 py-4 border-b border-border/40">
+            <TabNavigation activeTab={tab} onTabChange={setTab} />
+          </div>
 
           {tab === "tests" ? (
             <TestsPanel

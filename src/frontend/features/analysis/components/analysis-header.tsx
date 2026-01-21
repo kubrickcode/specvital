@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, GitBranch, GitCommit, Info } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 
@@ -42,31 +42,33 @@ export const AnalysisHeader = ({
   const fullName = `${owner}/${repo}`;
 
   const titleElement = (
-    <h1 className="text-xl font-bold sm:text-2xl truncate" ref={ref}>
+    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl truncate" ref={ref}>
       {fullName}
     </h1>
   );
 
   return (
-    <motion.header variants={fadeInUp}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        {/* Repository info section */}
-        <div className="space-y-1 min-w-0">
+    <motion.header className="py-4" variants={fadeInUp}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        {/* Repository info */}
+        <div className="space-y-1.5 min-w-0">
           {isTruncated ? (
             <ResponsiveTooltip content={fullName}>{titleElement}</ResponsiveTooltip>
           ) : (
             titleElement
           )}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground [&_svg]:translate-y-[2px]">
+
+          {/* Metadata line - simplified */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {branchName && (
-              <span className="inline-flex items-center gap-1.5">
-                <GitBranch className="size-4" />
+              <>
                 <span className="font-medium text-foreground">{branchName}</span>
-              </span>
+                <span className="text-border">·</span>
+              </>
             )}
             <ResponsiveTooltip
               content={
-                <div className="space-y-1">
+                <div className="space-y-1 text-xs">
                   {committedAt && (
                     <div>{t("committedAt", { date: formatAnalysisDate(committedAt) })}</div>
                   )}
@@ -77,28 +79,26 @@ export const AnalysisHeader = ({
               side="bottom"
             >
               <button
-                className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                className="font-mono text-xs hover:text-foreground transition-colors"
                 type="button"
               >
-                <GitCommit className="size-4" />
-                <span>{commitSha.slice(0, SHORT_SHA_LENGTH)}</span>
-                <Info className="size-3.5 opacity-50" />
+                {commitSha.slice(0, SHORT_SHA_LENGTH)}
               </button>
             </ResponsiveTooltip>
           </div>
         </div>
 
-        {/* Action buttons section */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Action buttons - more subtle */}
+        <div className="flex items-center gap-1.5 shrink-0">
           {data && <ExportButton data={data} />}
           <ShareButton />
-          <Button asChild size="sm" variant="outline">
+          <Button asChild size="sm" variant="ghost">
             <a
               href={`https://github.com/${owner}/${repo}`}
               rel="noopener noreferrer"
               target="_blank"
             >
-              {t("viewOnGitHub")}
+              <span className="sr-only sm:not-sr-only sm:mr-1.5">{t("viewOnGitHub")}</span>
               <ExternalLink className="h-4 w-4" />
             </a>
           </Button>

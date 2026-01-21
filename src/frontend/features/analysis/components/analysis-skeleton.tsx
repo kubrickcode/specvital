@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-import { StatsCardSkeleton } from "./stats-card-skeleton";
+import { InlineStatsSkeleton } from "./inline-stats-skeleton";
 import { TestListSkeleton } from "./test-list-skeleton";
 
 type AnalysisStatus = "loading" | "queued" | "analyzing";
@@ -80,7 +80,7 @@ export const AnalysisSkeleton = ({
           </div>
         </div>
 
-        <StatsCardSkeleton />
+        <InlineStatsSkeleton />
 
         {/* Test suites section */}
         <section className="space-y-4">

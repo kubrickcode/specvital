@@ -42,7 +42,7 @@ export const TestsToolbar = ({
   const t = useTranslations("analyze.filter");
 
   return (
-    <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+    <div className="py-4 space-y-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="flex-1 min-w-0">
           <SearchInput
@@ -62,17 +62,14 @@ export const TestsToolbar = ({
               />
             </div>
           </div>
+          <div className="w-px h-5 bg-border hidden sm:block" />
           <DataViewToggle onChange={onDataViewModeChange} value={dataViewMode} />
         </div>
       </div>
 
       {hasFilter && (
-        <p className="text-sm text-muted-foreground">
-          {t("resultSummaryWithType", {
-            filtered: filteredCount,
-            total: totalCount,
-            type: "tests",
-          })}
+        <p className="text-xs text-muted-foreground tabular-nums">
+          {filteredCount.toLocaleString()} / {totalCount.toLocaleString()}
         </p>
       )}
     </div>

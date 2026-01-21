@@ -33,7 +33,7 @@ export const TestsPanel = ({ availableFrameworks, suites, totalCount }: TestsPan
   };
 
   return (
-    <div aria-labelledby="tab-tests" className="space-y-4" id="tabpanel-tests" role="tabpanel">
+    <div aria-labelledby="tab-tests" className="p-5 space-y-4" id="tabpanel-tests" role="tabpanel">
       <TestsToolbar
         availableFrameworks={availableFrameworks}
         dataViewMode={dataViewMode}
