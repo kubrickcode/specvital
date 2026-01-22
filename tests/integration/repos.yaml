@@ -187,6 +187,13 @@ repositories:
     frameworks:
       - junit5
 
+  - name: gson
+    url: https://github.com/google/gson
+    ref: gson-parent-2.13.2
+    frameworks:
+      - junit4
+      - junit5
+
   - name: fluentassertions
     url: https://github.com/fluentassertions/fluentassertions
     ref: 8.3.0
