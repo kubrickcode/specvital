@@ -41,7 +41,7 @@
     {
       "path": "binding/default_validator_test.go",
       "framework": "go-testing",
-      "suiteCount": 0,
+      "suiteCount": 2,
       "testCount": 2
     },
     {
@@ -113,7 +113,7 @@
     {
       "path": "context_test.go",
       "framework": "go-testing",
-      "suiteCount": 0,
+      "suiteCount": 1,
       "testCount": 132
     },
     {

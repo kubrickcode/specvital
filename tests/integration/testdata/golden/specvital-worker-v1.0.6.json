@@ -11,13 +11,13 @@
     {
       "path": "src/cmd/enqueue/url_test.go",
       "framework": "go-testing",
-      "suiteCount": 0,
+      "suiteCount": 1,
       "testCount": 1
     },
     {
       "path": "src/internal/adapter/mapping/core_domain_test.go",
       "framework": "go-testing",
-      "suiteCount": 0,
+      "suiteCount": 1,
       "testCount": 5
     },
     {
@@ -29,13 +29,13 @@
     {
       "path": "src/internal/adapter/queue/analyze_test.go",
       "framework": "go-testing",
-      "suiteCount": 1,
+      "suiteCount": 3,
       "testCount": 6
     },
     {
       "path": "src/internal/adapter/repository/postgres/analysis_test.go",
       "framework": "go-testing",
-      "suiteCount": 5,
+      "suiteCount": 8,
       "testCount": 13
     },
     {
@@ -53,19 +53,19 @@
     {
       "path": "src/internal/domain/analysis/decay_test.go",
       "framework": "go-testing",
-      "suiteCount": 0,
+      "suiteCount": 2,
       "testCount": 2
     },
     {
       "path": "src/internal/domain/analysis/model_test.go",
       "framework": "go-testing",
-      "suiteCount": 0,
+      "suiteCount": 2,
       "testCount": 2
     },
     {
       "path": "src/internal/usecase/analysis/analyze_test.go",
       "framework": "go-testing",
-      "suiteCount": 4,
+      "suiteCount": 6,
       "testCount": 14
     },
     {

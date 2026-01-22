@@ -3,7 +3,7 @@
   "ref": "v3.5.17",
   "expectedFrameworks": ["go-testing"],
   "fileCount": 355,
-  "testCount": 1902,
+  "testCount": 1905,
   "frameworkCounts": {
     "go-testing": 355
   },
@@ -101,7 +101,7 @@
     {
       "path": "client/pkg/tlsutil/versions_test.go",
       "framework": "go-testing",
-      "suiteCount": 0,
+      "suiteCount": 1,
       "testCount": 1
     },
     {
@@ -113,7 +113,7 @@
     {
       "path": "client/pkg/transport/listener_test.go",
       "framework": "go-testing",
-      "suiteCount": 0,
+      "suiteCount": 2,
       "testCount": 15
     },
     {

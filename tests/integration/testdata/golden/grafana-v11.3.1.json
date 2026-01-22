@@ -3,7 +3,7 @@
   "ref": "v11.3.1",
   "expectedFrameworks": ["cypress", "go-testing", "jest", "mocha", "playwright"],
   "fileCount": 2556,
-  "testCount": 18504,
+  "testCount": 18693,
   "frameworkCounts": {
     "cypress": 1,
     "go-testing": 972,
