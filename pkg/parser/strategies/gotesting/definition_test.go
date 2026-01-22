@@ -543,3 +543,135 @@ func ExampleInvalid(t *testing.T) {}
 		})
 	}
 }
+
+func TestGoTestingParser_DynamicSubtests(t *testing.T) {
+	tests := []struct {
+		name              string
+		source            string
+		expectedSuites    int
+		expectedTests     int
+		expectedSubtests  int
+		subtestName       string
+		description       string
+	}{
+		{
+			name: "table-driven test with struct field",
+			source: `
+package test
+import "testing"
+func TestTableDriven(t *testing.T) {
+	tests := []struct{name string}{{name: "case1"}, {name: "case2"}}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {})
+	}
+}
+`,
+			expectedSuites:   1,
+			expectedTests:    0,
+			expectedSubtests: 1,
+			subtestName:      "(dynamic)",
+			description:      "Should detect t.Run(tc.name) as dynamic subtest",
+		},
+		{
+			name: "subtest with simple variable",
+			source: `
+package test
+import "testing"
+func TestVariable(t *testing.T) {
+	name := "dynamic"
+	t.Run(name, func(t *testing.T) {})
+}
+`,
+			expectedSuites:   1,
+			expectedTests:    0,
+			expectedSubtests: 1,
+			subtestName:      "(dynamic)",
+			description:      "Should detect t.Run(variable) as dynamic subtest",
+		},
+		{
+			name: "subtest with function call",
+			source: `
+package test
+import "testing"
+func TestFunctionCall(t *testing.T) {
+	t.Run(getName(), func(t *testing.T) {})
+}
+`,
+			expectedSuites:   1,
+			expectedTests:    0,
+			expectedSubtests: 1,
+			subtestName:      "(dynamic)",
+			description:      "Should detect t.Run(funcCall()) as dynamic subtest",
+		},
+		{
+			name: "subtest with string concatenation",
+			source: `
+package test
+import "testing"
+func TestConcat(t *testing.T) {
+	prefix := "test"
+	t.Run(prefix + "_case", func(t *testing.T) {})
+}
+`,
+			expectedSuites:   1,
+			expectedTests:    0,
+			expectedSubtests: 1,
+			subtestName:      "(dynamic)",
+			description:      "Should detect t.Run(a + b) as dynamic subtest",
+		},
+		{
+			name: "mixed literal and dynamic subtests",
+			source: `
+package test
+import "testing"
+func TestMixed(t *testing.T) {
+	t.Run("literal", func(t *testing.T) {})
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {})
+	}
+}
+`,
+			expectedSuites:   1,
+			expectedTests:    0,
+			expectedSubtests: 2,
+			subtestName:      "literal",
+			description:      "Should detect both literal and dynamic subtests",
+		},
+		{
+			name: "literal subtest still works",
+			source: `
+package test
+import "testing"
+func TestLiteral(t *testing.T) {
+	t.Run("my literal test", func(t *testing.T) {})
+}
+`,
+			expectedSuites:   1,
+			expectedTests:    0,
+			expectedSubtests: 1,
+			subtestName:      "my literal test",
+			description:      "Literal subtests should still be detected with actual name",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			parser := &GoTestingParser{}
+			ctx := context.Background()
+
+			testFile, err := parser.Parse(ctx, []byte(tt.source), "dynamic_test.go")
+
+			require.NoError(t, err, tt.description)
+			require.Len(t, testFile.Suites, tt.expectedSuites, tt.description+" - suite count")
+			assert.Len(t, testFile.Tests, tt.expectedTests, tt.description+" - test count")
+
+			if tt.expectedSuites > 0 {
+				suite := testFile.Suites[0]
+				require.Len(t, suite.Tests, tt.expectedSubtests, tt.description+" - subtest count")
+				if tt.expectedSubtests > 0 {
+					assert.Equal(t, tt.subtestName, suite.Tests[0].Name, tt.description+" - subtest name")
+				}
+			}
+		})
+	}
+}

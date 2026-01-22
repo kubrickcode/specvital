@@ -25,10 +25,16 @@ const (
 	nodeSelectorExpression       = "selector_expression"
 	nodeInterpretedStringLiteral = "interpreted_string_literal"
 	nodeRawStringLiteral         = "raw_string_literal"
+	nodeIdentifier               = "identifier"
+	nodeBinaryExpression         = "binary_expression"
 	methodRun                    = "Run"
 	typeTestingB                 = "testing.B"
 	typeTestingF                 = "testing.F"
 	typeTestingParam             = "testing.T"
+
+	// dynamicNamePlaceholder is used for subtests with variable names (ADR-02 policy).
+	// Dynamic test patterns are counted as 1 test regardless of runtime count.
+	dynamicNamePlaceholder = "(dynamic)"
 )
 
 type goTestFuncType int
@@ -140,9 +146,22 @@ func extractSubtests(body *sitter.Node, source []byte, filename string) []domain
 func extractSubtestName(args *sitter.Node, source []byte) string {
 	for i := 0; i < int(args.ChildCount()); i++ {
 		child := args.Child(i)
-		switch child.Type() {
+		nodeType := child.Type()
+
+		// Skip syntax nodes (parentheses, commas)
+		if nodeType == "(" || nodeType == ")" || nodeType == "," {
+			continue
+		}
+
+		switch nodeType {
 		case nodeInterpretedStringLiteral, nodeRawStringLiteral:
 			return trimQuotes(parser.GetNodeText(child, source))
+		case nodeIdentifier, nodeSelectorExpression, nodeCallExpression, nodeBinaryExpression:
+			// Dynamic name patterns (ADR-02): count as 1 test with placeholder name
+			return dynamicNamePlaceholder
+		default:
+			// First real argument is not a recognized type
+			return ""
 		}
 	}
 	return ""

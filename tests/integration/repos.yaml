@@ -101,6 +101,12 @@ repositories:
     frameworks:
       - go-testing
 
+  - name: mux
+    url: https://github.com/gorilla/mux
+    ref: v1.8.1
+    frameworks:
+      - go-testing
+
   - name: specvital-worker
     url: https://github.com/specvital/worker
     ref: v1.0.6
