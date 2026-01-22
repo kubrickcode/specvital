@@ -25,6 +25,12 @@ repositories:
     frameworks:
       - pytest
 
+  - name: pydantic
+    url: https://github.com/pydantic/pydantic
+    ref: v2.12.5
+    frameworks:
+      - pytest
+
   - name: faker
     url: https://github.com/joke2k/faker
     ref: v40.1.2
