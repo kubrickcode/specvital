@@ -18,7 +18,6 @@ export {
   useDocumentFilter,
   useGenerationProgress,
   useQuotaConfirmDialog,
-  useScrollSync,
   useSpecView,
 } from "./hooks";
 export type { GenerationState } from "./hooks";

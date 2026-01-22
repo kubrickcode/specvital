@@ -2,7 +2,7 @@
 
 import { ChevronDown, ChevronRight, List } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
@@ -18,6 +18,7 @@ import {
 import { useTruncateDetection } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
+import { useDocumentNavigation } from "../contexts";
 import type {
   FilteredDocument,
   FilteredDomain,
@@ -49,7 +50,6 @@ type TocSidebarProps = {
   document: SpecDocument;
   filteredDocument?: FilteredDocument | null;
   hasFilter?: boolean;
-  onNavigate?: (sectionId: string) => void;
 };
 
 type TocItemProps = {
@@ -263,81 +263,25 @@ const extractDomainIdFromSectionId = (sectionId: string, domains: SpecDomain[]):
   return null;
 };
 
-export const TocSidebar = ({
-  document,
-  filteredDocument,
-  hasFilter = false,
-  onNavigate,
-}: TocSidebarProps) => {
+export const TocSidebar = ({ document, filteredDocument, hasFilter = false }: TocSidebarProps) => {
   const t = useTranslations("specView");
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [expandedDomainId, setExpandedDomainId] = useState<string | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const { activeSection, scrollToSection } = useDocumentNavigation();
 
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1);
-      if (hash) {
-        setActiveId(hash);
-      }
-    };
-
-    handleHashChange();
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
+  // Track expanded domain in TOC (independent of main document view)
+  const [tocExpandedDomainId, setTocExpandedDomainId] = useState<string | null>(null);
 
   // Auto-expand domain when active section changes
   useEffect(() => {
-    if (activeId) {
-      const domainId = extractDomainIdFromSectionId(activeId, document.domains);
+    if (activeSection) {
+      const domainId = extractDomainIdFromSectionId(activeSection, document.domains);
       if (domainId) {
-        setExpandedDomainId(domainId);
+        setTocExpandedDomainId(domainId);
       }
     }
-  }, [activeId, document.domains]);
-
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        const visibleEntries = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-
-        if (visibleEntries.length > 0) {
-          const topEntry = visibleEntries[0];
-          if (topEntry && topEntry.target.id) {
-            setActiveId(topEntry.target.id);
-          }
-        }
-      },
-      {
-        rootMargin: "-80px 0px -60% 0px",
-        threshold: 0,
-      }
-    );
-
-    // Performance: observe only domain headers to reduce overhead with many features
-    document.domains.forEach((domain) => {
-      const domainEl = globalThis.document.getElementById(`domain-${domain.id}`);
-      if (domainEl) {
-        observerRef.current?.observe(domainEl);
-      }
-    });
-
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, [document]);
+  }, [activeSection, document.domains]);
 
   const handleNavigate = (sectionId: string) => {
-    const element = globalThis.document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.history.replaceState(null, "", `#${sectionId}`);
-      setActiveId(sectionId);
-      onNavigate?.(sectionId);
-    }
+    scrollToSection(sectionId);
   };
 
   return (
@@ -346,12 +290,12 @@ export const TocSidebar = ({
       <div className="hidden lg:block w-64 flex-shrink-0">
         <div className="sticky top-20 h-[calc(100vh-6rem)] border rounded-lg overflow-hidden bg-card">
           <TocContent
-            activeId={activeId}
+            activeId={activeSection}
             document={document}
-            expandedDomainId={expandedDomainId}
+            expandedDomainId={tocExpandedDomainId}
             filteredDocument={filteredDocument}
             hasFilter={hasFilter}
-            onExpandToggle={setExpandedDomainId}
+            onExpandToggle={setTocExpandedDomainId}
             onNavigate={handleNavigate}
             t={t}
           />
@@ -376,12 +320,12 @@ export const TocSidebar = ({
               <SheetDescription>{t("toc.description")}</SheetDescription>
             </SheetHeader>
             <TocContent
-              activeId={activeId}
+              activeId={activeSection}
               document={document}
-              expandedDomainId={expandedDomainId}
+              expandedDomainId={tocExpandedDomainId}
               filteredDocument={filteredDocument}
               hasFilter={hasFilter}
-              onExpandToggle={setExpandedDomainId}
+              onExpandToggle={setTocExpandedDomainId}
               onNavigate={handleNavigate}
               t={t}
             />

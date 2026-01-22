@@ -8,6 +8,5 @@ export type {
 } from "./use-document-filter";
 export { useGenerationProgress } from "./use-generation-progress";
 export { useQuotaConfirmDialog } from "./use-quota-confirm-dialog";
-export { useScrollSync } from "./use-scroll-sync";
 export { specViewKeys, useSpecView } from "./use-spec-view";
 export type { GenerationState } from "./use-spec-view";

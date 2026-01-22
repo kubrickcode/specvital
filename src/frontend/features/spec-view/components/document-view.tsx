@@ -6,8 +6,8 @@ import { ExecutiveSummary } from "./executive-summary";
 import { ReadingProgressBar } from "./reading-progress-bar";
 import { TocSidebar } from "./toc-sidebar";
 import { VirtualizedDocumentView } from "./virtualized-document-view";
+import { DocumentNavigationProvider } from "../contexts";
 import { useDocumentFilter } from "../hooks/use-document-filter";
-import { useScrollSync } from "../hooks/use-scroll-sync";
 import type { SpecDocument, SpecLanguage } from "../types";
 
 type DocumentViewProps = {
@@ -25,15 +25,13 @@ export const DocumentView = ({
   onLanguageSwitch,
   onRegenerate,
 }: DocumentViewProps) => {
-  useScrollSync();
-
   const { clearFilters, filteredDocument, filterInfo, hasFilter, matchCount } =
     useDocumentFilter(document);
 
   const showEmptyState = hasFilter && matchCount === 0;
 
   return (
-    <>
+    <DocumentNavigationProvider document={document}>
       <ReadingProgressBar />
       <div className="flex flex-col lg:flex-row lg:gap-6">
         <TocSidebar document={document} filteredDocument={filteredDocument} hasFilter={hasFilter} />
@@ -54,6 +52,6 @@ export const DocumentView = ({
           ) : null}
         </div>
       </div>
-    </>
+    </DocumentNavigationProvider>
   );
 };
