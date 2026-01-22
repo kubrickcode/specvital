@@ -107,6 +107,12 @@ repositories:
     frameworks:
       - go-testing
 
+  - name: echo
+    url: https://github.com/labstack/echo
+    ref: v5.0.0
+    frameworks:
+      - go-testing
+
   - name: specvital-worker
     url: https://github.com/specvital/worker
     ref: v1.0.6

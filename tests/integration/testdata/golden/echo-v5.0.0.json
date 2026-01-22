@@ -1,0 +1,136 @@
+{
+  "repository": "echo",
+  "ref": "v5.0.0",
+  "expectedFrameworks": ["go-testing"],
+  "fileCount": 46,
+  "testCount": 618,
+  "frameworkCounts": {
+    "go-testing": 46
+  },
+  "sampleFiles": [
+    {
+      "path": "bind_test.go",
+      "framework": "go-testing",
+      "suiteCount": 8,
+      "testCount": 63
+    },
+    {
+      "path": "binder_external_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "binder_generic_test.go",
+      "framework": "go-testing",
+      "suiteCount": 30,
+      "testCount": 36
+    },
+    {
+      "path": "binder_test.go",
+      "framework": "go-testing",
+      "suiteCount": 32,
+      "testCount": 49
+    },
+    {
+      "path": "context_generic_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 6
+    },
+    {
+      "path": "context_test.go",
+      "framework": "go-testing",
+      "suiteCount": 13,
+      "testCount": 55
+    },
+    {
+      "path": "echo_test.go",
+      "framework": "go-testing",
+      "suiteCount": 8,
+      "testCount": 41
+    },
+    {
+      "path": "echotest/context_external_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "echotest/context_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 9
+    },
+    {
+      "path": "echotest/reader_external_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "echotest/reader_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "group_test.go",
+      "framework": "go-testing",
+      "suiteCount": 5,
+      "testCount": 23
+    },
+    {
+      "path": "httperror_external_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "httperror_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "ip_test.go",
+      "framework": "go-testing",
+      "suiteCount": 8,
+      "testCount": 8
+    },
+    {
+      "path": "json_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "middleware/basic_auth_test.go",
+      "framework": "go-testing",
+      "suiteCount": 2,
+      "testCount": 4
+    },
+    {
+      "path": "middleware/body_dump_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 23
+    },
+    {
+      "path": "middleware/body_limit_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 5
+    },
+    {
+      "path": "middleware/compress_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 18
+    }
+  ],
+  "stats": {
+    "filesMatched": 46,
+    "filesScanned": 46
+  }
+}
