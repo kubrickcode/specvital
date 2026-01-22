@@ -168,6 +168,14 @@
           "shortcut": "b",
           "terminalName": "backend test",
           "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just test-e2e",
+          "name": "e2e",
+          "shortcut": "e",
+          "terminalName": "test e2e",
+          "useVsCodeApi": false
         }
       ]
     },
