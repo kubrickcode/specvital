@@ -2,13 +2,13 @@
   "repository": "storybook",
   "ref": "v8.4.5",
   "expectedFrameworks": ["cypress", "jest", "playwright", "vitest"],
-  "fileCount": 307,
+  "fileCount": 376,
   "testCount": 2917,
   "frameworkCounts": {
     "cypress": 4,
     "jest": 1,
     "playwright": 20,
-    "vitest": 282
+    "vitest": 351
   },
   "sampleFiles": [
     {
@@ -108,32 +108,32 @@
       "testCount": 6
     },
     {
-      "path": "code/addons/test/src/Panel.test.ts",
+      "path": "code/addons/test/manager.js",
       "framework": "vitest",
-      "suiteCount": 1,
-      "testCount": 5
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
-      "path": "code/addons/test/src/node/boot-test-runner.test.ts",
+      "path": "code/addons/test/manager.mjs",
       "framework": "vitest",
-      "suiteCount": 1,
-      "testCount": 6
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
-      "path": "code/addons/test/src/node/test-manager.test.ts",
+      "path": "code/addons/test/postinstall.js",
       "framework": "vitest",
-      "suiteCount": 1,
-      "testCount": 7
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
-      "path": "code/addons/test/src/vitest-plugin/setup-file.test.ts",
+      "path": "code/addons/test/postinstall.mjs",
       "framework": "vitest",
-      "suiteCount": 1,
-      "testCount": 4
+      "suiteCount": 0,
+      "testCount": 0
     }
   ],
   "stats": {
-    "filesMatched": 307,
-    "filesScanned": 309
+    "filesMatched": 376,
+    "filesScanned": 378
   }
 }

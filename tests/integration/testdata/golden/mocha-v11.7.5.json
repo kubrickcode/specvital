@@ -2,17 +2,77 @@
   "repository": "mocha",
   "ref": "v11.7.5",
   "expectedFrameworks": ["mocha"],
-  "fileCount": 125,
-  "testCount": 1243,
+  "fileCount": 310,
+  "testCount": 1611,
   "frameworkCounts": {
-    "mocha": 125
+    "mocha": 310
   },
   "sampleFiles": [
+    {
+      "path": "test/assertions.js",
+      "framework": "mocha",
+      "suiteCount": 0,
+      "testCount": 0
+    },
     {
       "path": "test/browser-specific/esm.spec.mjs",
       "framework": "mocha",
       "suiteCount": 0,
       "testCount": 2
+    },
+    {
+      "path": "test/compiler-cjs/test.js",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "test/compiler-cjs/test.ts",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "test/compiler-esm/test-tla.js",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "test/compiler-esm/test-tla.mjs",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "test/compiler-esm/test-tla.ts",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "test/compiler-esm/test.js",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "test/compiler-esm/test.mjs",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "test/compiler-esm/test.ts",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "test/compiler-fixtures/foo.fixture.js",
+      "framework": "mocha",
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
       "path": "test/integration/color.spec.js",
@@ -67,70 +127,10 @@
       "framework": "mocha",
       "suiteCount": 1,
       "testCount": 1
-    },
-    {
-      "path": "test/integration/duplicate-arguments.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 2
-    },
-    {
-      "path": "test/integration/esm.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 7
-    },
-    {
-      "path": "test/integration/events.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 5
-    },
-    {
-      "path": "test/integration/file-utils.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 16
-    },
-    {
-      "path": "test/integration/fixtures/glob/glob.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "test/integration/fixtures/glob/nested/glob.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 1
-    },
-    {
-      "path": "test/integration/glob.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 11
-    },
-    {
-      "path": "test/integration/hook-err.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 18
-    },
-    {
-      "path": "test/integration/hooks.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 2
-    },
-    {
-      "path": "test/integration/init.spec.js",
-      "framework": "mocha",
-      "suiteCount": 1,
-      "testCount": 3
     }
   ],
   "stats": {
-    "filesMatched": 125,
-    "filesScanned": 126
+    "filesMatched": 310,
+    "filesScanned": 363
   }
 }

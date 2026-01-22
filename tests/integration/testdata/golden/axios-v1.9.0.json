@@ -1,0 +1,46 @@
+{
+  "repository": "axios",
+  "ref": "v1.9.0",
+  "expectedFrameworks": ["mocha"],
+  "fileCount": 5,
+  "testCount": 151,
+  "frameworkCounts": {
+    "mocha": 5
+  },
+  "sampleFiles": [
+    {
+      "path": "test/module/test.js",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "test/unit/adapters/fetch.js",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 18
+    },
+    {
+      "path": "test/unit/adapters/http.js",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 85
+    },
+    {
+      "path": "test/unit/core/AxiosHeaders.js",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 37
+    },
+    {
+      "path": "test/unit/helpers/composeSignals.js",
+      "framework": "mocha",
+      "suiteCount": 1,
+      "testCount": 3
+    }
+  ],
+  "stats": {
+    "filesMatched": 5,
+    "filesScanned": 75
+  }
+}

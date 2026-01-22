@@ -19,6 +19,7 @@ import (
 	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
 	_ "github.com/specvital/core/pkg/parser/strategies/gtest"
 	_ "github.com/specvital/core/pkg/parser/strategies/jest"
+	_ "github.com/specvital/core/pkg/parser/strategies/mocha"
 	_ "github.com/specvital/core/pkg/parser/strategies/mstest"
 	_ "github.com/specvital/core/pkg/parser/strategies/phpunit"
 )
@@ -1310,6 +1311,84 @@ func TestSomething(t *testing.T) {
 		file := result.Inventory.Files[0]
 		if file.DomainHints != nil {
 			t.Errorf("expected nil DomainHints when disabled, got %+v", file.DomainHints)
+		}
+	})
+}
+
+func TestScan_JSTestDirectory(t *testing.T) {
+	t.Run("should detect JS test files in test/ directory", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		// Create test/unit/ directory structure (like axios)
+		testDir := filepath.Join(tmpDir, "test", "unit")
+		if err := os.MkdirAll(testDir, 0755); err != nil {
+			t.Fatalf("failed to create dir: %v", err)
+		}
+
+		// Mocha-style test file without .spec. or .test. in filename
+		testContent := []byte(`
+import { describe, it } from 'mocha';
+
+describe('HTTP Adapter', () => {
+  it('should support IPv4', () => {});
+  it('should support IPv6', () => {});
+});
+`)
+		testFile := filepath.Join(testDir, "http.js")
+		if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Errorf("expected 1 file, got %d (test/ directory JS file should be detected)", len(result.Inventory.Files))
+		}
+	})
+
+	t.Run("should detect JS test files in tests/ directory", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		// Create tests/integration/ directory
+		testDir := filepath.Join(tmpDir, "tests", "integration")
+		if err := os.MkdirAll(testDir, 0755); err != nil {
+			t.Fatalf("failed to create dir: %v", err)
+		}
+
+		testContent := []byte(`
+import { describe, it } from 'mocha';
+
+describe('API Tests', () => {
+  it('should work', () => {});
+});
+`)
+		testFile := filepath.Join(testDir, "api.ts")
+		if err := os.WriteFile(testFile, testContent, 0644); err != nil {
+			t.Fatalf("failed to write test file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		result, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(result.Inventory.Files) != 1 {
+			t.Errorf("expected 1 file, got %d (tests/ directory JS file should be detected)", len(result.Inventory.Files))
 		}
 	})
 }

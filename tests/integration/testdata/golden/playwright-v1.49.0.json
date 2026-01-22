@@ -2,11 +2,11 @@
   "repository": "playwright",
   "ref": "v1.49.0",
   "expectedFrameworks": ["junit4", "playwright"],
-  "fileCount": 473,
-  "testCount": 5758,
+  "fileCount": 664,
+  "testCount": 5760,
   "frameworkCounts": {
     "junit4": 1,
-    "playwright": 472
+    "playwright": 663
   },
   "sampleFiles": [
     {
@@ -106,32 +106,32 @@
       "testCount": 2
     },
     {
+      "path": "tests/.eslintrc.js",
+      "framework": "playwright",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
       "path": "tests/android/android.spec.ts",
       "framework": "playwright",
       "suiteCount": 0,
       "testCount": 2
     },
     {
+      "path": "tests/android/androidTest.ts",
+      "framework": "playwright",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
       "path": "tests/android/browser.spec.ts",
       "framework": "playwright",
       "suiteCount": 0,
       "testCount": 11
-    },
-    {
-      "path": "tests/android/device.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 5
-    },
-    {
-      "path": "tests/android/launch-server.spec.ts",
-      "framework": "playwright",
-      "suiteCount": 0,
-      "testCount": 9
     }
   ],
   "stats": {
-    "filesMatched": 473,
-    "filesScanned": 476
+    "filesMatched": 664,
+    "filesScanned": 669
   }
 }

@@ -2,10 +2,10 @@
   "repository": "testing-library-react",
   "ref": "v16.1.0",
   "expectedFrameworks": ["jest"],
-  "fileCount": 14,
+  "fileCount": 15,
   "testCount": 60,
   "frameworkCounts": {
-    "jest": 14
+    "jest": 15
   },
   "sampleFiles": [
     {
@@ -91,10 +91,16 @@
       "framework": "jest",
       "suiteCount": 0,
       "testCount": 1
+    },
+    {
+      "path": "tests/failOnUnexpectedConsoleCalls.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 0
     }
   ],
   "stats": {
-    "filesMatched": 14,
-    "filesScanned": 14
+    "filesMatched": 15,
+    "filesScanned": 18
   }
 }

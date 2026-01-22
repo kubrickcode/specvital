@@ -1,14 +1,15 @@
 {
   "repository": "grafana",
   "ref": "v11.3.1",
-  "expectedFrameworks": ["cypress", "go-testing", "jest", "playwright"],
-  "fileCount": 2541,
+  "expectedFrameworks": ["cypress", "go-testing", "jest", "mocha", "playwright"],
+  "fileCount": 2556,
   "testCount": 18504,
   "frameworkCounts": {
     "cypress": 1,
     "go-testing": 972,
-    "jest": 1552,
-    "playwright": 16
+    "jest": 1565,
+    "mocha": 1,
+    "playwright": 17
   },
   "sampleFiles": [
     {
@@ -133,7 +134,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 2541,
-    "filesScanned": 2549
+    "filesMatched": 2556,
+    "filesScanned": 2610
   }
 }

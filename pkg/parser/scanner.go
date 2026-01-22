@@ -770,6 +770,14 @@ func isJSTestFile(path string) bool {
 		return true
 	}
 
+	// Files in test/ or tests/ directory (common convention like other languages)
+	if strings.Contains(normalizedPath, "/test/") || strings.HasPrefix(normalizedPath, "test/") {
+		return true
+	}
+	if strings.Contains(normalizedPath, "/tests/") || strings.HasPrefix(normalizedPath, "tests/") {
+		return true
+	}
+
 	return false
 }
 

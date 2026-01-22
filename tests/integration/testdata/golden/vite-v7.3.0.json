@@ -2,10 +2,10 @@
   "repository": "vite",
   "ref": "v7.3.0",
   "expectedFrameworks": ["vitest"],
-  "fileCount": 322,
+  "fileCount": 323,
   "testCount": 1290,
   "frameworkCounts": {
-    "vitest": 322
+    "vitest": 323
   },
   "sampleFiles": [
     {
@@ -130,7 +130,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 322,
-    "filesScanned": 322
+    "filesMatched": 323,
+    "filesScanned": 323
   }
 }

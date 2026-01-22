@@ -2,10 +2,10 @@
   "repository": "zod",
   "ref": "main",
   "expectedFrameworks": ["vitest"],
-  "fileCount": 160,
+  "fileCount": 162,
   "testCount": 1722,
   "frameworkCounts": {
-    "vitest": 160
+    "vitest": 162
   },
   "sampleFiles": [
     {
@@ -13,6 +13,12 @@
       "framework": "vitest",
       "suiteCount": 1,
       "testCount": 1
+    },
+    {
+      "path": "packages/zod/src/v3/tests/Mocker.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 0
     },
     {
       "path": "packages/zod/src/v3/tests/all-errors.test.ts",
@@ -121,16 +127,10 @@
       "framework": "vitest",
       "suiteCount": 0,
       "testCount": 8
-    },
-    {
-      "path": "packages/zod/src/v3/tests/error.test.ts",
-      "framework": "vitest",
-      "suiteCount": 0,
-      "testCount": 29
     }
   ],
   "stats": {
-    "filesMatched": 160,
-    "filesScanned": 160
+    "filesMatched": 162,
+    "filesScanned": 162
   }
 }

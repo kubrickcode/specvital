@@ -2,11 +2,11 @@
   "repository": "prisma",
   "ref": "6.9.0",
   "expectedFrameworks": ["jest", "mocha", "vitest"],
-  "fileCount": 288,
-  "testCount": 1903,
+  "fileCount": 569,
+  "testCount": 2083,
   "frameworkCounts": {
-    "jest": 242,
-    "mocha": 1,
+    "jest": 522,
+    "mocha": 2,
     "vitest": 45
   },
   "sampleFiles": [
@@ -132,7 +132,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 288,
-    "filesScanned": 449
+    "filesMatched": 569,
+    "filesScanned": 1442
   }
 }
