@@ -194,6 +194,12 @@ repositories:
       - junit4
       - junit5
 
+  - name: jackson-core
+    url: https://github.com/FasterXML/jackson-core
+    ref: jackson-core-3.0.4
+    frameworks:
+      - junit5
+
   - name: fluentassertions
     url: https://github.com/fluentassertions/fluentassertions
     ref: 8.3.0
