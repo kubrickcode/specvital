@@ -2,11 +2,11 @@
   "repository": "turborepo",
   "ref": "v2.3.3",
   "expectedFrameworks": ["cargo-test", "jest", "vitest"],
-  "fileCount": 230,
+  "fileCount": 219,
   "testCount": 774,
   "frameworkCounts": {
     "cargo-test": 164,
-    "jest": 62,
+    "jest": 51,
     "vitest": 4
   },
   "sampleFiles": [
@@ -132,7 +132,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 230,
+    "filesMatched": 219,
     "filesScanned": 379
   }
 }

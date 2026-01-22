@@ -66,7 +66,7 @@ func (d *Detector) Detect(ctx context.Context, filePath string, content []byte) 
 		return Confirmed(fw, SourceStrongFilename)
 	}
 
-	if result := d.detectFromScope(filePath, lang); result.Framework != "" {
+	if result := d.detectFromScope(ctx, filePath, lang, content); result.Framework != "" {
 		return result
 	}
 
@@ -158,8 +158,10 @@ func (d *Detector) detectFromStrongFilename(ctx context.Context, filePath string
 }
 
 // detectFromScope checks if file is within a config scope.
+// For globals mode scopes (e.g., vitest with globals: true), also validates
+// that the file contains test patterns (describe/test/it) to avoid false positives.
 // Returns Result with framework and scope if found.
-func (d *Detector) detectFromScope(filePath string, lang domain.Language) Result {
+func (d *Detector) detectFromScope(ctx context.Context, filePath string, lang domain.Language, content []byte) Result {
 	if d.projectScope == nil {
 		return Unknown()
 	}
@@ -225,6 +227,17 @@ func (d *Detector) detectFromScope(filePath string, lang domain.Language) Result
 				if m.path < best.path {
 					best = m
 				}
+			}
+		}
+	}
+
+	// For globals mode scopes, validate that file contains test patterns.
+	// This prevents false positives where a non-test file happens to be in scope.
+	// Only applies to JS/TS frameworks that support globals mode (vitest, jest).
+	if best.scope.GlobalsMode {
+		if lang == domain.LanguageTypeScript || lang == domain.LanguageJavaScript {
+			if !extraction.HasJSTestPatterns(ctx, content) {
+				return Unknown()
 			}
 		}
 	}

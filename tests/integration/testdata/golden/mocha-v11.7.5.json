@@ -2,10 +2,10 @@
   "repository": "mocha",
   "ref": "v11.7.5",
   "expectedFrameworks": ["mocha"],
-  "fileCount": 126,
+  "fileCount": 125,
   "testCount": 1243,
   "frameworkCounts": {
-    "mocha": 126
+    "mocha": 125
   },
   "sampleFiles": [
     {
@@ -130,7 +130,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 126,
+    "filesMatched": 125,
     "filesScanned": 126
   }
 }

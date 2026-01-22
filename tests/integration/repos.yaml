@@ -62,6 +62,13 @@ repositories:
     frameworks:
       - vitest
 
+  - name: vue
+    url: https://github.com/vuejs/core
+    ref: v3.5.27
+    frameworks:
+      - vitest
+    complex: true
+
   - name: playwright
     url: https://github.com/microsoft/playwright
     ref: v1.49.0
@@ -145,6 +152,7 @@ repositories:
     ref: 6.9.0
     frameworks:
       - jest
+      - mocha
       - vitest
     complex: true
     nondeterministic: true

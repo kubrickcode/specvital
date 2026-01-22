@@ -2,21 +2,15 @@
   "repository": "grafana",
   "ref": "v11.3.1",
   "expectedFrameworks": ["cypress", "go-testing", "jest", "playwright"],
-  "fileCount": 2549,
-  "testCount": 18506,
+  "fileCount": 2541,
+  "testCount": 18504,
   "frameworkCounts": {
     "cypress": 1,
     "go-testing": 972,
-    "jest": 1560,
+    "jest": 1552,
     "playwright": 16
   },
   "sampleFiles": [
-    {
-      "path": "e2e/benchmarks/live/4-20hz-panels.spec.ts",
-      "framework": "jest",
-      "suiteCount": 0,
-      "testCount": 0
-    },
     {
       "path": "e2e/cloud-plugins-suite/azure-monitor.spec.ts",
       "framework": "cypress",
@@ -130,10 +124,16 @@
       "framework": "jest",
       "suiteCount": 1,
       "testCount": 1
+    },
+    {
+      "path": "e2e/dashboards-suite/import-dashboard.spec.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
     }
   ],
   "stats": {
-    "filesMatched": 2549,
+    "filesMatched": 2541,
     "filesScanned": 2549
   }
 }

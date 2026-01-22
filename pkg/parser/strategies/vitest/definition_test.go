@@ -522,6 +522,150 @@ func TestVitestContentMatcher_NonContentSignal(t *testing.T) {
 	assert.Equal(t, 0, result.Confidence)
 }
 
+func TestParseInclude(t *testing.T) {
+	tests := []struct {
+		name     string
+		content  string
+		expected []string
+	}{
+		{
+			name:     "simple include",
+			content:  `include: ["**/*.test.ts"]`,
+			expected: []string{"**/*.test.ts"},
+		},
+		{
+			name:     "multiple patterns",
+			content:  `include: ["**/*.test.ts", "**/*.spec.ts"]`,
+			expected: []string{"**/*.test.ts", "**/*.spec.ts"},
+		},
+		{
+			name:     "no include",
+			content:  `test: { globals: true }`,
+			expected: nil,
+		},
+		{
+			name: "include with coverage block (should ignore coverage.include)",
+			content: `
+test: {
+  include: ["**/*.test.ts"],
+  coverage: {
+    include: ["src/**/*.ts"],
+    exclude: ["**/*.d.ts"]
+  }
+}`,
+			expected: []string{"**/*.test.ts"},
+		},
+		{
+			name: "include with projects section (should ignore projects[].include)",
+			content: `
+export default defineConfig({
+  test: {
+    globals: true,
+    include: ['**/*.{test,spec}.{ts,tsx}'],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          include: ['packages/**/*.unit.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'integration',
+          include: ['packages/**/*.integration.test.ts'],
+        },
+      },
+    ],
+  },
+})`,
+			expected: []string{"**/*.{test,spec}.{ts,tsx}"},
+		},
+		{
+			name: "projects at end removes everything after",
+			content: `
+test: {
+  include: ['src/**/*.test.ts'],
+  projects: [
+    { include: ['packages/**/*.test.ts'] }
+  ],
+}`,
+			expected: []string{"src/**/*.test.ts"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := parseInclude([]byte(tt.content))
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestParseExclude(t *testing.T) {
+	tests := []struct {
+		name     string
+		content  string
+		expected []string
+	}{
+		{
+			name:     "simple exclude",
+			content:  `exclude: ["**/node_modules/**"]`,
+			expected: []string{"**/node_modules/**"},
+		},
+		{
+			name:     "multiple patterns",
+			content:  `exclude: ["**/node_modules/**", "**/dist/**"]`,
+			expected: []string{"**/node_modules/**", "**/dist/**"},
+		},
+		{
+			name:     "no exclude",
+			content:  `test: { globals: true }`,
+			expected: nil,
+		},
+		{
+			name: "exclude with coverage block (should ignore coverage.exclude)",
+			content: `
+test: {
+  exclude: ["**/node_modules/**"],
+  coverage: {
+    include: ["src/**/*.ts"],
+    exclude: ["**/*.d.ts"]
+  }
+}`,
+			expected: []string{"**/node_modules/**"},
+		},
+		{
+			name: "exclude with projects section (should ignore projects[].exclude)",
+			content: `
+export default defineConfig({
+  test: {
+    globals: true,
+    exclude: ['**/node_modules/**', '**/dist/**'],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          exclude: ['**/*.e2e.test.ts'],
+        },
+      },
+    ],
+  },
+})`,
+			expected: []string{"**/node_modules/**", "**/dist/**"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := parseExclude([]byte(tt.content))
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func TestConfigScope_Contains(t *testing.T) {
 	// Test that ConfigScope correctly determines file containment with root setting
 	// Config at /project/apps/web/vitest.config.ts with root: ".."

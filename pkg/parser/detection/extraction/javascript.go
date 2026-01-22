@@ -102,3 +102,14 @@ func collectCommentRangesWithDepth(node *sitter.Node, ranges *[][2]uint32, depth
 		collectCommentRangesWithDepth(node.Child(i), ranges, depth+1)
 	}
 }
+
+// jsTestPatterns matches common test function patterns used in Jest, Vitest, Mocha, etc.
+// These patterns indicate that a file is likely a test file when used in globals mode.
+var jsTestPatterns = regexp.MustCompile(`\b(?:describe|test|it|beforeEach|afterEach|beforeAll|afterAll)\s*\(`)
+
+// HasJSTestPatterns checks if the content contains JavaScript/TypeScript test patterns.
+// Uses tree-sitter to exclude patterns inside comments.
+// This is used for globals mode detection where test files don't have explicit framework imports.
+func HasJSTestPatterns(ctx context.Context, content []byte) bool {
+	return MatchPatternExcludingComments(ctx, content, jsTestPatterns)
+}

@@ -2,11 +2,11 @@
   "repository": "storybook",
   "ref": "v8.4.5",
   "expectedFrameworks": ["cypress", "jest", "playwright", "vitest"],
-  "fileCount": 309,
+  "fileCount": 307,
   "testCount": 2917,
   "frameworkCounts": {
-    "cypress": 5,
-    "jest": 2,
+    "cypress": 4,
+    "jest": 1,
     "playwright": 20,
     "vitest": 282
   },
@@ -133,7 +133,7 @@
     }
   ],
   "stats": {
-    "filesMatched": 309,
+    "filesMatched": 307,
     "filesScanned": 309
   }
 }

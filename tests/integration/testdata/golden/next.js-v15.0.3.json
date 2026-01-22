@@ -2,13 +2,13 @@
   "repository": "next.js",
   "ref": "v15.0.3",
   "expectedFrameworks": ["cargo-test", "cypress", "jest", "mocha", "playwright", "vitest"],
-  "fileCount": 1348,
-  "testCount": 7811,
+  "fileCount": 1315,
+  "testCount": 7799,
   "frameworkCounts": {
     "cargo-test": 54,
     "cypress": 3,
-    "jest": 1281,
-    "mocha": 2,
+    "jest": 1249,
+    "mocha": 1,
     "playwright": 3,
     "vitest": 5
   },
@@ -128,14 +128,14 @@
       "testCount": 1
     },
     {
-      "path": "examples/with-jest-babel/jest.setup.js",
+      "path": "examples/with-jest/__tests__/index.test.tsx",
       "framework": "jest",
-      "suiteCount": 0,
-      "testCount": 0
+      "suiteCount": 1,
+      "testCount": 1
     }
   ],
   "stats": {
-    "filesMatched": 1348,
+    "filesMatched": 1315,
     "filesScanned": 2155
   }
 }

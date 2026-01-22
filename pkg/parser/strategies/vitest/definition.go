@@ -60,6 +60,11 @@ var (
 	configGlobalsPattern = regexp.MustCompile(`globals\s*:\s*true`)
 	// Pattern to remove coverage block (which has its own include/exclude)
 	configCoveragePattern = regexp.MustCompile(`(?s)coverage\s*:\s*\{[^}]*(?:\{[^}]*\}[^}]*)*\}`)
+	// Pattern to remove projects section and everything after it.
+	// Projects is typically at the end of the test block and contains nested include/exclude.
+	// We use a greedy pattern to remove everything from "projects:" onwards.
+	// Limitation: Any config after projects: will be removed. Place projects at the end of test block.
+	configProjectsPattern = regexp.MustCompile(`(?s)projects\s*:\s*\[[\s\S]*`)
 	configIncludePattern  = regexp.MustCompile(`(?:^|[,\s])include\s*:\s*\[([^\]]+)\]`)
 	configExcludePattern  = regexp.MustCompile(`(?:^|[,\s])exclude\s*:\s*\[([^\]]+)\]`)
 	configItemPattern     = regexp.MustCompile(`['"]([^'"]+)['"]`)
@@ -77,8 +82,9 @@ func parseGlobals(ctx context.Context, content []byte) bool {
 }
 
 func parseInclude(content []byte) []string {
-	// Remove coverage block first to avoid matching coverage.include
+	// Remove coverage and projects blocks to avoid matching their include/exclude
 	cleaned := configCoveragePattern.ReplaceAll(content, []byte{})
+	cleaned = configProjectsPattern.ReplaceAll(cleaned, []byte{})
 	match := configIncludePattern.FindSubmatch(cleaned)
 	if match == nil {
 		return nil
@@ -87,8 +93,9 @@ func parseInclude(content []byte) []string {
 }
 
 func parseExclude(content []byte) []string {
-	// Remove coverage block first to avoid matching coverage.exclude
+	// Remove coverage and projects blocks to avoid matching their include/exclude
 	cleaned := configCoveragePattern.ReplaceAll(content, []byte{})
+	cleaned = configProjectsPattern.ReplaceAll(cleaned, []byte{})
 	match := configExcludePattern.FindSubmatch(cleaned)
 	if match == nil {
 		return nil

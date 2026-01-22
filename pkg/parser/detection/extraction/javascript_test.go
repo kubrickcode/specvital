@@ -107,3 +107,165 @@ func TestMatchPatternExcludingComments(t *testing.T) {
 		})
 	}
 }
+
+func TestHasJSTestPatterns(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content string
+		want    bool
+	}{
+		{
+			name: "vitest globals mode test file with describe/test",
+			content: `
+describe('Calculator', () => {
+  test('adds two numbers', () => {
+    expect(1 + 1).toBe(2);
+  });
+});
+`,
+			want: true,
+		},
+		{
+			name: "vitest globals mode test file with describe/it",
+			content: `
+describe('Calculator', () => {
+  it('adds two numbers', () => {
+    expect(1 + 1).toBe(2);
+  });
+});
+`,
+			want: true,
+		},
+		{
+			name: "test file with beforeEach/afterEach",
+			content: `
+describe('UserService', () => {
+  beforeEach(() => {
+    // setup
+  });
+  afterEach(() => {
+    // cleanup
+  });
+  test('creates user', () => {});
+});
+`,
+			want: true,
+		},
+		{
+			name: "test file with beforeAll/afterAll",
+			content: `
+describe('Database', () => {
+  beforeAll(() => {
+    // connect
+  });
+  afterAll(() => {
+    // disconnect
+  });
+  it('queries data', () => {});
+});
+`,
+			want: true,
+		},
+		{
+			name: "regular source file without test patterns",
+			content: `
+export function add(a, b) {
+  return a + b;
+}
+
+export function multiply(a, b) {
+  return a * b;
+}
+`,
+			want: false,
+		},
+		{
+			name: "source file with test-like variable names",
+			content: `
+const testConfig = { enabled: true };
+const describe = 'This is a description';
+const it = 42;
+`,
+			want: false,
+		},
+		{
+			name: "test patterns in comments should be ignored",
+			content: `
+// describe('Calculator', () => {
+//   test('adds two numbers', () => {
+//     expect(1 + 1).toBe(2);
+//   });
+// });
+
+export function calculator() {
+  return { add: (a, b) => a + b };
+}
+`,
+			want: false,
+		},
+		{
+			name: "test patterns in multi-line comments should be ignored",
+			content: `
+/*
+describe('Calculator', () => {
+  test('adds two numbers', () => {
+    expect(1 + 1).toBe(2);
+  });
+});
+*/
+
+export const VERSION = '1.0.0';
+`,
+			want: false,
+		},
+		{
+			name: "top-level test without describe",
+			content: `
+test('standalone test', () => {
+  expect(true).toBe(true);
+});
+`,
+			want: true,
+		},
+		{
+			name: "top-level it without describe",
+			content: `
+it('standalone it', () => {
+  expect(true).toBe(true);
+});
+`,
+			want: true,
+		},
+		{
+			name: "empty file",
+			content: ``,
+			want:    false,
+		},
+		{
+			name: "vitest test file with explicit import (also has patterns)",
+			content: `
+import { describe, test, expect } from 'vitest';
+
+describe('Calculator', () => {
+  test('adds two numbers', () => {
+    expect(1 + 1).toBe(2);
+  });
+});
+`,
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := HasJSTestPatterns(context.Background(), []byte(tt.content))
+			if got != tt.want {
+				t.Errorf("HasJSTestPatterns() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
