@@ -36,13 +36,21 @@ func IsValidLanguage(language string) bool {
 }
 
 type SpecDocument struct {
-	AnalysisID       string
-	CreatedAt        time.Time
-	Domains          []SpecDomain
-	ExecutiveSummary *string
-	ID               string
-	Language         string
-	ModelID          string
+	AnalysisID         string
+	AvailableLanguages []AvailableLanguageInfo
+	CreatedAt          time.Time
+	Domains            []SpecDomain
+	ExecutiveSummary   *string
+	ID                 string
+	Language           string
+	ModelID            string
+	Version            int
+}
+
+type AvailableLanguageInfo struct {
+	CreatedAt     time.Time
+	Language      string
+	LatestVersion int
 }
 
 type SpecDomain struct {

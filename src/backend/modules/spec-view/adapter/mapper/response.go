@@ -25,17 +25,37 @@ func ToSpecDocumentResponse(doc *entity.SpecDocument) ([]byte, error) {
 		return nil, err
 	}
 
+	var availableLanguages *[]api.AvailableLanguageInfo
+	if len(doc.AvailableLanguages) > 0 {
+		langs := toAPIAvailableLanguages(doc.AvailableLanguages)
+		availableLanguages = &langs
+	}
+
 	specDoc := api.SpecDocument{
-		AnalysisID:       analysisUID,
-		CreatedAt:        doc.CreatedAt,
-		Domains:          domains,
-		ExecutiveSummary: doc.ExecutiveSummary,
-		ID:               docUID,
-		Language:         api.SpecLanguage(doc.Language),
-		ModelID:          &doc.ModelID,
+		AnalysisID:         analysisUID,
+		AvailableLanguages: availableLanguages,
+		CreatedAt:          doc.CreatedAt,
+		Domains:            domains,
+		ExecutiveSummary:   doc.ExecutiveSummary,
+		ID:                 docUID,
+		Language:           api.SpecLanguage(doc.Language),
+		ModelID:            &doc.ModelID,
+		Version:            doc.Version,
 	}
 
 	return marshalCompleted(specDoc)
+}
+
+func toAPIAvailableLanguages(langs []entity.AvailableLanguageInfo) []api.AvailableLanguageInfo {
+	result := make([]api.AvailableLanguageInfo, len(langs))
+	for i, l := range langs {
+		result[i] = api.AvailableLanguageInfo{
+			CreatedAt:     l.CreatedAt,
+			Language:      api.SpecLanguage(l.Language),
+			LatestVersion: l.LatestVersion,
+		}
+	}
+	return result
 }
 
 func ToGeneratingResponse(status *entity.SpecGenerationStatus) ([]byte, error) {

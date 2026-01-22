@@ -218,6 +218,18 @@ type AnalyzingResponse struct {
 	Status string `json:"status"`
 }
 
+// AvailableLanguageInfo defines model for AvailableLanguageInfo.
+type AvailableLanguageInfo struct {
+	// CreatedAt When this language was last generated
+	CreatedAt time.Time `json:"createdAt"`
+
+	// Language Target language for spec document generation (24 languages supported)
+	Language SpecLanguage `json:"language"`
+
+	// LatestVersion Latest version number for this language
+	LatestVersion int `json:"latestVersion"`
+}
+
 // BookmarkResponse defines model for BookmarkResponse.
 type BookmarkResponse struct {
 	// IsBookmarked Current bookmark status after the operation
@@ -677,6 +689,9 @@ type SpecDocument struct {
 	// AnalysisID Associated analysis ID
 	AnalysisID openapi_types.UUID `json:"analysisId"`
 
+	// AvailableLanguages List of all available languages for this analysis
+	AvailableLanguages *[]AvailableLanguageInfo `json:"availableLanguages,omitempty"`
+
 	// CreatedAt Document creation timestamp
 	CreatedAt time.Time `json:"createdAt"`
 
@@ -694,6 +709,9 @@ type SpecDocument struct {
 
 	// ModelID AI model ID used for generation
 	ModelID *string `json:"modelId,omitempty"`
+
+	// Version Document version number (increments on regeneration)
+	Version int `json:"version"`
 }
 
 // SpecDocumentCompleted defines model for SpecDocumentCompleted.

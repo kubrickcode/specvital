@@ -3,6 +3,7 @@ SELECT
     sd.id,
     sd.analysis_id,
     sd.language,
+    sd.version,
     sd.executive_summary,
     sd.model_id,
     sd.created_at
@@ -16,6 +17,7 @@ SELECT
     sd.id,
     sd.analysis_id,
     sd.language,
+    sd.version,
     sd.executive_summary,
     sd.model_id,
     sd.created_at
@@ -107,4 +109,20 @@ SELECT EXISTS(
 SELECT EXISTS(
     SELECT 1 FROM analyses WHERE id = $1 AND status = 'completed'
 ) AS exists;
+
+-- name: GetAvailableLanguagesByAnalysisID :many
+-- Returns all available languages for an analysis with their latest version info
+SELECT
+    sd.language,
+    sd.version AS latest_version,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = $1
+  AND sd.version = (
+      SELECT MAX(sd2.version)
+      FROM spec_documents sd2
+      WHERE sd2.analysis_id = sd.analysis_id
+        AND sd2.language = sd.language
+  )
+ORDER BY sd.language;
 

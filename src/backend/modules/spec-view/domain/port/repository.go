@@ -9,6 +9,8 @@ import (
 type SpecViewRepository interface {
 	CheckAnalysisExists(ctx context.Context, analysisID string) (bool, error)
 	CheckSpecDocumentExistsByLanguage(ctx context.Context, analysisID string, language string) (bool, error)
+	// GetAvailableLanguages returns all available languages for an analysis with their latest version info.
+	GetAvailableLanguages(ctx context.Context, analysisID string) ([]entity.AvailableLanguageInfo, error)
 	// GetGenerationStatus returns the latest generation status for an analysis (any language).
 	GetGenerationStatus(ctx context.Context, analysisID string) (*entity.SpecGenerationStatus, error)
 	// GetGenerationStatusByLanguage returns status for a specific analysis + language combination.

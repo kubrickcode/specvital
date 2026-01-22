@@ -55,6 +55,11 @@ func (uc *GetSpecDocumentUseCase) Execute(ctx context.Context, input GetSpecDocu
 	}
 
 	if doc != nil {
+		availableLanguages, err := uc.repo.GetAvailableLanguages(ctx, input.AnalysisID)
+		if err != nil {
+			return nil, err
+		}
+		doc.AvailableLanguages = availableLanguages
 		return &GetSpecDocumentOutput{Document: doc}, nil
 	}
 

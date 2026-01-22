@@ -11,14 +11,16 @@ import (
 )
 
 type mockRepository struct {
-	document          *entity.SpecDocument
-	documentErr       error
-	status            *entity.SpecGenerationStatus
-	statusErr         error
-	analysisExists    bool
-	analysisExistsErr error
-	specDocExists     bool
-	specDocExistsErr  error
+	document           *entity.SpecDocument
+	documentErr        error
+	status             *entity.SpecGenerationStatus
+	statusErr          error
+	analysisExists     bool
+	analysisExistsErr  error
+	specDocExists      bool
+	specDocExistsErr   error
+	availableLanguages []entity.AvailableLanguageInfo
+	availableLangsErr  error
 
 	// Captured parameters for verification
 	calledLanguage string
@@ -34,6 +36,10 @@ func (m *mockRepository) CheckSpecDocumentExistsByLanguage(_ context.Context, _ 
 
 func (m *mockRepository) DeleteSpecDocumentByLanguage(_ context.Context, _ string, _ string) error {
 	return nil
+}
+
+func (m *mockRepository) GetAvailableLanguages(_ context.Context, _ string) ([]entity.AvailableLanguageInfo, error) {
+	return m.availableLanguages, m.availableLangsErr
 }
 
 func (m *mockRepository) GetSpecDocumentByLanguage(_ context.Context, _ string, language string) (*entity.SpecDocument, error) {
@@ -173,6 +179,61 @@ func TestGetSpecDocumentUseCase_Execute(t *testing.T) {
 		})
 		if !errors.Is(err, dbErr) {
 			t.Errorf("Execute() error = %v, want %v", err, dbErr)
+		}
+	})
+
+	t.Run("returns document with availableLanguages when found", func(t *testing.T) {
+		availableLanguages := []entity.AvailableLanguageInfo{
+			{Language: "English", LatestVersion: 2, CreatedAt: time.Now()},
+			{Language: "Korean", LatestVersion: 1, CreatedAt: time.Now()},
+		}
+		doc := &entity.SpecDocument{
+			ID:         "doc-1",
+			AnalysisID: "analysis-1",
+			Language:   "English",
+			Version:    2,
+			CreatedAt:  time.Now(),
+		}
+		mock := &mockRepository{
+			document:           doc,
+			availableLanguages: availableLanguages,
+		}
+		uc := NewGetSpecDocumentUseCase(mock)
+		result, err := uc.Execute(context.Background(), GetSpecDocumentInput{
+			AnalysisID: "analysis-1",
+		})
+		if err != nil {
+			t.Fatalf("Execute() error = %v", err)
+		}
+		if result.Document == nil {
+			t.Fatal("Execute() Document is nil")
+		}
+		if len(result.Document.AvailableLanguages) != 2 {
+			t.Errorf("Execute() Document.AvailableLanguages length = %d, want 2", len(result.Document.AvailableLanguages))
+		}
+		if result.Document.Version != 2 {
+			t.Errorf("Execute() Document.Version = %d, want 2", result.Document.Version)
+		}
+	})
+
+	t.Run("propagates availableLanguages error", func(t *testing.T) {
+		doc := &entity.SpecDocument{
+			ID:         "doc-1",
+			AnalysisID: "analysis-1",
+			Language:   "English",
+			CreatedAt:  time.Now(),
+		}
+		langErr := errors.New("failed to fetch languages")
+		mock := &mockRepository{
+			document:          doc,
+			availableLangsErr: langErr,
+		}
+		uc := NewGetSpecDocumentUseCase(mock)
+		_, err := uc.Execute(context.Background(), GetSpecDocumentInput{
+			AnalysisID: "analysis-1",
+		})
+		if !errors.Is(err, langErr) {
+			t.Errorf("Execute() error = %v, want %v", err, langErr)
 		}
 	})
 }

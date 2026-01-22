@@ -42,6 +42,49 @@ func (q *Queries) CheckSpecDocumentExistsByLanguage(ctx context.Context, arg Che
 	return exists, err
 }
 
+const getAvailableLanguagesByAnalysisID = `-- name: GetAvailableLanguagesByAnalysisID :many
+SELECT
+    sd.language,
+    sd.version AS latest_version,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = $1
+  AND sd.version = (
+      SELECT MAX(sd2.version)
+      FROM spec_documents sd2
+      WHERE sd2.analysis_id = sd.analysis_id
+        AND sd2.language = sd.language
+  )
+ORDER BY sd.language
+`
+
+type GetAvailableLanguagesByAnalysisIDRow struct {
+	Language      string             `json:"language"`
+	LatestVersion int32              `json:"latest_version"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+// Returns all available languages for an analysis with their latest version info
+func (q *Queries) GetAvailableLanguagesByAnalysisID(ctx context.Context, analysisID pgtype.UUID) ([]GetAvailableLanguagesByAnalysisIDRow, error) {
+	rows, err := q.db.Query(ctx, getAvailableLanguagesByAnalysisID, analysisID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAvailableLanguagesByAnalysisIDRow
+	for rows.Next() {
+		var i GetAvailableLanguagesByAnalysisIDRow
+		if err := rows.Scan(&i.Language, &i.LatestVersion, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSpecBehaviorSourceInfo = `-- name: GetSpecBehaviorSourceInfo :many
 SELECT
     b.id AS behavior_id,
@@ -144,6 +187,7 @@ SELECT
     sd.id,
     sd.analysis_id,
     sd.language,
+    sd.version,
     sd.executive_summary,
     sd.model_id,
     sd.created_at
@@ -157,6 +201,7 @@ type GetSpecDocumentByAnalysisIDRow struct {
 	ID               pgtype.UUID        `json:"id"`
 	AnalysisID       pgtype.UUID        `json:"analysis_id"`
 	Language         string             `json:"language"`
+	Version          int32              `json:"version"`
 	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
 	ModelID          string             `json:"model_id"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
@@ -169,6 +214,7 @@ func (q *Queries) GetSpecDocumentByAnalysisID(ctx context.Context, analysisID pg
 		&i.ID,
 		&i.AnalysisID,
 		&i.Language,
+		&i.Version,
 		&i.ExecutiveSummary,
 		&i.ModelID,
 		&i.CreatedAt,
@@ -181,6 +227,7 @@ SELECT
     sd.id,
     sd.analysis_id,
     sd.language,
+    sd.version,
     sd.executive_summary,
     sd.model_id,
     sd.created_at
@@ -199,6 +246,7 @@ type GetSpecDocumentByAnalysisIDAndLanguageRow struct {
 	ID               pgtype.UUID        `json:"id"`
 	AnalysisID       pgtype.UUID        `json:"analysis_id"`
 	Language         string             `json:"language"`
+	Version          int32              `json:"version"`
 	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
 	ModelID          string             `json:"model_id"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
@@ -211,6 +259,7 @@ func (q *Queries) GetSpecDocumentByAnalysisIDAndLanguage(ctx context.Context, ar
 		&i.ID,
 		&i.AnalysisID,
 		&i.Language,
+		&i.Version,
 		&i.ExecutiveSummary,
 		&i.ModelID,
 		&i.CreatedAt,

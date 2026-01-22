@@ -44,6 +44,28 @@ func (r *PostgresRepository) CheckSpecDocumentExistsByLanguage(ctx context.Conte
 	})
 }
 
+func (r *PostgresRepository) GetAvailableLanguages(ctx context.Context, analysisID string) ([]entity.AvailableLanguageInfo, error) {
+	uid, err := parseUUID(analysisID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.queries.GetAvailableLanguagesByAnalysisID(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]entity.AvailableLanguageInfo, len(rows))
+	for i, row := range rows {
+		result[i] = entity.AvailableLanguageInfo{
+			CreatedAt:     row.CreatedAt.Time,
+			Language:      row.Language,
+			LatestVersion: int(row.LatestVersion),
+		}
+	}
+	return result, nil
+}
+
 func (r *PostgresRepository) GetSpecDocumentByLanguage(ctx context.Context, analysisID string, language string) (*entity.SpecDocument, error) {
 	uid, err := parseUUID(analysisID)
 	if err != nil {
@@ -67,6 +89,7 @@ func (r *PostgresRepository) GetSpecDocumentByLanguage(ctx context.Context, anal
 				ID:               langRow.ID,
 				AnalysisID:       langRow.AnalysisID,
 				Language:         langRow.Language,
+				Version:          langRow.Version,
 				ExecutiveSummary: langRow.ExecutiveSummary,
 				ModelID:          langRow.ModelID,
 				CreatedAt:        langRow.CreatedAt,
@@ -187,6 +210,7 @@ func (r *PostgresRepository) GetSpecDocumentByLanguage(ctx context.Context, anal
 		ID:         uuidToString(docRow.ID),
 		Language:   docRow.Language,
 		ModelID:    docRow.ModelID,
+		Version:    int(docRow.Version),
 	}
 	if docRow.ExecutiveSummary.Valid {
 		doc.ExecutiveSummary = &docRow.ExecutiveSummary.String

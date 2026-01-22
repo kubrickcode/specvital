@@ -31,6 +31,10 @@ func (m *mockStatusRepository) DeleteSpecDocumentByLanguage(_ context.Context, _
 	return nil
 }
 
+func (m *mockStatusRepository) GetAvailableLanguages(_ context.Context, _ string) ([]entity.AvailableLanguageInfo, error) {
+	return nil, nil
+}
+
 func (m *mockStatusRepository) GetSpecDocumentByLanguage(_ context.Context, _ string, _ string) (*entity.SpecDocument, error) {
 	return nil, nil
 }

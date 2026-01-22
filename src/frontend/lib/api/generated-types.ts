@@ -1332,6 +1332,11 @@ export interface components {
             analysisId: string;
             language: components["schemas"]["SpecLanguage"];
             /**
+             * @description Document version number (increments on regeneration)
+             * @example 1
+             */
+            version: number;
+            /**
              * @description AI-generated executive summary of the test suite
              * @example This repository contains a comprehensive authentication system with 45 test behaviors covering user login, session management, and password recovery.
              */
@@ -1341,11 +1346,26 @@ export interface components {
              * @example gemini-2.0-flash
              */
             modelId?: string;
+            /** @description List of all available languages for this analysis */
+            availableLanguages?: components["schemas"]["AvailableLanguageInfo"][];
             /** @description Domain classifications */
             domains: components["schemas"]["SpecDomain"][];
             /**
              * Format: date-time
              * @description Document creation timestamp
+             */
+            createdAt: string;
+        };
+        AvailableLanguageInfo: {
+            language: components["schemas"]["SpecLanguage"];
+            /**
+             * @description Latest version number for this language
+             * @example 3
+             */
+            latestVersion: number;
+            /**
+             * Format: date-time
+             * @description When this language was last generated
              */
             createdAt: string;
         };
