@@ -56,6 +56,13 @@ repositories:
     frameworks:
       - vitest
 
+  - name: zod
+    url: https://github.com/colinhacks/zod
+    ref: main
+    frameworks:
+      - vitest
+    nondeterministic: true
+
   - name: baedal
     url: https://github.com/KubrickCode/baedal
     ref: v1.3.1

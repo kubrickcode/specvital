@@ -1,0 +1,136 @@
+{
+  "repository": "zod",
+  "ref": "main",
+  "expectedFrameworks": ["vitest"],
+  "fileCount": 160,
+  "testCount": 1722,
+  "frameworkCounts": {
+    "vitest": 160
+  },
+  "sampleFiles": [
+    {
+      "path": "packages/resolution/attw.test.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "packages/zod/src/v3/tests/all-errors.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 6
+    },
+    {
+      "path": "packages/zod/src/v3/tests/anyunknown.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "packages/zod/src/v3/tests/array.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 6
+    },
+    {
+      "path": "packages/zod/src/v3/tests/async-parsing.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 24
+    },
+    {
+      "path": "packages/zod/src/v3/tests/async-refinements.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 4
+    },
+    {
+      "path": "packages/zod/src/v3/tests/base.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "packages/zod/src/v3/tests/bigint.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "packages/zod/src/v3/tests/branded.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "packages/zod/src/v3/tests/catch.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 17
+    },
+    {
+      "path": "packages/zod/src/v3/tests/coerce.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 5
+    },
+    {
+      "path": "packages/zod/src/v3/tests/complex.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "packages/zod/src/v3/tests/custom.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "packages/zod/src/v3/tests/date.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "packages/zod/src/v3/tests/deepmasking.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "packages/zod/src/v3/tests/default.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 11
+    },
+    {
+      "path": "packages/zod/src/v3/tests/description.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 4
+    },
+    {
+      "path": "packages/zod/src/v3/tests/discriminated-unions.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 14
+    },
+    {
+      "path": "packages/zod/src/v3/tests/enum.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 8
+    },
+    {
+      "path": "packages/zod/src/v3/tests/error.test.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 29
+    }
+  ],
+  "stats": {
+    "filesMatched": 160,
+    "filesScanned": 160
+  }
+}
