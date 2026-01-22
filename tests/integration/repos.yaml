@@ -89,6 +89,12 @@ repositories:
     frameworks:
       - go-testing
 
+  - name: chi
+    url: https://github.com/go-chi/chi
+    ref: v5.2.4
+    frameworks:
+      - go-testing
+
   - name: specvital-worker
     url: https://github.com/specvital/worker
     ref: v1.0.6
