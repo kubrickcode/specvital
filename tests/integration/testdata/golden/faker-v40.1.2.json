@@ -1,0 +1,137 @@
+{
+  "repository": "faker",
+  "ref": "v40.1.2",
+  "expectedFrameworks": ["pytest", "unittest"],
+  "fileCount": 56,
+  "testCount": 1691,
+  "frameworkCounts": {
+    "pytest": 49,
+    "unittest": 7
+  },
+  "sampleFiles": [
+    {
+      "path": "tests/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/mymodule/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/mymodule/en_US/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/providers/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 1,
+      "testCount": 19
+    },
+    {
+      "path": "tests/providers/test_address.py",
+      "framework": "pytest",
+      "suiteCount": 54,
+      "testCount": 360
+    },
+    {
+      "path": "tests/providers/test_automotive.py",
+      "framework": "pytest",
+      "suiteCount": 6,
+      "testCount": 15
+    },
+    {
+      "path": "tests/providers/test_bank.py",
+      "framework": "pytest",
+      "suiteCount": 26,
+      "testCount": 59
+    },
+    {
+      "path": "tests/providers/test_barcode.py",
+      "framework": "pytest",
+      "suiteCount": 3,
+      "testCount": 10
+    },
+    {
+      "path": "tests/providers/test_color.py",
+      "framework": "pytest",
+      "suiteCount": 18,
+      "testCount": 53
+    },
+    {
+      "path": "tests/providers/test_company.py",
+      "framework": "pytest",
+      "suiteCount": 23,
+      "testCount": 71
+    },
+    {
+      "path": "tests/providers/test_credit_card.py",
+      "framework": "pytest",
+      "suiteCount": 5,
+      "testCount": 27
+    },
+    {
+      "path": "tests/providers/test_currency.py",
+      "framework": "pytest",
+      "suiteCount": 26,
+      "testCount": 54
+    },
+    {
+      "path": "tests/providers/test_date_time.py",
+      "framework": "pytest",
+      "suiteCount": 36,
+      "testCount": 124
+    },
+    {
+      "path": "tests/providers/test_doi.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "tests/providers/test_dynamic.py",
+      "framework": "pytest",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "tests/providers/test_emoji.py",
+      "framework": "unittest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "tests/providers/test_enum.py",
+      "framework": "pytest",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "tests/providers/test_file.py",
+      "framework": "unittest",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "tests/providers/test_geo.py",
+      "framework": "unittest",
+      "suiteCount": 7,
+      "testCount": 15
+    },
+    {
+      "path": "tests/providers/test_internet.py",
+      "framework": "pytest",
+      "suiteCount": 20,
+      "testCount": 90
+    }
+  ],
+  "stats": {
+    "filesMatched": 56,
+    "filesScanned": 56
+  }
+}

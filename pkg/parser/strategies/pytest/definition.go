@@ -233,7 +233,7 @@ func parseTestClassWithStatus(node *sitter.Node, source []byte, filename string,
 	}
 
 	name := parser.GetNodeText(nameNode, source)
-	if !isTestClass(name) {
+	if !isTestClass(name, node, source) {
 		return nil
 	}
 
@@ -309,6 +309,26 @@ func isTestFunction(name string) bool {
 	return strings.HasPrefix(name, "test_")
 }
 
-func isTestClass(name string) bool {
-	return strings.HasPrefix(name, "Test")
+func isTestClass(name string, node *sitter.Node, source []byte) bool {
+	// pytest convention: Test* prefix
+	if strings.HasPrefix(name, "Test") {
+		return true
+	}
+
+	// Support unittest-style classes: *TestCase suffix
+	// pytest can run unittest.TestCase classes, so we should detect them
+	if strings.HasSuffix(name, "TestCase") {
+		return true
+	}
+
+	// Check if class inherits from TestCase (unittest compatibility)
+	superclassNode := node.ChildByFieldName("superclasses")
+	if superclassNode != nil {
+		text := parser.GetNodeText(superclassNode, source)
+		if strings.Contains(text, "TestCase") {
+			return true
+		}
+	}
+
+	return false
 }

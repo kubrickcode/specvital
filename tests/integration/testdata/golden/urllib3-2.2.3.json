@@ -3,7 +3,7 @@
   "ref": "2.2.3",
   "expectedFrameworks": ["pytest"],
   "fileCount": 30,
-  "testCount": 717,
+  "testCount": 782,
   "frameworkCounts": {
     "pytest": 30
   },
@@ -125,8 +125,8 @@
     {
       "path": "test/test_ssltransport.py",
       "framework": "pytest",
-      "suiteCount": 1,
-      "testCount": 4
+      "suiteCount": 3,
+      "testCount": 16
     }
   ],
   "stats": {

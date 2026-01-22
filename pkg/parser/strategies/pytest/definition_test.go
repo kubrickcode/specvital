@@ -429,4 +429,90 @@ def test_another():
 			t.Errorf("expected Suites[0].Name='TestGroup', got '%s'", testFile.Suites[0].Name)
 		}
 	})
+
+	t.Run("unittest.TestCase class with pytest import", func(t *testing.T) {
+		// This tests the scenario where a file has both pytest and unittest imports
+		// and uses unittest.TestCase style class naming (e.g., FactoryTestCase)
+		source := `
+import unittest
+import pytest
+
+class FactoryTestCase(unittest.TestCase):
+    def test_documentor(self):
+        pass
+
+    def test_command(self):
+        pass
+
+    def test_cli_seed(self):
+        pass
+`
+		testFile, err := p.Parse(ctx, []byte(source), "test_factory.py")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+
+		suite := testFile.Suites[0]
+		if suite.Name != "FactoryTestCase" {
+			t.Errorf("expected Suite.Name='FactoryTestCase', got '%s'", suite.Name)
+		}
+		if len(suite.Tests) != 3 {
+			t.Fatalf("expected 3 Tests in suite, got %d", len(suite.Tests))
+		}
+		if suite.Tests[0].Name != "test_documentor" {
+			t.Errorf("expected Tests[0].Name='test_documentor', got '%s'", suite.Tests[0].Name)
+		}
+	})
+
+	t.Run("TestCase suffix without inheritance", func(t *testing.T) {
+		// Class with TestCase suffix but no inheritance should still be detected
+		source := `
+class MyTestCase:
+    def test_something(self):
+        pass
+`
+		testFile, err := p.Parse(ctx, []byte(source), "test_my.py")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+		if testFile.Suites[0].Name != "MyTestCase" {
+			t.Errorf("expected Suite.Name='MyTestCase', got '%s'", testFile.Suites[0].Name)
+		}
+	})
+
+	t.Run("TestCase inheritance without TestCase suffix", func(t *testing.T) {
+		// Class inheriting from TestCase but not ending with TestCase
+		source := `
+import unittest
+
+class MyTests(unittest.TestCase):
+    def test_one(self):
+        pass
+
+    def test_two(self):
+        pass
+`
+		testFile, err := p.Parse(ctx, []byte(source), "test_inherit.py")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(testFile.Suites) != 1 {
+			t.Fatalf("expected 1 Suite, got %d", len(testFile.Suites))
+		}
+		if testFile.Suites[0].Name != "MyTests" {
+			t.Errorf("expected Suite.Name='MyTests', got '%s'", testFile.Suites[0].Name)
+		}
+		if len(testFile.Suites[0].Tests) != 2 {
+			t.Fatalf("expected 2 Tests in suite, got %d", len(testFile.Suites[0].Tests))
+		}
+	})
 }
