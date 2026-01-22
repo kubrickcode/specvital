@@ -536,10 +536,38 @@ export interface paths {
          * @description Retrieves the AI-generated specification document for a given analysis.
          *     Returns full document hierarchy: domains → features → behaviors.
          *     If document is being generated, returns status with progress.
-         *     Optionally filter by language parameter.
+         *     Optionally filter by language and/or version parameter.
          *
          */
         get: operations["getSpecDocument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/spec-view/{analysisId}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Analysis ID (UUID) to fetch version history for
+                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 */
+                analysisId: string;
+            };
+            cookie?: never;
+        };
+        /**
+         * Get version history for a specific language
+         * @description Returns all versions of the spec document for a given analysis and language.
+         *     Ordered by version number descending (latest first).
+         *
+         */
+        get: operations["getSpecVersions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1368,6 +1396,33 @@ export interface components {
              * @description When this language was last generated
              */
             createdAt: string;
+        };
+        VersionInfo: {
+            /**
+             * @description Version number
+             * @example 1
+             */
+            version: number;
+            /**
+             * Format: date-time
+             * @description When this version was created
+             */
+            createdAt: string;
+            /**
+             * @description AI model ID used for this version
+             * @example gemini-2.0-flash
+             */
+            modelId?: string;
+        };
+        VersionHistoryResponse: {
+            /** @description List of versions ordered by version number descending */
+            data: components["schemas"]["VersionInfo"][];
+            language: components["schemas"]["SpecLanguage"];
+            /**
+             * @description The latest version number for this language
+             * @example 3
+             */
+            latestVersion: number;
         };
         SpecDomain: {
             /**
@@ -2369,6 +2424,11 @@ export interface operations {
             query?: {
                 /** @description Filter by language. If not specified, returns the most recent document. */
                 language?: components["schemas"]["SpecLanguage"];
+                /**
+                 * @description Specific version number to retrieve. Requires language parameter. If not specified, returns the latest version.
+                 * @example 1
+                 */
+                version?: number;
             };
             header?: never;
             path: {
@@ -2391,6 +2451,38 @@ export interface operations {
                     "application/json": components["schemas"]["SpecDocumentResponse"];
                 };
             };
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getSpecVersions: {
+        parameters: {
+            query: {
+                /** @description Language to get version history for */
+                language: components["schemas"]["SpecLanguage"];
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description Analysis ID (UUID) to fetch version history for
+                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 */
+                analysisId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Version history retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionHistoryResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
         };

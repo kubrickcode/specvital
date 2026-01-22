@@ -217,3 +217,28 @@ func marshalGenerating(status api.SpecGenerationStatus) ([]byte, error) {
 	}
 	return json.Marshal(generating)
 }
+
+func ToVersionHistoryResponse(output *VersionHistoryInput) api.VersionHistoryResponse {
+	data := make([]api.VersionInfo, len(output.Versions))
+	for i, v := range output.Versions {
+		data[i] = api.VersionInfo{
+			CreatedAt: v.CreatedAt,
+			Version:   v.Version,
+		}
+		if v.ModelID != "" {
+			data[i].ModelID = &v.ModelID
+		}
+	}
+
+	return api.VersionHistoryResponse{
+		Data:          data,
+		Language:      api.SpecLanguage(output.Language),
+		LatestVersion: output.LatestVersion,
+	}
+}
+
+type VersionHistoryInput struct {
+	Language      string
+	LatestVersion int
+	Versions      []entity.VersionInfo
+}

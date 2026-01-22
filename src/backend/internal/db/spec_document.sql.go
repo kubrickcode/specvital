@@ -267,6 +267,51 @@ func (q *Queries) GetSpecDocumentByAnalysisIDAndLanguage(ctx context.Context, ar
 	return i, err
 }
 
+const getSpecDocumentByVersion = `-- name: GetSpecDocumentByVersion :one
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = $1 AND sd.language = $2 AND sd.version = $3
+`
+
+type GetSpecDocumentByVersionParams struct {
+	AnalysisID pgtype.UUID `json:"analysis_id"`
+	Language   string      `json:"language"`
+	Version    int32       `json:"version"`
+}
+
+type GetSpecDocumentByVersionRow struct {
+	ID               pgtype.UUID        `json:"id"`
+	AnalysisID       pgtype.UUID        `json:"analysis_id"`
+	Language         string             `json:"language"`
+	Version          int32              `json:"version"`
+	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
+	ModelID          string             `json:"model_id"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+}
+
+// Returns a specific version of a spec document
+func (q *Queries) GetSpecDocumentByVersion(ctx context.Context, arg GetSpecDocumentByVersionParams) (GetSpecDocumentByVersionRow, error) {
+	row := q.db.QueryRow(ctx, getSpecDocumentByVersion, arg.AnalysisID, arg.Language, arg.Version)
+	var i GetSpecDocumentByVersionRow
+	err := row.Scan(
+		&i.ID,
+		&i.AnalysisID,
+		&i.Language,
+		&i.Version,
+		&i.ExecutiveSummary,
+		&i.ModelID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getSpecDomainsByDocumentID = `-- name: GetSpecDomainsByDocumentID :many
 SELECT
     d.id,
@@ -429,4 +474,46 @@ func (q *Queries) GetSpecGenerationStatusByLanguage(ctx context.Context, arg Get
 		&i.Errors,
 	)
 	return i, err
+}
+
+const getVersionsByLanguage = `-- name: GetVersionsByLanguage :many
+SELECT
+    sd.version,
+    sd.created_at,
+    sd.model_id
+FROM spec_documents sd
+WHERE sd.analysis_id = $1 AND sd.language = $2
+ORDER BY sd.version DESC
+`
+
+type GetVersionsByLanguageParams struct {
+	AnalysisID pgtype.UUID `json:"analysis_id"`
+	Language   string      `json:"language"`
+}
+
+type GetVersionsByLanguageRow struct {
+	Version   int32              `json:"version"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	ModelID   string             `json:"model_id"`
+}
+
+// Returns all versions for a specific analysis and language, ordered by version descending
+func (q *Queries) GetVersionsByLanguage(ctx context.Context, arg GetVersionsByLanguageParams) ([]GetVersionsByLanguageRow, error) {
+	rows, err := q.db.Query(ctx, getVersionsByLanguage, arg.AnalysisID, arg.Language)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetVersionsByLanguageRow
+	for rows.Next() {
+		var i GetVersionsByLanguageRow
+		if err := rows.Scan(&i.Version, &i.CreatedAt, &i.ModelID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

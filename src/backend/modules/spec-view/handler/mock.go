@@ -32,3 +32,9 @@ func (m *MockHandler) RequestSpecGeneration(_ context.Context, _ api.RequestSpec
 		UnauthorizedApplicationProblemPlusJSONResponse: api.NewUnauthorized("unauthorized"),
 	}, nil
 }
+
+func (m *MockHandler) GetSpecVersions(_ context.Context, _ api.GetSpecVersionsRequestObject) (api.GetSpecVersionsResponseObject, error) {
+	return api.GetSpecVersions404ApplicationProblemPlusJSONResponse{
+		NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("not found"),
+	}, nil
+}

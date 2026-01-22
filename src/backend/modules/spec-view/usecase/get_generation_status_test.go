@@ -49,6 +49,14 @@ func (m *mockStatusRepository) GetGenerationStatusByLanguage(_ context.Context, 
 	return m.statusByLanguage, m.statusByLanguageErr
 }
 
+func (m *mockStatusRepository) GetSpecDocumentByVersion(_ context.Context, _ string, _ string, _ int) (*entity.SpecDocument, error) {
+	return nil, nil
+}
+
+func (m *mockStatusRepository) GetVersionsByLanguage(_ context.Context, _ string, _ string) ([]entity.VersionInfo, error) {
+	return nil, nil
+}
+
 func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
 	t.Run("returns error when analysisID is empty", func(t *testing.T) {
 		uc := NewGetGenerationStatusUseCase(&mockStatusRepository{})

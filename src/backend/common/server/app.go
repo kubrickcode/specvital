@@ -248,10 +248,12 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 	getSpecDocumentUC := specviewusecase.NewGetSpecDocumentUseCase(specViewRepo)
 	requestGenerationUC := specviewusecase.NewRequestGenerationUseCase(specViewRepo, specViewQueue, checkQuotaUC)
 	getGenerationStatusUC := specviewusecase.NewGetGenerationStatusUseCase(specViewRepo)
+	getVersionsUC := specviewusecase.NewGetVersionsUseCase(specViewRepo)
 
 	specViewHandler, err := specviewhandler.NewHandler(&specviewhandler.HandlerConfig{
 		GetGenerationStatus: getGenerationStatusUC,
 		GetSpecDocument:     getSpecDocumentUC,
+		GetVersions:         getVersionsUC,
 		Logger:              log,
 		RequestGeneration:   requestGenerationUC,
 		TierLookup:          tierLookup,

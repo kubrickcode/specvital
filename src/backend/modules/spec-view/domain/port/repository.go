@@ -18,6 +18,10 @@ type SpecViewRepository interface {
 	// GetSpecDocumentByLanguage retrieves the latest version spec document for a given analysis and language.
 	// If language is empty, returns the most recent document regardless of language.
 	GetSpecDocumentByLanguage(ctx context.Context, analysisID string, language string) (*entity.SpecDocument, error)
+	// GetSpecDocumentByVersion retrieves a specific version of spec document for a given analysis and language.
+	GetSpecDocumentByVersion(ctx context.Context, analysisID string, language string, version int) (*entity.SpecDocument, error)
+	// GetVersionsByLanguage returns all versions for a specific analysis and language.
+	GetVersionsByLanguage(ctx context.Context, analysisID string, language string) ([]entity.VersionInfo, error)
 }
 
 type TierLookup interface {

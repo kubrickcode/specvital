@@ -21,6 +21,7 @@ import (
 type Handler struct {
 	getGenerationStatus *usecase.GetGenerationStatusUseCase
 	getSpecDocument     *usecase.GetSpecDocumentUseCase
+	getVersions         *usecase.GetVersionsUseCase
 	logger              *logger.Logger
 	requestGeneration   *usecase.RequestGenerationUseCase
 	tierLookup          port.TierLookup
@@ -31,6 +32,7 @@ var _ api.SpecViewHandlers = (*Handler)(nil)
 type HandlerConfig struct {
 	GetGenerationStatus *usecase.GetGenerationStatusUseCase
 	GetSpecDocument     *usecase.GetSpecDocumentUseCase
+	GetVersions         *usecase.GetVersionsUseCase
 	Logger              *logger.Logger
 	RequestGeneration   *usecase.RequestGenerationUseCase
 	// TierLookup is optional. If nil, all requests use default queue.
@@ -47,6 +49,9 @@ func NewHandler(cfg *HandlerConfig) (*Handler, error) {
 	if cfg.GetGenerationStatus == nil {
 		return nil, errors.New("GetGenerationStatus usecase is required")
 	}
+	if cfg.GetVersions == nil {
+		return nil, errors.New("GetVersions usecase is required")
+	}
 	if cfg.Logger == nil {
 		return nil, errors.New("Logger is required")
 	}
@@ -54,6 +59,7 @@ func NewHandler(cfg *HandlerConfig) (*Handler, error) {
 	return &Handler{
 		getGenerationStatus: cfg.GetGenerationStatus,
 		getSpecDocument:     cfg.GetSpecDocument,
+		getVersions:         cfg.GetVersions,
 		logger:              cfg.Logger,
 		requestGeneration:   cfg.RequestGeneration,
 		tierLookup:          cfg.TierLookup,
@@ -68,9 +74,15 @@ func (h *Handler) GetSpecDocument(ctx context.Context, request api.GetSpecDocume
 		language = string(*request.Params.Language)
 	}
 
+	version := 0
+	if request.Params.Version != nil {
+		version = *request.Params.Version
+	}
+
 	result, err := h.getSpecDocument.Execute(ctx, usecase.GetSpecDocumentInput{
 		AnalysisID: analysisID,
 		Language:   language,
+		Version:    version,
 	})
 	if err != nil {
 		if errors.Is(err, domain.ErrDocumentNotFound) {
@@ -243,6 +255,44 @@ func (h *Handler) GetSpecGenerationStatus(ctx context.Context, request api.GetSp
 	}
 
 	return api.GetSpecGenerationStatus200JSONResponse(resp), nil
+}
+
+func (h *Handler) GetSpecVersions(ctx context.Context, request api.GetSpecVersionsRequestObject) (api.GetSpecVersionsResponseObject, error) {
+	analysisID := request.AnalysisID.String()
+	language := string(request.Params.Language)
+
+	result, err := h.getVersions.Execute(ctx, usecase.GetVersionsInput{
+		AnalysisID: analysisID,
+		Language:   language,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrInvalidAnalysisID):
+			return api.GetSpecVersions400ApplicationProblemPlusJSONResponse{
+				BadRequestApplicationProblemPlusJSONResponse: api.NewBadRequest("invalid analysis ID format"),
+			}, nil
+		case errors.Is(err, domain.ErrInvalidLanguage):
+			return api.GetSpecVersions400ApplicationProblemPlusJSONResponse{
+				BadRequestApplicationProblemPlusJSONResponse: api.NewBadRequest("invalid language"),
+			}, nil
+		case errors.Is(err, domain.ErrDocumentNotFound):
+			return api.GetSpecVersions404ApplicationProblemPlusJSONResponse{
+				NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("no versions found for this language"),
+			}, nil
+		}
+
+		h.logger.Error(ctx, "failed to get versions", "error", err)
+		return api.GetSpecVersions500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to get versions"),
+		}, nil
+	}
+
+	resp := mapper.ToVersionHistoryResponse(&mapper.VersionHistoryInput{
+		Language:      result.Language,
+		LatestVersion: result.LatestVersion,
+		Versions:      result.Versions,
+	})
+	return api.GetSpecVersions200JSONResponse(resp), nil
 }
 
 type specDocument200Response struct {

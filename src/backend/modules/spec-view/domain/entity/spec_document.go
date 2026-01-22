@@ -53,6 +53,12 @@ type AvailableLanguageInfo struct {
 	LatestVersion int
 }
 
+type VersionInfo struct {
+	CreatedAt time.Time
+	ModelID   string
+	Version   int
+}
+
 type SpecDomain struct {
 	ClassificationConfidence *float64
 	Description              *string

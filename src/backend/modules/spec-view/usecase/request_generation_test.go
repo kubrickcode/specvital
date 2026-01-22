@@ -47,6 +47,14 @@ func (m *mockSpecViewRepository) GetGenerationStatusByLanguage(_ context.Context
 	return m.status, m.statusErr
 }
 
+func (m *mockSpecViewRepository) GetSpecDocumentByVersion(_ context.Context, _ string, _ string, _ int) (*entity.SpecDocument, error) {
+	return nil, nil
+}
+
+func (m *mockSpecViewRepository) GetVersionsByLanguage(_ context.Context, _ string, _ string) ([]entity.VersionInfo, error) {
+	return nil, nil
+}
+
 type mockQueueService struct {
 	enqueueErr error
 }

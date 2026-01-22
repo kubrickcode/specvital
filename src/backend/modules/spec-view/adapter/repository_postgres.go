@@ -74,10 +74,8 @@ func (r *PostgresRepository) GetSpecDocumentByLanguage(ctx context.Context, anal
 
 	var docRow db.GetSpecDocumentByAnalysisIDRow
 	if language == "" {
-		// No language specified: return the most recent document
 		docRow, err = r.queries.GetSpecDocumentByAnalysisID(ctx, uid)
 	} else {
-		// Language specified: return document for that language
 		langRow, langErr := r.queries.GetSpecDocumentByAnalysisIDAndLanguage(ctx, db.GetSpecDocumentByAnalysisIDAndLanguageParams{
 			AnalysisID: uid,
 			Language:   language,
@@ -103,6 +101,10 @@ func (r *PostgresRepository) GetSpecDocumentByLanguage(ctx context.Context, anal
 		return nil, err
 	}
 
+	return r.buildSpecDocument(ctx, docRow)
+}
+
+func (r *PostgresRepository) buildSpecDocument(ctx context.Context, docRow db.GetSpecDocumentByAnalysisIDRow) (*entity.SpecDocument, error) {
 	domains, err := r.queries.GetSpecDomainsByDocumentID(ctx, docRow.ID)
 	if err != nil {
 		return nil, err
@@ -291,6 +293,60 @@ func uuidToString(u pgtype.UUID) string {
 		return ""
 	}
 	return uuid.UUID(u.Bytes).String()
+}
+
+func (r *PostgresRepository) GetSpecDocumentByVersion(ctx context.Context, analysisID string, language string, version int) (*entity.SpecDocument, error) {
+	uid, err := parseUUID(analysisID)
+	if err != nil {
+		return nil, err
+	}
+
+	docRow, err := r.queries.GetSpecDocumentByVersion(ctx, db.GetSpecDocumentByVersionParams{
+		AnalysisID: uid,
+		Language:   language,
+		Version:    int32(version),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return r.buildSpecDocument(ctx, db.GetSpecDocumentByAnalysisIDRow{
+		ID:               docRow.ID,
+		AnalysisID:       docRow.AnalysisID,
+		Language:         docRow.Language,
+		Version:          docRow.Version,
+		ExecutiveSummary: docRow.ExecutiveSummary,
+		ModelID:          docRow.ModelID,
+		CreatedAt:        docRow.CreatedAt,
+	})
+}
+
+func (r *PostgresRepository) GetVersionsByLanguage(ctx context.Context, analysisID string, language string) ([]entity.VersionInfo, error) {
+	uid, err := parseUUID(analysisID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.queries.GetVersionsByLanguage(ctx, db.GetVersionsByLanguageParams{
+		AnalysisID: uid,
+		Language:   language,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]entity.VersionInfo, len(rows))
+	for i, row := range rows {
+		result[i] = entity.VersionInfo{
+			CreatedAt: row.CreatedAt.Time,
+			ModelID:   row.ModelID,
+			Version:   int(row.Version),
+		}
+	}
+	return result, nil
 }
 
 func mapRiverJobState(state string) entity.GenerationStatus {

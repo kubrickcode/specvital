@@ -12,6 +12,8 @@ type GetSpecDocumentInput struct {
 	AnalysisID string
 	// Language is optional. If empty, returns the most recent document.
 	Language string
+	// Version is optional. If 0, returns the latest version. Requires Language to be set.
+	Version int
 }
 
 type GetSpecDocumentOutput struct {
@@ -32,24 +34,39 @@ func (uc *GetSpecDocumentUseCase) Execute(ctx context.Context, input GetSpecDocu
 		return nil, domain.ErrInvalidAnalysisID
 	}
 
+	// Version requires valid language
+	if input.Version > 0 {
+		if input.Language == "" || !entity.IsValidLanguage(input.Language) {
+			return nil, domain.ErrInvalidLanguage
+		}
+	}
+
 	// Check for active generation first (for regeneration scenarios)
 	// If generation is in progress, return generating status even if document exists
+	// Skip generation check when requesting specific version (historical data)
 	var status *entity.SpecGenerationStatus
 	var err error
-	if input.Language != "" {
-		status, err = uc.repo.GetGenerationStatusByLanguage(ctx, input.AnalysisID, input.Language)
+	if input.Version == 0 {
+		if input.Language != "" {
+			status, err = uc.repo.GetGenerationStatusByLanguage(ctx, input.AnalysisID, input.Language)
+		} else {
+			status, err = uc.repo.GetGenerationStatus(ctx, input.AnalysisID)
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		if status != nil && (status.Status == entity.StatusPending || status.Status == entity.StatusRunning) {
+			return &GetSpecDocumentOutput{GenerationStatus: status}, nil
+		}
+	}
+
+	var doc *entity.SpecDocument
+	if input.Version > 0 {
+		doc, err = uc.repo.GetSpecDocumentByVersion(ctx, input.AnalysisID, input.Language, input.Version)
 	} else {
-		status, err = uc.repo.GetGenerationStatus(ctx, input.AnalysisID)
+		doc, err = uc.repo.GetSpecDocumentByLanguage(ctx, input.AnalysisID, input.Language)
 	}
-	if err != nil {
-		return nil, err
-	}
-
-	if status != nil && (status.Status == entity.StatusPending || status.Status == entity.StatusRunning) {
-		return &GetSpecDocumentOutput{GenerationStatus: status}, nil
-	}
-
-	doc, err := uc.repo.GetSpecDocumentByLanguage(ctx, input.AnalysisID, input.Language)
 	if err != nil {
 		return nil, err
 	}

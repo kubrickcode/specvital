@@ -126,3 +126,26 @@ WHERE sd.analysis_id = $1
   )
 ORDER BY sd.language;
 
+-- name: GetVersionsByLanguage :many
+-- Returns all versions for a specific analysis and language, ordered by version descending
+SELECT
+    sd.version,
+    sd.created_at,
+    sd.model_id
+FROM spec_documents sd
+WHERE sd.analysis_id = $1 AND sd.language = $2
+ORDER BY sd.version DESC;
+
+-- name: GetSpecDocumentByVersion :one
+-- Returns a specific version of a spec document
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = $1 AND sd.language = $2 AND sd.version = $3;
+

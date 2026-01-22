@@ -993,6 +993,30 @@ type UserSubscriptionResponse struct {
 	Plan               PlanInfo  `json:"plan"`
 }
 
+// VersionHistoryResponse defines model for VersionHistoryResponse.
+type VersionHistoryResponse struct {
+	// Data List of versions ordered by version number descending
+	Data []VersionInfo `json:"data"`
+
+	// Language Target language for spec document generation (24 languages supported)
+	Language SpecLanguage `json:"language"`
+
+	// LatestVersion The latest version number for this language
+	LatestVersion int `json:"latestVersion"`
+}
+
+// VersionInfo defines model for VersionInfo.
+type VersionInfo struct {
+	// CreatedAt When this version was created
+	CreatedAt time.Time `json:"createdAt"`
+
+	// ModelID AI model ID used for this version
+	ModelID *string `json:"modelId,omitempty"`
+
+	// Version Version number
+	Version int `json:"version"`
+}
+
 // ViewFilterParam Filter repositories by analyzer (who analyzed):
 // - all: All analyzed repositories
 // - my: Only repositories analyzed by the current user
@@ -1125,6 +1149,15 @@ type GetSpecGenerationStatusParams struct {
 type GetSpecDocumentParams struct {
 	// Language Filter by language. If not specified, returns the most recent document.
 	Language *SpecLanguage `form:"language,omitempty" json:"language,omitempty"`
+
+	// Version Specific version number to retrieve. Requires language parameter. If not specified, returns the latest version.
+	Version *int `form:"version,omitempty" json:"version,omitempty"`
+}
+
+// GetSpecVersionsParams defines parameters for GetSpecVersions.
+type GetSpecVersionsParams struct {
+	// Language Language to get version history for
+	Language SpecLanguage `form:"language" json:"language"`
 }
 
 // GetUserAnalyzedRepositoriesParams defines parameters for GetUserAnalyzedRepositories.
@@ -1484,6 +1517,9 @@ type ServerInterface interface {
 	// Get specification document for analysis
 	// (GET /api/spec-view/{analysisId})
 	GetSpecDocument(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID, params GetSpecDocumentParams)
+	// Get version history for a specific language
+	// (GET /api/spec-view/{analysisId}/versions)
+	GetSpecVersions(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID, params GetSpecVersionsParams)
 	// Check usage quota before operation
 	// (POST /api/usage/check-quota)
 	CheckQuota(w http.ResponseWriter, r *http.Request)
@@ -1631,6 +1667,12 @@ func (_ Unimplemented) GetSpecGenerationStatus(w http.ResponseWriter, r *http.Re
 // Get specification document for analysis
 // (GET /api/spec-view/{analysisId})
 func (_ Unimplemented) GetSpecDocument(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID, params GetSpecDocumentParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get version history for a specific language
+// (GET /api/spec-view/{analysisId}/versions)
+func (_ Unimplemented) GetSpecVersions(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID, params GetSpecVersionsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -2274,8 +2316,65 @@ func (siw *ServerInterfaceWrapper) GetSpecDocument(w http.ResponseWriter, r *htt
 		return
 	}
 
+	// ------------- Optional query parameter "version" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "version", r.URL.Query(), &params.Version)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "version", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetSpecDocument(w, r, analysisID, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetSpecVersions operation middleware
+func (siw *ServerInterfaceWrapper) GetSpecVersions(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "analysisId" -------------
+	var analysisID openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "analysisId", chi.URLParam(r, "analysisId"), &analysisID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "analysisId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetSpecVersionsParams
+
+	// ------------- Required query parameter "language" -------------
+
+	if paramValue := r.URL.Query().Get("language"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "language"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "language", r.URL.Query(), &params.Language)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "language", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSpecVersions(w, r, analysisID, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2838,6 +2937,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/spec-view/{analysisId}", wrapper.GetSpecDocument)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/spec-view/{analysisId}/versions", wrapper.GetSpecVersions)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/usage/check-quota", wrapper.CheckQuota)
@@ -3783,6 +3885,57 @@ func (response GetSpecDocument500ApplicationProblemPlusJSONResponse) VisitGetSpe
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetSpecVersionsRequestObject struct {
+	AnalysisID openapi_types.UUID `json:"analysisId"`
+	Params     GetSpecVersionsParams
+}
+
+type GetSpecVersionsResponseObject interface {
+	VisitGetSpecVersionsResponse(w http.ResponseWriter) error
+}
+
+type GetSpecVersions200JSONResponse VersionHistoryResponse
+
+func (response GetSpecVersions200JSONResponse) VisitGetSpecVersionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecVersions400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecVersions400ApplicationProblemPlusJSONResponse) VisitGetSpecVersionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecVersions404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecVersions404ApplicationProblemPlusJSONResponse) VisitGetSpecVersionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecVersions500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecVersions500ApplicationProblemPlusJSONResponse) VisitGetSpecVersionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CheckQuotaRequestObject struct {
 	Body *CheckQuotaJSONRequestBody
 }
@@ -4434,6 +4587,9 @@ type StrictServerInterface interface {
 	// Get specification document for analysis
 	// (GET /api/spec-view/{analysisId})
 	GetSpecDocument(ctx context.Context, request GetSpecDocumentRequestObject) (GetSpecDocumentResponseObject, error)
+	// Get version history for a specific language
+	// (GET /api/spec-view/{analysisId}/versions)
+	GetSpecVersions(ctx context.Context, request GetSpecVersionsRequestObject) (GetSpecVersionsResponseObject, error)
 	// Check usage quota before operation
 	// (POST /api/usage/check-quota)
 	CheckQuota(ctx context.Context, request CheckQuotaRequestObject) (CheckQuotaResponseObject, error)
@@ -4968,6 +5124,33 @@ func (sh *strictHandler) GetSpecDocument(w http.ResponseWriter, r *http.Request,
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetSpecDocumentResponseObject); ok {
 		if err := validResponse.VisitGetSpecDocumentResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetSpecVersions operation middleware
+func (sh *strictHandler) GetSpecVersions(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID, params GetSpecVersionsParams) {
+	var request GetSpecVersionsRequestObject
+
+	request.AnalysisID = analysisID
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetSpecVersions(ctx, request.(GetSpecVersionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetSpecVersions")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetSpecVersionsResponseObject); ok {
+		if err := validResponse.VisitGetSpecVersionsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

@@ -11,19 +11,24 @@ import (
 )
 
 type mockRepository struct {
-	document           *entity.SpecDocument
-	documentErr        error
-	status             *entity.SpecGenerationStatus
-	statusErr          error
-	analysisExists     bool
-	analysisExistsErr  error
-	specDocExists      bool
-	specDocExistsErr   error
-	availableLanguages []entity.AvailableLanguageInfo
-	availableLangsErr  error
+	document             *entity.SpecDocument
+	documentErr          error
+	documentByVersion    *entity.SpecDocument
+	documentByVersionErr error
+	status               *entity.SpecGenerationStatus
+	statusErr            error
+	analysisExists       bool
+	analysisExistsErr    error
+	specDocExists        bool
+	specDocExistsErr     error
+	availableLanguages   []entity.AvailableLanguageInfo
+	availableLangsErr    error
+	versions             []entity.VersionInfo
+	versionsErr          error
 
 	// Captured parameters for verification
 	calledLanguage string
+	calledVersion  int
 }
 
 func (m *mockRepository) CheckAnalysisExists(_ context.Context, _ string) (bool, error) {
@@ -53,6 +58,17 @@ func (m *mockRepository) GetGenerationStatus(_ context.Context, _ string) (*enti
 
 func (m *mockRepository) GetGenerationStatusByLanguage(_ context.Context, _ string, _ string) (*entity.SpecGenerationStatus, error) {
 	return m.status, m.statusErr
+}
+
+func (m *mockRepository) GetSpecDocumentByVersion(_ context.Context, _ string, language string, version int) (*entity.SpecDocument, error) {
+	m.calledLanguage = language
+	m.calledVersion = version
+	return m.documentByVersion, m.documentByVersionErr
+}
+
+func (m *mockRepository) GetVersionsByLanguage(_ context.Context, _ string, language string) ([]entity.VersionInfo, error) {
+	m.calledLanguage = language
+	return m.versions, m.versionsErr
 }
 
 func TestGetSpecDocumentUseCase_Execute(t *testing.T) {
@@ -234,6 +250,71 @@ func TestGetSpecDocumentUseCase_Execute(t *testing.T) {
 		})
 		if !errors.Is(err, langErr) {
 			t.Errorf("Execute() error = %v, want %v", err, langErr)
+		}
+	})
+
+	t.Run("returns error when version is specified without language", func(t *testing.T) {
+		uc := NewGetSpecDocumentUseCase(&mockRepository{})
+		_, err := uc.Execute(context.Background(), GetSpecDocumentInput{
+			AnalysisID: "analysis-1",
+			Version:    1,
+		})
+		if !errors.Is(err, domain.ErrInvalidLanguage) {
+			t.Errorf("Execute() error = %v, want %v", err, domain.ErrInvalidLanguage)
+		}
+	})
+
+	t.Run("returns error when version is specified with invalid language", func(t *testing.T) {
+		uc := NewGetSpecDocumentUseCase(&mockRepository{})
+		_, err := uc.Execute(context.Background(), GetSpecDocumentInput{
+			AnalysisID: "analysis-1",
+			Language:   "InvalidLang",
+			Version:    1,
+		})
+		if !errors.Is(err, domain.ErrInvalidLanguage) {
+			t.Errorf("Execute() error = %v, want %v", err, domain.ErrInvalidLanguage)
+		}
+	})
+
+	t.Run("returns specific version when version is specified", func(t *testing.T) {
+		doc := &entity.SpecDocument{
+			ID:         "doc-v1",
+			AnalysisID: "analysis-1",
+			Language:   "Korean",
+			Version:    1,
+			CreatedAt:  time.Now(),
+		}
+		mock := &mockRepository{documentByVersion: doc}
+		uc := NewGetSpecDocumentUseCase(mock)
+		result, err := uc.Execute(context.Background(), GetSpecDocumentInput{
+			AnalysisID: "analysis-1",
+			Language:   "Korean",
+			Version:    1,
+		})
+		if err != nil {
+			t.Fatalf("Execute() error = %v", err)
+		}
+		if result.Document == nil {
+			t.Fatal("Execute() Document is nil")
+		}
+		if result.Document.Version != 1 {
+			t.Errorf("Execute() Document.Version = %d, want 1", result.Document.Version)
+		}
+		if mock.calledVersion != 1 {
+			t.Errorf("Repository called with version = %d, want 1", mock.calledVersion)
+		}
+	})
+
+	t.Run("returns ErrDocumentNotFound when specific version not found", func(t *testing.T) {
+		mock := &mockRepository{documentByVersion: nil}
+		uc := NewGetSpecDocumentUseCase(mock)
+		_, err := uc.Execute(context.Background(), GetSpecDocumentInput{
+			AnalysisID: "analysis-1",
+			Language:   "Korean",
+			Version:    999,
+		})
+		if !errors.Is(err, domain.ErrDocumentNotFound) {
+			t.Errorf("Execute() error = %v, want %v", err, domain.ErrDocumentNotFound)
 		}
 	})
 }
