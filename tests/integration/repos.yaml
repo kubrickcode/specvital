@@ -38,6 +38,12 @@ repositories:
       - pytest
       - unittest
 
+  - name: httpx
+    url: https://github.com/encode/httpx
+    ref: 0.28.1
+    frameworks:
+      - pytest
+
   - name: python-unittest-tutorial
     url: https://github.com/cgoldberg/python-unittest-tutorial
     ref: master

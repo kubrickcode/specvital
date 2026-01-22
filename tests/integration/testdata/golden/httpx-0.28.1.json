@@ -1,0 +1,136 @@
+{
+  "repository": "httpx",
+  "ref": "0.28.1",
+  "expectedFrameworks": ["pytest"],
+  "fileCount": 36,
+  "testCount": 539,
+  "frameworkCounts": {
+    "pytest": 36
+  },
+  "sampleFiles": [
+    {
+      "path": "tests/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/client/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/client/test_async_client.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 24
+    },
+    {
+      "path": "tests/client/test_auth.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 34
+    },
+    {
+      "path": "tests/client/test_client.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 33
+    },
+    {
+      "path": "tests/client/test_cookies.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 7
+    },
+    {
+      "path": "tests/client/test_event_hooks.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 6
+    },
+    {
+      "path": "tests/client/test_headers.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 17
+    },
+    {
+      "path": "tests/client/test_properties.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 8
+    },
+    {
+      "path": "tests/client/test_proxies.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 8
+    },
+    {
+      "path": "tests/client/test_queryparams.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "tests/client/test_redirects.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 28
+    },
+    {
+      "path": "tests/common.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/concurrency.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/models/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/models/test_cookies.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 7
+    },
+    {
+      "path": "tests/models/test_headers.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 20
+    },
+    {
+      "path": "tests/models/test_queryparams.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 10
+    },
+    {
+      "path": "tests/models/test_requests.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 22
+    },
+    {
+      "path": "tests/models/test_responses.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 70
+    }
+  ],
+  "stats": {
+    "filesMatched": 36,
+    "filesScanned": 36
+  }
+}
