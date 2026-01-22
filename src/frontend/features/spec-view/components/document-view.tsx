@@ -14,6 +14,7 @@ type DocumentViewProps = {
   document: SpecDocument;
   isGeneratingOtherLanguage?: boolean;
   isRegenerating?: boolean;
+  onGenerateNewLanguage?: (language: SpecLanguage) => void;
   onLanguageSwitch?: (language: SpecLanguage) => void;
   onRegenerate?: () => void;
 };
@@ -22,6 +23,7 @@ export const DocumentView = ({
   document,
   isGeneratingOtherLanguage,
   isRegenerating,
+  onGenerateNewLanguage,
   onLanguageSwitch,
   onRegenerate,
 }: DocumentViewProps) => {
@@ -41,6 +43,7 @@ export const DocumentView = ({
             document={document}
             isGeneratingOtherLanguage={isGeneratingOtherLanguage}
             isRegenerating={isRegenerating}
+            onGenerateNewLanguage={onGenerateNewLanguage}
             onLanguageSwitch={onLanguageSwitch}
             onRegenerate={onRegenerate}
           />

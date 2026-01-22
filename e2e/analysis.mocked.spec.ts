@@ -632,7 +632,7 @@ test.describe("Analysis Page - Spec View Language Switch (Mocked API)", () => {
     await expect(languageButton).toBeVisible();
   });
 
-  test("should display 24 language options when dropdown clicked", async ({
+  test("should display Two-Tier dropdown with Available and Generate New sections", async ({
     page,
   }) => {
     await setupMockHandlers(page, {
@@ -657,13 +657,20 @@ test.describe("Analysis Page - Spec View Language Switch (Mocked API)", () => {
     const menu = page.getByRole("menu");
     await expect(menu).toBeVisible();
 
-    // Check for multiple languages
+    // Check for Available Languages section (English and Korean in mock data)
+    await expect(menu.getByText(/available languages/i)).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: /english/i })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: /korean/i })).toBeVisible();
+
+    // Check for Generate New section
+    await expect(menu.getByText(/generate new/i)).toBeVisible();
+
+    // Check for some languages in Generate New section (not in available list)
     await expect(menu.getByRole("menuitem", { name: /japanese/i })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: /chinese/i })).toBeVisible();
   });
 
-  test("should mark current language with indicator", async ({ page }) => {
+  test("should mark current language with checkmark indicator", async ({ page }) => {
     await setupMockHandlers(page, {
       analysis: mockAnalysisCompleted,
       specDocument: mockSpecDocumentCompleted,
@@ -682,10 +689,39 @@ test.describe("Analysis Page - Spec View Language Switch (Mocked API)", () => {
     const languageButton = page.getByRole("button", { name: /english/i }).first();
     await languageButton.click();
 
-    // English should have (current) indicator or be disabled
+    // English option should be highlighted (bg-muted class indicates current)
     const englishOption = page.getByRole("menuitem", { name: /english/i });
     await expect(englishOption).toBeVisible();
-    // Current language should have some visual indicator
+    // Current language should have version info displayed
+    await expect(englishOption.getByText(/v2/i)).toBeVisible();
+  });
+
+  test("should display version and date info for available languages", async ({ page }) => {
+    await setupMockHandlers(page, {
+      analysis: mockAnalysisCompleted,
+      specDocument: mockSpecDocumentCompleted,
+      usage: mockUsageNormal,
+    });
+
+    await page.goto("/en/analyze/test-owner/test-repo?tab=spec");
+    await page.waitForLoadState("networkidle");
+
+    // Wait for spec document to load
+    await expect(page.getByText(/Test Repository Specification/i)).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Click language dropdown
+    const languageButton = page.getByRole("button", { name: /english/i }).first();
+    await languageButton.click();
+
+    const menu = page.getByRole("menu");
+
+    // Check for version info in available languages
+    const koreanOption = menu.getByRole("menuitem", { name: /korean/i });
+    await expect(koreanOption).toBeVisible();
+    // Korean should show v1
+    await expect(koreanOption.getByText(/v1/i)).toBeVisible();
   });
 });
 

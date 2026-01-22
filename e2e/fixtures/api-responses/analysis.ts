@@ -64,10 +64,48 @@ export interface AnalysisCompletedResponse {
 
 export interface SpecDocumentResponse {
   status: "completed" | "generating";
-  document?: unknown;
+  data?: SpecDocument;
   generationStatus?: {
     status: "pending" | "running" | "completed" | "failed" | "not_found";
   };
+}
+
+export interface SpecDocument {
+  id: string;
+  analysisId: string;
+  language: SpecLanguage;
+  version: number;
+  executiveSummary?: string;
+  modelId?: string;
+  availableLanguages?: AvailableLanguageInfo[];
+  domains: SpecDomain[];
+  createdAt: string;
+}
+
+export interface AvailableLanguageInfo {
+  language: SpecLanguage;
+  latestVersion: number;
+  createdAt: string;
+}
+
+export interface SpecDomain {
+  id: string;
+  name: string;
+  description?: string;
+  features: SpecFeature[];
+}
+
+export interface SpecFeature {
+  id: string;
+  name: string;
+  description?: string;
+  behaviors: SpecBehavior[];
+}
+
+export interface SpecBehavior {
+  id: string;
+  description: string;
+  status?: "active" | "skipped" | "todo" | "focused" | "xfail";
 }
 
 export interface RequestSpecGenerationResponse {
@@ -221,11 +259,26 @@ export const mockSpecDocumentNotFound: SpecDocumentResponse = {
 // Spec document completed with content (for language switch, regeneration, TOC tests)
 export const mockSpecDocumentCompleted: SpecDocumentResponse = {
   status: "completed",
-  document: {
+  data: {
     id: "doc-123",
     analysisId: sampleAnalysisId,
     language: "English",
-    generatedAt: now,
+    version: 2,
+    createdAt: now,
+    executiveSummary: "Test Repository Specification - This document describes the test specifications for the test repository.",
+    modelId: "gemini-2.0-flash",
+    availableLanguages: [
+      {
+        language: "English",
+        latestVersion: 2,
+        createdAt: now,
+      },
+      {
+        language: "Korean",
+        latestVersion: 1,
+        createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+      },
+    ],
     domains: [
       {
         id: "domain-1",
@@ -236,16 +289,16 @@ export const mockSpecDocumentCompleted: SpecDocumentResponse = {
             id: "feature-1",
             name: "Login Flow",
             description: "Validates user credentials and issues session tokens",
-            specifications: [
+            behaviors: [
               {
                 id: "spec-1",
                 description: "should authenticate with valid email and password",
-                type: "functional",
+                status: "active",
               },
               {
                 id: "spec-2",
                 description: "should reject invalid credentials",
-                type: "edge_case",
+                status: "active",
               },
             ],
           },
@@ -253,11 +306,11 @@ export const mockSpecDocumentCompleted: SpecDocumentResponse = {
             id: "feature-2",
             name: "Registration Flow",
             description: "Creates new user accounts with email verification",
-            specifications: [
+            behaviors: [
               {
                 id: "spec-3",
                 description: "should create user with valid email",
-                type: "functional",
+                status: "active",
               },
             ],
           },
@@ -272,26 +325,17 @@ export const mockSpecDocumentCompleted: SpecDocumentResponse = {
             id: "feature-3",
             name: "Checkout Flow",
             description: "Processes payment and creates orders",
-            specifications: [
+            behaviors: [
               {
                 id: "spec-4",
                 description: "should process payment with valid card",
-                type: "functional",
+                status: "active",
               },
             ],
           },
         ],
       },
     ],
-    executiveSummary: {
-      title: "Test Repository Specification",
-      overview: "This document describes the test specifications for the test repository.",
-      totalFeatures: 3,
-      totalSpecifications: 4,
-    },
-  },
-  generationStatus: {
-    status: "completed",
   },
 };
 

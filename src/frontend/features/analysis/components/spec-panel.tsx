@@ -206,13 +206,23 @@ export const SpecPanel = ({ analysisId, availableFrameworks, totalTests }: SpecP
     });
   };
 
-  const handleLanguageSwitch = (language: SpecLanguage) => {
+  /**
+   * Switch to an already-generated language (free, instant).
+   * No authentication required for viewing existing documents.
+   */
+  const handleExistingLanguageSwitch = (language: SpecLanguage) => {
+    setPendingLanguage(language);
+  };
+
+  /**
+   * Generate a new language (costs quota, requires auth).
+   */
+  const handleGenerateNewLanguage = (language: SpecLanguage) => {
     if (!isAuthenticated) {
       openSpecLoginDialog();
       return;
     }
 
-    setPendingLanguage(language);
     openQuotaConfirmDialog({
       analysisId,
       estimatedCost: totalTests,
@@ -248,7 +258,8 @@ export const SpecPanel = ({ analysisId, availableFrameworks, totalTests }: SpecP
           document={specDocument}
           isGeneratingOtherLanguage={isGeneratingOtherLanguage}
           isRegenerating={isGenerating && !isGeneratingOtherLanguage}
-          onLanguageSwitch={handleLanguageSwitch}
+          onGenerateNewLanguage={handleGenerateNewLanguage}
+          onLanguageSwitch={handleExistingLanguageSwitch}
           onRegenerate={handleRegenerate}
         />
       );
