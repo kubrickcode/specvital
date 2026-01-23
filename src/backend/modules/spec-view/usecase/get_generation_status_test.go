@@ -15,6 +15,9 @@ type mockStatusRepository struct {
 	statusByLanguage    *entity.SpecGenerationStatus
 	statusByLanguageErr error
 
+	ownership    *entity.DocumentOwnership
+	ownershipErr error
+
 	calledAnalysisID string
 	calledLanguage   string
 }
@@ -28,7 +31,7 @@ func (m *mockStatusRepository) CheckSpecDocumentExistsByLanguage(_ context.Conte
 }
 
 func (m *mockStatusRepository) CheckSpecDocumentOwnership(_ context.Context, _ string) (*entity.DocumentOwnership, error) {
-	return nil, nil
+	return m.ownership, m.ownershipErr
 }
 
 func (m *mockStatusRepository) GetAvailableLanguages(_ context.Context, _ string) ([]entity.AvailableLanguageInfo, error) {
@@ -74,9 +77,21 @@ func (m *mockStatusRepository) GetVersionsByUser(_ context.Context, _ string, _ 
 }
 
 func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
+	t.Run("returns unauthorized error when userID is empty", func(t *testing.T) {
+		uc := NewGetGenerationStatusUseCase(&mockStatusRepository{})
+		_, err := uc.Execute(context.Background(), GetGenerationStatusInput{
+			AnalysisID: "analysis-1",
+		})
+		if !errors.Is(err, domain.ErrUnauthorized) {
+			t.Errorf("Execute() error = %v, want %v", err, domain.ErrUnauthorized)
+		}
+	})
+
 	t.Run("returns error when analysisID is empty", func(t *testing.T) {
 		uc := NewGetGenerationStatusUseCase(&mockStatusRepository{})
-		_, err := uc.Execute(context.Background(), GetGenerationStatusInput{})
+		_, err := uc.Execute(context.Background(), GetGenerationStatusInput{
+			UserID: "user-1",
+		})
 		if !errors.Is(err, domain.ErrInvalidAnalysisID) {
 			t.Errorf("Execute() error = %v, want %v", err, domain.ErrInvalidAnalysisID)
 		}
@@ -91,6 +106,7 @@ func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
 		uc := NewGetGenerationStatusUseCase(mock)
 		result, err := uc.Execute(context.Background(), GetGenerationStatusInput{
 			AnalysisID: "analysis-1",
+			UserID:     "user-1",
 		})
 		if err != nil {
 			t.Fatalf("Execute() error = %v", err)
@@ -113,6 +129,7 @@ func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
 		result, err := uc.Execute(context.Background(), GetGenerationStatusInput{
 			AnalysisID: "analysis-1",
 			Language:   "Korean",
+			UserID:     "user-1",
 		})
 		if err != nil {
 			t.Fatalf("Execute() error = %v", err)
@@ -136,6 +153,7 @@ func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
 		uc := NewGetGenerationStatusUseCase(mock)
 		result, err := uc.Execute(context.Background(), GetGenerationStatusInput{
 			AnalysisID: "analysis-1",
+			UserID:     "user-1",
 		})
 		if err != nil {
 			t.Fatalf("Execute() error = %v", err)
@@ -154,6 +172,7 @@ func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
 		result, err := uc.Execute(context.Background(), GetGenerationStatusInput{
 			AnalysisID: "analysis-1",
 			Language:   "English",
+			UserID:     "user-1",
 		})
 		if err != nil {
 			t.Fatalf("Execute() error = %v", err)
@@ -178,6 +197,7 @@ func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
 		uc := NewGetGenerationStatusUseCase(mock)
 		_, err := uc.Execute(context.Background(), GetGenerationStatusInput{
 			AnalysisID: "analysis-1",
+			UserID:     "user-1",
 		})
 		if !errors.Is(err, dbErr) {
 			t.Errorf("Execute() error = %v, want %v", err, dbErr)
@@ -191,6 +211,7 @@ func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
 		_, err := uc.Execute(context.Background(), GetGenerationStatusInput{
 			AnalysisID: "analysis-1",
 			Language:   "Korean",
+			UserID:     "user-1",
 		})
 		if !errors.Is(err, dbErr) {
 			t.Errorf("Execute() error = %v, want %v", err, dbErr)
@@ -203,9 +224,85 @@ func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
 		_, err := uc.Execute(context.Background(), GetGenerationStatusInput{
 			AnalysisID: "analysis-1",
 			Language:   "InvalidLanguage",
+			UserID:     "user-1",
 		})
 		if !errors.Is(err, domain.ErrInvalidLanguage) {
 			t.Errorf("Execute() error = %v, want %v", err, domain.ErrInvalidLanguage)
+		}
+	})
+
+	t.Run("returns forbidden error when document belongs to different user", func(t *testing.T) {
+		mock := &mockStatusRepository{
+			ownership: &entity.DocumentOwnership{
+				UserID: "other-user",
+			},
+		}
+		uc := NewGetGenerationStatusUseCase(mock)
+		_, err := uc.Execute(context.Background(), GetGenerationStatusInput{
+			AnalysisID: "analysis-1",
+			UserID:     "user-1",
+		})
+		if !errors.Is(err, domain.ErrForbidden) {
+			t.Errorf("Execute() error = %v, want %v", err, domain.ErrForbidden)
+		}
+	})
+
+	t.Run("allows access when document belongs to same user", func(t *testing.T) {
+		status := &entity.SpecGenerationStatus{
+			AnalysisID: "analysis-1",
+			Status:     entity.StatusRunning,
+		}
+		mock := &mockStatusRepository{
+			ownership: &entity.DocumentOwnership{
+				UserID: "user-1",
+			},
+			status: status,
+		}
+		uc := NewGetGenerationStatusUseCase(mock)
+		result, err := uc.Execute(context.Background(), GetGenerationStatusInput{
+			AnalysisID: "analysis-1",
+			UserID:     "user-1",
+		})
+		if err != nil {
+			t.Fatalf("Execute() error = %v", err)
+		}
+		if result.Status.Status != entity.StatusRunning {
+			t.Errorf("Execute() Status.Status = %v, want %v", result.Status.Status, entity.StatusRunning)
+		}
+	})
+
+	t.Run("allows access when no document exists yet", func(t *testing.T) {
+		status := &entity.SpecGenerationStatus{
+			AnalysisID: "analysis-1",
+			Status:     entity.StatusPending,
+		}
+		mock := &mockStatusRepository{
+			ownership: nil, // no document exists
+			status:    status,
+		}
+		uc := NewGetGenerationStatusUseCase(mock)
+		result, err := uc.Execute(context.Background(), GetGenerationStatusInput{
+			AnalysisID: "analysis-1",
+			UserID:     "user-1",
+		})
+		if err != nil {
+			t.Fatalf("Execute() error = %v", err)
+		}
+		if result.Status.Status != entity.StatusPending {
+			t.Errorf("Execute() Status.Status = %v, want %v", result.Status.Status, entity.StatusPending)
+		}
+	})
+
+	t.Run("propagates ownership check error", func(t *testing.T) {
+		dbErr := errors.New("ownership check failed")
+		mock := &mockStatusRepository{ownershipErr: dbErr}
+		uc := NewGetGenerationStatusUseCase(mock)
+		_, err := uc.Execute(context.Background(), GetGenerationStatusInput{
+			AnalysisID: "analysis-1",
+			UserID:     "user-1",
+		})
+		if !errors.Is(err, dbErr) {
+			t.Errorf("Execute() error = %v, want %v", err, dbErr)
 		}
 	})
 }

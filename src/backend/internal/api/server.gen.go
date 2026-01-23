@@ -3825,6 +3825,28 @@ func (response GetSpecGenerationStatus400ApplicationProblemPlusJSONResponse) Vis
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetSpecGenerationStatus401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecGenerationStatus401ApplicationProblemPlusJSONResponse) VisitGetSpecGenerationStatusResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecGenerationStatus403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecGenerationStatus403ApplicationProblemPlusJSONResponse) VisitGetSpecGenerationStatusResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetSpecGenerationStatus404ApplicationProblemPlusJSONResponse struct {
 	NotFoundApplicationProblemPlusJSONResponse
 }

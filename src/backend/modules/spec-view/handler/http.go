@@ -228,10 +228,12 @@ func (h *Handler) RequestSpecGeneration(ctx context.Context, request api.Request
 }
 
 func (h *Handler) GetSpecGenerationStatus(ctx context.Context, request api.GetSpecGenerationStatusRequestObject) (api.GetSpecGenerationStatusResponseObject, error) {
+	userID := middleware.GetUserID(ctx)
 	analysisID := request.AnalysisID.String()
 
 	input := usecase.GetGenerationStatusInput{
 		AnalysisID: analysisID,
+		UserID:     userID,
 	}
 	if request.Params.Language != nil {
 		input.Language = *request.Params.Language
@@ -239,12 +241,20 @@ func (h *Handler) GetSpecGenerationStatus(ctx context.Context, request api.GetSp
 
 	result, err := h.getGenerationStatus.Execute(ctx, input)
 	if err != nil {
-		if errors.Is(err, domain.ErrInvalidAnalysisID) {
+		switch {
+		case errors.Is(err, domain.ErrUnauthorized):
+			return api.GetSpecGenerationStatus401ApplicationProblemPlusJSONResponse{
+				UnauthorizedApplicationProblemPlusJSONResponse: api.NewUnauthorized("authentication required"),
+			}, nil
+		case errors.Is(err, domain.ErrForbidden):
+			return api.GetSpecGenerationStatus403ApplicationProblemPlusJSONResponse{
+				ForbiddenApplicationProblemPlusJSONResponse: api.NewForbidden("access denied to this resource"),
+			}, nil
+		case errors.Is(err, domain.ErrInvalidAnalysisID):
 			return api.GetSpecGenerationStatus404ApplicationProblemPlusJSONResponse{
 				NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("invalid analysis ID"),
 			}, nil
-		}
-		if errors.Is(err, domain.ErrInvalidLanguage) {
+		case errors.Is(err, domain.ErrInvalidLanguage):
 			return api.GetSpecGenerationStatus400ApplicationProblemPlusJSONResponse{
 				BadRequestApplicationProblemPlusJSONResponse: api.NewBadRequest("invalid language"),
 			}, nil

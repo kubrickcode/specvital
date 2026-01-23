@@ -850,11 +850,11 @@ paths:
         Returns the current status of spec document generation.
         Useful for polling during generation.
         If language is specified, returns status for that specific language.
+        Requires authentication.
       tags:
         - Spec View
       security:
         - cookieAuth: []
-        - {}
       parameters:
         - name: language
           in: query
@@ -872,6 +872,10 @@ paths:
                 $ref: "#/components/schemas/SpecGenerationStatusResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":

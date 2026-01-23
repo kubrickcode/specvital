@@ -11,6 +11,7 @@ import (
 type GetGenerationStatusInput struct {
 	AnalysisID string
 	Language   string // Optional: if specified, returns status for that specific language
+	UserID     string // Required: user must be authenticated
 }
 
 type GetGenerationStatusOutput struct {
@@ -26,6 +27,10 @@ func NewGetGenerationStatusUseCase(repo port.SpecViewRepository) *GetGenerationS
 }
 
 func (uc *GetGenerationStatusUseCase) Execute(ctx context.Context, input GetGenerationStatusInput) (*GetGenerationStatusOutput, error) {
+	if input.UserID == "" {
+		return nil, domain.ErrUnauthorized
+	}
+
 	if input.AnalysisID == "" {
 		return nil, domain.ErrInvalidAnalysisID
 	}
@@ -34,8 +39,18 @@ func (uc *GetGenerationStatusUseCase) Execute(ctx context.Context, input GetGene
 		return nil, domain.ErrInvalidLanguage
 	}
 
+	// Check ownership: if document exists and belongs to different user, deny access.
+	// ownership == nil means no document exists yet, which is allowed to support
+	// viewing generation-in-progress status for own requests.
+	ownership, err := uc.repo.CheckSpecDocumentOwnership(ctx, input.AnalysisID)
+	if err != nil {
+		return nil, err
+	}
+	if ownership != nil && ownership.UserID != input.UserID {
+		return nil, domain.ErrForbidden
+	}
+
 	var status *entity.SpecGenerationStatus
-	var err error
 
 	if input.Language != "" {
 		status, err = uc.repo.GetGenerationStatusByLanguage(ctx, input.AnalysisID, input.Language)
