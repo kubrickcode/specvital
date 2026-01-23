@@ -28,6 +28,20 @@ export class NoSubscriptionError extends Error {
   }
 }
 
+export class UnauthorizedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
+export class ForbiddenError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ForbiddenError";
+  }
+}
+
 type FetchSpecDocumentOptions = {
   language?: SpecLanguage;
   version?: number;
@@ -52,6 +66,14 @@ export const fetchSpecDocument = async (
 
   if (!response.ok && response.status !== 404) {
     const errorBody = await response.json().catch(() => ({}));
+
+    if (response.status === 401) {
+      throw new UnauthorizedError(errorBody.detail || "Authentication required");
+    }
+    if (response.status === 403) {
+      throw new ForbiddenError(errorBody.detail || "Access denied");
+    }
+
     throw new Error(errorBody.detail || response.statusText);
   }
 
@@ -119,6 +141,14 @@ export const fetchGenerationStatus = async (
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
+
+    if (response.status === 401) {
+      throw new UnauthorizedError(errorBody.detail || "Authentication required");
+    }
+    if (response.status === 403) {
+      throw new ForbiddenError(errorBody.detail || "Access denied");
+    }
+
     throw new Error(errorBody.detail || response.statusText);
   }
 
@@ -134,6 +164,14 @@ export const fetchVersionHistory = async (
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
+
+    if (response.status === 401) {
+      throw new UnauthorizedError(errorBody.detail || "Authentication required");
+    }
+    if (response.status === 403) {
+      throw new ForbiddenError(errorBody.detail || "Access denied");
+    }
+
     throw new Error(errorBody.detail || response.statusText);
   }
 

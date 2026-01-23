@@ -10,9 +10,11 @@ import { ROUTES } from "@/lib/routes";
 
 import {
   fetchSpecDocument,
+  ForbiddenError,
   NoSubscriptionError,
   QuotaExceededError,
   requestSpecGeneration,
+  UnauthorizedError,
 } from "../api";
 import type {
   SpecDocument,
@@ -60,7 +62,10 @@ export type GenerationState =
   | "completed"
   | "failed";
 
+export type AccessErrorType = "unauthorized" | "forbidden" | null;
+
 type UseSpecViewReturn = {
+  accessError: AccessErrorType;
   currentLanguage: SpecLanguage | undefined;
   data: SpecDocument | null;
   error: Error | null;
@@ -245,7 +250,15 @@ export const useSpecView = (
     return "idle";
   })();
 
+  // Determine access error type from query error
+  const accessError: AccessErrorType = (() => {
+    if (query.error instanceof UnauthorizedError) return "unauthorized";
+    if (query.error instanceof ForbiddenError) return "forbidden";
+    return null;
+  })();
+
   return {
+    accessError,
     currentLanguage,
     data,
     error: query.error || generateMutation.error,

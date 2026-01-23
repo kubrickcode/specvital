@@ -400,6 +400,18 @@
         "title": "Generation Failed",
         "description": "An error occurred while generating the specification document."
       }
+    },
+    "accessError": {
+      "unauthorized": {
+        "title": "Login Required",
+        "description": "Please sign in to view AI Spec documents.",
+        "loginButton": "Continue with GitHub"
+      },
+      "forbidden": {
+        "title": "Access Denied",
+        "description": "You don't have permission to view this AI Spec document. Only the creator can access it.",
+        "dashboardButton": "Go to Dashboard"
+      }
     }
   },
   "dashboard": {

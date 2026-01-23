@@ -13,6 +13,7 @@ import {
   GenerationProgressModal,
   GenerationStatus,
   QuotaConfirmDialog,
+  SpecAccessError,
   useDocumentFilter,
   useGenerationProgress,
   useQuotaConfirmDialog,
@@ -68,6 +69,7 @@ export const SpecPanel = ({
 
   // Spec view - pass pendingLanguage to poll correct status during generation
   const {
+    accessError,
     data: specDocument,
     generationState,
     isFetching,
@@ -312,6 +314,11 @@ export const SpecPanel = ({
   };
 
   const renderContent = () => {
+    // Handle access errors first
+    if (accessError) {
+      return <SpecAccessError type={accessError} />;
+    }
+
     if (specDocument) {
       if (hasFilter && matchCount === 0) {
         return <FilterEmptyState filterInfo={filterInfo} onReset={resetFilters} />;
