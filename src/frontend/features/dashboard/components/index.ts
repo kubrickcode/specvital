@@ -1,4 +1,5 @@
 export { ActiveTasksSection } from "./active-tasks-section";
+export { AiSpecBadge } from "./ai-spec-badge";
 export { DashboardContent } from "./dashboard-content";
 export { DiscoveryCard } from "./discovery-card";
 export { DiscoveryListSheet } from "./discovery-list-sheet";

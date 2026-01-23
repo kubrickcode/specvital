@@ -494,6 +494,12 @@
       "unknown": "Status unknown",
       "upToDate": "Up to date"
     },
+    "aiSpec": {
+      "badge": "AI Spec",
+      "languageCount": "Generated in {count, plural, =1 {1 language} other {# languages}}",
+      "lastGenerated": "Last generated: {time}",
+      "viewDetails": "View details →"
+    },
     "pagination": {
       "allLoaded": "All repositories loaded",
       "loadError": "Failed to load more repositories",

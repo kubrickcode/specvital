@@ -71,3 +71,6 @@ export type GitHubAppInstallation = components["schemas"]["GitHubAppInstallation
 export type GitHubAppInstallationsResponse =
   components["schemas"]["GitHubAppInstallationsResponse"];
 export type GitHubAppInstallUrlResponse = components["schemas"]["GitHubAppInstallUrlResponse"];
+
+// AI Spec types
+export type AiSpecSummary = components["schemas"]["AiSpecSummary"];
