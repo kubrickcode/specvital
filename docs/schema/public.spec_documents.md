@@ -36,6 +36,7 @@
 | uq_spec_documents_user_analysis_lang_version   | CREATE UNIQUE INDEX uq_spec_documents_user_analysis_lang_version ON public.spec_documents USING btree (user_id, analysis_id, language, version)              |
 | uq_spec_documents_user_hash_lang_model_version | CREATE UNIQUE INDEX uq_spec_documents_user_hash_lang_model_version ON public.spec_documents USING btree (user_id, content_hash, language, model_id, version) |
 | idx_spec_documents_user_created                | CREATE INDEX idx_spec_documents_user_created ON public.spec_documents USING btree (user_id, created_at)                                                      |
+| idx_spec_documents_content_hash_lang_model     | CREATE INDEX idx_spec_documents_content_hash_lang_model ON public.spec_documents USING btree (content_hash, language, model_id)                              |
 
 ## Relations
 

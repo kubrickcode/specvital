@@ -1692,6 +1692,12 @@
           "def": "CREATE INDEX idx_spec_documents_user_created ON public.spec_documents USING btree (user_id, created_at)",
           "table": "public.spec_documents",
           "columns": ["user_id", "created_at"]
+        },
+        {
+          "name": "idx_spec_documents_content_hash_lang_model",
+          "def": "CREATE INDEX idx_spec_documents_content_hash_lang_model ON public.spec_documents USING btree (content_hash, language, model_id)",
+          "table": "public.spec_documents",
+          "columns": ["content_hash", "language", "model_id"]
         }
       ],
       "constraints": [
