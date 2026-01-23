@@ -81,6 +81,9 @@ func (m *mockRepositoryForAnalyze) GetTestSuitesWithCases(_ context.Context, _ s
 func (m *mockRepositoryForAnalyze) UpdateLastViewed(_ context.Context, _, _ string) error {
 	return nil
 }
+func (m *mockRepositoryForAnalyze) GetAiSpecSummaries(_ context.Context, _ []string, _ string) (map[string]*entity.AiSpecSummary, error) {
+	return make(map[string]*entity.AiSpecSummary), nil
+}
 
 // mockQueueServiceForAnalyze implements port.QueueService.
 type mockQueueServiceForAnalyze struct {

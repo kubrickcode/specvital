@@ -3,6 +3,7 @@ package entity
 import "time"
 
 type RepositoryCard struct {
+	AiSpecSummary  *AiSpecSummary
 	FullName       string
 	ID             string
 	IsAnalyzedByMe bool
@@ -39,4 +40,10 @@ type UpdateStatusResult struct {
 	LatestCommitSHA   string
 	ParserOutdated    bool
 	Status            UpdateStatus
+}
+
+type AiSpecSummary struct {
+	HasSpec           bool
+	LanguageCount     int
+	LatestGeneratedAt *time.Time
 }

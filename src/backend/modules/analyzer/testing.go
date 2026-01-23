@@ -78,6 +78,10 @@ func (m *mockRepository) GetPaginatedRepositories(ctx context.Context, params po
 	return nil, nil
 }
 
+func (m *mockRepository) GetAiSpecSummaries(ctx context.Context, analysisIDs []string, userID string) (map[string]*entity.AiSpecSummary, error) {
+	return make(map[string]*entity.AiSpecSummary), nil
+}
+
 // mockSystemConfigReader is a test double for port.SystemConfigReader.
 type mockSystemConfigReader struct {
 	parserVersion string

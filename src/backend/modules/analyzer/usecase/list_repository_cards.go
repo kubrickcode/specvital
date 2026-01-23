@@ -160,6 +160,7 @@ func (uc *ListRepositoryCardsUseCase) loadBookmarkedIDs(ctx context.Context, use
 
 type repoData struct {
 	ActiveCount    int
+	AiSpecSummary  *entity.AiSpecSummary
 	AnalysisID     string
 	AnalyzedAt     time.Time
 	CodebaseID     string
@@ -199,6 +200,7 @@ func (uc *ListRepositoryCardsUseCase) buildCard(ctx context.Context, r repoData,
 	}
 
 	return entity.RepositoryCard{
+		AiSpecSummary:  r.AiSpecSummary,
 		FullName:       fmt.Sprintf("%s/%s", r.Owner, r.Name),
 		ID:             r.CodebaseID,
 		IsAnalyzedByMe: r.IsAnalyzedByMe,
@@ -213,19 +215,44 @@ func (uc *ListRepositoryCardsUseCase) buildCard(ctx context.Context, r repoData,
 func (uc *ListRepositoryCardsUseCase) buildCardsFromPaginated(ctx context.Context, repos []port.PaginatedRepository, bookmarkedIDs map[string]bool, userID string) []entity.RepositoryCard {
 	cards := make([]entity.RepositoryCard, len(repos))
 	statuses := make([]entity.UpdateStatus, len(repos))
+	var aiSpecSummaries map[string]*entity.AiSpecSummary
 
 	g, gCtx := errgroup.WithContext(ctx)
+
 	for i, r := range repos {
 		g.Go(func() error {
 			statuses[i] = uc.getUpdateStatus(gCtx, r.Owner, r.Name, r.CommitSHA, userID)
 			return nil
 		})
 	}
+
+	g.Go(func() error {
+		analysisIDs := make([]string, 0, len(repos))
+		for _, r := range repos {
+			if r.AnalysisID != "" {
+				analysisIDs = append(analysisIDs, r.AnalysisID)
+			}
+		}
+		summaries, err := uc.repository.GetAiSpecSummaries(gCtx, analysisIDs, userID)
+		if err != nil {
+			// Intentional graceful degradation: AI Spec badge is non-critical
+			// Dashboard should load even if AI Spec query fails
+			return nil
+		}
+		aiSpecSummaries = summaries
+		return nil
+	})
+
 	_ = g.Wait()
 
 	for i, r := range repos {
+		var aiSpec *entity.AiSpecSummary
+		if aiSpecSummaries != nil {
+			aiSpec = aiSpecSummaries[r.AnalysisID]
+		}
 		cards[i] = uc.buildCard(ctx, repoData{
 			ActiveCount:    r.ActiveCount,
+			AiSpecSummary:  aiSpec,
 			AnalysisID:     r.AnalysisID,
 			AnalyzedAt:     r.AnalyzedAt,
 			CodebaseID:     r.CodebaseID,

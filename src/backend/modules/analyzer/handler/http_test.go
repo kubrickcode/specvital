@@ -49,6 +49,10 @@ func (m *mockRepository) GetPreviousAnalysis(_ context.Context, _ string, _ stri
 	return nil, nil
 }
 
+func (m *mockRepository) GetAiSpecSummaries(_ context.Context, _ []string, _ string) (map[string]*entity.AiSpecSummary, error) {
+	return make(map[string]*entity.AiSpecSummary), nil
+}
+
 type mockGitClient struct {
 	latestSHA string
 	err       error

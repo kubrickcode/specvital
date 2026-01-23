@@ -26,6 +26,55 @@ func NewPostgresRepository(queries *db.Queries) *PostgresRepository {
 	return &PostgresRepository{queries: queries}
 }
 
+func (r *PostgresRepository) GetAiSpecSummaries(ctx context.Context, analysisIDs []string, userID string) (map[string]*entity.AiSpecSummary, error) {
+	if len(analysisIDs) == 0 || userID == "" {
+		return make(map[string]*entity.AiSpecSummary), nil
+	}
+
+	userUUID, err := stringToUUID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("parse user ID: %w", err)
+	}
+
+	analysisUUIDs := make([]pgtype.UUID, len(analysisIDs))
+	for i, id := range analysisIDs {
+		uuid, err := stringToUUID(id)
+		if err != nil {
+			return nil, fmt.Errorf("parse analysis ID %s: %w", id, err)
+		}
+		analysisUUIDs[i] = uuid
+	}
+
+	rows, err := r.queries.GetAiSpecSummariesByAnalysisIDs(ctx, db.GetAiSpecSummariesByAnalysisIDsParams{
+		AnalysisIds: analysisUUIDs,
+		UserID:      userUUID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get AI Spec summaries: %w", err)
+	}
+
+	result := make(map[string]*entity.AiSpecSummary, len(rows))
+	for _, row := range rows {
+		analysisID := uuidToString(row.AnalysisID)
+		summary := &entity.AiSpecSummary{
+			HasSpec:       true,
+			LanguageCount: int(row.LanguageCount),
+		}
+		// LatestGeneratedAt from sqlc is interface{} - handle both time.Time and pgtype.Timestamptz
+		switch ts := row.LatestGeneratedAt.(type) {
+		case time.Time:
+			summary.LatestGeneratedAt = &ts
+		case pgtype.Timestamptz:
+			if ts.Valid {
+				summary.LatestGeneratedAt = &ts.Time
+			}
+		}
+		result[analysisID] = summary
+	}
+
+	return result, nil
+}
+
 func (r *PostgresRepository) FindActiveRiverJobByRepo(ctx context.Context, kind, owner, repo string) (*port.RiverJobInfo, error) {
 	row, err := r.queries.FindActiveRiverJobByRepo(ctx, db.FindActiveRiverJobByRepoParams{
 		Kind:  kind,

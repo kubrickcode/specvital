@@ -27,7 +27,17 @@ func ToRepositoryCard(card entity.RepositoryCard) api.RepositoryCard {
 		}
 	}
 
+	var aiSpecSummary *api.AiSpecSummary
+	if card.AiSpecSummary != nil {
+		aiSpecSummary = &api.AiSpecSummary{
+			HasSpec:           card.AiSpecSummary.HasSpec,
+			LanguageCount:     &card.AiSpecSummary.LanguageCount,
+			LatestGeneratedAt: card.AiSpecSummary.LatestGeneratedAt,
+		}
+	}
+
 	return api.RepositoryCard{
+		AiSpecSummary:  aiSpecSummary,
 		FullName:       card.FullName,
 		ID:             card.ID,
 		IsAnalyzedByMe: card.IsAnalyzedByMe,
