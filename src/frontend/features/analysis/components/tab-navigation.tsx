@@ -52,7 +52,7 @@ export const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) =>
             aria-controls={tab.panelId}
             aria-selected={isActive}
             className={cn(
-              "group relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium",
+              "group relative flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium",
               "transition-all duration-200",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
               // Default tab style
