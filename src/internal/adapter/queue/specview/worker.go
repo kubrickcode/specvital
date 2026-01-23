@@ -73,6 +73,7 @@ func (w *Worker) NextRetry(job *river.Job[Args]) time.Time {
 
 // Work processes a spec-view generation job.
 func (w *Worker) Work(ctx context.Context, job *river.Job[Args]) error {
+	startTime := time.Now()
 	args := job.Args
 
 	// Default language to English if not specified
@@ -113,11 +114,13 @@ func (w *Worker) Work(ctx context.Context, job *river.Job[Args]) error {
 		return w.handleError(ctx, job, err)
 	}
 
+	durationMs := time.Since(startTime).Milliseconds()
 	logFields := []any{
 		"job_id", job.ID,
 		"analysis_id", args.AnalysisID,
 		"document_id", result.DocumentID,
 		"cache_hit", result.CacheHit,
+		"duration_ms", durationMs,
 	}
 	if result.AnalysisContext != nil {
 		logFields = append(logFields,

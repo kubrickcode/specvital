@@ -260,6 +260,16 @@ func (uc *GenerateSpecViewUseCase) executePhase1(
 	lang specview.Language,
 	analysisID string,
 ) (*specview.Phase1Output, *specview.TokenUsage, error) {
+	startTime := time.Now()
+	fileCount := len(files)
+	testCount := countTotalTestCases(files)
+
+	slog.InfoContext(ctx, "phase 1 started",
+		"analysis_id", analysisID,
+		"file_count", fileCount,
+		"test_count", testCount,
+	)
+
 	phase1Ctx, cancel := context.WithTimeout(ctx, uc.config.Phase1Timeout)
 	defer cancel()
 
@@ -274,8 +284,11 @@ func (uc *GenerateSpecViewUseCase) executePhase1(
 		return nil, nil, err
 	}
 
+	durationMs := time.Since(startTime).Milliseconds()
 	slog.InfoContext(ctx, "phase 1 complete",
+		"analysis_id", analysisID,
 		"domain_count", len(output.Domains),
+		"duration_ms", durationMs,
 	)
 
 	return output, usage, nil
@@ -295,6 +308,8 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 	lang specview.Language,
 	testIndexMap map[int]specview.TestInfo,
 ) ([]phase2Result, *specview.TokenUsage, error) {
+	startTime := time.Now()
+
 	phase2Ctx, cancel := context.WithTimeout(ctx, uc.config.Phase2Timeout)
 	defer cancel()
 
@@ -313,6 +328,10 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 	if len(featureTasks) == 0 {
 		return nil, nil, nil
 	}
+
+	slog.InfoContext(ctx, "phase 2 started",
+		"feature_count", len(featureTasks),
+	)
 
 	var (
 		results      = make([]phase2Result, len(featureTasks))
@@ -373,9 +392,11 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 		}
 	}
 
+	durationMs := time.Since(startTime).Milliseconds()
 	slog.InfoContext(ctx, "phase 2 complete",
 		"feature_count", len(featureTasks),
 		"failed_count", failedCount,
+		"duration_ms", durationMs,
 	)
 
 	return results, &aggregateUsage, nil
