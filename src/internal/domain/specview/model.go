@@ -38,9 +38,10 @@ func (l Language) IsValid() bool {
 
 // SpecViewResult represents the result of spec-view generation.
 type SpecViewResult struct {
-	CacheHit    bool
-	ContentHash []byte
-	DocumentID  string
+	AnalysisContext *AnalysisContext // repository context for logging
+	CacheHit        bool
+	ContentHash     []byte
+	DocumentID      string
 }
 
 // Phase1Input represents input for domain classification (Phase 1).
@@ -156,4 +157,11 @@ type Behavior struct {
 	ID           string
 	OriginalName string // original test name before conversion
 	TestCaseID   string // FK to test_cases table
+}
+
+// AnalysisContext provides repository identification context for logging.
+type AnalysisContext struct {
+	Host  string
+	Owner string
+	Repo  string
 }

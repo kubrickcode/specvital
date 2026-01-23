@@ -12,6 +12,7 @@ import (
 
 type mockRepository struct {
 	findDocumentByContentHashFn func(ctx context.Context, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error)
+	getAnalysisContextFn        func(ctx context.Context, analysisID string) (*specview.AnalysisContext, error)
 	getTestDataByAnalysisIDFn   func(ctx context.Context, analysisID string) ([]specview.FileInfo, error)
 	recordUsageEventFn          func(ctx context.Context, userID string, documentID string, quotaAmount int) error
 	recordUserHistoryFn         func(ctx context.Context, userID string, documentID string) error
@@ -23,6 +24,13 @@ func (m *mockRepository) FindDocumentByContentHash(ctx context.Context, contentH
 		return m.findDocumentByContentHashFn(ctx, contentHash, language, modelID)
 	}
 	return nil, nil
+}
+
+func (m *mockRepository) GetAnalysisContext(ctx context.Context, analysisID string) (*specview.AnalysisContext, error) {
+	if m.getAnalysisContextFn != nil {
+		return m.getAnalysisContextFn(ctx, analysisID)
+	}
+	return &specview.AnalysisContext{Host: "github.com", Owner: "test-owner", Repo: "test-repo"}, nil
 }
 
 func (m *mockRepository) GetTestDataByAnalysisID(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
@@ -208,6 +216,12 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 		if result.DocumentID != "doc-001" {
 			t.Errorf("expected document ID 'doc-001', got '%s'", result.DocumentID)
 		}
+		if result.AnalysisContext == nil {
+			t.Fatal("expected AnalysisContext, got nil")
+		}
+		if result.AnalysisContext.Owner != "test-owner" {
+			t.Errorf("expected owner 'test-owner', got '%s'", result.AnalysisContext.Owner)
+		}
 
 		if len(savedDoc.Domains) != 2 {
 			t.Errorf("expected 2 domains, got %d", len(savedDoc.Domains))
@@ -257,6 +271,9 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 		if result.DocumentID != "cached-doc-001" {
 			t.Errorf("expected document ID 'cached-doc-001', got '%s'", result.DocumentID)
 		}
+		if result.AnalysisContext == nil {
+			t.Fatal("expected AnalysisContext, got nil")
+		}
 		if classifyDomainsCalled {
 			t.Error("AI should not be called on cache hit")
 		}
@@ -282,7 +299,7 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 
 	t.Run("analysis not found", func(t *testing.T) {
 		repo := &mockRepository{
-			getTestDataByAnalysisIDFn: func(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
+			getAnalysisContextFn: func(ctx context.Context, analysisID string) (*specview.AnalysisContext, error) {
 				return nil, specview.ErrAnalysisNotFound
 			},
 		}
@@ -294,8 +311,8 @@ func TestGenerateSpecViewUseCase_Execute(t *testing.T) {
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
-		if !errors.Is(err, ErrLoadInventoryFailed) {
-			t.Errorf("expected ErrLoadInventoryFailed, got %v", err)
+		if !errors.Is(err, specview.ErrAnalysisNotFound) {
+			t.Errorf("expected ErrAnalysisNotFound, got %v", err)
 		}
 	})
 

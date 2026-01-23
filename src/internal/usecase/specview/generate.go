@@ -113,6 +113,11 @@ func (uc *GenerateSpecViewUseCase) Execute(
 		return nil, err
 	}
 
+	analysisCtx, err := uc.repository.GetAnalysisContext(ctx, req.AnalysisID)
+	if err != nil {
+		return nil, err
+	}
+
 	modelID := req.ModelID
 	if modelID == "" {
 		modelID = uc.defaultModelID
@@ -126,6 +131,8 @@ func (uc *GenerateSpecViewUseCase) Execute(
 	if len(files) == 0 {
 		slog.WarnContext(ctx, "no test files found",
 			"analysis_id", req.AnalysisID,
+			"owner", analysisCtx.Owner,
+			"repo", analysisCtx.Repo,
 		)
 		return nil, fmt.Errorf("%w: no test files found for analysis", ErrLoadInventoryFailed)
 	}
@@ -141,15 +148,18 @@ func (uc *GenerateSpecViewUseCase) Execute(
 		if existingDoc != nil {
 			slog.InfoContext(ctx, "cache hit",
 				"analysis_id", req.AnalysisID,
+				"owner", analysisCtx.Owner,
+				"repo", analysisCtx.Repo,
 				"document_id", existingDoc.ID,
 			)
 
 			uc.recordUserHistoryIfNeeded(ctx, req.UserID, existingDoc.ID)
 
 			return &specview.SpecViewResult{
-				CacheHit:    true,
-				ContentHash: contentHash,
-				DocumentID:  existingDoc.ID,
+				AnalysisContext: analysisCtx,
+				CacheHit:        true,
+				ContentHash:     contentHash,
+				DocumentID:      existingDoc.ID,
 			}, nil
 		}
 	}
@@ -181,14 +191,17 @@ func (uc *GenerateSpecViewUseCase) Execute(
 
 	slog.InfoContext(ctx, "document generated",
 		"analysis_id", req.AnalysisID,
+		"owner", analysisCtx.Owner,
+		"repo", analysisCtx.Repo,
 		"document_id", doc.ID,
 		"domain_count", len(doc.Domains),
 	)
 
 	return &specview.SpecViewResult{
-		CacheHit:    false,
-		ContentHash: contentHash,
-		DocumentID:  doc.ID,
+		AnalysisContext: analysisCtx,
+		CacheHit:        false,
+		ContentHash:     contentHash,
+		DocumentID:      doc.ID,
 	}, nil
 }
 

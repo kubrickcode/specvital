@@ -56,6 +56,7 @@ func (m *mockAIProvider) Close() error {
 
 type mockRepository struct {
 	findDocumentByContentHashFn func(ctx context.Context, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error)
+	getAnalysisContextFn        func(ctx context.Context, analysisID string) (*specview.AnalysisContext, error)
 	getTestDataByAnalysisIDFn   func(ctx context.Context, analysisID string) ([]specview.FileInfo, error)
 	recordUsageEventFn          func(ctx context.Context, userID string, documentID string, quotaAmount int) error
 	recordUserHistoryFn         func(ctx context.Context, userID string, documentID string) error
@@ -67,6 +68,13 @@ func (m *mockRepository) FindDocumentByContentHash(ctx context.Context, contentH
 		return m.findDocumentByContentHashFn(ctx, contentHash, language, modelID)
 	}
 	return nil, nil
+}
+
+func (m *mockRepository) GetAnalysisContext(ctx context.Context, analysisID string) (*specview.AnalysisContext, error) {
+	if m.getAnalysisContextFn != nil {
+		return m.getAnalysisContextFn(ctx, analysisID)
+	}
+	return &specview.AnalysisContext{Host: "github.com", Owner: "test-owner", Repo: "test-repo"}, nil
 }
 
 func (m *mockRepository) GetTestDataByAnalysisID(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {

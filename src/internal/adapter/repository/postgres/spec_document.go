@@ -67,6 +67,32 @@ func (r *SpecDocumentRepository) FindDocumentByContentHash(
 	}, nil
 }
 
+func (r *SpecDocumentRepository) GetAnalysisContext(
+	ctx context.Context,
+	analysisID string,
+) (*specview.AnalysisContext, error) {
+	parsedID, err := analysis.ParseUUID(analysisID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: invalid analysis ID format", specview.ErrInvalidInput)
+	}
+
+	queries := db.New(r.pool)
+
+	row, err := queries.GetAnalysisContext(ctx, toPgUUID(parsedID))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, specview.ErrAnalysisNotFound
+		}
+		return nil, fmt.Errorf("get analysis context: %w", err)
+	}
+
+	return &specview.AnalysisContext{
+		Host:  row.Host,
+		Owner: row.Owner,
+		Repo:  row.Repo,
+	}, nil
+}
+
 func (r *SpecDocumentRepository) GetTestDataByAnalysisID(
 	ctx context.Context,
 	analysisID string,

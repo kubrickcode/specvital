@@ -225,3 +225,9 @@ WHERE user_id = $1
 -- name: RecordAnalysisUsageEvent :exec
 INSERT INTO usage_events (user_id, event_type, analysis_id, quota_amount)
 VALUES ($1, 'analysis', $2, $3);
+
+-- name: GetAnalysisContext :one
+SELECT c.host, c.owner, c.name as repo
+FROM analyses a
+JOIN codebases c ON a.codebase_id = c.id
+WHERE a.id = $1;

@@ -254,6 +254,26 @@ func (q *Queries) FindSpecDocumentByContentHash(ctx context.Context, arg FindSpe
 	return i, err
 }
 
+const getAnalysisContext = `-- name: GetAnalysisContext :one
+SELECT c.host, c.owner, c.name as repo
+FROM analyses a
+JOIN codebases c ON a.codebase_id = c.id
+WHERE a.id = $1
+`
+
+type GetAnalysisContextRow struct {
+	Host  string `json:"host"`
+	Owner string `json:"owner"`
+	Repo  string `json:"repo"`
+}
+
+func (q *Queries) GetAnalysisContext(ctx context.Context, id pgtype.UUID) (GetAnalysisContextRow, error) {
+	row := q.db.QueryRow(ctx, getAnalysisContext, id)
+	var i GetAnalysisContextRow
+	err := row.Scan(&i.Host, &i.Owner, &i.Repo)
+	return i, err
+}
+
 const getCodebaseByID = `-- name: GetCodebaseByID :one
 SELECT id, host, owner, name, default_branch, created_at, updated_at, last_viewed_at, external_repo_id, is_stale, is_private FROM codebases WHERE id = $1
 `

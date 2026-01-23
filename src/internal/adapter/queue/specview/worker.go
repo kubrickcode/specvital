@@ -119,6 +119,13 @@ func (w *Worker) Work(ctx context.Context, job *river.Job[Args]) error {
 		"document_id", result.DocumentID,
 		"cache_hit", result.CacheHit,
 	}
+	if result.AnalysisContext != nil {
+		logFields = append(logFields,
+			"host", result.AnalysisContext.Host,
+			"owner", result.AnalysisContext.Owner,
+			"repo", result.AnalysisContext.Repo,
+		)
+	}
 
 	slog.InfoContext(ctx, "specview generation task completed", logFields...)
 

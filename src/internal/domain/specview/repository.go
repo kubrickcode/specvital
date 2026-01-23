@@ -8,6 +8,10 @@ type Repository interface {
 	// Returns nil without error if no document is found.
 	FindDocumentByContentHash(ctx context.Context, contentHash []byte, language Language, modelID string) (*SpecDocument, error)
 
+	// GetAnalysisContext retrieves repository context (host, owner, repo) for an analysis.
+	// Returns ErrAnalysisNotFound if the analysis does not exist.
+	GetAnalysisContext(ctx context.Context, analysisID string) (*AnalysisContext, error)
+
 	// GetTestDataByAnalysisID retrieves test inventory for spec-view generation.
 	// Returns ErrAnalysisNotFound if the analysis does not exist.
 	GetTestDataByAnalysisID(ctx context.Context, analysisID string) ([]FileInfo, error)
