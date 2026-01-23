@@ -945,6 +945,10 @@ table "spec_documents" {
     type = uuid
   }
 
+  column "user_id" {
+    type = uuid
+  }
+
   column "content_hash" {
     type = bytea
   }
@@ -988,16 +992,26 @@ table "spec_documents" {
     on_delete   = CASCADE
   }
 
-  unique "uq_spec_documents_hash_lang_model_version" {
-    columns = [column.content_hash, column.language, column.model_id, column.version]
+  foreign_key "fk_spec_documents_user" {
+    columns     = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete   = CASCADE
   }
 
-  unique "uq_spec_documents_analysis_lang_version" {
-    columns = [column.analysis_id, column.language, column.version]
+  unique "uq_spec_documents_user_hash_lang_model_version" {
+    columns = [column.user_id, column.content_hash, column.language, column.model_id, column.version]
+  }
+
+  unique "uq_spec_documents_user_analysis_lang_version" {
+    columns = [column.user_id, column.analysis_id, column.language, column.version]
   }
 
   index "idx_spec_documents_analysis" {
     columns = [column.analysis_id]
+  }
+
+  index "idx_spec_documents_user_created" {
+    columns = [column.user_id, column.created_at]
   }
 }
 
