@@ -581,7 +581,7 @@
     "title": "검색",
     "description": "페이지, 리포지토리, 명령을 검색합니다.",
     "placeholder": "검색...",
-    "noResults": "'{query}'에 대한 검색 결과가 없습니다",
+    "noResults": "''{query}''에 대한 검색 결과가 없습니다",
     "noResultsDefault": "검색 결과가 없습니다",
     "categories": {
       "navigation": "페이지 이동",
@@ -608,7 +608,11 @@
     },
     "loginPrompt": "로그인하여 내 리포지토리를 검색하세요",
     "loading": "검색 중...",
-    "error": "검색 중 오류가 발생했습니다"
+    "error": "검색 중 오류가 발생했습니다",
+    "aria": {
+      "resultsFound": "{count, plural, =0 {결과 없음} =1 {1개 결과 발견} other {#개 결과 발견}}",
+      "searchInput": "리포지토리, 페이지, 명령 검색"
+    }
   },
   "account": {
     "title": "계정",

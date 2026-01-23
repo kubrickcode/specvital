@@ -6,11 +6,15 @@ import type { GlobalSearchState } from "../types";
 
 type Listener = () => void;
 
+// Must be cached to avoid infinite loop in useSyncExternalStore
+const SERVER_STATE: GlobalSearchState = { isOpen: false };
+
 const createGlobalSearchStore = () => {
   let state: GlobalSearchState = { isOpen: false };
   const listeners = new Set<Listener>();
 
   const getState = () => state;
+  const getServerState = () => SERVER_STATE;
 
   const subscribe = (listener: Listener) => {
     listeners.add(listener);
@@ -36,7 +40,7 @@ const createGlobalSearchStore = () => {
     notify();
   };
 
-  return { close, getState, open, subscribe, toggle };
+  return { close, getServerState, getState, open, subscribe, toggle };
 };
 
 export const globalSearchStore = createGlobalSearchStore();
@@ -45,7 +49,7 @@ export const useGlobalSearchStore = () => {
   const state = useSyncExternalStore(
     globalSearchStore.subscribe,
     globalSearchStore.getState,
-    globalSearchStore.getState
+    globalSearchStore.getServerState
   );
 
   return {

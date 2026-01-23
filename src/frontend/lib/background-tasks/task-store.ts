@@ -72,7 +72,9 @@ export const subscribe = (listener: () => void): (() => void) => {
 
 export const getTasksSnapshot = (): Map<string, BackgroundTask> => store.tasks;
 
-export const getServerSnapshot = (): Map<string, BackgroundTask> => new Map();
+// Must be cached to avoid infinite loop in useSyncExternalStore
+const EMPTY_TASKS: Map<string, BackgroundTask> = new Map();
+export const getServerSnapshot = (): Map<string, BackgroundTask> => EMPTY_TASKS;
 
 export const addTask = (task: Omit<BackgroundTask, "createdAt"> & { createdAt?: string }): void => {
   const taskWithCreatedAt: BackgroundTask = {

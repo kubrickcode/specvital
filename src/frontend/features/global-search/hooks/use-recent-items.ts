@@ -42,7 +42,9 @@ const getSnapshot = (): RecentItem[] => {
   return cachedItems;
 };
 
-const getServerSnapshot = (): RecentItem[] => [];
+// Must be cached to avoid infinite loop in useSyncExternalStore
+const EMPTY_ITEMS: RecentItem[] = [];
+const getServerSnapshot = (): RecentItem[] => EMPTY_ITEMS;
 
 type UseRecentItemsReturn = {
   addItem: (item: Omit<RecentItem, "timestamp" | "type">) => void;

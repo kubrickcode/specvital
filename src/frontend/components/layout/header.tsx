@@ -8,6 +8,7 @@ import { AuthErrorBoundary } from "@/components/feedback";
 import { NavigationTabs } from "@/components/layout/navigation-tabs";
 import { LanguageSelector, ThemeToggle } from "@/components/theme";
 import { AuthStatus, LoginModal, LoginRequiredForSpecDialog, SignInTrigger } from "@/features/auth";
+import { SearchTriggerButton } from "@/features/global-search";
 import { AnalyzeDialog } from "@/features/home";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -51,17 +52,20 @@ export const Header = () => {
             <NavigationTabs />
           </div>
 
-          <div className="hidden items-center gap-2 md:flex">
-            {!isHomePage && <AnalyzeDialog variant="header" />}
-            <LanguageSelector />
-            <ThemeToggle />
-            <div
-              aria-hidden="true"
-              className="mx-1.5 h-6 w-px bg-gradient-to-b from-transparent via-border to-transparent"
-            />
-            <AuthErrorBoundary fallback={<SignInTrigger />}>
-              <AuthStatus />
-            </AuthErrorBoundary>
+          <div className="flex items-center gap-2">
+            <SearchTriggerButton />
+            <div className="hidden items-center gap-2 md:flex">
+              {!isHomePage && <AnalyzeDialog variant="header" />}
+              <LanguageSelector />
+              <ThemeToggle />
+              <div
+                aria-hidden="true"
+                className="mx-1.5 h-6 w-px bg-gradient-to-b from-transparent via-border to-transparent"
+              />
+              <AuthErrorBoundary fallback={<SignInTrigger />}>
+                <AuthStatus />
+              </AuthErrorBoundary>
+            </div>
           </div>
         </div>
       </header>

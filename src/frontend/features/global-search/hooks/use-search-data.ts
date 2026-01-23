@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useRef } from "react";
 
 import { useAuth } from "@/features/auth";
 
@@ -21,8 +22,17 @@ type UseSearchDataReturn = {
   isLoading: boolean;
 };
 
+// Cache key for shallow comparison
+type CacheKey = {
+  bookmarksData: unknown;
+  communityData: unknown;
+  userReposData: unknown;
+};
+
 export const useSearchData = (): UseSearchDataReturn => {
   const { isAuthenticated } = useAuth();
+  const cachedItemsRef = useRef<RepositorySearchItem[]>([]);
+  const cacheKeyRef = useRef<CacheKey | null>(null);
 
   const userReposQuery = useQuery({
     enabled: isAuthenticated,
@@ -55,6 +65,30 @@ export const useSearchData = (): UseSearchDataReturn => {
     (isAuthenticated && (userReposQuery.isError || bookmarksQuery.isError)) ||
     communityQuery.isError;
 
+  // Check if data sources changed (shallow comparison)
+  const currentKey: CacheKey = {
+    bookmarksData: bookmarksQuery.data,
+    communityData: communityQuery.data,
+    userReposData: userReposQuery.data,
+  };
+
+  const isCacheValid =
+    cacheKeyRef.current !== null &&
+    cacheKeyRef.current.userReposData === currentKey.userReposData &&
+    cacheKeyRef.current.bookmarksData === currentKey.bookmarksData &&
+    cacheKeyRef.current.communityData === currentKey.communityData;
+
+  // Return cached items if data hasn't changed
+  if (isCacheValid) {
+    return {
+      allItems: cachedItemsRef.current,
+      hasError,
+      isAuthenticated,
+      isLoading,
+    };
+  }
+
+  // Build new items array
   const allItems: RepositorySearchItem[] = [];
   const seenIds = new Set<string>();
 
@@ -108,6 +142,10 @@ export const useSearchData = (): UseSearchDataReturn => {
       }
     }
   }
+
+  // Update cache
+  cachedItemsRef.current = allItems;
+  cacheKeyRef.current = currentKey;
 
   return {
     allItems,

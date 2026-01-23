@@ -48,7 +48,15 @@ function CommandDialog({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       <DialogContent
-        className={cn("overflow-hidden p-0", className)}
+        className={cn(
+          "overflow-hidden p-0",
+          // Mobile: Full-screen modal with safe area insets
+          "top-0 left-0 h-[100dvh] w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0",
+          "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
+          // Desktop: Centered dialog
+          "md:top-[50%] md:left-[50%] md:h-auto md:w-full md:max-w-[640px] md:translate-x-[-50%] md:translate-y-[-50%] md:rounded-lg md:border md:pt-0 md:pb-0",
+          className
+        )}
         showCloseButton={showCloseButton}
       >
         <Command
@@ -146,7 +154,12 @@ function CommandItem({ className, ...props }: React.ComponentProps<typeof Comman
 function CommandShortcut({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
-      className={cn("text-muted-foreground ml-auto text-xs tracking-widest", className)}
+      className={cn(
+        "text-muted-foreground ml-auto text-xs tracking-widest",
+        // Hide on mobile
+        "hidden md:inline",
+        className
+      )}
       data-slot="command-shortcut"
       {...props}
     />

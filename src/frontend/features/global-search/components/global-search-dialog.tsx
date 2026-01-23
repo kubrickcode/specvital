@@ -1,9 +1,10 @@
 "use client";
 
-import { AlertCircle, LogIn } from "lucide-react";
+import { AlertCircle, LogIn, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
   CommandEmpty,
@@ -82,6 +83,13 @@ export const GlobalSearchDialog = () => {
   const showLoginPrompt = hasQuery && !isAuthenticated;
   const showNoResults = hasQuery && !hasResults && !isLoading;
 
+  // Calculate total results for screen reader announcement
+  const totalResults = hasQuery
+    ? groupedResults.repositories.length +
+      groupedResults.bookmarks.length +
+      groupedResults.community.length
+    : 0;
+
   return (
     <>
       <CommandDialog
@@ -92,11 +100,28 @@ export const GlobalSearchDialog = () => {
         showCloseButton={false}
         title={t("title")}
       >
-        <CommandInput
-          onValueChange={handleValueChange}
-          placeholder={t("placeholder")}
-          value={inputValue}
-        />
+        <div className="relative">
+          <CommandInput
+            className="pr-12 md:pr-3"
+            onValueChange={handleValueChange}
+            placeholder={t("placeholder")}
+            value={inputValue}
+          />
+          {/* Mobile close button */}
+          <Button
+            aria-label={t("hints.close")}
+            className="absolute right-2 top-1/2 size-8 -translate-y-1/2 md:hidden"
+            onClick={close}
+            size="icon"
+            variant="ghost"
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
+        {/* Screen reader announcement for result count */}
+        <div aria-atomic="true" aria-live="polite" className="sr-only" role="status">
+          {hasQuery && !isLoading && t("aria.resultsFound", { count: totalResults })}
+        </div>
         <CommandList>
           {showNoResults && (
             <CommandEmpty>

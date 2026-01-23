@@ -581,7 +581,7 @@
     "title": "Search",
     "description": "Search pages, repositories, and commands.",
     "placeholder": "Search...",
-    "noResults": "No results for '{query}'",
+    "noResults": "No results for ''{query}''",
     "noResultsDefault": "No results found",
     "categories": {
       "navigation": "Navigation",
@@ -608,7 +608,11 @@
     },
     "loginPrompt": "Sign in to search your repositories",
     "loading": "Searching...",
-    "error": "An error occurred while searching"
+    "error": "An error occurred while searching",
+    "aria": {
+      "resultsFound": "{count, plural, =0 {No results found} =1 {1 result found} other {# results found}}",
+      "searchInput": "Search repositories, pages, and commands"
+    }
   },
   "account": {
     "title": "Account",
