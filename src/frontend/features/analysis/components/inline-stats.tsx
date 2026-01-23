@@ -37,7 +37,7 @@ export const InlineStats = ({ summary }: InlineStatsProps) => {
             {focused > 0 && <StatusItem color="focused" label={t("focused")} value={focused} />}
             <StatusItem color="skipped" label={t("skipped")} value={skipped} />
             {xfail > 0 && <StatusItem color="xfail" label={t("xfail")} value={xfail} />}
-            <StatusItem color="todo" label={t("todo")} value={todo} />
+            {todo > 0 && <StatusItem color="todo" label={t("todo")} value={todo} />}
           </div>
         </div>
 
