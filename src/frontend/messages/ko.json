@@ -581,10 +581,14 @@
     "title": "검색",
     "description": "페이지, 리포지토리, 명령을 검색합니다.",
     "placeholder": "검색...",
-    "noResults": "검색 결과가 없습니다",
+    "noResults": "'{query}'에 대한 검색 결과가 없습니다",
+    "noResultsDefault": "검색 결과가 없습니다",
     "categories": {
       "navigation": "페이지 이동",
-      "commands": "명령"
+      "commands": "명령",
+      "repositories": "내 리포지토리",
+      "bookmarks": "북마크",
+      "community": "커뮤니티"
     },
     "hints": {
       "navigate": "이동",
@@ -600,7 +604,10 @@
       "newAnalysis": "새 분석 시작",
       "switchToLight": "라이트 모드로 전환",
       "switchToDark": "다크 모드로 전환"
-    }
+    },
+    "loginPrompt": "로그인하여 내 리포지토리를 검색하세요",
+    "loading": "검색 중...",
+    "error": "검색 중 오류가 발생했습니다"
   },
   "account": {
     "title": "계정",

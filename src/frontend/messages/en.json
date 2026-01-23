@@ -581,10 +581,14 @@
     "title": "Search",
     "description": "Search pages, repositories, and commands.",
     "placeholder": "Search...",
-    "noResults": "No results found",
+    "noResults": "No results for '{query}'",
+    "noResultsDefault": "No results found",
     "categories": {
       "navigation": "Navigation",
-      "commands": "Commands"
+      "commands": "Commands",
+      "repositories": "My Repositories",
+      "bookmarks": "Bookmarks",
+      "community": "Community"
     },
     "hints": {
       "navigate": "Navigate",
@@ -600,7 +604,10 @@
       "newAnalysis": "Start New Analysis",
       "switchToLight": "Switch to Light Mode",
       "switchToDark": "Switch to Dark Mode"
-    }
+    },
+    "loginPrompt": "Sign in to search your repositories",
+    "loading": "Searching...",
+    "error": "An error occurred while searching"
   },
   "account": {
     "title": "Account",
