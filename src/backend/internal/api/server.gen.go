@@ -3865,6 +3865,28 @@ func (response GetSpecDocument200JSONResponse) VisitGetSpecDocumentResponse(w ht
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetSpecDocument401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecDocument401ApplicationProblemPlusJSONResponse) VisitGetSpecDocumentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecDocument403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecDocument403ApplicationProblemPlusJSONResponse) VisitGetSpecDocumentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetSpecDocument404ApplicationProblemPlusJSONResponse struct {
 	NotFoundApplicationProblemPlusJSONResponse
 }
@@ -3912,6 +3934,28 @@ type GetSpecVersions400ApplicationProblemPlusJSONResponse struct {
 func (response GetSpecVersions400ApplicationProblemPlusJSONResponse) VisitGetSpecVersionsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecVersions401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecVersions401ApplicationProblemPlusJSONResponse) VisitGetSpecVersionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecVersions403ApplicationProblemPlusJSONResponse struct {
+	ForbiddenApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecVersions403ApplicationProblemPlusJSONResponse) VisitGetSpecVersionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(403)
 
 	return json.NewEncoder(w).Encode(response)
 }

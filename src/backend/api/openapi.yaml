@@ -713,7 +713,6 @@ paths:
         - Spec View
       security:
         - cookieAuth: []
-        - {}
       parameters:
         - name: language
           in: query
@@ -736,6 +735,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SpecDocumentResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -761,7 +764,6 @@ paths:
         - Spec View
       security:
         - cookieAuth: []
-        - {}
       parameters:
         - name: language
           in: query
@@ -778,6 +780,10 @@ paths:
                 $ref: "#/components/schemas/VersionHistoryResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":

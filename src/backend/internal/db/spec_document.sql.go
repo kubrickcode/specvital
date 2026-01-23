@@ -42,6 +42,29 @@ func (q *Queries) CheckSpecDocumentExistsByLanguage(ctx context.Context, arg Che
 	return exists, err
 }
 
+const checkSpecDocumentOwnership = `-- name: CheckSpecDocumentOwnership :one
+SELECT
+    sd.id,
+    sd.user_id
+FROM spec_documents sd
+WHERE sd.analysis_id = $1
+ORDER BY sd.created_at ASC
+LIMIT 1
+`
+
+type CheckSpecDocumentOwnershipRow struct {
+	ID     pgtype.UUID `json:"id"`
+	UserID pgtype.UUID `json:"user_id"`
+}
+
+// Returns the first document owner for the given analysis (ordered by creation time)
+func (q *Queries) CheckSpecDocumentOwnership(ctx context.Context, analysisID pgtype.UUID) (CheckSpecDocumentOwnershipRow, error) {
+	row := q.db.QueryRow(ctx, checkSpecDocumentOwnership, analysisID)
+	var i CheckSpecDocumentOwnershipRow
+	err := row.Scan(&i.ID, &i.UserID)
+	return i, err
+}
+
 const getAvailableLanguagesByAnalysisID = `-- name: GetAvailableLanguagesByAnalysisID :many
 SELECT
     sd.language,
@@ -64,7 +87,7 @@ type GetAvailableLanguagesByAnalysisIDRow struct {
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 }
 
-// Returns all available languages for an analysis with their latest version info
+// Returns all available languages for an analysis with their latest version info (legacy - no user filter)
 func (q *Queries) GetAvailableLanguagesByAnalysisID(ctx context.Context, analysisID pgtype.UUID) ([]GetAvailableLanguagesByAnalysisIDRow, error) {
 	rows, err := q.db.Query(ctx, getAvailableLanguagesByAnalysisID, analysisID)
 	if err != nil {
@@ -74,6 +97,56 @@ func (q *Queries) GetAvailableLanguagesByAnalysisID(ctx context.Context, analysi
 	var items []GetAvailableLanguagesByAnalysisIDRow
 	for rows.Next() {
 		var i GetAvailableLanguagesByAnalysisIDRow
+		if err := rows.Scan(&i.Language, &i.LatestVersion, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAvailableLanguagesByUserAndAnalysis = `-- name: GetAvailableLanguagesByUserAndAnalysis :many
+SELECT
+    sd.language,
+    sd.version AS latest_version,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = $1
+  AND sd.user_id = $2
+  AND sd.version = (
+      SELECT MAX(sd2.version)
+      FROM spec_documents sd2
+      WHERE sd2.analysis_id = sd.analysis_id
+        AND sd2.user_id = sd.user_id
+        AND sd2.language = sd.language
+  )
+ORDER BY sd.language
+`
+
+type GetAvailableLanguagesByUserAndAnalysisParams struct {
+	AnalysisID pgtype.UUID `json:"analysis_id"`
+	UserID     pgtype.UUID `json:"user_id"`
+}
+
+type GetAvailableLanguagesByUserAndAnalysisRow struct {
+	Language      string             `json:"language"`
+	LatestVersion int32              `json:"latest_version"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+// Returns all available languages for a specific user and analysis with their latest version info
+func (q *Queries) GetAvailableLanguagesByUserAndAnalysis(ctx context.Context, arg GetAvailableLanguagesByUserAndAnalysisParams) ([]GetAvailableLanguagesByUserAndAnalysisRow, error) {
+	rows, err := q.db.Query(ctx, getAvailableLanguagesByUserAndAnalysis, arg.AnalysisID, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAvailableLanguagesByUserAndAnalysisRow
+	for rows.Next() {
+		var i GetAvailableLanguagesByUserAndAnalysisRow
 		if err := rows.Scan(&i.Language, &i.LatestVersion, &i.CreatedAt); err != nil {
 			return nil, err
 		}
@@ -186,6 +259,7 @@ const getSpecDocumentByAnalysisID = `-- name: GetSpecDocumentByAnalysisID :one
 SELECT
     sd.id,
     sd.analysis_id,
+    sd.user_id,
     sd.language,
     sd.version,
     sd.executive_summary,
@@ -200,6 +274,7 @@ LIMIT 1
 type GetSpecDocumentByAnalysisIDRow struct {
 	ID               pgtype.UUID        `json:"id"`
 	AnalysisID       pgtype.UUID        `json:"analysis_id"`
+	UserID           pgtype.UUID        `json:"user_id"`
 	Language         string             `json:"language"`
 	Version          int32              `json:"version"`
 	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
@@ -207,12 +282,14 @@ type GetSpecDocumentByAnalysisIDRow struct {
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 }
 
+// (legacy - no user filter) Returns most recent spec document for an analysis
 func (q *Queries) GetSpecDocumentByAnalysisID(ctx context.Context, analysisID pgtype.UUID) (GetSpecDocumentByAnalysisIDRow, error) {
 	row := q.db.QueryRow(ctx, getSpecDocumentByAnalysisID, analysisID)
 	var i GetSpecDocumentByAnalysisIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.AnalysisID,
+		&i.UserID,
 		&i.Language,
 		&i.Version,
 		&i.ExecutiveSummary,
@@ -226,6 +303,7 @@ const getSpecDocumentByAnalysisIDAndLanguage = `-- name: GetSpecDocumentByAnalys
 SELECT
     sd.id,
     sd.analysis_id,
+    sd.user_id,
     sd.language,
     sd.version,
     sd.executive_summary,
@@ -245,6 +323,7 @@ type GetSpecDocumentByAnalysisIDAndLanguageParams struct {
 type GetSpecDocumentByAnalysisIDAndLanguageRow struct {
 	ID               pgtype.UUID        `json:"id"`
 	AnalysisID       pgtype.UUID        `json:"analysis_id"`
+	UserID           pgtype.UUID        `json:"user_id"`
 	Language         string             `json:"language"`
 	Version          int32              `json:"version"`
 	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
@@ -252,12 +331,167 @@ type GetSpecDocumentByAnalysisIDAndLanguageRow struct {
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 }
 
+// (legacy - no user filter) Returns most recent spec document for an analysis and language
 func (q *Queries) GetSpecDocumentByAnalysisIDAndLanguage(ctx context.Context, arg GetSpecDocumentByAnalysisIDAndLanguageParams) (GetSpecDocumentByAnalysisIDAndLanguageRow, error) {
 	row := q.db.QueryRow(ctx, getSpecDocumentByAnalysisIDAndLanguage, arg.AnalysisID, arg.Language)
 	var i GetSpecDocumentByAnalysisIDAndLanguageRow
 	err := row.Scan(
 		&i.ID,
 		&i.AnalysisID,
+		&i.UserID,
+		&i.Language,
+		&i.Version,
+		&i.ExecutiveSummary,
+		&i.ModelID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getSpecDocumentByUserAndAnalysis = `-- name: GetSpecDocumentByUserAndAnalysis :one
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.user_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = $1 AND sd.user_id = $2
+ORDER BY sd.version DESC
+LIMIT 1
+`
+
+type GetSpecDocumentByUserAndAnalysisParams struct {
+	AnalysisID pgtype.UUID `json:"analysis_id"`
+	UserID     pgtype.UUID `json:"user_id"`
+}
+
+type GetSpecDocumentByUserAndAnalysisRow struct {
+	ID               pgtype.UUID        `json:"id"`
+	AnalysisID       pgtype.UUID        `json:"analysis_id"`
+	UserID           pgtype.UUID        `json:"user_id"`
+	Language         string             `json:"language"`
+	Version          int32              `json:"version"`
+	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
+	ModelID          string             `json:"model_id"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+}
+
+// Returns spec document for a specific user and analysis (for access control)
+func (q *Queries) GetSpecDocumentByUserAndAnalysis(ctx context.Context, arg GetSpecDocumentByUserAndAnalysisParams) (GetSpecDocumentByUserAndAnalysisRow, error) {
+	row := q.db.QueryRow(ctx, getSpecDocumentByUserAndAnalysis, arg.AnalysisID, arg.UserID)
+	var i GetSpecDocumentByUserAndAnalysisRow
+	err := row.Scan(
+		&i.ID,
+		&i.AnalysisID,
+		&i.UserID,
+		&i.Language,
+		&i.Version,
+		&i.ExecutiveSummary,
+		&i.ModelID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getSpecDocumentByUserAndAnalysisAndLanguage = `-- name: GetSpecDocumentByUserAndAnalysisAndLanguage :one
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.user_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = $1 AND sd.user_id = $2 AND sd.language = $3
+ORDER BY sd.version DESC
+LIMIT 1
+`
+
+type GetSpecDocumentByUserAndAnalysisAndLanguageParams struct {
+	AnalysisID pgtype.UUID `json:"analysis_id"`
+	UserID     pgtype.UUID `json:"user_id"`
+	Language   string      `json:"language"`
+}
+
+type GetSpecDocumentByUserAndAnalysisAndLanguageRow struct {
+	ID               pgtype.UUID        `json:"id"`
+	AnalysisID       pgtype.UUID        `json:"analysis_id"`
+	UserID           pgtype.UUID        `json:"user_id"`
+	Language         string             `json:"language"`
+	Version          int32              `json:"version"`
+	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
+	ModelID          string             `json:"model_id"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+}
+
+// Returns spec document for a specific user, analysis, and language (for access control)
+func (q *Queries) GetSpecDocumentByUserAndAnalysisAndLanguage(ctx context.Context, arg GetSpecDocumentByUserAndAnalysisAndLanguageParams) (GetSpecDocumentByUserAndAnalysisAndLanguageRow, error) {
+	row := q.db.QueryRow(ctx, getSpecDocumentByUserAndAnalysisAndLanguage, arg.AnalysisID, arg.UserID, arg.Language)
+	var i GetSpecDocumentByUserAndAnalysisAndLanguageRow
+	err := row.Scan(
+		&i.ID,
+		&i.AnalysisID,
+		&i.UserID,
+		&i.Language,
+		&i.Version,
+		&i.ExecutiveSummary,
+		&i.ModelID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getSpecDocumentByUserAndVersion = `-- name: GetSpecDocumentByUserAndVersion :one
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.user_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = $1 AND sd.user_id = $2 AND sd.language = $3 AND sd.version = $4
+`
+
+type GetSpecDocumentByUserAndVersionParams struct {
+	AnalysisID pgtype.UUID `json:"analysis_id"`
+	UserID     pgtype.UUID `json:"user_id"`
+	Language   string      `json:"language"`
+	Version    int32       `json:"version"`
+}
+
+type GetSpecDocumentByUserAndVersionRow struct {
+	ID               pgtype.UUID        `json:"id"`
+	AnalysisID       pgtype.UUID        `json:"analysis_id"`
+	UserID           pgtype.UUID        `json:"user_id"`
+	Language         string             `json:"language"`
+	Version          int32              `json:"version"`
+	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
+	ModelID          string             `json:"model_id"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+}
+
+// Returns a specific version of a spec document for a specific user
+func (q *Queries) GetSpecDocumentByUserAndVersion(ctx context.Context, arg GetSpecDocumentByUserAndVersionParams) (GetSpecDocumentByUserAndVersionRow, error) {
+	row := q.db.QueryRow(ctx, getSpecDocumentByUserAndVersion,
+		arg.AnalysisID,
+		arg.UserID,
+		arg.Language,
+		arg.Version,
+	)
+	var i GetSpecDocumentByUserAndVersionRow
+	err := row.Scan(
+		&i.ID,
+		&i.AnalysisID,
+		&i.UserID,
 		&i.Language,
 		&i.Version,
 		&i.ExecutiveSummary,
@@ -271,6 +505,7 @@ const getSpecDocumentByVersion = `-- name: GetSpecDocumentByVersion :one
 SELECT
     sd.id,
     sd.analysis_id,
+    sd.user_id,
     sd.language,
     sd.version,
     sd.executive_summary,
@@ -289,6 +524,7 @@ type GetSpecDocumentByVersionParams struct {
 type GetSpecDocumentByVersionRow struct {
 	ID               pgtype.UUID        `json:"id"`
 	AnalysisID       pgtype.UUID        `json:"analysis_id"`
+	UserID           pgtype.UUID        `json:"user_id"`
 	Language         string             `json:"language"`
 	Version          int32              `json:"version"`
 	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
@@ -296,13 +532,14 @@ type GetSpecDocumentByVersionRow struct {
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 }
 
-// Returns a specific version of a spec document
+// Returns a specific version of a spec document (legacy - no user filter)
 func (q *Queries) GetSpecDocumentByVersion(ctx context.Context, arg GetSpecDocumentByVersionParams) (GetSpecDocumentByVersionRow, error) {
 	row := q.db.QueryRow(ctx, getSpecDocumentByVersion, arg.AnalysisID, arg.Language, arg.Version)
 	var i GetSpecDocumentByVersionRow
 	err := row.Scan(
 		&i.ID,
 		&i.AnalysisID,
+		&i.UserID,
 		&i.Language,
 		&i.Version,
 		&i.ExecutiveSummary,
@@ -497,7 +734,7 @@ type GetVersionsByLanguageRow struct {
 	ModelID   string             `json:"model_id"`
 }
 
-// Returns all versions for a specific analysis and language, ordered by version descending
+// Returns all versions for a specific analysis and language, ordered by version descending (legacy - no user filter)
 func (q *Queries) GetVersionsByLanguage(ctx context.Context, arg GetVersionsByLanguageParams) ([]GetVersionsByLanguageRow, error) {
 	rows, err := q.db.Query(ctx, getVersionsByLanguage, arg.AnalysisID, arg.Language)
 	if err != nil {
@@ -507,6 +744,49 @@ func (q *Queries) GetVersionsByLanguage(ctx context.Context, arg GetVersionsByLa
 	var items []GetVersionsByLanguageRow
 	for rows.Next() {
 		var i GetVersionsByLanguageRow
+		if err := rows.Scan(&i.Version, &i.CreatedAt, &i.ModelID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getVersionsByUserAndLanguage = `-- name: GetVersionsByUserAndLanguage :many
+SELECT
+    sd.version,
+    sd.created_at,
+    sd.model_id
+FROM spec_documents sd
+WHERE sd.analysis_id = $1 AND sd.user_id = $2 AND sd.language = $3
+ORDER BY sd.version DESC
+`
+
+type GetVersionsByUserAndLanguageParams struct {
+	AnalysisID pgtype.UUID `json:"analysis_id"`
+	UserID     pgtype.UUID `json:"user_id"`
+	Language   string      `json:"language"`
+}
+
+type GetVersionsByUserAndLanguageRow struct {
+	Version   int32              `json:"version"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	ModelID   string             `json:"model_id"`
+}
+
+// Returns all versions for a specific user, analysis and language, ordered by version descending
+func (q *Queries) GetVersionsByUserAndLanguage(ctx context.Context, arg GetVersionsByUserAndLanguageParams) ([]GetVersionsByUserAndLanguageRow, error) {
+	rows, err := q.db.Query(ctx, getVersionsByUserAndLanguage, arg.AnalysisID, arg.UserID, arg.Language)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetVersionsByUserAndLanguageRow
+	for rows.Next() {
+		var i GetVersionsByUserAndLanguageRow
 		if err := rows.Scan(&i.Version, &i.CreatedAt, &i.ModelID); err != nil {
 			return nil, err
 		}

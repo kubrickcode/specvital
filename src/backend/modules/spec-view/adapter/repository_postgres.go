@@ -44,6 +44,26 @@ func (r *PostgresRepository) CheckSpecDocumentExistsByLanguage(ctx context.Conte
 	})
 }
 
+func (r *PostgresRepository) CheckSpecDocumentOwnership(ctx context.Context, analysisID string) (*entity.DocumentOwnership, error) {
+	uid, err := parseUUID(analysisID)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := r.queries.CheckSpecDocumentOwnership(ctx, uid)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &entity.DocumentOwnership{
+		DocumentID: uuidToString(row.ID),
+		UserID:     uuidToString(row.UserID),
+	}, nil
+}
+
 func (r *PostgresRepository) GetAvailableLanguages(ctx context.Context, analysisID string) ([]entity.AvailableLanguageInfo, error) {
 	uid, err := parseUUID(analysisID)
 	if err != nil {
@@ -51,6 +71,35 @@ func (r *PostgresRepository) GetAvailableLanguages(ctx context.Context, analysis
 	}
 
 	rows, err := r.queries.GetAvailableLanguagesByAnalysisID(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]entity.AvailableLanguageInfo, len(rows))
+	for i, row := range rows {
+		result[i] = entity.AvailableLanguageInfo{
+			CreatedAt:     row.CreatedAt.Time,
+			Language:      row.Language,
+			LatestVersion: int(row.LatestVersion),
+		}
+	}
+	return result, nil
+}
+
+func (r *PostgresRepository) GetAvailableLanguagesByUser(ctx context.Context, userID string, analysisID string) ([]entity.AvailableLanguageInfo, error) {
+	uid, err := parseUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+	aid, err := parseUUID(analysisID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.queries.GetAvailableLanguagesByUserAndAnalysis(ctx, db.GetAvailableLanguagesByUserAndAnalysisParams{
+		UserID:     uid,
+		AnalysisID: aid,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +135,68 @@ func (r *PostgresRepository) GetSpecDocumentByLanguage(ctx context.Context, anal
 			docRow = db.GetSpecDocumentByAnalysisIDRow{
 				ID:               langRow.ID,
 				AnalysisID:       langRow.AnalysisID,
+				UserID:           langRow.UserID,
+				Language:         langRow.Language,
+				Version:          langRow.Version,
+				ExecutiveSummary: langRow.ExecutiveSummary,
+				ModelID:          langRow.ModelID,
+				CreatedAt:        langRow.CreatedAt,
+			}
+		}
+	}
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return r.buildSpecDocument(ctx, docRow)
+}
+
+func (r *PostgresRepository) GetSpecDocumentByUser(ctx context.Context, userID string, analysisID string, language string) (*entity.SpecDocument, error) {
+	uid, err := parseUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+	aid, err := parseUUID(analysisID)
+	if err != nil {
+		return nil, err
+	}
+
+	var docRow db.GetSpecDocumentByAnalysisIDRow
+	if language == "" {
+		row, queryErr := r.queries.GetSpecDocumentByUserAndAnalysis(ctx, db.GetSpecDocumentByUserAndAnalysisParams{
+			UserID:     uid,
+			AnalysisID: aid,
+		})
+		if queryErr != nil {
+			err = queryErr
+		} else {
+			docRow = db.GetSpecDocumentByAnalysisIDRow{
+				ID:               row.ID,
+				AnalysisID:       row.AnalysisID,
+				UserID:           row.UserID,
+				Language:         row.Language,
+				Version:          row.Version,
+				ExecutiveSummary: row.ExecutiveSummary,
+				ModelID:          row.ModelID,
+				CreatedAt:        row.CreatedAt,
+			}
+		}
+	} else {
+		langRow, langErr := r.queries.GetSpecDocumentByUserAndAnalysisAndLanguage(ctx, db.GetSpecDocumentByUserAndAnalysisAndLanguageParams{
+			UserID:     uid,
+			AnalysisID: aid,
+			Language:   language,
+		})
+		if langErr != nil {
+			err = langErr
+		} else {
+			docRow = db.GetSpecDocumentByAnalysisIDRow{
+				ID:               langRow.ID,
+				AnalysisID:       langRow.AnalysisID,
+				UserID:           langRow.UserID,
 				Language:         langRow.Language,
 				Version:          langRow.Version,
 				ExecutiveSummary: langRow.ExecutiveSummary,
@@ -316,6 +427,42 @@ func (r *PostgresRepository) GetSpecDocumentByVersion(ctx context.Context, analy
 	return r.buildSpecDocument(ctx, db.GetSpecDocumentByAnalysisIDRow{
 		ID:               docRow.ID,
 		AnalysisID:       docRow.AnalysisID,
+		UserID:           docRow.UserID,
+		Language:         docRow.Language,
+		Version:          docRow.Version,
+		ExecutiveSummary: docRow.ExecutiveSummary,
+		ModelID:          docRow.ModelID,
+		CreatedAt:        docRow.CreatedAt,
+	})
+}
+
+func (r *PostgresRepository) GetSpecDocumentByUserAndVersion(ctx context.Context, userID string, analysisID string, language string, version int) (*entity.SpecDocument, error) {
+	uid, err := parseUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+	aid, err := parseUUID(analysisID)
+	if err != nil {
+		return nil, err
+	}
+
+	docRow, err := r.queries.GetSpecDocumentByUserAndVersion(ctx, db.GetSpecDocumentByUserAndVersionParams{
+		UserID:     uid,
+		AnalysisID: aid,
+		Language:   language,
+		Version:    int32(version),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return r.buildSpecDocument(ctx, db.GetSpecDocumentByAnalysisIDRow{
+		ID:               docRow.ID,
+		AnalysisID:       docRow.AnalysisID,
+		UserID:           docRow.UserID,
 		Language:         docRow.Language,
 		Version:          docRow.Version,
 		ExecutiveSummary: docRow.ExecutiveSummary,
@@ -332,6 +479,36 @@ func (r *PostgresRepository) GetVersionsByLanguage(ctx context.Context, analysis
 
 	rows, err := r.queries.GetVersionsByLanguage(ctx, db.GetVersionsByLanguageParams{
 		AnalysisID: uid,
+		Language:   language,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]entity.VersionInfo, len(rows))
+	for i, row := range rows {
+		result[i] = entity.VersionInfo{
+			CreatedAt: row.CreatedAt.Time,
+			ModelID:   row.ModelID,
+			Version:   int(row.Version),
+		}
+	}
+	return result, nil
+}
+
+func (r *PostgresRepository) GetVersionsByUser(ctx context.Context, userID string, analysisID string, language string) ([]entity.VersionInfo, error) {
+	uid, err := parseUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+	aid, err := parseUUID(analysisID)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := r.queries.GetVersionsByUserAndLanguage(ctx, db.GetVersionsByUserAndLanguageParams{
+		UserID:     uid,
+		AnalysisID: aid,
 		Language:   language,
 	})
 	if err != nil {

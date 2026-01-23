@@ -1,7 +1,9 @@
 -- name: GetSpecDocumentByAnalysisID :one
+-- (legacy - no user filter) Returns most recent spec document for an analysis
 SELECT
     sd.id,
     sd.analysis_id,
+    sd.user_id,
     sd.language,
     sd.version,
     sd.executive_summary,
@@ -13,9 +15,11 @@ ORDER BY sd.version DESC
 LIMIT 1;
 
 -- name: GetSpecDocumentByAnalysisIDAndLanguage :one
+-- (legacy - no user filter) Returns most recent spec document for an analysis and language
 SELECT
     sd.id,
     sd.analysis_id,
+    sd.user_id,
     sd.language,
     sd.version,
     sd.executive_summary,
@@ -23,6 +27,38 @@ SELECT
     sd.created_at
 FROM spec_documents sd
 WHERE sd.analysis_id = $1 AND sd.language = $2
+ORDER BY sd.version DESC
+LIMIT 1;
+
+-- name: GetSpecDocumentByUserAndAnalysis :one
+-- Returns spec document for a specific user and analysis (for access control)
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.user_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = @analysis_id AND sd.user_id = @user_id
+ORDER BY sd.version DESC
+LIMIT 1;
+
+-- name: GetSpecDocumentByUserAndAnalysisAndLanguage :one
+-- Returns spec document for a specific user, analysis, and language (for access control)
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.user_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = @analysis_id AND sd.user_id = @user_id AND sd.language = @language
 ORDER BY sd.version DESC
 LIMIT 1;
 
@@ -111,7 +147,7 @@ SELECT EXISTS(
 ) AS exists;
 
 -- name: GetAvailableLanguagesByAnalysisID :many
--- Returns all available languages for an analysis with their latest version info
+-- Returns all available languages for an analysis with their latest version info (legacy - no user filter)
 SELECT
     sd.language,
     sd.version AS latest_version,
@@ -126,8 +162,26 @@ WHERE sd.analysis_id = $1
   )
 ORDER BY sd.language;
 
+-- name: GetAvailableLanguagesByUserAndAnalysis :many
+-- Returns all available languages for a specific user and analysis with their latest version info
+SELECT
+    sd.language,
+    sd.version AS latest_version,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = @analysis_id
+  AND sd.user_id = @user_id
+  AND sd.version = (
+      SELECT MAX(sd2.version)
+      FROM spec_documents sd2
+      WHERE sd2.analysis_id = sd.analysis_id
+        AND sd2.user_id = sd.user_id
+        AND sd2.language = sd.language
+  )
+ORDER BY sd.language;
+
 -- name: GetVersionsByLanguage :many
--- Returns all versions for a specific analysis and language, ordered by version descending
+-- Returns all versions for a specific analysis and language, ordered by version descending (legacy - no user filter)
 SELECT
     sd.version,
     sd.created_at,
@@ -136,11 +190,22 @@ FROM spec_documents sd
 WHERE sd.analysis_id = $1 AND sd.language = $2
 ORDER BY sd.version DESC;
 
+-- name: GetVersionsByUserAndLanguage :many
+-- Returns all versions for a specific user, analysis and language, ordered by version descending
+SELECT
+    sd.version,
+    sd.created_at,
+    sd.model_id
+FROM spec_documents sd
+WHERE sd.analysis_id = @analysis_id AND sd.user_id = @user_id AND sd.language = @language
+ORDER BY sd.version DESC;
+
 -- name: GetSpecDocumentByVersion :one
--- Returns a specific version of a spec document
+-- Returns a specific version of a spec document (legacy - no user filter)
 SELECT
     sd.id,
     sd.analysis_id,
+    sd.user_id,
     sd.language,
     sd.version,
     sd.executive_summary,
@@ -149,3 +214,26 @@ SELECT
 FROM spec_documents sd
 WHERE sd.analysis_id = $1 AND sd.language = $2 AND sd.version = $3;
 
+-- name: GetSpecDocumentByUserAndVersion :one
+-- Returns a specific version of a spec document for a specific user
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.user_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at
+FROM spec_documents sd
+WHERE sd.analysis_id = @analysis_id AND sd.user_id = @user_id AND sd.language = @language AND sd.version = @version;
+
+-- name: CheckSpecDocumentOwnership :one
+-- Returns the first document owner for the given analysis (ordered by creation time)
+SELECT
+    sd.id,
+    sd.user_id
+FROM spec_documents sd
+WHERE sd.analysis_id = $1
+ORDER BY sd.created_at ASC
+LIMIT 1;

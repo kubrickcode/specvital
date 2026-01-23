@@ -27,15 +27,23 @@ func (m *mockStatusRepository) CheckSpecDocumentExistsByLanguage(_ context.Conte
 	return false, nil
 }
 
-func (m *mockStatusRepository) DeleteSpecDocumentByLanguage(_ context.Context, _ string, _ string) error {
-	return nil
+func (m *mockStatusRepository) CheckSpecDocumentOwnership(_ context.Context, _ string) (*entity.DocumentOwnership, error) {
+	return nil, nil
 }
 
 func (m *mockStatusRepository) GetAvailableLanguages(_ context.Context, _ string) ([]entity.AvailableLanguageInfo, error) {
 	return nil, nil
 }
 
+func (m *mockStatusRepository) GetAvailableLanguagesByUser(_ context.Context, _ string, _ string) ([]entity.AvailableLanguageInfo, error) {
+	return nil, nil
+}
+
 func (m *mockStatusRepository) GetSpecDocumentByLanguage(_ context.Context, _ string, _ string) (*entity.SpecDocument, error) {
+	return nil, nil
+}
+
+func (m *mockStatusRepository) GetSpecDocumentByUser(_ context.Context, _ string, _ string, _ string) (*entity.SpecDocument, error) {
 	return nil, nil
 }
 
@@ -53,7 +61,15 @@ func (m *mockStatusRepository) GetSpecDocumentByVersion(_ context.Context, _ str
 	return nil, nil
 }
 
+func (m *mockStatusRepository) GetSpecDocumentByUserAndVersion(_ context.Context, _ string, _ string, _ string, _ int) (*entity.SpecDocument, error) {
+	return nil, nil
+}
+
 func (m *mockStatusRepository) GetVersionsByLanguage(_ context.Context, _ string, _ string) ([]entity.VersionInfo, error) {
+	return nil, nil
+}
+
+func (m *mockStatusRepository) GetVersionsByUser(_ context.Context, _ string, _ string, _ string) ([]entity.VersionInfo, error) {
 	return nil, nil
 }
 

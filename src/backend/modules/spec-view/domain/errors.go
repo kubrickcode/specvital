@@ -10,5 +10,6 @@ var (
 	ErrGenerationRunning = errors.New("generation already running")
 	ErrInvalidAnalysisID = errors.New("invalid analysis ID")
 	ErrInvalidLanguage   = errors.New("invalid language")
+	ErrNotAuthorized     = errors.New("not authorized to access this resource")
 	ErrQuotaExceeded     = errors.New("quota exceeded")
 )

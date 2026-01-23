@@ -25,6 +25,8 @@ type mockRepository struct {
 	availableLangsErr    error
 	versions             []entity.VersionInfo
 	versionsErr          error
+	ownership            *entity.DocumentOwnership
+	ownershipErr         error
 
 	// Captured parameters for verification
 	calledLanguage string
@@ -39,15 +41,24 @@ func (m *mockRepository) CheckSpecDocumentExistsByLanguage(_ context.Context, _ 
 	return m.specDocExists, m.specDocExistsErr
 }
 
-func (m *mockRepository) DeleteSpecDocumentByLanguage(_ context.Context, _ string, _ string) error {
-	return nil
+func (m *mockRepository) CheckSpecDocumentOwnership(_ context.Context, _ string) (*entity.DocumentOwnership, error) {
+	return m.ownership, m.ownershipErr
 }
 
 func (m *mockRepository) GetAvailableLanguages(_ context.Context, _ string) ([]entity.AvailableLanguageInfo, error) {
 	return m.availableLanguages, m.availableLangsErr
 }
 
+func (m *mockRepository) GetAvailableLanguagesByUser(_ context.Context, _ string, _ string) ([]entity.AvailableLanguageInfo, error) {
+	return m.availableLanguages, m.availableLangsErr
+}
+
 func (m *mockRepository) GetSpecDocumentByLanguage(_ context.Context, _ string, language string) (*entity.SpecDocument, error) {
+	m.calledLanguage = language
+	return m.document, m.documentErr
+}
+
+func (m *mockRepository) GetSpecDocumentByUser(_ context.Context, _ string, _ string, language string) (*entity.SpecDocument, error) {
 	m.calledLanguage = language
 	return m.document, m.documentErr
 }
@@ -66,7 +77,18 @@ func (m *mockRepository) GetSpecDocumentByVersion(_ context.Context, _ string, l
 	return m.documentByVersion, m.documentByVersionErr
 }
 
+func (m *mockRepository) GetSpecDocumentByUserAndVersion(_ context.Context, _ string, _ string, language string, version int) (*entity.SpecDocument, error) {
+	m.calledLanguage = language
+	m.calledVersion = version
+	return m.documentByVersion, m.documentByVersionErr
+}
+
 func (m *mockRepository) GetVersionsByLanguage(_ context.Context, _ string, language string) ([]entity.VersionInfo, error) {
+	m.calledLanguage = language
+	return m.versions, m.versionsErr
+}
+
+func (m *mockRepository) GetVersionsByUser(_ context.Context, _ string, _ string, language string) ([]entity.VersionInfo, error) {
 	m.calledLanguage = language
 	return m.versions, m.versionsErr
 }

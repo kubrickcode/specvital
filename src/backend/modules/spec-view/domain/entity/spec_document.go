@@ -91,3 +91,9 @@ type BehaviorSourceInfo struct {
 	LineNumber int
 	Status     string
 }
+
+// DocumentOwnership represents ownership information for access control
+type DocumentOwnership struct {
+	DocumentID string
+	UserID     string
+}
