@@ -2,6 +2,7 @@ package port
 
 import (
 	"context"
+	"time"
 
 	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 )
@@ -13,6 +14,7 @@ type QueueService interface {
 }
 
 type TaskInfo struct {
-	CommitSHA string
-	State     string
+	AttemptedAt *time.Time
+	CommitSHA   string
+	State       string
 }

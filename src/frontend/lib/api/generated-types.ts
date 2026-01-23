@@ -733,6 +733,11 @@ export interface components {
              * @enum {string}
              */
             status: "analyzing";
+            /**
+             * Format: date-time
+             * @description When the analysis job started running (ISO 8601)
+             */
+            startedAt?: string;
         };
         QueuedResponse: {
             /**

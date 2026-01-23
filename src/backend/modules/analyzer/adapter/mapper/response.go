@@ -123,7 +123,9 @@ func ToStatusResponse(progress *entity.AnalysisProgress) (api.AnalysisResponse, 
 	case entity.AnalysisStatusCompleted:
 		err = response.FromCompletedResponse(api.CompletedResponse{})
 	case entity.AnalysisStatusRunning:
-		err = response.FromAnalyzingResponse(api.AnalyzingResponse{})
+		err = response.FromAnalyzingResponse(api.AnalyzingResponse{
+			StartedAt: progress.StartedAt,
+		})
 	case entity.AnalysisStatusPending:
 		err = response.FromQueuedResponse(api.QueuedResponse{})
 	case entity.AnalysisStatusFailed:

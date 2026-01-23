@@ -39,10 +39,14 @@ func (r *PostgresRepository) FindActiveRiverJobByRepo(ctx context.Context, kind,
 		return nil, fmt.Errorf("find active river job by repo: %w", err)
 	}
 
-	return &port.RiverJobInfo{
+	info := &port.RiverJobInfo{
 		CommitSHA: row.CommitSha,
 		State:     row.State,
-	}, nil
+	}
+	if row.AttemptedAt.Valid {
+		info.AttemptedAt = &row.AttemptedAt.Time
+	}
+	return info, nil
 }
 
 func (r *PostgresRepository) GetBookmarkedCodebaseIDs(ctx context.Context, userID string) ([]string, error) {

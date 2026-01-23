@@ -7,12 +7,15 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const findActiveRiverJobByRepo = `-- name: FindActiveRiverJobByRepo :one
 SELECT
     (args->>'commit_sha')::text as commit_sha,
-    state::text as state
+    state::text as state,
+    attempted_at
 FROM river_job
 WHERE
     kind = $1::text
@@ -30,13 +33,14 @@ type FindActiveRiverJobByRepoParams struct {
 }
 
 type FindActiveRiverJobByRepoRow struct {
-	CommitSha string `json:"commit_sha"`
-	State     string `json:"state"`
+	CommitSha   string             `json:"commit_sha"`
+	State       string             `json:"state"`
+	AttemptedAt pgtype.Timestamptz `json:"attempted_at"`
 }
 
 func (q *Queries) FindActiveRiverJobByRepo(ctx context.Context, arg FindActiveRiverJobByRepoParams) (FindActiveRiverJobByRepoRow, error) {
 	row := q.db.QueryRow(ctx, findActiveRiverJobByRepo, arg.Kind, arg.Owner, arg.Repo)
 	var i FindActiveRiverJobByRepoRow
-	err := row.Scan(&i.CommitSha, &i.State)
+	err := row.Scan(&i.CommitSha, &i.State, &i.AttemptedAt)
 	return i, err
 }

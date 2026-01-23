@@ -1082,6 +1082,10 @@ components:
         status:
           type: string
           const: analyzing
+        startedAt:
+          type: string
+          format: date-time
+          description: When the analysis job started running (ISO 8601)
 
     QueuedResponse:
       type: object

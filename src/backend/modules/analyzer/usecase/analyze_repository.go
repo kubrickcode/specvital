@@ -79,6 +79,7 @@ func (uc *AnalyzeRepositoryUseCase) Execute(ctx context.Context, input AnalyzeRe
 		progress := &entity.AnalysisProgress{
 			CommitSHA: taskInfo.CommitSHA,
 			CreatedAt: now,
+			StartedAt: taskInfo.AttemptedAt,
 			Status:    mapQueueStateToAnalysisStatus(taskInfo.State),
 		}
 		return &AnalyzeResult{Progress: progress}, nil

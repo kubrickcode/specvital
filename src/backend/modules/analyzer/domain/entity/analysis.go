@@ -35,5 +35,6 @@ type AnalysisProgress struct {
 	CompletedAt  *time.Time
 	CreatedAt    time.Time
 	ErrorMessage *string
+	StartedAt    *time.Time
 	Status       AnalysisStatus
 }

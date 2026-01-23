@@ -60,6 +60,7 @@ func (uc *GetAnalysisUseCase) Execute(ctx context.Context, input GetAnalysisInpu
 		progress := &entity.AnalysisProgress{
 			CommitSHA: taskInfo.CommitSHA,
 			CreatedAt: now,
+			StartedAt: taskInfo.AttemptedAt,
 			Status:    mapQueueStateToAnalysisStatus(taskInfo.State),
 		}
 		return &AnalyzeResult{Progress: progress}, nil

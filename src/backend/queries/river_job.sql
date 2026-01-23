@@ -1,7 +1,8 @@
 -- name: FindActiveRiverJobByRepo :one
 SELECT
     (args->>'commit_sha')::text as commit_sha,
-    state::text as state
+    state::text as state,
+    attempted_at
 FROM river_job
 WHERE
     kind = @kind::text

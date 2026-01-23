@@ -84,8 +84,9 @@ func (s *RiverQueueService) FindTaskByRepo(ctx context.Context, owner, repo stri
 	}
 
 	return &port.TaskInfo{
-		CommitSHA: info.CommitSHA,
-		State:     info.State,
+		AttemptedAt: info.AttemptedAt,
+		CommitSHA:   info.CommitSHA,
+		State:       info.State,
 	}, nil
 }
 

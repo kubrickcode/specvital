@@ -73,8 +73,9 @@ type TestCaseRow struct {
 }
 
 type RiverJobInfo struct {
-	CommitSHA string
-	State     string
+	AttemptedAt *time.Time
+	CommitSHA   string
+	State       string
 }
 
 type PreviousAnalysis struct {

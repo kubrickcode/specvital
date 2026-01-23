@@ -215,7 +215,9 @@ type AnalysisSummary struct {
 
 // AnalyzingResponse defines model for AnalyzingResponse.
 type AnalyzingResponse struct {
-	Status string `json:"status"`
+	// StartedAt When the analysis job started running (ISO 8601)
+	StartedAt *time.Time `json:"startedAt,omitempty"`
+	Status    string     `json:"status"`
 }
 
 // AvailableLanguageInfo defines model for AvailableLanguageInfo.
