@@ -8,6 +8,9 @@ import { setupMockHandlers } from "./fixtures/mock-handlers";
 import {
   mockAnalysisCompleted,
   mockAnalysisLarge,
+  mockAnalysisWithFocused,
+  mockAnalysisWithXfail,
+  mockAnalysisWithAllStatuses,
   mockSpecDocumentNotFound,
   mockSpecDocumentCompleted,
   mockSpecDocumentVersion1,
@@ -92,6 +95,236 @@ test.describe("Analysis Page - InlineStats Display (Mocked API)", () => {
 
     // Verify framework is displayed (mockAnalysisCompleted uses jest)
     await expect(page.getByText(/jest/i).first()).toBeVisible();
+  });
+});
+
+test.describe("Analysis Page - InlineStats Conditional Display (Mocked API)", () => {
+  // Helper to find InlineStats status label (uses text-sm + text-muted-foreground, not font-normal)
+  const getStatusLabel = (page: import("@playwright/test").Page, label: string) =>
+    page.locator("span.text-sm.text-muted-foreground", { hasText: label });
+
+  test("should display Focused count when repository has focused tests", async ({
+    page,
+  }) => {
+    await setupMockHandlers(page, {
+      analysis: mockAnalysisWithFocused,
+      specDocument: mockSpecDocumentNotFound,
+      usage: mockUsageNormal,
+    });
+
+    await page.goto("/en/analyze/test-owner/focused-test-repo");
+    await page.waitForLoadState("networkidle");
+
+    // Wait for analysis to load
+    await expect(page.getByText("Total")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Verify Focused label is displayed in InlineStats (mockAnalysisWithFocused has focused: 2)
+    const focusedLabel = getStatusLabel(page, "Focused");
+    await expect(focusedLabel).toBeVisible();
+
+    // Verify the focused count value (2) - find by the status item structure
+    const focusedCount = focusedLabel.locator(".. >> .tabular-nums");
+    await expect(focusedCount).toHaveText("2");
+  });
+
+  test("should display Xfail count when repository has xfail tests", async ({
+    page,
+  }) => {
+    await setupMockHandlers(page, {
+      analysis: mockAnalysisWithXfail,
+      specDocument: mockSpecDocumentNotFound,
+      usage: mockUsageNormal,
+    });
+
+    await page.goto("/en/analyze/test-owner/xfail-test-repo");
+    await page.waitForLoadState("networkidle");
+
+    // Wait for analysis to load
+    await expect(page.getByText("Total")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Verify Xfail label is displayed in InlineStats (mockAnalysisWithXfail has xfail: 2)
+    const xfailLabel = getStatusLabel(page, "Xfail");
+    await expect(xfailLabel).toBeVisible();
+
+    // Verify the xfail count value (2)
+    const xfailCount = xfailLabel.locator(".. >> .tabular-nums");
+    await expect(xfailCount).toHaveText("2");
+  });
+
+  test("should not display Focused/Xfail when counts are zero", async ({
+    page,
+  }) => {
+    await setupMockHandlers(page, {
+      analysis: mockAnalysisCompleted,
+      specDocument: mockSpecDocumentNotFound,
+      usage: mockUsageNormal,
+    });
+
+    await page.goto("/en/analyze/test-owner/test-repo");
+    await page.waitForLoadState("networkidle");
+
+    // Wait for analysis to load
+    await expect(page.getByText("Total")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Verify Active and Skipped are shown (always visible)
+    await expect(getStatusLabel(page, "Active")).toBeVisible();
+    await expect(getStatusLabel(page, "Skipped")).toBeVisible();
+
+    // Verify Focused and Xfail status labels are NOT shown when counts are 0
+    await expect(getStatusLabel(page, "Focused")).not.toBeVisible();
+    await expect(getStatusLabel(page, "Xfail")).not.toBeVisible();
+  });
+
+  test("should display all 5 status types when all are present", async ({
+    page,
+  }) => {
+    await setupMockHandlers(page, {
+      analysis: mockAnalysisWithAllStatuses,
+      specDocument: mockSpecDocumentNotFound,
+      usage: mockUsageNormal,
+    });
+
+    await page.goto("/en/analyze/test-owner/all-status-repo");
+    await page.waitForLoadState("networkidle");
+
+    // Wait for analysis to load
+    await expect(page.getByText("Total")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Verify all 5 status labels are displayed in InlineStats
+    await expect(getStatusLabel(page, "Active")).toBeVisible();
+    await expect(getStatusLabel(page, "Focused")).toBeVisible();
+    await expect(getStatusLabel(page, "Skipped")).toBeVisible();
+    await expect(getStatusLabel(page, "Xfail")).toBeVisible();
+    await expect(getStatusLabel(page, "Todo")).toBeVisible();
+
+    // Verify total count (6 tests)
+    await expect(page.getByText("6").first()).toBeVisible();
+  });
+});
+
+test.describe("Analysis Page - StatusMiniBar Color Segments (Mocked API)", () => {
+  test("should render MiniBar with correct aria-label for all 5 statuses", async ({
+    page,
+  }) => {
+    await setupMockHandlers(page, {
+      analysis: mockAnalysisWithAllStatuses,
+      specDocument: mockSpecDocumentNotFound,
+      usage: mockUsageNormal,
+    });
+
+    await page.goto("/en/analyze/test-owner/all-status-repo");
+    await page.waitForLoadState("networkidle");
+
+    // Wait for analysis to load
+    await expect(page.getByText("Total")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Find MiniBar by role="img" and verify aria-label contains all statuses
+    const miniBar = page.locator('[role="img"]').first();
+    await expect(miniBar).toBeVisible();
+
+    // Verify aria-label includes all 5 status counts
+    const ariaLabel = await miniBar.getAttribute("aria-label");
+    expect(ariaLabel).toContain("active");
+    expect(ariaLabel).toContain("focused");
+    expect(ariaLabel).toContain("skipped");
+    expect(ariaLabel).toContain("xfail");
+    expect(ariaLabel).toContain("todo");
+  });
+
+  test("should render focused color segment in MiniBar when focused tests exist", async ({
+    page,
+  }) => {
+    await setupMockHandlers(page, {
+      analysis: mockAnalysisWithFocused,
+      specDocument: mockSpecDocumentNotFound,
+      usage: mockUsageNormal,
+    });
+
+    await page.goto("/en/analyze/test-owner/focused-test-repo");
+    await page.waitForLoadState("networkidle");
+
+    // Wait for analysis to load
+    await expect(page.getByText("Total")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Find MiniBar and verify it has focused color segment
+    const miniBar = page.locator('[role="img"]').first();
+    await expect(miniBar).toBeVisible();
+
+    // Verify focused segment exists (bg-status-focused class)
+    const focusedSegment = miniBar.locator(".bg-status-focused");
+    await expect(focusedSegment).toBeVisible();
+  });
+
+  test("should render xfail color segment in MiniBar when xfail tests exist", async ({
+    page,
+  }) => {
+    await setupMockHandlers(page, {
+      analysis: mockAnalysisWithXfail,
+      specDocument: mockSpecDocumentNotFound,
+      usage: mockUsageNormal,
+    });
+
+    await page.goto("/en/analyze/test-owner/xfail-test-repo");
+    await page.waitForLoadState("networkidle");
+
+    // Wait for analysis to load
+    await expect(page.getByText("Total")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Find MiniBar and verify it has xfail color segment
+    const miniBar = page.locator('[role="img"]').first();
+    await expect(miniBar).toBeVisible();
+
+    // Verify xfail segment exists (bg-status-xfail class)
+    const xfailSegment = miniBar.locator(".bg-status-xfail");
+    await expect(xfailSegment).toBeVisible();
+  });
+
+  test("should not render focused/xfail segments when counts are zero", async ({
+    page,
+  }) => {
+    await setupMockHandlers(page, {
+      analysis: mockAnalysisCompleted,
+      specDocument: mockSpecDocumentNotFound,
+      usage: mockUsageNormal,
+    });
+
+    await page.goto("/en/analyze/test-owner/test-repo");
+    await page.waitForLoadState("networkidle");
+
+    // Wait for analysis to load
+    await expect(page.getByText("Total")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Find MiniBar
+    const miniBar = page.locator('[role="img"]').first();
+    await expect(miniBar).toBeVisible();
+
+    // Verify focused and xfail segments do NOT exist (counts are 0)
+    const focusedSegment = miniBar.locator(".bg-status-focused");
+    const xfailSegment = miniBar.locator(".bg-status-xfail");
+    await expect(focusedSegment).not.toBeVisible();
+    await expect(xfailSegment).not.toBeVisible();
+
+    // Verify active and skipped segments DO exist
+    const activeSegment = miniBar.locator(".bg-status-active");
+    const skippedSegment = miniBar.locator(".bg-status-skipped");
+    await expect(activeSegment).toBeVisible();
+    await expect(skippedSegment).toBeVisible();
   });
 });
 

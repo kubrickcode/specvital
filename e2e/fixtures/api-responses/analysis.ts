@@ -225,6 +225,246 @@ const generateLargeSuites = (): TestSuite[] => {
   }));
 };
 
+// Analysis with focused tests (for conditional display testing)
+export const mockAnalysisWithFocused: AnalysisCompletedResponse = {
+  status: "completed",
+  data: {
+    id: "focused-analysis-id",
+    analyzedAt: now,
+    branchName: "feature/test",
+    commitSha: "focused123",
+    committedAt: commitTime,
+    isInMyHistory: true,
+    owner: "test-owner",
+    repo: "focused-test-repo",
+    parserVersion: "v1.0.0",
+    suites: [
+      {
+        filePath: "src/__tests__/focused.test.ts",
+        framework: "jest",
+        suiteName: "Focused Test Suite",
+        tests: [
+          {
+            filePath: "src/__tests__/focused.test.ts",
+            framework: "jest",
+            line: 10,
+            name: "should run only this test",
+            status: "focused",
+            modifier: "only",
+          },
+          {
+            filePath: "src/__tests__/focused.test.ts",
+            framework: "jest",
+            line: 20,
+            name: "another focused test",
+            status: "focused",
+            modifier: "only",
+          },
+          {
+            filePath: "src/__tests__/focused.test.ts",
+            framework: "jest",
+            line: 30,
+            name: "regular active test",
+            status: "active",
+          },
+          {
+            filePath: "src/__tests__/focused.test.ts",
+            framework: "jest",
+            line: 40,
+            name: "skipped test",
+            status: "skipped",
+            modifier: "skip",
+          },
+        ],
+      },
+    ],
+    summary: {
+      active: 1,
+      focused: 2,
+      skipped: 1,
+      todo: 0,
+      total: 4,
+      xfail: 0,
+      frameworks: [
+        {
+          framework: "jest",
+          active: 1,
+          focused: 2,
+          skipped: 1,
+          todo: 0,
+          total: 4,
+          xfail: 0,
+        },
+      ],
+    },
+  },
+};
+
+// Analysis with xfail tests (for conditional display testing)
+export const mockAnalysisWithXfail: AnalysisCompletedResponse = {
+  status: "completed",
+  data: {
+    id: "xfail-analysis-id",
+    analyzedAt: now,
+    branchName: "main",
+    commitSha: "xfail456",
+    committedAt: commitTime,
+    isInMyHistory: true,
+    owner: "test-owner",
+    repo: "xfail-test-repo",
+    parserVersion: "v1.0.0",
+    suites: [
+      {
+        filePath: "tests/test_xfail.py",
+        framework: "pytest",
+        suiteName: "Xfail Test Suite",
+        tests: [
+          {
+            filePath: "tests/test_xfail.py",
+            framework: "pytest",
+            line: 10,
+            name: "test_expected_failure",
+            status: "xfail",
+            modifier: "xfail",
+          },
+          {
+            filePath: "tests/test_xfail.py",
+            framework: "pytest",
+            line: 20,
+            name: "test_another_xfail",
+            status: "xfail",
+            modifier: "xfail",
+          },
+          {
+            filePath: "tests/test_xfail.py",
+            framework: "pytest",
+            line: 30,
+            name: "test_working",
+            status: "active",
+          },
+          {
+            filePath: "tests/test_xfail.py",
+            framework: "pytest",
+            line: 40,
+            name: "test_skipped",
+            status: "skipped",
+            modifier: "skip",
+          },
+        ],
+      },
+    ],
+    summary: {
+      active: 1,
+      focused: 0,
+      skipped: 1,
+      todo: 0,
+      total: 4,
+      xfail: 2,
+      frameworks: [
+        {
+          framework: "pytest",
+          active: 1,
+          focused: 0,
+          skipped: 1,
+          todo: 0,
+          total: 4,
+          xfail: 2,
+        },
+      ],
+    },
+  },
+};
+
+// Analysis with all 5 statuses (comprehensive testing)
+export const mockAnalysisWithAllStatuses: AnalysisCompletedResponse = {
+  status: "completed",
+  data: {
+    id: "all-status-analysis-id",
+    analyzedAt: now,
+    branchName: "develop",
+    commitSha: "all789",
+    committedAt: commitTime,
+    isInMyHistory: true,
+    owner: "test-owner",
+    repo: "all-status-repo",
+    parserVersion: "v1.0.0",
+    suites: [
+      {
+        filePath: "src/__tests__/comprehensive.test.ts",
+        framework: "vitest",
+        suiteName: "Comprehensive Status Suite",
+        tests: [
+          {
+            filePath: "src/__tests__/comprehensive.test.ts",
+            framework: "vitest",
+            line: 10,
+            name: "active test 1",
+            status: "active",
+          },
+          {
+            filePath: "src/__tests__/comprehensive.test.ts",
+            framework: "vitest",
+            line: 20,
+            name: "active test 2",
+            status: "active",
+          },
+          {
+            filePath: "src/__tests__/comprehensive.test.ts",
+            framework: "vitest",
+            line: 30,
+            name: "focused test",
+            status: "focused",
+            modifier: "only",
+          },
+          {
+            filePath: "src/__tests__/comprehensive.test.ts",
+            framework: "vitest",
+            line: 40,
+            name: "skipped test",
+            status: "skipped",
+            modifier: "skip",
+          },
+          {
+            filePath: "src/__tests__/comprehensive.test.ts",
+            framework: "vitest",
+            line: 50,
+            name: "xfail test",
+            status: "xfail",
+            modifier: "xfail",
+          },
+          {
+            filePath: "src/__tests__/comprehensive.test.ts",
+            framework: "vitest",
+            line: 60,
+            name: "todo test",
+            status: "todo",
+            modifier: "todo",
+          },
+        ],
+      },
+    ],
+    summary: {
+      active: 2,
+      focused: 1,
+      skipped: 1,
+      todo: 1,
+      total: 6,
+      xfail: 1,
+      frameworks: [
+        {
+          framework: "vitest",
+          active: 2,
+          focused: 1,
+          skipped: 1,
+          todo: 1,
+          total: 6,
+          xfail: 1,
+        },
+      ],
+    },
+  },
+};
+
 export const mockAnalysisLarge: AnalysisCompletedResponse = {
   status: "completed",
   data: {
