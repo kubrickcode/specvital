@@ -1101,6 +1101,13 @@ CREATE INDEX idx_spec_documents_analysis ON public.spec_documents USING btree (a
 
 
 --
+-- Name: idx_spec_documents_content_hash_lang_model; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_spec_documents_content_hash_lang_model ON public.spec_documents USING btree (content_hash, language, model_id);
+
+
+--
 -- Name: idx_spec_documents_user_created; Type: INDEX; Schema: public; Owner: -
 --
 
