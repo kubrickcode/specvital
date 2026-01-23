@@ -106,9 +106,9 @@ export const RepositoryCard = ({
           "group-focus-visible:shadow-md group-focus-visible:border-primary/20"
         )}
       >
-        <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex items-center justify-between gap-2 mb-3">
           <ResponsiveTooltip content={fullName}>
-            <h3 className="font-semibold text-sm line-clamp-2 break-all h-10">{fullName}</h3>
+            <h3 className="font-semibold text-sm line-clamp-2 break-all">{fullName}</h3>
           </ResponsiveTooltip>
           {renderActionButton()}
         </div>
