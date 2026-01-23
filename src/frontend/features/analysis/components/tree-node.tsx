@@ -24,7 +24,7 @@ export const TreeNode = ({ isExpanded, item, onToggle }: TreeNodeProps) => {
 
   const statusCounts = (() => {
     if (isDirectory) {
-      return { active: 0, skipped: 0, todo: 0 };
+      return { active: 0, focused: 0, skipped: 0, todo: 0, xfail: 0 };
     }
     const allTests = node.suites.flatMap((suite) => suite.tests);
     return calculateStatusCounts(allTests);

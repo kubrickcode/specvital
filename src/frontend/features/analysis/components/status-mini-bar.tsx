@@ -10,8 +10,8 @@ type StatusMiniBarProps = {
 };
 
 export const StatusMiniBar = ({ className, counts }: StatusMiniBarProps) => {
-  const { active, skipped, todo } = counts;
-  const total = active + skipped + todo;
+  const { active, focused, skipped, todo, xfail } = counts;
+  const total = active + focused + skipped + todo + xfail;
 
   if (total === 0) {
     return null;
