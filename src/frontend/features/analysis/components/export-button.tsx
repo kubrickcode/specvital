@@ -34,10 +34,15 @@ const iconTransition: Transition = {
   type: "tween",
 };
 
-export const ExportButton = ({ data, size = "sm", variant = "outline" }: ExportButtonProps) => {
+export const ExportButton = ({
+  data,
+  size = "default",
+  variant = "outline",
+}: ExportButtonProps) => {
   const t = useTranslations("export");
   const shouldReduceMotion = useReducedMotion();
   const [state, setState] = useState<ExportState>("idle");
+  const isIconOnly = size === "icon";
 
   const handleDownload = () => {
     const markdown = exportToMarkdown(data);
@@ -69,7 +74,12 @@ export const ExportButton = ({ data, size = "sm", variant = "outline" }: ExportB
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label={t("ariaLabel")} className="gap-2" size={size} variant={variant}>
+        <Button
+          aria-label={t("ariaLabel")}
+          className={isIconOnly ? "" : "gap-2"}
+          size={size}
+          variant={variant}
+        >
           <span className="relative flex h-4 w-4 items-center justify-center">
             <AnimatePresence initial={false} mode="wait">
               <motion.span
@@ -84,7 +94,7 @@ export const ExportButton = ({ data, size = "sm", variant = "outline" }: ExportB
               </motion.span>
             </AnimatePresence>
           </span>
-          <span>{state !== "idle" ? t("success") : t("button")}</span>
+          {!isIconOnly && <span>{state !== "idle" ? t("success") : t("button")}</span>}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

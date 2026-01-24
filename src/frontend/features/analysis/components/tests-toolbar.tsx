@@ -46,7 +46,8 @@ export const TestsToolbar = ({
 
   return (
     <div className="py-4 space-y-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      {/* Desktop: Single row */}
+      <div className="hidden sm:flex sm:items-center sm:gap-2">
         <div className="flex-1 min-w-0">
           <SearchInput
             onChange={onQueryChange}
@@ -54,21 +55,41 @@ export const TestsToolbar = ({
             value={query}
           />
         </div>
+        <StatusFilter onChange={onStatusesChange} value={statuses} />
+        <FrameworkFilter
+          availableFrameworks={availableFrameworks}
+          onChange={onFrameworksChange}
+          value={frameworks}
+        />
+        <div className="w-px h-5 bg-border" />
+        <DataViewToggle onChange={onDataViewModeChange} value={dataViewMode} />
+        <div className="w-px h-5 bg-border" />
+        <ExportButton data={data} />
+      </div>
+
+      {/* Mobile: Two rows */}
+      <div className="flex flex-col gap-3 sm:hidden">
+        {/* Row 1: Search + Export icon */}
         <div className="flex items-center gap-2">
-          <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-hide">
-            <div className="flex items-center gap-2 w-max">
-              <StatusFilter onChange={onStatusesChange} value={statuses} />
-              <FrameworkFilter
-                availableFrameworks={availableFrameworks}
-                onChange={onFrameworksChange}
-                value={frameworks}
-              />
-            </div>
+          <div className="flex-1 min-w-0">
+            <SearchInput
+              onChange={onQueryChange}
+              placeholder={t("searchPlaceholder")}
+              value={query}
+            />
           </div>
-          <div className="w-px h-5 bg-border hidden sm:block" />
+          <ExportButton data={data} size="icon" />
+        </div>
+        {/* Row 2: Filters + View Toggle */}
+        <div className="flex items-center gap-2">
+          <StatusFilter onChange={onStatusesChange} value={statuses} />
+          <FrameworkFilter
+            availableFrameworks={availableFrameworks}
+            onChange={onFrameworksChange}
+            value={frameworks}
+          />
+          <div className="w-px h-5 bg-border" />
           <DataViewToggle onChange={onDataViewModeChange} value={dataViewMode} />
-          <div className="w-px h-5 bg-border hidden sm:block" />
-          <ExportButton data={data} />
         </div>
       </div>
 

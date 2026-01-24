@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useReducedMotion } from "@/lib/motion";
+import { cn } from "@/lib/utils";
 
 import type { RepoSpecDocument, SpecDocument } from "../types";
 import {
@@ -27,11 +28,11 @@ import {
 type ExportableDocument = SpecDocument | RepoSpecDocument;
 
 type SpecExportButtonProps = {
+  className?: string;
   disabled?: boolean;
   document: ExportableDocument;
   owner: string;
   repo: string;
-  size?: "default" | "icon" | "lg" | "sm";
   variant?: "default" | "ghost" | "outline";
 };
 
@@ -44,11 +45,11 @@ const iconTransition: Transition = {
 };
 
 export const SpecExportButton = ({
+  className,
   disabled = false,
   document,
   owner,
   repo,
-  size = "sm",
   variant = "outline",
 }: SpecExportButtonProps) => {
   const t = useTranslations("specView.export");
@@ -89,12 +90,11 @@ export const SpecExportButton = ({
           <DropdownMenuTrigger asChild>
             <Button
               aria-label={t("ariaLabel")}
-              className="gap-2"
+              className={cn("h-auto px-2.5 py-1 gap-1.5 text-xs font-normal", className)}
               disabled={disabled}
-              size={size}
               variant={variant}
             >
-              <span className="relative flex h-4 w-4 items-center justify-center">
+              <span className="relative flex h-3 w-3 items-center justify-center">
                 <AnimatePresence initial={false} mode="wait">
                   <motion.span
                     animate={shouldReduceMotion ? {} : { opacity: 1, scale: 1 }}
@@ -104,7 +104,7 @@ export const SpecExportButton = ({
                     key={iconKey}
                     transition={shouldReduceMotion ? undefined : iconTransition}
                   >
-                    <IconComponent className="h-4 w-4" />
+                    <IconComponent className="h-3 w-3" />
                   </motion.span>
                 </AnimatePresence>
               </span>
