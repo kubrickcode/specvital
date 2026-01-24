@@ -53,6 +53,17 @@ func (p *Provider) ConvertTestNames(ctx context.Context, input specview.Phase2In
 	return generatePhase2Output(input), nil, nil
 }
 
+// PlaceNewTests returns mock placement results for new tests.
+// NOTE: Stub implementation for mock provider.
+func (p *Provider) PlaceNewTests(ctx context.Context, input specview.PlacementInput) (*specview.PlacementOutput, *specview.TokenUsage, error) {
+	if err := p.simulateDelay(ctx); err != nil {
+		return nil, nil, err
+	}
+	return &specview.PlacementOutput{
+		Placements: make([]specview.TestPlacement, 0),
+	}, nil, nil
+}
+
 // simulateDelay waits for the configured delay duration, respecting context cancellation.
 func (p *Provider) simulateDelay(ctx context.Context) error {
 	if p.delay <= 0 {

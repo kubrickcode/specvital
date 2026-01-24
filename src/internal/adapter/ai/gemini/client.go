@@ -97,6 +97,16 @@ func (p *Provider) ConvertTestNames(ctx context.Context, input specview.Phase2In
 	return p.convertTestNames(ctx, input, input.Language)
 }
 
+// PlaceNewTests places new tests into an existing domain/feature structure.
+// Used for incremental caching: when tests are added, only placement is needed.
+// NOTE: Stub implementation - will be implemented in Commit 2.
+func (p *Provider) PlaceNewTests(ctx context.Context, input specview.PlacementInput) (*specview.PlacementOutput, *specview.TokenUsage, error) {
+	// Stub: return empty placements until placement prompt is implemented
+	return &specview.PlacementOutput{
+		Placements: make([]specview.TestPlacement, 0),
+	}, nil, nil
+}
+
 // Close releases resources held by the provider.
 func (p *Provider) Close() error {
 	// genai.Client doesn't require explicit close

@@ -14,6 +14,11 @@ type AIProvider interface {
 	// Returns token usage for the API call.
 	ConvertTestNames(ctx context.Context, input Phase2Input) (*Phase2Output, *TokenUsage, error)
 
+	// PlaceNewTests places new tests into an existing domain/feature structure.
+	// Used for incremental caching: when tests are added, only placement is needed.
+	// Returns token usage for the API call.
+	PlaceNewTests(ctx context.Context, input PlacementInput) (*PlacementOutput, *TokenUsage, error)
+
 	// Close releases resources held by the provider.
 	Close() error
 }

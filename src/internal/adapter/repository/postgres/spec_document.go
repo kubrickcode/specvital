@@ -570,3 +570,28 @@ func (r *SpecDocumentRepository) SaveBehaviorCache(
 
 	return results.Close()
 }
+
+// FindClassificationCache looks up a cached Phase 1 classification result.
+// Cache key: file_signature + language + model_id.
+// Returns nil without error if no cache is found or if cache has expired.
+// NOTE: Stub implementation - will be implemented in Commit 3.
+func (r *SpecDocumentRepository) FindClassificationCache(
+	ctx context.Context,
+	fileSignature []byte,
+	language specview.Language,
+	modelID string,
+) (*specview.ClassificationCache, error) {
+	// Stub: return nil (cache miss) until database schema is ready
+	return nil, nil
+}
+
+// SaveClassificationCache saves or updates a Phase 1 classification cache.
+// Uses upsert semantics: existing cache is replaced, new cache is inserted.
+// NOTE: Stub implementation - will be implemented in Commit 3.
+func (r *SpecDocumentRepository) SaveClassificationCache(
+	ctx context.Context,
+	cache *specview.ClassificationCache,
+) error {
+	// Stub: no-op until database schema is ready
+	return nil
+}

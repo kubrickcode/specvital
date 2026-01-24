@@ -16,6 +16,7 @@ import (
 type mockAIProvider struct {
 	classifyDomainsFn  func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error)
 	convertTestNamesFn func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error)
+	placeNewTestsFn    func(ctx context.Context, input specview.PlacementInput) (*specview.PlacementOutput, *specview.TokenUsage, error)
 }
 
 func (m *mockAIProvider) ClassifyDomains(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
@@ -50,18 +51,27 @@ func (m *mockAIProvider) ConvertTestNames(ctx context.Context, input specview.Ph
 	}, nil, nil
 }
 
+func (m *mockAIProvider) PlaceNewTests(ctx context.Context, input specview.PlacementInput) (*specview.PlacementOutput, *specview.TokenUsage, error) {
+	if m.placeNewTestsFn != nil {
+		return m.placeNewTestsFn(ctx, input)
+	}
+	return nil, nil, nil
+}
+
 func (m *mockAIProvider) Close() error {
 	return nil
 }
 
 type mockRepository struct {
 	findCachedBehaviorsFn       func(ctx context.Context, cacheKeyHashes [][]byte) (map[string]string, error)
+	findClassificationCacheFn   func(ctx context.Context, fileSignature []byte, language specview.Language, modelID string) (*specview.ClassificationCache, error)
 	findDocumentByContentHashFn func(ctx context.Context, userID string, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error)
 	getAnalysisContextFn        func(ctx context.Context, analysisID string) (*specview.AnalysisContext, error)
 	getTestDataByAnalysisIDFn   func(ctx context.Context, analysisID string) ([]specview.FileInfo, error)
 	recordUsageEventFn          func(ctx context.Context, userID string, documentID string, quotaAmount int) error
 	recordUserHistoryFn         func(ctx context.Context, userID string, documentID string) error
 	saveBehaviorCacheFn         func(ctx context.Context, entries []specview.BehaviorCacheEntry) error
+	saveClassificationCacheFn   func(ctx context.Context, cache *specview.ClassificationCache) error
 	saveDocumentFn              func(ctx context.Context, doc *specview.SpecDocument) error
 }
 
@@ -127,6 +137,20 @@ func (m *mockRepository) SaveDocument(ctx context.Context, doc *specview.SpecDoc
 		return m.saveDocumentFn(ctx, doc)
 	}
 	doc.ID = "generated-doc-id"
+	return nil
+}
+
+func (m *mockRepository) FindClassificationCache(ctx context.Context, fileSignature []byte, language specview.Language, modelID string) (*specview.ClassificationCache, error) {
+	if m.findClassificationCacheFn != nil {
+		return m.findClassificationCacheFn(ctx, fileSignature, language, modelID)
+	}
+	return nil, nil
+}
+
+func (m *mockRepository) SaveClassificationCache(ctx context.Context, cache *specview.ClassificationCache) error {
+	if m.saveClassificationCacheFn != nil {
+		return m.saveClassificationCacheFn(ctx, cache)
+	}
 	return nil
 }
 

@@ -37,4 +37,13 @@ type Repository interface {
 	// SaveBehaviorCache saves behavior cache entries to the database.
 	// Uses upsert semantics: existing entries are updated, new entries are inserted.
 	SaveBehaviorCache(ctx context.Context, entries []BehaviorCacheEntry) error
+
+	// FindClassificationCache looks up a cached Phase 1 classification result.
+	// Cache key: file_signature + language + model_id.
+	// Returns nil without error if no cache is found or if cache has expired.
+	FindClassificationCache(ctx context.Context, fileSignature []byte, language Language, modelID string) (*ClassificationCache, error)
+
+	// SaveClassificationCache saves or updates a Phase 1 classification cache.
+	// Uses upsert semantics: existing cache is replaced, new cache is inserted.
+	SaveClassificationCache(ctx context.Context, cache *ClassificationCache) error
 }
