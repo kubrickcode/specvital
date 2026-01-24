@@ -1,7 +1,7 @@
 "use client";
 
 import { FilterEmptyState } from "@/components/feedback";
-import type { TestSuite } from "@/lib/api";
+import type { AnalysisResult, TestSuite } from "@/lib/api";
 
 import { TestList } from "./test-list";
 import { TestsToolbar } from "./tests-toolbar";
@@ -12,11 +12,12 @@ import { filterSuites } from "../utils/filter-suites";
 
 type TestsPanelProps = {
   availableFrameworks: string[];
+  data: AnalysisResult;
   suites: TestSuite[];
   totalCount: number;
 };
 
-export const TestsPanel = ({ availableFrameworks, suites, totalCount }: TestsPanelProps) => {
+export const TestsPanel = ({ availableFrameworks, data, suites, totalCount }: TestsPanelProps) => {
   const { frameworks, query, setFrameworks, setQuery, setStatuses, statuses } = useFilterState();
   const { dataViewMode, setDataViewMode } = useDataViewMode();
 
@@ -36,6 +37,7 @@ export const TestsPanel = ({ availableFrameworks, suites, totalCount }: TestsPan
     <div aria-labelledby="tab-tests" className="p-5 space-y-4" id="tabpanel-tests" role="tabpanel">
       <TestsToolbar
         availableFrameworks={availableFrameworks}
+        data={data}
         dataViewMode={dataViewMode}
         filteredCount={filteredCount}
         frameworks={frameworks}

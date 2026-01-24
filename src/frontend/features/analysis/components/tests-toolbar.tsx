@@ -2,9 +2,10 @@
 
 import { useTranslations } from "next-intl";
 
-import type { TestStatus } from "@/lib/api";
+import type { AnalysisResult, TestStatus } from "@/lib/api";
 
 import { DataViewToggle } from "./data-view-toggle";
+import { ExportButton } from "./export-button";
 import { FrameworkFilter } from "./framework-filter";
 import { SearchInput } from "./search-input";
 import { StatusFilter } from "./status-filter";
@@ -12,6 +13,7 @@ import type { DataViewMode } from "../types/data-view-mode";
 
 type TestsToolbarProps = {
   availableFrameworks: string[];
+  data: AnalysisResult;
   dataViewMode: DataViewMode;
   filteredCount: number;
   frameworks: string[];
@@ -27,6 +29,7 @@ type TestsToolbarProps = {
 
 export const TestsToolbar = ({
   availableFrameworks,
+  data,
   dataViewMode,
   filteredCount,
   frameworks,
@@ -64,6 +67,8 @@ export const TestsToolbar = ({
           </div>
           <div className="w-px h-5 bg-border hidden sm:block" />
           <DataViewToggle onChange={onDataViewModeChange} value={dataViewMode} />
+          <div className="w-px h-5 bg-border hidden sm:block" />
+          <ExportButton data={data} />
         </div>
       </div>
 

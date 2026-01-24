@@ -6,22 +6,17 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
-import type { components } from "@/lib/api/generated-types";
 import { useTruncateDetection } from "@/lib/hooks";
 import { fadeInUp } from "@/lib/motion";
 import { formatAnalysisDate, SHORT_SHA_LENGTH } from "@/lib/utils";
 
-import { ExportButton } from "./export-button";
 import { ShareButton } from "./share-button";
-
-type AnalysisResult = components["schemas"]["AnalysisResult"];
 
 type AnalysisHeaderProps = {
   analyzedAt: string;
   branchName?: string;
   commitSha: string;
   committedAt?: string;
-  data?: AnalysisResult;
   owner: string;
   parserVersion?: string;
   repo: string;
@@ -32,7 +27,6 @@ export const AnalysisHeader = ({
   branchName,
   commitSha,
   committedAt,
-  data,
   owner,
   parserVersion,
   repo,
@@ -90,7 +84,6 @@ export const AnalysisHeader = ({
 
         {/* Action buttons - more subtle */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {data && <ExportButton data={data} />}
           <ShareButton />
           <Button asChild size="sm" variant="ghost">
             <a

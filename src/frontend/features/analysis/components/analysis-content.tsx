@@ -45,7 +45,6 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
             branchName={result.branchName}
             commitSha={result.commitSha}
             committedAt={result.committedAt}
-            data={result}
             owner={result.owner}
             parserVersion={result.parserVersion}
             repo={result.repo}
@@ -69,6 +68,7 @@ export const AnalysisContent = ({ result }: AnalysisContentProps) => {
           {tab === "tests" ? (
             <TestsPanel
               availableFrameworks={availableFrameworks}
+              data={result}
               suites={result.suites}
               totalCount={result.summary.total}
             />
