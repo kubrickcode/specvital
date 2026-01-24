@@ -2,6 +2,7 @@ package specview
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -13,6 +14,20 @@ import (
 
 	"github.com/specvital/worker/internal/domain/specview"
 )
+
+// behaviorCacheStats tracks cache hit/miss statistics for Phase 2 behavior cache.
+type behaviorCacheStats struct {
+	cacheHits   int
+	cacheMisses int
+	totalTests  int
+}
+
+func (s *behaviorCacheStats) hitRate() float64 {
+	if s.totalTests == 0 {
+		return 0.0
+	}
+	return float64(s.cacheHits) / float64(s.totalTests)
+}
 
 const (
 	DefaultPhase1Timeout        = 270 * time.Second // 4m30s, below Gemini's 5min server limit
@@ -183,10 +198,29 @@ func (uc *GenerateSpecViewUseCase) Execute(
 
 	testIndexMap := buildTestIndexMap(files)
 
-	phase2Results, phase2Usage, err := uc.executePhase2(ctx, phase1Output, req.Language, testIndexMap)
+	phase2Results, cacheStats, phase2Usage, err := uc.executePhase2(
+		ctx,
+		phase1Output,
+		req.Language,
+		modelID,
+		testIndexMap,
+		files,
+		req.ForceRegenerate,
+	)
 	if err != nil {
 		uc.logExecutionError(ctx, req.AnalysisID, "phase2", startTime, err)
 		return nil, fmt.Errorf("%w: phase 2: %w", ErrAIProcessingFailed, err)
+	}
+
+	// Log behavior cache stats
+	if cacheStats != nil && cacheStats.totalTests > 0 {
+		slog.InfoContext(ctx, "behavior cache stats",
+			"analysis_id", req.AnalysisID,
+			"total_tests", cacheStats.totalTests,
+			"cache_hits", cacheStats.cacheHits,
+			"cache_misses", cacheStats.cacheMisses,
+			"hit_rate", fmt.Sprintf("%.1f%%", cacheStats.hitRate()*100),
+		)
 	}
 
 	doc := uc.assembleDocument(req, modelID, contentHash, phase1Output, phase2Results, testIndexMap)
@@ -302,25 +336,30 @@ func (uc *GenerateSpecViewUseCase) executePhase1(
 }
 
 type phase2Result struct {
-	domainIdx   int
-	featureIdx  int
-	behaviors   []specview.BehaviorSpec
-	failedCount int
-	usage       *specview.TokenUsage
+	domainIdx       int
+	featureIdx      int
+	behaviors       []specview.BehaviorSpec
+	failedCount     int
+	usage           *specview.TokenUsage
+	newCacheEntries []specview.BehaviorCacheEntry
 }
 
 func (uc *GenerateSpecViewUseCase) executePhase2(
 	ctx context.Context,
 	phase1Output *specview.Phase1Output,
 	lang specview.Language,
+	modelID string,
 	testIndexMap map[int]specview.TestInfo,
-) ([]phase2Result, *specview.TokenUsage, error) {
+	files []specview.FileInfo,
+	forceRegenerate bool,
+) ([]phase2Result, *behaviorCacheStats, *specview.TokenUsage, error) {
 	startTime := time.Now()
 
 	phase2Ctx, cancel := context.WithTimeout(ctx, uc.config.Phase2Timeout)
 	defer cancel()
 
 	var featureTasks []featureTask
+	totalTests := 0
 	for di, domain := range phase1Output.Domains {
 		for fi, feature := range domain.Features {
 			featureTasks = append(featureTasks, featureTask{
@@ -329,15 +368,53 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 				featureIdx:    fi,
 				feature:       feature,
 			})
+			totalTests += len(feature.TestIndices)
 		}
 	}
 
 	if len(featureTasks) == 0 {
-		return nil, nil, nil
+		return nil, &behaviorCacheStats{}, nil, nil
+	}
+
+	// Build test -> filePath mapping for cache key generation
+	testFilePathMap := buildTestFilePathMap(files)
+
+	// Lookup behavior cache (skip if forceRegenerate)
+	var cachedBehaviors map[string]string
+	var testHashMap map[int]string
+	cacheStats := &behaviorCacheStats{totalTests: totalTests}
+
+	if !forceRegenerate {
+		var err error
+		cachedBehaviors, testHashMap, err = uc.lookupBehaviorCache(
+			ctx,
+			phase1Output,
+			testIndexMap,
+			testFilePathMap,
+			lang,
+			modelID,
+		)
+		if err != nil {
+			slog.WarnContext(ctx, "behavior cache lookup failed, proceeding without cache",
+				"error", err,
+			)
+			cachedBehaviors = make(map[string]string)
+			testHashMap = make(map[int]string)
+		}
+		cacheStats.cacheHits = len(cachedBehaviors)
+		cacheStats.cacheMisses = totalTests - cacheStats.cacheHits
+	} else {
+		cachedBehaviors = make(map[string]string)
+		testHashMap = uc.buildTestHashMap(phase1Output, testIndexMap, testFilePathMap, lang, modelID)
+		cacheStats.cacheMisses = totalTests
 	}
 
 	slog.InfoContext(ctx, "phase 2 started",
 		"feature_count", len(featureTasks),
+		"total_tests", totalTests,
+		"cache_hits", cacheStats.cacheHits,
+		"cache_misses", cacheStats.cacheMisses,
+		"force_regenerate", forceRegenerate,
 	)
 
 	var (
@@ -355,15 +432,23 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 			}
 			defer uc.phase2Sem.Release(1)
 
-			behaviors, usage, failed := uc.convertFeature(gCtx, task, lang, testIndexMap)
+			behaviors, usage, failed, newEntries := uc.convertFeatureWithCache(
+				gCtx,
+				task,
+				lang,
+				testIndexMap,
+				testHashMap,
+				cachedBehaviors,
+			)
 
 			resultsMu.Lock()
 			results[i] = phase2Result{
-				domainIdx:   task.domainIdx,
-				featureIdx:  task.featureIdx,
-				behaviors:   behaviors,
-				failedCount: failed,
-				usage:       usage,
+				domainIdx:       task.domainIdx,
+				featureIdx:      task.featureIdx,
+				behaviors:       behaviors,
+				failedCount:     failed,
+				usage:           usage,
+				newCacheEntries: newEntries,
 			}
 			resultsMu.Unlock()
 
@@ -374,24 +459,36 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 	}
 
 	if err := g.Wait(); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	failedCount := int(tracker.failed.Load())
 	failureRate := float64(failedCount) / float64(len(featureTasks))
 	if failureRate > uc.config.FailureThreshold {
-		return nil, nil, fmt.Errorf("%w: %.0f%% features failed (threshold: %.0f%%)",
+		return nil, nil, nil, fmt.Errorf("%w: %.0f%% features failed (threshold: %.0f%%)",
 			ErrPartialFeatureFailure,
 			failureRate*100,
 			uc.config.FailureThreshold*100,
 		)
 	}
 
-	// Aggregate Phase 2 token usage
+	// Aggregate Phase 2 token usage and collect cache entries to save
 	var aggregateUsage specview.TokenUsage
+	var allNewCacheEntries []specview.BehaviorCacheEntry
 	for _, r := range results {
 		if r.usage != nil {
 			aggregateUsage = aggregateUsage.Add(*r.usage)
+		}
+		allNewCacheEntries = append(allNewCacheEntries, r.newCacheEntries...)
+	}
+
+	// Save new cache entries (non-blocking on error)
+	if len(allNewCacheEntries) > 0 {
+		if err := uc.repository.SaveBehaviorCache(ctx, allNewCacheEntries); err != nil {
+			slog.WarnContext(ctx, "failed to save behavior cache (non-critical)",
+				"entry_count", len(allNewCacheEntries),
+				"error", err,
+			)
 		}
 	}
 
@@ -402,7 +499,98 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 		"duration_ms", durationMs,
 	)
 
-	return results, &aggregateUsage, nil
+	return results, cacheStats, &aggregateUsage, nil
+}
+
+// buildTestFilePathMap creates a mapping from test index to file path.
+func buildTestFilePathMap(files []specview.FileInfo) map[int]string {
+	m := make(map[int]string)
+	for _, f := range files {
+		for _, t := range f.Tests {
+			m[t.Index] = f.Path
+		}
+	}
+	return m
+}
+
+// lookupBehaviorCache looks up cached behaviors for all tests in phase 1 output.
+// Returns (cachedBehaviors map[hexHash]description, testHashMap map[testIndex]hexHash, error).
+func (uc *GenerateSpecViewUseCase) lookupBehaviorCache(
+	ctx context.Context,
+	phase1Output *specview.Phase1Output,
+	testIndexMap map[int]specview.TestInfo,
+	testFilePathMap map[int]string,
+	lang specview.Language,
+	modelID string,
+) (map[string]string, map[int]string, error) {
+	testHashMap := uc.buildTestHashMap(phase1Output, testIndexMap, testFilePathMap, lang, modelID)
+
+	// Collect all hashes for batch lookup
+	var allHashes [][]byte
+	hexToHash := make(map[string][]byte)
+	for _, hexHash := range testHashMap {
+		if _, exists := hexToHash[hexHash]; !exists {
+			hash, err := hex.DecodeString(hexHash)
+			if err != nil {
+				continue // skip invalid hex (should not happen as we generate them)
+			}
+			allHashes = append(allHashes, hash)
+			hexToHash[hexHash] = hash
+		}
+	}
+
+	if len(allHashes) == 0 {
+		return make(map[string]string), testHashMap, nil
+	}
+
+	// Batch lookup from repository
+	cachedBehaviors, err := uc.repository.FindCachedBehaviors(ctx, allHashes)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return cachedBehaviors, testHashMap, nil
+}
+
+// buildTestHashMap generates hex-encoded cache key hashes for all tests.
+func (uc *GenerateSpecViewUseCase) buildTestHashMap(
+	phase1Output *specview.Phase1Output,
+	testIndexMap map[int]specview.TestInfo,
+	testFilePathMap map[int]string,
+	lang specview.Language,
+	modelID string,
+) map[int]string {
+	// Pre-calculate total tests for efficient map allocation
+	totalTests := 0
+	for _, domain := range phase1Output.Domains {
+		for _, feature := range domain.Features {
+			totalTests += len(feature.TestIndices)
+		}
+	}
+	result := make(map[int]string, totalTests)
+
+	for _, domain := range phase1Output.Domains {
+		for _, feature := range domain.Features {
+			for _, testIdx := range feature.TestIndices {
+				testInfo, ok := testIndexMap[testIdx]
+				if !ok {
+					continue
+				}
+				filePath := testFilePathMap[testIdx]
+
+				key := specview.BehaviorCacheKey{
+					FilePath:  filePath,
+					Language:  lang,
+					ModelID:   modelID,
+					SuitePath: testInfo.SuitePath,
+					TestName:  testInfo.Name,
+				}
+				hash := specview.GenerateCacheKeyHash(key)
+				result[testIdx] = hex.EncodeToString(hash)
+			}
+		}
+	}
+	return result
 }
 
 type featureTask struct {
@@ -464,34 +652,60 @@ func (pt *progressTracker) maybeLogProgress(ctx context.Context, completed int32
 	}
 }
 
-func (uc *GenerateSpecViewUseCase) convertFeature(
+// convertFeatureWithCache converts test names using AI, with behavior cache support.
+// Returns: behaviors, token usage, failed count, new cache entries to save.
+func (uc *GenerateSpecViewUseCase) convertFeatureWithCache(
 	ctx context.Context,
 	task featureTask,
 	lang specview.Language,
 	testIndexMap map[int]specview.TestInfo,
-) ([]specview.BehaviorSpec, *specview.TokenUsage, int) {
+	testHashMap map[int]string,
+	cachedBehaviors map[string]string,
+) ([]specview.BehaviorSpec, *specview.TokenUsage, int, []specview.BehaviorCacheEntry) {
 	featureCtx, cancel := context.WithTimeout(ctx, DefaultPhase2FeatureTimeout)
 	defer cancel()
 
-	tests := make([]specview.TestForConversion, 0, len(task.feature.TestIndices))
+	// Separate cached vs uncached tests
+	var cachedResults []specview.BehaviorSpec
+	var uncachedTests []specview.TestForConversion
+
 	for _, idx := range task.feature.TestIndices {
-		if testInfo, ok := testIndexMap[idx]; ok {
-			tests = append(tests, specview.TestForConversion{
-				Index: idx,
-				Name:  testInfo.Name,
-			})
+		testInfo, ok := testIndexMap[idx]
+		if !ok {
+			continue
 		}
+
+		hexHash, hasHash := testHashMap[idx]
+		if hasHash {
+			if cachedDesc, isCached := cachedBehaviors[hexHash]; isCached {
+				// Use cached result
+				cachedResults = append(cachedResults, specview.BehaviorSpec{
+					Confidence:  1.0, // cached results are trusted
+					Description: cachedDesc,
+					TestIndex:   idx,
+				})
+				continue
+			}
+		}
+
+		// Need AI call
+		uncachedTests = append(uncachedTests, specview.TestForConversion{
+			Index: idx,
+			Name:  testInfo.Name,
+		})
 	}
 
-	if len(tests) == 0 {
-		return nil, nil, 0
+	// If all tests are cached, return early (no AI call needed)
+	if len(uncachedTests) == 0 {
+		return cachedResults, nil, 0, nil
 	}
 
+	// AI call for uncached tests
 	input := specview.Phase2Input{
 		DomainContext: task.domainContext,
 		FeatureName:   task.feature.Name,
 		Language:      lang,
-		Tests:         tests,
+		Tests:         uncachedTests,
 	}
 
 	output, usage, err := uc.aiProvider.ConvertTestNames(featureCtx, input)
@@ -500,10 +714,31 @@ func (uc *GenerateSpecViewUseCase) convertFeature(
 			"feature", task.feature.Name,
 			"error", err,
 		)
-		return uc.generateFallbackBehaviors(tests), nil, 1
+		fallbackBehaviors := uc.generateFallbackBehaviors(uncachedTests)
+		allBehaviors := append(cachedResults, fallbackBehaviors...)
+		// Do not cache fallback behaviors (low quality)
+		return allBehaviors, nil, 1, nil
 	}
 
-	return output.Behaviors, usage, 0
+	// Prepare cache entries to save for successful AI conversions
+	var newCacheEntries []specview.BehaviorCacheEntry
+	for _, behavior := range output.Behaviors {
+		if hexHash, ok := testHashMap[behavior.TestIndex]; ok {
+			hash, err := hex.DecodeString(hexHash)
+			if err != nil {
+				continue // skip invalid hex (should not happen as we generate them)
+			}
+			newCacheEntries = append(newCacheEntries, specview.BehaviorCacheEntry{
+				CacheKeyHash: hash,
+				Description:  behavior.Description,
+			})
+		}
+	}
+
+	// Merge cached + AI results
+	allBehaviors := append(cachedResults, output.Behaviors...)
+
+	return allBehaviors, usage, 0, newCacheEntries
 }
 
 func (uc *GenerateSpecViewUseCase) generateFallbackBehaviors(
