@@ -184,6 +184,21 @@ CREATE TABLE public.behavior_caches (
 
 
 --
+-- Name: classification_caches; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.classification_caches (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    content_hash bytea NOT NULL,
+    language character varying(10) NOT NULL,
+    model_id character varying(100) NOT NULL,
+    phase1_output jsonb NOT NULL,
+    test_index_map jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: codebases; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -674,6 +689,14 @@ ALTER TABLE ONLY public.behavior_caches
 
 
 --
+-- Name: classification_caches classification_caches_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.classification_caches
+    ADD CONSTRAINT classification_caches_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: codebases codebases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -831,6 +854,14 @@ ALTER TABLE ONLY public.test_suites
 
 ALTER TABLE ONLY public.behavior_caches
     ADD CONSTRAINT uq_behavior_caches_key UNIQUE (cache_key_hash);
+
+
+--
+-- Name: classification_caches uq_classification_caches_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.classification_caches
+    ADD CONSTRAINT uq_classification_caches_key UNIQUE (content_hash, language, model_id);
 
 
 --
@@ -1028,6 +1059,13 @@ CREATE INDEX idx_analyses_created ON public.analyses USING btree (codebase_id, c
 --
 
 CREATE INDEX idx_behavior_caches_created_at ON public.behavior_caches USING btree (created_at);
+
+
+--
+-- Name: idx_classification_caches_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_classification_caches_created_at ON public.classification_caches USING btree (created_at);
 
 
 --
