@@ -71,11 +71,24 @@ const getStoredLanguagePreference = (analysisId: string): SpecLanguage | null =>
 };
 
 /**
- * Save language preference for a specific analysis
+ * Save language preference for a specific analysis and update global default
  */
 const saveLanguagePreference = (analysisId: string, language: SpecLanguage) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(`spec-language-${analysisId}`, language);
+  localStorage.setItem("spec-language-default", language);
+};
+
+/**
+ * Get the global default language (last used language across all analyses)
+ */
+const getGlobalLanguageDefault = (): SpecLanguage | null => {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("spec-language-default");
+  if (stored && isValidSpecLanguage(stored)) {
+    return stored;
+  }
+  return null;
 };
 
 /**
@@ -131,7 +144,7 @@ const open = ({
   usage,
 }: OpenOptions) => {
   if (!store.isOpen) {
-    // Determine default language: initialLanguage > stored preference > locale > English
+    // Determine default language: initialLanguage > stored preference > global default > locale > English
     let defaultLanguage: SpecLanguage = "English";
     if (initialLanguage) {
       defaultLanguage = initialLanguage;
@@ -139,10 +152,15 @@ const open = ({
       const storedPreference = getStoredLanguagePreference(analysisId);
       if (storedPreference) {
         defaultLanguage = storedPreference;
-      } else if (locale) {
-        const localeLanguage = localeToSpecLanguage(locale);
-        if (localeLanguage) {
-          defaultLanguage = localeLanguage;
+      } else {
+        const globalDefault = getGlobalLanguageDefault();
+        if (globalDefault) {
+          defaultLanguage = globalDefault;
+        } else if (locale) {
+          const localeLanguage = localeToSpecLanguage(locale);
+          if (localeLanguage) {
+            defaultLanguage = localeLanguage;
+          }
         }
       }
     }
