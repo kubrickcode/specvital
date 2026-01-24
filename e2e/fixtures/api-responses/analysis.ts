@@ -125,6 +125,47 @@ export interface VersionHistoryResponse {
   latestVersion: number;
 }
 
+// Repository-based spec document types (cross-analysis version access)
+export interface RepoSpecDocument {
+  id: string;
+  analysisId: string;
+  language: SpecLanguage;
+  version: number;
+  executiveSummary?: string;
+  modelId?: string;
+  createdAt: string;
+  commitSha: string;
+  availableLanguages?: AvailableLanguageInfo[];
+  domains: SpecDomain[];
+}
+
+export interface RepoSpecDocumentCompleted {
+  status: "completed";
+  data: RepoSpecDocument;
+}
+
+export interface RepoSpecDocumentEmpty {
+  status: "empty";
+  message?: string;
+}
+
+export type RepoSpecDocumentResponse = RepoSpecDocumentCompleted | RepoSpecDocumentEmpty;
+
+export interface RepoVersionInfo {
+  id: string;
+  analysisId: string;
+  version: number;
+  language?: SpecLanguage;
+  modelId?: string;
+  createdAt: string;
+  commitSha: string;
+}
+
+export interface RepoVersionHistoryResponse {
+  data: RepoVersionInfo[];
+  language: SpecLanguage;
+}
+
 // Sample analysis data
 const sampleAnalysisId = "550e8400-e29b-41d4-a716-446655440000";
 const now = new Date().toISOString();
@@ -722,4 +763,167 @@ export const mockSpecDocumentVersion1: SpecDocumentResponse = {
       },
     ],
   },
+};
+
+// Repository-based spec document (completed) - includes commitSha
+export const mockRepoSpecDocumentCompleted: RepoSpecDocumentResponse = {
+  status: "completed",
+  data: {
+    id: "doc-123",
+    analysisId: sampleAnalysisId,
+    language: "English",
+    version: 2,
+    createdAt: now,
+    commitSha: "abc123def",
+    executiveSummary: "Test Repository Specification - This document describes the test specifications for the test repository.",
+    modelId: "gemini-2.0-flash",
+    availableLanguages: [
+      {
+        language: "English",
+        latestVersion: 2,
+        createdAt: now,
+      },
+      {
+        language: "Korean",
+        latestVersion: 1,
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+      },
+    ],
+    domains: [
+      {
+        id: "domain-1",
+        name: "User Authentication",
+        description: "Handles user login and registration flows",
+        features: [
+          {
+            id: "feature-1",
+            name: "Login Flow",
+            description: "Validates user credentials and issues session tokens",
+            behaviors: [
+              {
+                id: "spec-1",
+                description: "should authenticate with valid email and password",
+                status: "active",
+              },
+              {
+                id: "spec-2",
+                description: "should reject invalid credentials",
+                status: "active",
+              },
+            ],
+          },
+          {
+            id: "feature-2",
+            name: "Registration Flow",
+            description: "Creates new user accounts with email verification",
+            behaviors: [
+              {
+                id: "spec-3",
+                description: "should create user with valid email",
+                status: "active",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "domain-2",
+        name: "Payment Processing",
+        description: "Handles payment transactions and billing",
+        features: [
+          {
+            id: "feature-3",
+            name: "Checkout Flow",
+            description: "Processes payment and creates orders",
+            behaviors: [
+              {
+                id: "spec-4",
+                description: "should process payment with valid card",
+                status: "active",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+};
+
+// Repository-based spec document (empty) - no document exists
+export const mockRepoSpecDocumentEmpty: RepoSpecDocumentResponse = {
+  status: "empty",
+  message: "No spec document found for this repository",
+};
+
+// Repository-based spec document for version 1
+export const mockRepoSpecDocumentVersion1: RepoSpecDocumentResponse = {
+  status: "completed",
+  data: {
+    id: "doc-123-v1",
+    analysisId: sampleAnalysisId,
+    language: "English",
+    version: 1,
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    commitSha: "abc123def",
+    executiveSummary: "Test Repository Specification v1 - Previous version of the document.",
+    modelId: "gemini-2.0-flash",
+    availableLanguages: [
+      {
+        language: "English",
+        latestVersion: 2,
+        createdAt: versionHistoryCreatedAt,
+      },
+      {
+        language: "Korean",
+        latestVersion: 1,
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+      },
+    ],
+    domains: [
+      {
+        id: "domain-1",
+        name: "User Authentication",
+        description: "Handles user login and registration flows",
+        features: [
+          {
+            id: "feature-1",
+            name: "Login Flow",
+            description: "Validates user credentials",
+            behaviors: [
+              {
+                id: "spec-1",
+                description: "should authenticate user",
+                status: "active",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+};
+
+// Repository version history mock data
+export const mockRepoVersionHistoryMultiple: RepoVersionHistoryResponse = {
+  data: [
+    {
+      id: "doc-123",
+      analysisId: sampleAnalysisId,
+      version: 2,
+      language: "English",
+      createdAt: versionHistoryCreatedAt,
+      commitSha: "abc123def",
+      modelId: "gemini-2.0-flash",
+    },
+    {
+      id: "doc-123-v1",
+      analysisId: sampleAnalysisId,
+      version: 1,
+      language: "English",
+      createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+      commitSha: "older123",
+      modelId: "gemini-2.0-flash",
+    },
+  ],
+  language: "English",
 };

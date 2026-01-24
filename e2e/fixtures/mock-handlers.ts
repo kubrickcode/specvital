@@ -20,6 +20,8 @@ import type {
   SpecDocumentResponse,
   RequestSpecGenerationResponse,
   VersionHistoryResponse,
+  RepoSpecDocumentResponse,
+  RepoVersionHistoryResponse,
 } from "./api-responses";
 
 export interface MockHandlersOptions {
@@ -39,6 +41,10 @@ export interface MockHandlersOptions {
   specDocumentByVersion?: Record<number, SpecDocumentResponse>;
   specGeneration?: RequestSpecGenerationResponse;
   versionHistory?: VersionHistoryResponse;
+  // Repository-based spec document mocks (cross-analysis version access)
+  repoSpecDocument?: RepoSpecDocumentResponse;
+  repoSpecDocumentByVersion?: Record<number, RepoSpecDocumentResponse>;
+  repoVersionHistory?: RepoVersionHistoryResponse;
   // Dynamic handlers for testing specific scenarios
   onRepositoriesRequest?: (url: URL) => UserAnalyzedRepositoriesResponse | null;
   onBookmark?: (owner: string, repo: string, method: string) => BookmarkResponse;
@@ -355,6 +361,157 @@ export async function setupMockHandlers(
           status: 202,
           contentType: "application/json",
           body: JSON.stringify(response),
+        });
+      },
+    });
+  }
+
+  // /api/spec-view/repository/{owner}/{repo} - Get spec document by repository (supports version query param)
+  // Also handles backward compatibility: converts specDocument to repoSpecDocument format
+  if (options.repoSpecDocument || options.repoSpecDocumentByVersion || options.specDocument || options.specDocumentByVersion) {
+    handlers.push({
+      pattern: /\/api\/spec-view\/repository\/([^/]+)\/([^/]+)(\?.*)?$/,
+      handler: async (route) => {
+        const url = new URL(route.request().url());
+        const versionParam = url.searchParams.get("version");
+
+        // If version is specified and we have version-specific documents (repo format)
+        if (versionParam && options.repoSpecDocumentByVersion) {
+          const version = parseInt(versionParam, 10);
+          const versionDoc = options.repoSpecDocumentByVersion[version];
+          if (versionDoc) {
+            return route.fulfill({
+              status: 200,
+              contentType: "application/json",
+              body: JSON.stringify(versionDoc),
+            });
+          }
+        }
+
+        // Backward compatibility: convert specDocumentByVersion to repoSpecDocument format
+        if (versionParam && options.specDocumentByVersion) {
+          const version = parseInt(versionParam, 10);
+          const versionDoc = options.specDocumentByVersion[version];
+          if (versionDoc && versionDoc.status === "completed" && versionDoc.data) {
+            const repoDoc: RepoSpecDocumentResponse = {
+              status: "completed",
+              data: {
+                ...versionDoc.data,
+                commitSha: "abc123def",
+              },
+            };
+            return route.fulfill({
+              status: 200,
+              contentType: "application/json",
+              body: JSON.stringify(repoDoc),
+            });
+          }
+        }
+
+        // Prefer repoSpecDocument if provided
+        if (options.repoSpecDocument) {
+          return route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(options.repoSpecDocument),
+          });
+        }
+
+        // Backward compatibility: convert specDocument to repoSpecDocument format
+        if (options.specDocument) {
+          // Handle "not_found" case as "empty"
+          if (
+            options.specDocument.status === "generating" &&
+            options.specDocument.generationStatus?.status === "not_found"
+          ) {
+            return route.fulfill({
+              status: 200,
+              contentType: "application/json",
+              body: JSON.stringify({
+                status: "empty",
+                message: "No spec document found for this repository",
+              }),
+            });
+          }
+
+          // Convert completed specDocument to repoSpecDocument format
+          if (options.specDocument.status === "completed" && options.specDocument.data) {
+            const repoDoc: RepoSpecDocumentResponse = {
+              status: "completed",
+              data: {
+                ...options.specDocument.data,
+                commitSha: "abc123def", // Default commitSha for backward compatibility
+              },
+            };
+            return route.fulfill({
+              status: 200,
+              contentType: "application/json",
+              body: JSON.stringify(repoDoc),
+            });
+          }
+
+          // For generating state, return empty
+          return route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({
+              status: "empty",
+              message: "Spec document is being generated",
+            }),
+          });
+        }
+
+        // Fallback: return empty
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ status: "empty" }),
+        });
+      },
+    });
+  }
+
+  // /api/spec-view/repository/{owner}/{repo}/versions - Get version history by repository
+  // Also handles backward compatibility: converts versionHistory to repoVersionHistory format
+  if (options.repoVersionHistory || options.versionHistory) {
+    handlers.push({
+      pattern: /\/api\/spec-view\/repository\/([^/]+)\/([^/]+)\/versions/,
+      handler: async (route) => {
+        // Prefer repoVersionHistory if provided
+        if (options.repoVersionHistory) {
+          return route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(options.repoVersionHistory),
+          });
+        }
+
+        // Backward compatibility: convert versionHistory to repoVersionHistory format
+        if (options.versionHistory) {
+          const repoVersionHistory: RepoVersionHistoryResponse = {
+            data: options.versionHistory.data.map((v, index) => ({
+              id: `doc-${v.version}`,
+              analysisId: "550e8400-e29b-41d4-a716-446655440000",
+              version: v.version,
+              language: options.versionHistory!.language,
+              modelId: v.modelId,
+              createdAt: v.createdAt,
+              commitSha: index === 0 ? "abc123def" : "older123",
+            })),
+            language: options.versionHistory.language,
+          };
+          return route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(repoVersionHistory),
+          });
+        }
+
+        // Fallback: empty list
+        return route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ data: [], language: "English" }),
         });
       },
     });
