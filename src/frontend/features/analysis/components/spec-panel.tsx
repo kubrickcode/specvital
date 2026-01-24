@@ -17,6 +17,7 @@ import {
   useDocumentFilter,
   useGenerationProgress,
   useQuotaConfirmDialog,
+  useRepoSpecView,
   useRepoVersionHistory,
   useSpecView,
 } from "@/features/spec-view";
@@ -67,19 +68,30 @@ export const SpecPanel = ({
   const [pendingLanguage, setPendingLanguage] = useState<SpecLanguage | null>(null);
   const [selectedVersion, setSelectedVersion] = useState<number | undefined>(undefined);
 
-  // Spec view - pass pendingLanguage to poll correct status during generation
+  // Spec document - use repository-based API for cross-analysis version access
   const {
-    accessError,
+    accessError: repoAccessError,
     behaviorCacheStats,
+    commitSha,
     data: specDocument,
-    generationState,
     isFetching,
+  } = useRepoSpecView(owner, repo, {
+    language: pendingLanguage ?? undefined,
+    version: selectedVersion,
+  });
+
+  // Generation functionality - analysisId based (generation targets specific analysis)
+  const {
+    accessError: genAccessError,
+    generationState,
     requestGenerate,
     serverStatus,
   } = useSpecView(analysisId, {
     language: pendingLanguage ?? undefined,
-    version: selectedVersion,
   });
+
+  // Combine access errors (repo error takes precedence)
+  const accessError = repoAccessError ?? genAccessError;
 
   // Version history - use repository-based API for cross-analysis version access
   const { data: repoVersionHistory, isLoading: isLoadingVersions } = useRepoVersionHistory(
@@ -338,12 +350,6 @@ export const SpecPanel = ({
         repoVersionHistory?.data && repoVersionHistory.data.length > 0
           ? Math.max(...repoVersionHistory.data.map((v) => v.version))
           : undefined;
-
-      // Find commit SHA for current version
-      const currentVersionInfo = repoVersionHistory?.data?.find(
-        (v) => v.version === specDocument.version
-      );
-      const commitSha = currentVersionInfo?.commitSha;
 
       return (
         <DocumentView

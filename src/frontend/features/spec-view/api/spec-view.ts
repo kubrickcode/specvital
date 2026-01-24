@@ -236,6 +236,11 @@ export const fetchRepoSpecDocument = async (
       throw new ForbiddenError(errorBody.detail || "Access denied");
     }
 
+    // 404 = No spec document found for this repository → return empty status
+    if (response.status === 404) {
+      return { status: "empty" };
+    }
+
     throw new Error(errorBody.detail || response.statusText);
   }
 

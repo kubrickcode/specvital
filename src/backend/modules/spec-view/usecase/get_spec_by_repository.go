@@ -46,21 +46,31 @@ func (uc *GetSpecByRepositoryUseCase) Execute(ctx context.Context, input GetSpec
 		return nil, domain.ErrInvalidRepository
 	}
 
-	language := input.Language
-	if language == "" {
-		language = entity.DefaultLanguage
-	}
-
-	if !entity.IsValidLanguage(language) {
-		return nil, domain.ErrInvalidLanguage
-	}
-
 	exists, err := uc.repo.CheckCodebaseExists(ctx, input.Owner, input.Name)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
 		return nil, domain.ErrCodebaseNotFound
+	}
+
+	// Determine language: use provided, or fallback to any available language
+	language := input.Language
+	if language == "" {
+		// Get available languages first to find any existing spec
+		availableLanguages, err := uc.repo.GetAvailableLanguagesByRepository(ctx, input.UserID, input.Owner, input.Name)
+		if err != nil {
+			return nil, err
+		}
+		if len(availableLanguages) == 0 {
+			return nil, domain.ErrDocumentNotFound
+		}
+		// Use the first available language (most recently created)
+		language = availableLanguages[0].Language
+	}
+
+	if !entity.IsValidLanguage(language) {
+		return nil, domain.ErrInvalidLanguage
 	}
 
 	var doc *entity.RepoSpecDocument
