@@ -28,6 +28,7 @@
 | [public.usage_events](public.usage_events.md)                                                     | 7       |         | BASE TABLE |
 | [public.subscription_plans](public.subscription_plans.md)                                         | 7       |         | BASE TABLE |
 | [public.user_subscriptions](public.user_subscriptions.md)                                         | 9       |         | BASE TABLE |
+| [public.behavior_caches](public.behavior_caches.md)                                               | 4       |         | BASE TABLE |
 
 ## Enums
 
@@ -320,6 +321,12 @@ erDiagram
   timestamp_with_time_zone canceled_at
   timestamp_with_time_zone created_at
   timestamp_with_time_zone updated_at
+}
+"public.behavior_caches" {
+  uuid id
+  bytea cache_key_hash
+  text converted_description
+  timestamp_with_time_zone created_at
 }
 ```
 

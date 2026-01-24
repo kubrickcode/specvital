@@ -2399,6 +2399,72 @@
           "columns": ["id"]
         }
       ]
+    },
+    {
+      "name": "public.behavior_caches",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "cache_key_hash",
+          "type": "bytea",
+          "nullable": false
+        },
+        {
+          "name": "converted_description",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "behavior_caches_pkey",
+          "def": "CREATE UNIQUE INDEX behavior_caches_pkey ON public.behavior_caches USING btree (id)",
+          "table": "public.behavior_caches",
+          "columns": ["id"]
+        },
+        {
+          "name": "uq_behavior_caches_key",
+          "def": "CREATE UNIQUE INDEX uq_behavior_caches_key ON public.behavior_caches USING btree (cache_key_hash)",
+          "table": "public.behavior_caches",
+          "columns": ["cache_key_hash"]
+        },
+        {
+          "name": "idx_behavior_caches_created_at",
+          "def": "CREATE INDEX idx_behavior_caches_created_at ON public.behavior_caches USING btree (created_at)",
+          "table": "public.behavior_caches",
+          "columns": ["created_at"]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "behavior_caches_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.behavior_caches",
+          "referenced_table": "",
+          "columns": ["id"]
+        },
+        {
+          "name": "uq_behavior_caches_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (cache_key_hash)",
+          "table": "public.behavior_caches",
+          "referenced_table": "",
+          "columns": ["cache_key_hash"]
+        }
+      ]
     }
   ],
   "relations": [
