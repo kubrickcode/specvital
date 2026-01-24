@@ -1514,6 +1514,45 @@ table "github_organizations" {
   }
 }
 
+// ==============================================================================
+// Behavior Cache (Phase 2 result caching)
+// Cache key: SHA-256(test_name + suite_path + file_path + language + model_id)
+// ==============================================================================
+
+table "behavior_caches" {
+  schema = schema.public
+
+  column "id" {
+    type    = uuid
+    default = sql("gen_random_uuid()")
+  }
+
+  column "cache_key_hash" {
+    type = bytea
+  }
+
+  column "converted_description" {
+    type = text
+  }
+
+  column "created_at" {
+    type    = timestamptz
+    default = sql("now()")
+  }
+
+  primary_key {
+    columns = [column.id]
+  }
+
+  unique "uq_behavior_caches_key" {
+    columns = [column.cache_key_hash]
+  }
+
+  index "idx_behavior_caches_created_at" {
+    columns = [column.created_at]
+  }
+}
+
 table "user_github_org_memberships" {
   schema = schema.public
 

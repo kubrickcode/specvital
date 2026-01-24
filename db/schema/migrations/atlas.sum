@@ -1,4 +1,4 @@
-h1:vqiDKV3RU2IKEQ8WfAKg2ImN6vXNsa/vyorN7CTlGrk=
+h1:rGO2YHfCuoBsWY5p6WX7NVUkhJ9Z+9p0LZ3bEb03jMo=
 20251208122222_init.sql h1:4hgvsY53Nx2aws2BPLM/x4kV27qXTRYTAKd/GlGciis=
 20251209084551_add_test_status_focused_xfail_modifier.sql h1:+pY+6sow5rDMVE7Nbl0OLatQfVtHF9YH9Cr621wP+Uc=
 20251211134507_test_case_length.sql h1:Nbzl0u5eBOLpsLhZlfx4MGb6nY4P9e0136YaQYZwvvE=
@@ -29,3 +29,4 @@ h1:vqiDKV3RU2IKEQ8WfAKg2ImN6vXNsa/vyorN7CTlGrk=
 20260120165404_spec_documents_version_constraints.sql h1:gbCU0onQUEUEGdXvM17VWo1rGgO70vsQ5qwGE4I45ko=
 20260123124529_add-user-id-to-spec-documents.sql h1:CXZf27sXP6IpajAYDSGq+08jbXyzoAcsweWfsYPiy3g=
 20260123155849_add-spec-documents-reuse-index.sql h1:A/xLVsF903i7KPaoapK5G3yZ9KX6cA06X+NjHJd43gs=
+20260124033223_add-behavior-caches.sql h1:KvrJc8hPqYFxhAPs2bjFSH0nnrpgJjkN8p/mTDGqbLY=
