@@ -2465,6 +2465,87 @@
           "columns": ["cache_key_hash"]
         }
       ]
+    },
+    {
+      "name": "public.classification_caches",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "content_hash",
+          "type": "bytea",
+          "nullable": false
+        },
+        {
+          "name": "language",
+          "type": "varchar(10)",
+          "nullable": false
+        },
+        {
+          "name": "model_id",
+          "type": "varchar(100)",
+          "nullable": false
+        },
+        {
+          "name": "phase1_output",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "test_index_map",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "classification_caches_pkey",
+          "def": "CREATE UNIQUE INDEX classification_caches_pkey ON public.classification_caches USING btree (id)",
+          "table": "public.classification_caches",
+          "columns": ["id"]
+        },
+        {
+          "name": "uq_classification_caches_key",
+          "def": "CREATE UNIQUE INDEX uq_classification_caches_key ON public.classification_caches USING btree (content_hash, language, model_id)",
+          "table": "public.classification_caches",
+          "columns": ["content_hash", "language", "model_id"]
+        },
+        {
+          "name": "idx_classification_caches_created_at",
+          "def": "CREATE INDEX idx_classification_caches_created_at ON public.classification_caches USING btree (created_at)",
+          "table": "public.classification_caches",
+          "columns": ["created_at"]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "classification_caches_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.classification_caches",
+          "referenced_table": "",
+          "columns": ["id"]
+        },
+        {
+          "name": "uq_classification_caches_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (content_hash, language, model_id)",
+          "table": "public.classification_caches",
+          "referenced_table": "",
+          "columns": ["content_hash", "language", "model_id"]
+        }
+      ]
     }
   ],
   "relations": [

@@ -29,6 +29,7 @@
 | [public.subscription_plans](public.subscription_plans.md)                                         | 7       |         | BASE TABLE |
 | [public.user_subscriptions](public.user_subscriptions.md)                                         | 9       |         | BASE TABLE |
 | [public.behavior_caches](public.behavior_caches.md)                                               | 4       |         | BASE TABLE |
+| [public.classification_caches](public.classification_caches.md)                                   | 7       |         | BASE TABLE |
 
 ## Enums
 
@@ -326,6 +327,15 @@ erDiagram
   uuid id
   bytea cache_key_hash
   text converted_description
+  timestamp_with_time_zone created_at
+}
+"public.classification_caches" {
+  uuid id
+  bytea content_hash
+  varchar_10_ language
+  varchar_100_ model_id
+  jsonb phase1_output
+  jsonb test_index_map
   timestamp_with_time_zone created_at
 }
 ```
