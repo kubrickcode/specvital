@@ -25,7 +25,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
-import { OrgConnectionBanner, RepositoryCard } from "@/features/dashboard/components";
+import {
+  OrgConnectionBanner,
+  RepositoryCard,
+  RepositoryGrid,
+} from "@/features/dashboard/components";
 import {
   useAllOrgRepos,
   useGitHubAppInstallUrl,
@@ -220,7 +224,7 @@ export const OrgReposTab = () => {
                 />
               </div>
 
-              <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <RepositoryGrid>
                 {filteredRepositories.length === 0 ? (
                   <li className="col-span-full text-center py-8 text-sm text-muted-foreground">
                     {searchQuery
@@ -238,7 +242,7 @@ export const OrgReposTab = () => {
                     </li>
                   ))
                 )}
-              </ul>
+              </RepositoryGrid>
             </>
           )}
 
@@ -295,13 +299,13 @@ const OrgReposTabSkeleton = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <Skeleton className="h-10 w-full" />
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <RepositoryGrid isLoading>
           {Array.from({ length: 6 }).map((_, i) => (
             <li key={i}>
               <Skeleton className="h-48 w-full rounded-xl" />
             </li>
           ))}
-        </ul>
+        </RepositoryGrid>
       </CardContent>
     </Card>
   );

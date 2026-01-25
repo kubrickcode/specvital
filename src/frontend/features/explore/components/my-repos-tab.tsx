@@ -7,7 +7,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RepositoryCard, useMyRepositories, usePaginatedRepositories } from "@/features/dashboard";
+import {
+  RepositoryCard,
+  RepositoryGrid,
+  useMyRepositories,
+  usePaginatedRepositories,
+} from "@/features/dashboard";
 import type { GitHubRepository } from "@/lib/api/types";
 
 type MyReposTabProps = {
@@ -61,13 +66,13 @@ export const MyReposTab = ({ className }: MyReposTabProps) => {
             <Skeleton className="h-10 flex-1" />
             <Skeleton className="h-10 w-10" />
           </div>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <RepositoryGrid isLoading>
             {Array.from({ length: 6 }).map((_, index) => (
               <li key={index}>
                 <Skeleton className="h-48 w-full rounded-xl" />
               </li>
             ))}
-          </ul>
+          </RepositoryGrid>
         </div>
       </div>
     );
@@ -118,7 +123,7 @@ export const MyReposTab = ({ className }: MyReposTabProps) => {
           </Button>
         </div>
 
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <RepositoryGrid>
           {filteredRepos.map((repo) => {
             const analyzed = !isLoadingAnalyzed && isRepoAnalyzed(repo);
 
@@ -134,7 +139,7 @@ export const MyReposTab = ({ className }: MyReposTabProps) => {
               {t("noSearchResults")}
             </li>
           )}
-        </ul>
+        </RepositoryGrid>
       </div>
     </div>
   );

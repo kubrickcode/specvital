@@ -7,6 +7,7 @@ export {
   LoadMoreButton,
   PaginationStatus,
   RepositoryCard,
+  RepositoryGrid,
   RepositoryList,
   RepositorySkeleton,
   TestDeltaBadge,

@@ -114,12 +114,12 @@ const AnalyzedRepositoryCard = ({
 
   return (
     <Link
-      className="group block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl"
+      className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl"
       href={`/analyze/${owner}/${name}`}
     >
       <Card
         className={cn(
-          "relative h-full p-4 transition-all duration-200",
+          "relative h-full p-4 flex flex-col transition-all duration-200",
           "hover:shadow-md hover:border-primary/20",
           "group-focus-visible:shadow-md group-focus-visible:border-primary/20"
         )}
@@ -132,7 +132,7 @@ const AnalyzedRepositoryCard = ({
         </div>
 
         {hasAnalysis && latestAnalysis ? (
-          <div className="space-y-3">
+          <div className="space-y-3 flex-1 flex flex-col">
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight">{latestAnalysis.testCount}</span>
               <span className="text-sm text-muted-foreground">{t("tests")}</span>
@@ -148,7 +148,7 @@ const AnalyzedRepositoryCard = ({
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t min-h-[36px]">
+            <div className="flex items-center justify-between pt-2 border-t min-h-[36px] mt-auto">
               <ResponsiveTooltip
                 content={format.dateTime(new Date(latestAnalysis.analyzedAt), {
                   dateStyle: "medium",
@@ -206,12 +206,12 @@ const UnanalyzedRepositoryCard = ({ isAnalyzed = false, repo }: UnanalyzedCardPr
 
   return (
     <Link
-      className="group block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl"
+      className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl"
       href={`/analyze/${owner}/${name}`}
     >
       <Card
         className={cn(
-          "relative h-full p-4 transition-all duration-200",
+          "relative h-full p-4 flex flex-col transition-all duration-200",
           "hover:shadow-md hover:border-primary/20",
           "group-focus-visible:shadow-md group-focus-visible:border-primary/20"
         )}
@@ -238,7 +238,7 @@ const UnanalyzedRepositoryCard = ({ isAnalyzed = false, repo }: UnanalyzedCardPr
           </Badge>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 flex-1">
           {description && (
             <p className="text-xs text-muted-foreground line-clamp-2">{description}</p>
           )}
@@ -250,7 +250,7 @@ const UnanalyzedRepositoryCard = ({ isAnalyzed = false, repo }: UnanalyzedCardPr
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-3 mt-auto border-t">
+        <div className="flex items-center justify-end gap-2 pt-3 border-t">
           <Button
             aria-label="GitHub"
             className="h-7"
