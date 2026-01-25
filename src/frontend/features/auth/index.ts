@@ -1,8 +1,10 @@
 export {
+  AuthLoadingWrapper,
   AuthStatus,
   LoginModal,
   LoginRequiredForSpecDialog,
   OAuthErrorHandler,
+  RequireAuth,
   SignInTrigger,
   UserMenu,
 } from "./components";
