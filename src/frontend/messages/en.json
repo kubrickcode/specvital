@@ -353,6 +353,8 @@
       "regenerateWarning": "Your current document will be permanently replaced. This action cannot be undone.",
       "outputLanguage": "Output Language",
       "selectLanguage": "Select language",
+      "searchLanguage": "Search languages...",
+      "noLanguageFound": "No language found.",
       "specviewUsage": "Usage This Month",
       "used": "used",
       "unlimited": "Unlimited",

@@ -23,19 +23,12 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 import { fetchCacheAvailability } from "../api";
+import { LanguageCombobox } from "./language-combobox";
 import { useQuotaConfirmDialog } from "../hooks/use-quota-confirm-dialog";
-import type { SpecLanguage } from "../types";
 import { formatQuotaNumber, getQuotaLevel, isQuotaExceeded, type QuotaLevel } from "../utils/quota";
 
 const LEVEL_CONFIG: Record<
@@ -89,7 +82,6 @@ export const QuotaConfirmDialog = () => {
     selectedLanguage,
     setForceRegenerate,
     setSelectedLanguage,
-    specLanguages,
     usage,
   } = useQuotaConfirmDialog();
 
@@ -147,21 +139,7 @@ export const QuotaConfirmDialog = () => {
               <Globe className="h-4 w-4 text-muted-foreground" />
               {t("outputLanguage")}
             </Label>
-            <Select
-              onValueChange={(value) => setSelectedLanguage(value as SpecLanguage)}
-              value={selectedLanguage}
-            >
-              <SelectTrigger className="w-full" id="language-select">
-                <SelectValue placeholder={t("selectLanguage")} />
-              </SelectTrigger>
-              <SelectContent>
-                {specLanguages.map((language) => (
-                  <SelectItem key={language} value={language}>
-                    {language}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <LanguageCombobox onValueChange={setSelectedLanguage} value={selectedLanguage} />
           </div>
 
           {/* Cache availability check error warning */}

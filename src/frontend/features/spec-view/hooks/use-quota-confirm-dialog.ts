@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 
 import type { UsageStatusResponse } from "@/features/account/api/usage";
 
-import { SPEC_LANGUAGES, isValidSpecLanguage } from "../constants/spec-languages";
+import { isValidSpecLanguage } from "../constants/spec-languages";
 import type { SpecLanguage } from "../types";
 
 type QuotaConfirmDialogStore = {
@@ -252,7 +252,6 @@ export const useQuotaConfirmDialog = () => {
     selectedLanguage,
     setForceRegenerate,
     setSelectedLanguage,
-    specLanguages: SPEC_LANGUAGES,
     usage,
   };
 };
