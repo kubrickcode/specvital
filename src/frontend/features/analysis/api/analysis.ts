@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, parseJsonResponse } from "@/lib/api/client";
 import type { AnalysisResponse } from "@/lib/api/types";
 
 export async function fetchAnalysis(owner: string, repo: string): Promise<AnalysisResponse> {
@@ -8,4 +8,9 @@ export async function fetchAnalysis(owner: string, repo: string): Promise<Analys
     throw new Error(errorBody.detail || response.statusText);
   }
   return response.json();
+}
+
+export async function fetchAnalysisStatus(owner: string, repo: string): Promise<AnalysisResponse> {
+  const response = await apiFetch(`/api/analyze/${owner}/${repo}/status`);
+  return parseJsonResponse(response);
 }
