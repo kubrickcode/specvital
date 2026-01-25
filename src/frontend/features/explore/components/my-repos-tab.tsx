@@ -1,15 +1,13 @@
 "use client";
 
-import { ExternalLink, Lock, RefreshCw, Search } from "lucide-react";
-import { useFormatter, useNow, useTranslations } from "next-intl";
+import { RefreshCw, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMyRepositories, usePaginatedRepositories } from "@/features/dashboard";
-import { Link } from "@/i18n/navigation";
+import { RepositoryCard, useMyRepositories, usePaginatedRepositories } from "@/features/dashboard";
 import type { GitHubRepository } from "@/lib/api/types";
 
 type MyReposTabProps = {
@@ -18,8 +16,6 @@ type MyReposTabProps = {
 
 export const MyReposTab = ({ className }: MyReposTabProps) => {
   const t = useTranslations("explore.myRepos");
-  const format = useFormatter();
-  const now = useNow({ updateInterval: 1000 * 60 });
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: myRepos, error, isLoading, isRefreshing, refresh } = useMyRepositories();
@@ -65,10 +61,10 @@ export const MyReposTab = ({ className }: MyReposTabProps) => {
             <Skeleton className="h-10 flex-1" />
             <Skeleton className="h-10 w-10" />
           </div>
-          <ul className="space-y-2">
-            {Array.from({ length: 5 }).map((_, index) => (
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
               <li key={index}>
-                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-48 w-full rounded-xl" />
               </li>
             ))}
           </ul>
@@ -122,70 +118,19 @@ export const MyReposTab = ({ className }: MyReposTabProps) => {
           </Button>
         </div>
 
-        <ul className="space-y-2">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredRepos.map((repo) => {
             const analyzed = !isLoadingAnalyzed && isRepoAnalyzed(repo);
 
             return (
               <li key={repo.id}>
-                <div className="flex items-start gap-3 p-3 rounded-lg border bg-card shadow-sm hover:shadow-md hover:bg-accent/50 transition-all">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-2">
-                      <ResponsiveTooltip content={repo.fullName}>
-                        <h4 className="font-medium text-sm line-clamp-2 break-all h-10">
-                          {repo.fullName}
-                        </h4>
-                      </ResponsiveTooltip>
-                      {repo.isPrivate && (
-                        <Lock className="size-3 text-muted-foreground shrink-0 mt-0.5" />
-                      )}
-                      {!isLoadingAnalyzed && (
-                        <span
-                          className={`text-xs px-1.5 py-0.5 rounded ${
-                            analyzed
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {analyzed ? t("analyzed") : t("notAnalyzed")}
-                        </span>
-                      )}
-                    </div>
-                    {repo.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                        {repo.description}
-                      </p>
-                    )}
-                    {repo.pushedAt && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t("lastPush")}: {format.relativeTime(new Date(repo.pushedAt), now)}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-1 shrink-0">
-                    <Button asChild size="sm" variant={analyzed ? "outline" : "cta"}>
-                      <Link href={`/analyze/${repo.owner}/${repo.name}`}>
-                        {analyzed ? t("view") : t("analyze")}
-                      </Link>
-                    </Button>
-                    <Button asChild className="h-7" size="sm" variant="ghost">
-                      <a
-                        href={`https://github.com/${repo.fullName}`}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        <ExternalLink className="size-3 mr-1" />
-                        GitHub
-                      </a>
-                    </Button>
-                  </div>
-                </div>
+                <RepositoryCard isAnalyzed={analyzed} repo={repo} variant="unanalyzed" />
               </li>
             );
           })}
 
           {filteredRepos.length === 0 && searchQuery && (
-            <li className="text-center py-8 text-sm text-muted-foreground">
+            <li className="col-span-full text-center py-8 text-sm text-muted-foreground">
               {t("noSearchResults")}
             </li>
           )}
