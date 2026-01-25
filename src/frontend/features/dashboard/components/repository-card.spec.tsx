@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { RepositoryCard as RepositoryCardType } from "@/lib/api/types";
 
-import { RepositoryCard } from "./repository-card";
+import { RepositoryCard, type RepositoryCardProps } from "./repository-card";
 
 const mockUseAuth = vi.fn();
 
@@ -66,15 +66,24 @@ const createMockRepo = (overrides?: Partial<RepositoryCardType>): RepositoryCard
   ...overrides,
 });
 
-const renderRepositoryCard = (props: Partial<React.ComponentProps<typeof RepositoryCard>> = {}) => {
-  const defaultProps = {
-    repo: createMockRepo(),
-    ...props,
+type AnalyzedCardTestProps = {
+  onBookmarkToggle?: (owner: string, repo: string, isBookmarked: boolean) => void;
+  onReanalyze?: (owner: string, repo: string) => void;
+  repo?: RepositoryCardType;
+  variant?: "dashboard" | "explore";
+};
+
+const renderRepositoryCard = (props: AnalyzedCardTestProps = {}) => {
+  const cardProps: RepositoryCardProps = {
+    onBookmarkToggle: props.onBookmarkToggle,
+    onReanalyze: props.onReanalyze,
+    repo: props.repo ?? createMockRepo(),
+    variant: props.variant,
   };
 
   return render(
     <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-      <RepositoryCard {...defaultProps} />
+      <RepositoryCard {...cardProps} />
     </NextIntlClientProvider>
   );
 };

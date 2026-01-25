@@ -1,36 +1,53 @@
 "use client";
 
-import { Bookmark, RefreshCw } from "lucide-react";
+import { Bookmark, ExternalLink, Lock, RefreshCw } from "lucide-react";
 import { useFormatter, useNow, useTranslations } from "next-intl";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useLoginModal } from "@/features/auth/hooks/use-login-modal";
 import { Link } from "@/i18n/navigation";
-import type { RepositoryCard as RepositoryCardType } from "@/lib/api/types";
+import type { GitHubRepository, RepositoryCard as RepositoryCardType } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
 import { AiSpecBadge } from "./ai-spec-badge";
 import { TestDeltaBadge } from "./test-delta-badge";
 import { type DisplayUpdateStatus, UpdateStatusBadge } from "./update-status-badge";
 
-type RepositoryCardVariant = "dashboard" | "explore";
+export type RepositoryCardVariant = "dashboard" | "explore" | "unanalyzed";
 
-type RepositoryCardProps = {
+type AnalyzedCardProps = {
   onBookmarkToggle?: (owner: string, repo: string, isBookmarked: boolean) => void;
   onReanalyze?: (owner: string, repo: string) => void;
   repo: RepositoryCardType;
-  variant?: RepositoryCardVariant;
+  variant?: "dashboard" | "explore";
 };
 
-export const RepositoryCard = ({
+type UnanalyzedCardProps = {
+  isAnalyzed?: boolean;
+  repo: GitHubRepository;
+  variant: "unanalyzed";
+};
+
+export type RepositoryCardProps = AnalyzedCardProps | UnanalyzedCardProps;
+
+export const RepositoryCard = (props: RepositoryCardProps) => {
+  if (props.variant === "unanalyzed") {
+    return <UnanalyzedRepositoryCard {...props} />;
+  }
+
+  return <AnalyzedRepositoryCard {...props} />;
+};
+
+const AnalyzedRepositoryCard = ({
   onBookmarkToggle,
   onReanalyze,
   repo,
   variant = "dashboard",
-}: RepositoryCardProps) => {
+}: AnalyzedCardProps) => {
   const format = useFormatter();
   const now = useNow({ updateInterval: 60_000 });
   const t = useTranslations("dashboard.card");
@@ -169,6 +186,85 @@ export const RepositoryCard = ({
             {t("noAnalysis")}
           </div>
         )}
+      </Card>
+    </Link>
+  );
+};
+
+const UnanalyzedRepositoryCard = ({ isAnalyzed = false, repo }: UnanalyzedCardProps) => {
+  const format = useFormatter();
+  const now = useNow({ updateInterval: 60_000 });
+  const t = useTranslations("explore.myRepos");
+
+  const { description, fullName, isPrivate, name, owner, pushedAt } = repo;
+
+  const handleGitHubClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(`https://github.com/${fullName}`, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <Link
+      className="group block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-xl"
+      href={`/analyze/${owner}/${name}`}
+    >
+      <Card
+        className={cn(
+          "relative h-full p-4 transition-all duration-200",
+          "hover:shadow-md hover:border-primary/20",
+          "group-focus-visible:shadow-md group-focus-visible:border-primary/20"
+        )}
+      >
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="flex items-start gap-2 min-w-0 flex-1">
+            <ResponsiveTooltip content={fullName}>
+              <h3 className="font-semibold text-sm line-clamp-2 break-all">{fullName}</h3>
+            </ResponsiveTooltip>
+            {isPrivate && (
+              <Lock aria-label="Private" className="size-3 text-muted-foreground shrink-0 mt-0.5" />
+            )}
+          </div>
+          <Badge
+            className={cn(
+              "shrink-0 text-xs",
+              isAnalyzed
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                : "bg-muted text-muted-foreground"
+            )}
+            variant="secondary"
+          >
+            {isAnalyzed ? t("analyzed") : t("notAnalyzed")}
+          </Badge>
+        </div>
+
+        <div className="space-y-2">
+          {description && (
+            <p className="text-xs text-muted-foreground line-clamp-2">{description}</p>
+          )}
+
+          {pushedAt && (
+            <p className="text-xs text-muted-foreground">
+              {t("lastPush")}: {format.relativeTime(new Date(pushedAt), now)}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-2 pt-3 mt-auto border-t">
+          <Button
+            aria-label="GitHub"
+            className="h-7"
+            onClick={handleGitHubClick}
+            size="sm"
+            variant="ghost"
+          >
+            <ExternalLink aria-hidden="true" className="size-3 mr-1" />
+            GitHub
+          </Button>
+          <Button className="h-7" size="sm" variant={isAnalyzed ? "outline" : "cta"}>
+            {isAnalyzed ? t("view") : t("analyze")}
+          </Button>
+        </div>
       </Card>
     </Link>
   );

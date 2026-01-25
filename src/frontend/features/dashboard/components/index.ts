@@ -14,7 +14,11 @@ export { OrgInstallDialog } from "./org-install-dialog";
 export { OrganizationPicker } from "./organization-picker";
 export { OwnershipDropdown } from "./ownership-dropdown";
 export { PaginationStatus } from "./pagination-status";
-export { RepositoryCard } from "./repository-card";
+export {
+  RepositoryCard,
+  type RepositoryCardProps,
+  type RepositoryCardVariant,
+} from "./repository-card";
 export { RepositoryGrid } from "./repository-grid";
 export { RepositoryList } from "./repository-list";
 export { RepositorySkeleton } from "./repository-skeleton";
