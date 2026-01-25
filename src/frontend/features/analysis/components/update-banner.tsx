@@ -1,16 +1,17 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GitCommit, Loader2, RefreshCw, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { addTask, removeTask } from "@/lib/background-tasks";
 import { invalidationEvents, useInvalidationTrigger } from "@/lib/query";
 
-import { triggerReanalyze } from "../api";
+import { fetchAnalysisStatus, triggerReanalyze } from "../api";
 import { analysisKeys } from "../hooks/use-analysis";
 import { updateStatusKeys, useUpdateStatus } from "../hooks/use-update-status";
 
@@ -19,11 +20,19 @@ type UpdateBannerProps = {
   repo: string;
 };
 
+type BannerMessageKey = "analyzing" | "newCommitsDetected" | "parserUpdated";
+
+const POLL_INTERVAL_MS = 1000;
+const createTaskId = (owner: string, repo: string): string => `update-banner:${owner}/${repo}`;
+
+const isTerminalStatus = (status: string): boolean => status === "completed" || status === "failed";
+
 export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
   const t = useTranslations("analyze.updateBanner");
   const queryClient = useQueryClient();
   const triggerInvalidation = useInvalidationTrigger();
   const [isDismissed, setIsDismissed] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
 
   const {
     isLoading: isCheckingStatus,
@@ -32,8 +41,54 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
   } = useUpdateStatus(
     owner,
     repo,
-    !isDismissed // Disable polling when dismissed
+    !isDismissed && !isPolling // Disable when dismissed or polling
   );
+
+  // Polling query for reanalysis completion
+  const pollingQuery = useQuery({
+    enabled: isPolling,
+    queryFn: () => fetchAnalysisStatus(owner, repo),
+    queryKey: ["updateBannerPolling", owner, repo],
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (!data) return POLL_INTERVAL_MS;
+      return isTerminalStatus(data.status) ? false : POLL_INTERVAL_MS;
+    },
+  });
+
+  // Clean up task and dismiss banner on polling completion
+  useEffect(() => {
+    if (!isPolling || !pollingQuery.data) return;
+
+    const { status: pollingStatus } = pollingQuery.data;
+    if (!isTerminalStatus(pollingStatus)) return;
+
+    const taskId = createTaskId(owner, repo);
+    removeTask(taskId);
+
+    // Notify user of failure
+    if (pollingStatus === "failed") {
+      toast.error(t("reanalyzeFailed"));
+    }
+
+    // Invalidate queries to refresh UI
+    queryClient.invalidateQueries({ queryKey: analysisKeys.detail(owner, repo) });
+    queryClient.invalidateQueries({ queryKey: updateStatusKeys.detail(owner, repo) });
+    triggerInvalidation(invalidationEvents.ANALYSIS_COMPLETED);
+
+    setIsPolling(false);
+    setIsDismissed(true);
+  }, [isPolling, pollingQuery.data, owner, repo, queryClient, triggerInvalidation, t]);
+
+  // Cleanup task on component unmount during polling
+  useEffect(() => {
+    return () => {
+      if (isPolling) {
+        const taskId = createTaskId(owner, repo);
+        removeTask(taskId);
+      }
+    };
+  }, [isPolling, owner, repo]);
 
   const reanalyzeMutation = useMutation({
     mutationFn: () => triggerReanalyze(owner, repo),
@@ -44,14 +99,19 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
     },
     onSuccess: () => {
       toast.success(t("reanalyzeQueued"));
-      // Invalidate analysis query to trigger polling
-      queryClient.invalidateQueries({ queryKey: analysisKeys.detail(owner, repo) });
-      // Invalidate update status
-      queryClient.invalidateQueries({ queryKey: updateStatusKeys.detail(owner, repo) });
-      // Trigger global invalidation for dashboard
-      triggerInvalidation(invalidationEvents.ANALYSIS_COMPLETED);
-      // Dismiss banner after triggering reanalysis
-      setIsDismissed(true);
+
+      // Register task in TaskStore for Account badge
+      const taskId = createTaskId(owner, repo);
+      addTask({
+        id: taskId,
+        metadata: { owner, repo },
+        startedAt: new Date().toISOString(),
+        status: "processing",
+        type: "analysis",
+      });
+
+      // Start polling for completion
+      setIsPolling(true);
     },
   });
 
@@ -64,15 +124,24 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
   };
 
   const hasNewCommits = status === "new-commits";
-  const shouldShowBanner = !isDismissed && !isCheckingStatus && (hasNewCommits || parserOutdated);
+  const isReanalyzing = reanalyzeMutation.isPending || isPolling;
+  const shouldShowBanner =
+    !isDismissed && !isCheckingStatus && (hasNewCommits || parserOutdated || isPolling);
 
   // Don't show banner if dismissed, loading, or no updates available
   if (!shouldShowBanner) {
     return null;
   }
 
-  const isReanalyzing = reanalyzeMutation.isPending;
-  const messageKey = hasNewCommits ? "newCommitsDetected" : "parserUpdated";
+  // Determine message based on state
+  let messageKey: BannerMessageKey;
+  if (isPolling) {
+    messageKey = "analyzing";
+  } else if (hasNewCommits) {
+    messageKey = "newCommitsDetected";
+  } else {
+    messageKey = "parserUpdated";
+  }
 
   return (
     <Alert className="mb-4 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30">
@@ -94,15 +163,17 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
             )}
             {t("updateNow")}
           </Button>
-          <Button
-            aria-label={t("dismissLabel")}
-            className="size-7 p-0"
-            onClick={handleDismiss}
-            size="sm"
-            variant="ghost"
-          >
-            <X className="size-4" />
-          </Button>
+          {!isPolling && (
+            <Button
+              aria-label={t("dismissLabel")}
+              className="size-7 p-0"
+              onClick={handleDismiss}
+              size="sm"
+              variant="ghost"
+            >
+              <X className="size-4" />
+            </Button>
+          )}
         </div>
       </AlertDescription>
     </Alert>

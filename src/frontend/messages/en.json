@@ -134,6 +134,7 @@
       "failed": "Analysis could not be completed. Please try again."
     },
     "updateBanner": {
+      "analyzing": "Analyzing repository...",
       "dismissLabel": "Dismiss",
       "newCommitsDetected": "New commits detected. Update to see the latest analysis.",
       "parserUpdated": "Parser has been updated. Reanalyze to get more accurate results.",

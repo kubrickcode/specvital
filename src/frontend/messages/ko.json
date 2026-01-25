@@ -134,6 +134,7 @@
       "failed": "분석을 완료할 수 없습니다. 다시 시도해 주세요."
     },
     "updateBanner": {
+      "analyzing": "저장소 분석 중...",
       "dismissLabel": "닫기",
       "newCommitsDetected": "새 커밋이 감지되었습니다. 최신 분석 결과를 확인하려면 업데이트하세요.",
       "parserUpdated": "파서가 업데이트되었습니다. 더 정확한 결과를 위해 재분석하세요.",
