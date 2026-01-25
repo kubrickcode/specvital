@@ -4,12 +4,6 @@ export { TaskBadge, TasksDropdownSection, TaskStatusBadge } from "./components";
 // Task store hooks
 export { useActiveTaskCount, useBackgroundTask, useBackgroundTasks } from "./hooks";
 
-// Polling manager and hook
-export { pollingManager } from "./polling-manager";
-export type { FetchStatusFn, PollingManagerConfig, TaskStatusResponse } from "./polling-manager";
-export { useTaskPolling } from "./use-task-polling";
-export type { UseTaskPollingOptions, UseTaskPollingResult } from "./use-task-polling";
-
 // Task store
 export {
   addTask,
