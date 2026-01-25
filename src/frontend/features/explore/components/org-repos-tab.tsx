@@ -6,12 +6,11 @@ import {
   ChevronDown,
   ExternalLink,
   Link2,
-  Lock,
   Loader2,
   RefreshCw,
   Search,
 } from "lucide-react";
-import { useFormatter, useNow, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -26,22 +25,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
-import { OrgConnectionBanner } from "@/features/dashboard/components";
+import { OrgConnectionBanner, RepositoryCard } from "@/features/dashboard/components";
 import {
   useAllOrgRepos,
   useGitHubAppInstallUrl,
   useOrganizations,
   usePaginatedRepositories,
 } from "@/features/dashboard/hooks";
-import { Link } from "@/i18n/navigation";
 import type { GitHubOrganization, GitHubRepository } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
 export const OrgReposTab = () => {
   const t = useTranslations("explore");
   const tApp = useTranslations("dashboard.githubApp");
-  const format = useFormatter();
-  const now = useNow({ updateInterval: 1000 * 60 });
 
   const [selectedOrg, setSelectedOrg] = useState<GitHubOrganization | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -224,28 +220,23 @@ export const OrgReposTab = () => {
                 />
               </div>
 
-              <ul className="space-y-2">
+              <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredRepositories.length === 0 ? (
-                  <li className="text-center py-8 text-sm text-muted-foreground">
+                  <li className="col-span-full text-center py-8 text-sm text-muted-foreground">
                     {searchQuery
                       ? t("myRepos.noSearchResults")
                       : t("organizations.noOrgsDescription")}
                   </li>
                 ) : (
-                  filteredRepositories.map((repo) => {
-                    const isAnalyzed = isRepoAnalyzed(repo);
-                    return (
-                      <li key={repo.id}>
-                        <RepoListItem
-                          format={format}
-                          isAnalyzed={isAnalyzed}
-                          now={now}
-                          repo={repo}
-                          t={t}
-                        />
-                      </li>
-                    );
-                  })
+                  filteredRepositories.map((repo) => (
+                    <li key={repo.id}>
+                      <RepositoryCard
+                        isAnalyzed={isRepoAnalyzed(repo)}
+                        repo={repo}
+                        variant="unanalyzed"
+                      />
+                    </li>
+                  ))
                 )}
               </ul>
             </>
@@ -258,59 +249,6 @@ export const OrgReposTab = () => {
           )}
         </CardContent>
       </Card>
-    </div>
-  );
-};
-
-type RepoListItemProps = {
-  format: ReturnType<typeof useFormatter>;
-  isAnalyzed: boolean;
-  now: Date;
-  repo: GitHubRepository;
-  t: ReturnType<typeof useTranslations<"explore">>;
-};
-
-const RepoListItem = ({ format, isAnalyzed, now, repo, t }: RepoListItemProps) => {
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-lg border bg-card shadow-sm hover:shadow-md hover:bg-accent/50 transition-all">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start gap-2">
-          <ResponsiveTooltip content={repo.fullName}>
-            <h4 className="font-medium text-sm line-clamp-2 break-all h-10">{repo.fullName}</h4>
-          </ResponsiveTooltip>
-          {repo.isPrivate && <Lock className="size-3 text-muted-foreground shrink-0 mt-0.5" />}
-          {isAnalyzed && (
-            <Badge className="text-xs" variant="secondary">
-              {t("myRepos.analyzed")}
-            </Badge>
-          )}
-        </div>
-        {repo.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{repo.description}</p>
-        )}
-        {repo.pushedAt && (
-          <p className="text-xs text-muted-foreground mt-1">
-            {t("myRepos.lastPush")}: {format.relativeTime(new Date(repo.pushedAt), now)}
-          </p>
-        )}
-      </div>
-      <div className="flex flex-col gap-1 shrink-0">
-        {isAnalyzed ? (
-          <Button asChild size="sm" variant="outline">
-            <Link href={`/analyze/${repo.owner}/${repo.name}`}>{t("myRepos.view")}</Link>
-          </Button>
-        ) : (
-          <Button asChild size="sm" variant="cta">
-            <Link href={`/analyze/${repo.owner}/${repo.name}`}>{t("myRepos.analyze")}</Link>
-          </Button>
-        )}
-        <Button asChild className="h-7" size="sm" variant="ghost">
-          <a href={`https://github.com/${repo.fullName}`} rel="noopener noreferrer" target="_blank">
-            <ExternalLink className="size-3 mr-1" />
-            GitHub
-          </a>
-        </Button>
-      </div>
     </div>
   );
 };
@@ -357,11 +295,13 @@ const OrgReposTabSkeleton = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <Skeleton className="h-10 w-full" />
-        <div className="space-y-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton className="h-24 w-full" key={i} />
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <li key={i}>
+              <Skeleton className="h-48 w-full rounded-xl" />
+            </li>
           ))}
-        </div>
+        </ul>
       </CardContent>
     </Card>
   );
