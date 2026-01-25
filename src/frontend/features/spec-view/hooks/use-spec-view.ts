@@ -16,6 +16,7 @@ import {
   requestSpecGeneration,
   UnauthorizedError,
 } from "../api";
+import { repoSpecViewKeys } from "./use-repo-spec-view";
 import type {
   BehaviorCacheStats,
   SpecDocument,
@@ -114,16 +115,20 @@ export const useSpecView = (
       if (isDocumentGenerating(response)) {
         const status = response.generationStatus.status;
 
-        // Detect completion transition and invalidate query for fresh document data
+        // Detect completion transition and invalidate queries for fresh document data
         if (
           status === "completed" &&
           previousStatusRef.current !== "completed" &&
           previousStatusRef.current !== null
         ) {
           previousStatusRef.current = status;
-          // Invalidate to fetch completed document data
+          // Invalidate analysis-based spec view query
           queryClient.invalidateQueries({
             queryKey: specViewKeys.document(analysisId, language, version),
+          });
+          // Invalidate repo-based spec view queries for immediate document display
+          queryClient.invalidateQueries({
+            queryKey: repoSpecViewKeys.all,
           });
           pollingStartTimeRef.current = null;
           return false;
