@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ClipboardCopy, Download, FileText } from "lucide-react";
+import { Check, ChevronDown, ClipboardCopy, Download, FileText } from "lucide-react";
 import type { Transition } from "motion/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useTranslations } from "next-intl";
@@ -109,6 +109,7 @@ export const SpecExportButton = ({
                 </AnimatePresence>
               </span>
               <span>{state !== "idle" ? t("success") : t("button")}</span>
+              <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
