@@ -1072,10 +1072,11 @@ test.describe("Analysis Page - Spec Generation Progress (Mocked API)", () => {
     await setupMockHandlers(page, {
       analysis: mockAnalysisCompleted,
       specDocument: mockSpecDocumentNotFound,
-      specGeneration: mockSpecStatusNotFound, // Start with not_found so Generate button is visible
       usage: mockUsageNormal,
       // When generate is called, return pending status
       onSpecGeneration: () => mockSpecGenerationAccepted,
+      // Status polling returns pending after generation starts
+      onSpecGenerationStatus: () => mockSpecGenerationAccepted,
     });
 
     await page.goto("/en/analyze/test-owner/test-repo?tab=spec");
@@ -1105,10 +1106,11 @@ test.describe("Analysis Page - Spec Generation Progress (Mocked API)", () => {
     await setupMockHandlers(page, {
       analysis: mockAnalysisCompleted,
       specDocument: mockSpecDocumentNotFound,
-      specGeneration: mockSpecStatusNotFound, // Start with not_found so Generate button is visible
       usage: mockUsageNormal,
       // When generate is called, return pending status
       onSpecGeneration: () => mockSpecGenerationAccepted,
+      // Status polling returns pending after generation starts
+      onSpecGenerationStatus: () => mockSpecGenerationAccepted,
     });
 
     await page.goto("/en/analyze/test-owner/test-repo?tab=spec");

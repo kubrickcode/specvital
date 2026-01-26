@@ -1,0 +1,153 @@
+"use client";
+
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+
+import { fetchGenerationStatus, ForbiddenError, UnauthorizedError } from "../api";
+import type { SpecGenerationStatusEnum, SpecLanguage } from "../types";
+import { repoSpecViewKeys } from "./use-repo-spec-view";
+import { specViewKeys } from "./use-spec-view";
+
+const POLLING_INTERVAL_MS = 1000;
+const MAX_POLLING_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
+export const specGenerationStatusKeys = {
+  all: ["spec-generation-status"] as const,
+  status: (analysisId: string, language?: SpecLanguage) =>
+    language
+      ? ([...specGenerationStatusKeys.all, analysisId, language] as const)
+      : ([...specGenerationStatusKeys.all, analysisId] as const),
+};
+
+type UseSpecGenerationStatusOptions = {
+  enabled?: boolean;
+  language?: SpecLanguage;
+  onCompleted?: () => void;
+  onFailed?: () => void;
+  owner?: string;
+  repo?: string;
+};
+
+type UseSpecGenerationStatusReturn = {
+  error: Error | null;
+  isPolling: boolean;
+  status: SpecGenerationStatusEnum | null;
+};
+
+/**
+ * Dedicated hook for polling spec generation status.
+ * - Polls GET /api/spec-view/status/{analysisId} endpoint
+ * - Only polls when status is pending/running
+ * - Stops polling and invalidates document queries on completed/failed
+ */
+export const useSpecGenerationStatus = (
+  analysisId: string,
+  options: UseSpecGenerationStatusOptions = {}
+): UseSpecGenerationStatusReturn => {
+  const { enabled = false, language, onCompleted, onFailed, owner, repo } = options;
+  const queryClient = useQueryClient();
+  const pollingStartTimeRef = useRef<number | null>(null);
+  const previousStatusRef = useRef<SpecGenerationStatusEnum | null>(null);
+
+  // Store callbacks in refs to avoid dependency issues
+  const onCompletedRef = useRef(onCompleted);
+  const onFailedRef = useRef(onFailed);
+  onCompletedRef.current = onCompleted;
+  onFailedRef.current = onFailed;
+
+  // Reset refs when dependencies change
+  useEffect(() => {
+    pollingStartTimeRef.current = null;
+    previousStatusRef.current = null;
+  }, [analysisId, language]);
+
+  const query = useQuery({
+    enabled: enabled && Boolean(analysisId),
+    queryFn: () => fetchGenerationStatus(analysisId, language),
+    queryKey: specGenerationStatusKeys.status(analysisId, language),
+    refetchInterval: (query) => {
+      // Initialize polling start time on first evaluation
+      if (pollingStartTimeRef.current === null) {
+        pollingStartTimeRef.current = Date.now();
+      }
+
+      // Stop polling after max duration regardless of status
+      if (Date.now() - pollingStartTimeRef.current > MAX_POLLING_DURATION_MS) {
+        pollingStartTimeRef.current = null;
+        return false;
+      }
+
+      const status = query.state.data?.status;
+
+      // Stop polling on terminal states
+      if (status === "completed" || status === "failed") {
+        pollingStartTimeRef.current = null;
+        return false;
+      }
+
+      // Keep polling for: pending, running, not_found (job may not exist yet),
+      // undefined (first fetch or error recovery)
+      return POLLING_INTERVAL_MS;
+    },
+    retry: 2,
+    staleTime: 0,
+  });
+
+  const status = query.data?.status ?? null;
+
+  // Handle status transitions
+  useEffect(() => {
+    if (!enabled || !status) return;
+
+    const prevStatus = previousStatusRef.current;
+
+    // Detect completion transition
+    // Note: Allow transition from null to detect fast completions (first poll returns completed)
+    if (status === "completed" && prevStatus !== "completed") {
+      // Invalidate document queries for fresh data
+      queryClient.invalidateQueries({
+        queryKey: specViewKeys.document(analysisId, language),
+      });
+      queryClient.invalidateQueries({
+        queryKey: specViewKeys.document(analysisId),
+      });
+      // Invalidate repo-based queries for immediate document display
+      if (owner && repo) {
+        queryClient.invalidateQueries({
+          queryKey: repoSpecViewKeys.document(owner, repo, language),
+        });
+        queryClient.invalidateQueries({
+          queryKey: repoSpecViewKeys.document(owner, repo),
+        });
+      }
+      queryClient.invalidateQueries({
+        queryKey: repoSpecViewKeys.all,
+      });
+
+      onCompletedRef.current?.();
+    }
+
+    // Detect failure transition
+    // Note: Allow transition from null to detect fast failures (first poll returns failed)
+    if (status === "failed" && prevStatus !== "failed") {
+      onFailedRef.current?.();
+    }
+
+    previousStatusRef.current = status;
+  }, [analysisId, enabled, language, owner, queryClient, repo, status]);
+
+  const isPolling = status === "pending" || status === "running";
+
+  // Determine error type
+  const error = (() => {
+    if (query.error instanceof UnauthorizedError) return query.error;
+    if (query.error instanceof ForbiddenError) return query.error;
+    return query.error ?? null;
+  })();
+
+  return {
+    error,
+    isPolling,
+    status,
+  };
+};

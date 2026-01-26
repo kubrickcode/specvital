@@ -95,8 +95,12 @@ const GenerationProgressContent = ({
   );
 };
 
-export const GenerationProgressModal = () => {
-  const { close, isOpen, status, switchToBackground } = useGenerationProgress();
+type GenerationProgressModalProps = {
+  status: SpecGenerationStatusEnum | null;
+};
+
+export const GenerationProgressModal = ({ status }: GenerationProgressModalProps) => {
+  const { close, isOpen, switchToBackground } = useGenerationProgress();
 
   const handleContinueBrowsing = () => {
     if (status === "completed") {
@@ -108,7 +112,6 @@ export const GenerationProgressModal = () => {
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      // When closing modal, switch to background instead of fully closing
       if (status === "pending" || status === "running") {
         switchToBackground();
       } else {

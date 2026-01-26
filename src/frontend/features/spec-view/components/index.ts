@@ -14,5 +14,6 @@ export { QuotaConfirmDialog } from "./quota-confirm-dialog";
 export { QuotaIndicator } from "./quota-indicator";
 export { SpecAccessError } from "./spec-access-error";
 export { SpecExportButton } from "./spec-export-button";
+export { SpecGenerationMonitor } from "./spec-generation-monitor";
 export { TocSidebar } from "./toc-sidebar";
 export { VirtualizedBehaviorList, VIRTUALIZATION_THRESHOLD } from "./virtualized-behavior-list";

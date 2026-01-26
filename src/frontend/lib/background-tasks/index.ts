@@ -2,7 +2,7 @@
 export { TaskBadge, TasksDropdownSection, TaskStatusBadge } from "./components";
 
 // Task store hooks
-export { useActiveTaskCount, useBackgroundTask, useBackgroundTasks } from "./hooks";
+export { useActiveTaskCount, useBackgroundTasks } from "./hooks";
 
 // Task store
 export {

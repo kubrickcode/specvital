@@ -1,62 +1,38 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { create } from "zustand";
 
 import type { UsageStatusResponse } from "@/features/account/api/usage";
 
 import { isValidSpecLanguage } from "../constants/spec-languages";
 import type { SpecLanguage } from "../types";
 
+type OpenOptions = {
+  analysisId: string;
+  estimatedCost?: number;
+  initialLanguage?: SpecLanguage;
+  isRegenerate?: boolean;
+  locale?: string;
+  onConfirm: (language: SpecLanguage, isForceRegenerate: boolean) => void;
+  usage: UsageStatusResponse | null;
+};
+
 type QuotaConfirmDialogStore = {
   analysisId: string | null;
+  close: () => void;
+  confirm: () => void;
   estimatedCost: number | null;
   forceRegenerate: boolean;
   isOpen: boolean;
   isRegenerate: boolean;
-  listeners: Set<() => void>;
   onConfirm: ((language: SpecLanguage, isForceRegenerate: boolean) => void) | null;
+  onOpenChange: (open: boolean) => void;
+  open: (options: OpenOptions) => void;
   selectedLanguage: SpecLanguage;
+  setForceRegenerate: (value: boolean) => void;
+  setSelectedLanguage: (language: SpecLanguage) => void;
   usage: UsageStatusResponse | null;
 };
-
-const store: QuotaConfirmDialogStore = {
-  analysisId: null,
-  estimatedCost: null,
-  forceRegenerate: false,
-  isOpen: false,
-  isRegenerate: false,
-  listeners: new Set(),
-  onConfirm: null,
-  selectedLanguage: "English",
-  usage: null,
-};
-
-const notifyListeners = () => {
-  store.listeners.forEach((listener) => listener());
-};
-
-const subscribe = (listener: () => void) => {
-  store.listeners.add(listener);
-  return () => store.listeners.delete(listener);
-};
-
-const getSnapshot = () => store.isOpen;
-
-const getServerSnapshot = () => false;
-
-const getUsageSnapshot = () => store.usage;
-
-const getOnConfirmSnapshot = () => store.onConfirm;
-
-const getEstimatedCostSnapshot = () => store.estimatedCost;
-
-const getSelectedLanguageSnapshot = () => store.selectedLanguage;
-
-const getAnalysisIdSnapshot = () => store.analysisId;
-
-const getIsRegenerateSnapshot = () => store.isRegenerate;
-
-const getForceRegenerateSnapshot = () => store.forceRegenerate;
 
 /**
  * Get the stored language preference for a specific analysis
@@ -124,134 +100,78 @@ const localeToSpecLanguage = (locale: string): SpecLanguage | null => {
   return localeMap[locale] ?? null;
 };
 
-type OpenOptions = {
-  analysisId: string;
-  estimatedCost?: number;
-  initialLanguage?: SpecLanguage;
-  isRegenerate?: boolean;
-  locale?: string;
-  onConfirm: (language: SpecLanguage, isForceRegenerate: boolean) => void;
-  usage: UsageStatusResponse | null;
-};
+const resolveDefaultLanguage = (
+  analysisId: string,
+  initialLanguage?: SpecLanguage,
+  locale?: string
+): SpecLanguage => {
+  if (initialLanguage) return initialLanguage;
 
-const open = ({
-  analysisId,
-  estimatedCost,
-  initialLanguage,
-  isRegenerate = false,
-  locale,
-  onConfirm,
-  usage,
-}: OpenOptions) => {
-  if (!store.isOpen) {
-    // Determine default language: initialLanguage > stored preference > global default > locale > English
-    let defaultLanguage: SpecLanguage = "English";
-    if (initialLanguage) {
-      defaultLanguage = initialLanguage;
-    } else {
-      const storedPreference = getStoredLanguagePreference(analysisId);
-      if (storedPreference) {
-        defaultLanguage = storedPreference;
-      } else {
-        const globalDefault = getGlobalLanguageDefault();
-        if (globalDefault) {
-          defaultLanguage = globalDefault;
-        } else if (locale) {
-          const localeLanguage = localeToSpecLanguage(locale);
-          if (localeLanguage) {
-            defaultLanguage = localeLanguage;
-          }
-        }
-      }
-    }
+  const storedPreference = getStoredLanguagePreference(analysisId);
+  if (storedPreference) return storedPreference;
 
-    store.isOpen = true;
-    store.isRegenerate = isRegenerate;
-    store.forceRegenerate = isRegenerate; // Regenerate always forces, new generation defaults to cache
-    store.usage = usage;
-    store.onConfirm = onConfirm;
-    store.estimatedCost = estimatedCost ?? null;
-    store.analysisId = analysisId;
-    store.selectedLanguage = defaultLanguage;
-    notifyListeners();
+  const globalDefault = getGlobalLanguageDefault();
+  if (globalDefault) return globalDefault;
+
+  if (locale) {
+    const localeLanguage = localeToSpecLanguage(locale);
+    if (localeLanguage) return localeLanguage;
   }
+
+  return "English";
 };
 
-const close = () => {
-  if (store.isOpen) {
-    store.isOpen = false;
-    store.isRegenerate = false;
-    store.forceRegenerate = false;
-    store.usage = null;
-    store.onConfirm = null;
-    store.estimatedCost = null;
-    store.analysisId = null;
-    store.selectedLanguage = "English";
-    notifyListeners();
-  }
+const INITIAL_STATE = {
+  analysisId: null as string | null,
+  estimatedCost: null as number | null,
+  forceRegenerate: false,
+  isOpen: false,
+  isRegenerate: false,
+  onConfirm: null as ((language: SpecLanguage, isForceRegenerate: boolean) => void) | null,
+  selectedLanguage: "English" as SpecLanguage,
+  usage: null as UsageStatusResponse | null,
 };
 
-const setSelectedLanguage = (language: SpecLanguage) => {
-  if (store.selectedLanguage !== language) {
-    store.selectedLanguage = language;
-    // Save preference for this analysis
-    if (store.analysisId) {
-      saveLanguagePreference(store.analysisId, language);
-    }
-    notifyListeners();
-  }
-};
-
-const setForceRegenerate = (value: boolean) => {
-  if (store.forceRegenerate !== value) {
-    store.forceRegenerate = value;
-    notifyListeners();
-  }
-};
-
-const confirm = () => {
-  // Capture values before close() resets them
-  const callback = store.onConfirm;
-  const language = store.selectedLanguage;
-  const forceRegen = store.forceRegenerate;
-  close();
-  callback?.(language, forceRegen);
-};
-
-export const useQuotaConfirmDialog = () => {
-  const isOpen = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const usage = useSyncExternalStore(subscribe, getUsageSnapshot, () => null);
-  const onConfirm = useSyncExternalStore(subscribe, getOnConfirmSnapshot, () => null);
-  const estimatedCost = useSyncExternalStore(subscribe, getEstimatedCostSnapshot, () => null);
-  const selectedLanguage = useSyncExternalStore(
-    subscribe,
-    getSelectedLanguageSnapshot,
-    () => "English" as SpecLanguage
-  );
-  const analysisId = useSyncExternalStore(subscribe, getAnalysisIdSnapshot, () => null);
-  const isRegenerate = useSyncExternalStore(subscribe, getIsRegenerateSnapshot, () => false);
-  const forceRegenerate = useSyncExternalStore(subscribe, getForceRegenerateSnapshot, () => false);
-
-  const onOpenChange = (open: boolean) => {
-    if (!open) {
-      close();
-    }
-  };
-
-  return {
+const useQuotaConfirmDialogStore = create<QuotaConfirmDialogStore>((set, get) => ({
+  ...INITIAL_STATE,
+  close: () => set(INITIAL_STATE),
+  confirm: () => {
+    const { forceRegenerate, onConfirm, selectedLanguage } = get();
+    set(INITIAL_STATE);
+    onConfirm?.(selectedLanguage, forceRegenerate);
+  },
+  onOpenChange: (open) => {
+    if (!open) set(INITIAL_STATE);
+  },
+  open: ({
     analysisId,
-    close,
-    confirm,
     estimatedCost,
-    forceRegenerate,
-    isOpen,
-    isRegenerate,
+    initialLanguage,
+    isRegenerate = false,
+    locale,
     onConfirm,
-    onOpenChange,
-    open,
-    selectedLanguage,
-    setForceRegenerate,
-    setSelectedLanguage,
     usage,
-  };
-};
+  }) => {
+    if (get().isOpen) return;
+    set({
+      analysisId,
+      estimatedCost: estimatedCost ?? null,
+      forceRegenerate: isRegenerate,
+      isOpen: true,
+      isRegenerate,
+      onConfirm,
+      selectedLanguage: resolveDefaultLanguage(analysisId, initialLanguage, locale),
+      usage,
+    });
+  },
+  setForceRegenerate: (value) => set({ forceRegenerate: value }),
+  setSelectedLanguage: (language) => {
+    set({ selectedLanguage: language });
+    const { analysisId } = get();
+    if (analysisId) {
+      saveLanguagePreference(analysisId, language);
+    }
+  },
+}));
+
+export const useQuotaConfirmDialog = () => useQuotaConfirmDialogStore();

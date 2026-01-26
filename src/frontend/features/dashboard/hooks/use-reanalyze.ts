@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import type { AnalysisResponse, RepositoryCard } from "@/lib/api/types";
-import { addTask, removeTask } from "@/lib/background-tasks/task-store";
+import { addTask, getTask, removeTask } from "@/lib/background-tasks/task-store";
 import { validateRepositoryIdentifiers } from "@/lib/validations/github";
 
 import { fetchAnalysisStatus } from "../../analysis/api";
@@ -63,13 +63,17 @@ export const useReanalyze = (): UseReanalyzeReturn => {
     },
   });
 
-  // Side effect: Clean up task and invalidate queries on polling completion
+  // Clean up polling state on completion
+  // Task removal uses getTask() for deduplication with AnalysisMonitor (global)
   useEffect(() => {
     if (!pollingTarget || !pollingQuery.data) return;
     if (!isTerminalStatus(pollingQuery.data.status)) return;
 
     const taskId = createTaskId(pollingTarget.owner, pollingTarget.repo);
-    removeTask(taskId);
+    const task = getTask(taskId);
+    if (task) {
+      removeTask(taskId);
+    }
     queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
     setPollingTarget(null);
   }, [pollingTarget, pollingQuery.data, queryClient]);

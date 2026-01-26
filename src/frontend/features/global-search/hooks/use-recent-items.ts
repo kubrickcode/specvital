@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { create } from "zustand";
 
 import {
   addRecentItem,
@@ -10,64 +10,31 @@ import {
   type RecentItem,
 } from "../lib/recent-items";
 
-type Listener = () => void;
-
-const listeners = new Set<Listener>();
-let cachedItems: RecentItem[] | null = null;
-
-const notifyListeners = () => {
-  cachedItems = null;
-  for (const listener of listeners) {
-    listener();
-  }
-};
-
-if (typeof window !== "undefined") {
-  window.addEventListener("storage", (event) => {
-    if (event.key === STORAGE_KEY) {
-      notifyListeners();
-    }
-  });
-}
-
-const subscribe = (listener: Listener): (() => void) => {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-};
-
-const getSnapshot = (): RecentItem[] => {
-  if (cachedItems === null) {
-    cachedItems = loadRecentItems();
-  }
-  return cachedItems;
-};
-
-// Must be cached to avoid infinite loop in useSyncExternalStore
-const EMPTY_ITEMS: RecentItem[] = [];
-const getServerSnapshot = (): RecentItem[] => EMPTY_ITEMS;
-
-type UseRecentItemsReturn = {
+type RecentItemsStore = {
   addItem: (item: Omit<RecentItem, "timestamp" | "type">) => void;
   clearItems: () => void;
   recentItems: RecentItem[];
 };
 
-export const useRecentItems = (): UseRecentItemsReturn => {
-  const recentItems = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-
-  const addItem = (item: Omit<RecentItem, "timestamp" | "type">) => {
+const useRecentItemsStore = create<RecentItemsStore>((set) => ({
+  addItem: (item) => {
     addRecentItem(item);
-    notifyListeners();
-  };
-
-  const clearItems = () => {
+    set({ recentItems: loadRecentItems() });
+  },
+  clearItems: () => {
     clearRecentItems();
-    notifyListeners();
-  };
+    set({ recentItems: [] });
+  },
+  recentItems: typeof window !== "undefined" ? loadRecentItems() : [],
+}));
 
-  return {
-    addItem,
-    clearItems,
-    recentItems,
-  };
-};
+// Sync across tabs via storage event
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (event) => {
+    if (event.key === STORAGE_KEY) {
+      useRecentItemsStore.setState({ recentItems: loadRecentItems() });
+    }
+  });
+}
+
+export const useRecentItems = (): RecentItemsStore => useRecentItemsStore();

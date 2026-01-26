@@ -9,7 +9,9 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Header, MobileBottomBar } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
 import { Toaster } from "@/components/ui/sonner";
+import { AnalysisMonitor } from "@/features/analysis";
 import { GlobalSearchProvider } from "@/features/global-search";
+import { SpecGenerationMonitor } from "@/features/spec-view";
 import { isValidLocale, locales } from "@/i18n/config";
 import { QueryProvider } from "@/lib/query";
 import "../globals.css";
@@ -59,6 +61,8 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
                     {children}
                   </main>
                   <MobileBottomBar />
+                  <AnalysisMonitor />
+                  <SpecGenerationMonitor />
                   <Toaster richColors />
                 </GlobalSearchProvider>
               </ThemeProvider>

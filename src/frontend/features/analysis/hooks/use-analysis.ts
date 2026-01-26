@@ -130,7 +130,11 @@ export const useAnalysis = (owner: string, repo: string): UseAnalysisReturn => {
         });
       }
     } else if (status === "completed" || status === "failed" || status === "error") {
-      removeTask(taskId);
+      // Deduplication with AnalysisMonitor (global)
+      const existingTask = getTask(taskId);
+      if (existingTask) {
+        removeTask(taskId);
+      }
     }
   }, [status, owner, repo, taskId]);
 

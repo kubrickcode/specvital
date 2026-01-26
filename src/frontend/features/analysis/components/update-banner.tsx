@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { paginatedRepositoriesKeys } from "@/features/dashboard";
-import { addTask, removeTask } from "@/lib/background-tasks";
+import { addTask, getTask, removeTask } from "@/lib/background-tasks";
 
 import { fetchAnalysisStatus, triggerReanalyze } from "../api";
 import { analysisKeys } from "../hooks/use-analysis";
@@ -55,7 +55,8 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
     },
   });
 
-  // Clean up task and dismiss banner on polling completion
+  // Clean up polling state and dismiss banner on completion
+  // Task removal is handled by AnalysisMonitor (global) for deduplication
   useEffect(() => {
     if (!isPolling || !pollingQuery.data) return;
 
@@ -63,14 +64,14 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
     if (!isTerminalStatus(pollingStatus)) return;
 
     const taskId = createTaskId(owner, repo);
-    removeTask(taskId);
-
-    // Notify user of failure
-    if (pollingStatus === "failed") {
-      toast.error(t("reanalyzeFailed"));
+    const task = getTask(taskId);
+    if (task) {
+      removeTask(taskId);
+      if (pollingStatus === "failed") {
+        toast.error(t("reanalyzeFailed"));
+      }
     }
 
-    // Invalidate queries to refresh UI
     queryClient.invalidateQueries({ queryKey: analysisKeys.detail(owner, repo) });
     queryClient.invalidateQueries({ queryKey: updateStatusKeys.detail(owner, repo) });
     queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
@@ -78,16 +79,6 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
     setIsPolling(false);
     setIsDismissed(true);
   }, [isPolling, pollingQuery.data, owner, repo, queryClient, t]);
-
-  // Cleanup task on component unmount during polling
-  useEffect(() => {
-    return () => {
-      if (isPolling) {
-        const taskId = createTaskId(owner, repo);
-        removeTask(taskId);
-      }
-    };
-  }, [isPolling, owner, repo]);
 
   const reanalyzeMutation = useMutation({
     mutationFn: () => triggerReanalyze(owner, repo),

@@ -626,6 +626,10 @@
     "activeTasks": {
       "title": "진행 중인 작업",
       "viewTask": "보기"
+    },
+    "toast": {
+      "analysisComplete": "{repo} 분석이 완료되었습니다",
+      "analysisFailed": "{repo} 분석에 실패했습니다"
     }
   },
   "globalSearch": {

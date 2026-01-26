@@ -1,6 +1,7 @@
 export {
   AnalysisContent,
   AnalysisHeader,
+  AnalysisMonitor,
   AnalysisSkeleton,
   EmptyState,
   InlineStats,

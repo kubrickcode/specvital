@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -16,12 +17,14 @@ import {
   SpecAccessError,
   useDocumentFilter,
   useGenerationProgress,
+  specGenerationStatusKeys,
   useQuotaConfirmDialog,
   useRepoSpecView,
   useRepoVersionHistory,
+  useSpecGenerationStatus,
   useSpecView,
 } from "@/features/spec-view";
-import type { GenerationState, SpecLanguage } from "@/features/spec-view";
+import type { SpecGenerationStatusEnum, SpecLanguage } from "@/features/spec-view";
 import { addTask, getTask, removeTask, updateTask } from "@/lib/background-tasks";
 
 import { SpecToolbar } from "./spec-toolbar";
@@ -46,6 +49,7 @@ export const SpecPanel = ({
 }: SpecPanelProps) => {
   const t = useTranslations("specView.toast");
   const locale = useLocale();
+  const queryClient = useQueryClient();
 
   // Filter state (shared URL params)
   const { frameworks, query, setFrameworks, setQuery, setStatuses, statuses } = useFilterState();
@@ -62,13 +66,18 @@ export const SpecPanel = ({
     close: closeProgressModal,
     isInBackground: isProgressInBackground,
     open: openProgressModal,
-    updateStatus: updateProgressStatus,
   } = useGenerationProgress();
 
-  // Local state: tracking whether user initiated a generation
-  const [isWaitingForGeneration, setIsWaitingForGeneration] = useState(false);
-  const [pendingLanguage, setPendingLanguage] = useState<SpecLanguage | null>(null);
+  // Local state
+  // generatingLanguage: tracks language currently being generated (enables polling when non-null)
+  // selectedLanguage: tracks language for document viewing (does not trigger polling)
+  const [generatingLanguage, setGeneratingLanguage] = useState<SpecLanguage | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<SpecLanguage | undefined>(undefined);
   const [selectedVersion, setSelectedVersion] = useState<number | undefined>(undefined);
+
+  // Determine which language to use for document fetching
+  // Priority: generatingLanguage (during generation) > selectedLanguage (user selection)
+  const documentLanguage = generatingLanguage ?? selectedLanguage;
 
   // Spec document - use repository-based API for cross-analysis version access
   const {
@@ -78,18 +87,53 @@ export const SpecPanel = ({
     data: specDocument,
     isFetching,
   } = useRepoSpecView(owner, repo, {
-    language: pendingLanguage ?? undefined,
+    language: documentLanguage,
     version: selectedVersion,
   });
 
-  // Generation functionality - analysisId based (generation targets specific analysis)
+  // Generation mutation - analysisId based (generation targets specific analysis)
   const {
     accessError: genAccessError,
-    generationState,
+    isRequesting,
     requestGenerate,
-    serverStatus,
   } = useSpecView(analysisId, {
-    language: pendingLanguage ?? undefined,
+    language: documentLanguage,
+  });
+
+  // Generation status polling - only enabled when generating
+  const { status: serverStatus } = useSpecGenerationStatus(analysisId, {
+    enabled: generatingLanguage !== null,
+    language: generatingLanguage ?? undefined,
+    onCompleted: () => {
+      // Deduplicate with SpecGenerationMonitor (global):
+      // getTask returns null if already removed by another handler
+      const taskId = `spec-generation-${analysisId}`;
+      const task = getTask(taskId);
+      if (task) {
+        removeTask(taskId);
+        if (isProgressInBackground) {
+          toast.success(t("generationComplete.title"), {
+            description: t("generationComplete.description"),
+          });
+        }
+      }
+      closeProgressModal();
+      setGeneratingLanguage(null);
+    },
+    onFailed: () => {
+      const taskId = `spec-generation-${analysisId}`;
+      const task = getTask(taskId);
+      if (task) {
+        removeTask(taskId);
+        if (isProgressInBackground) {
+          toast.error(t("generateFailed.title"));
+        }
+      }
+      closeProgressModal();
+      setGeneratingLanguage(null);
+    },
+    owner,
+    repo,
   });
 
   // Combine access errors (repo error takes precedence)
@@ -118,92 +162,20 @@ export const SpecPanel = ({
 
   const hasFilter = query.trim().length > 0 || frameworks.length > 0 || statuses.length > 0;
 
-  // Determine effective state: combine server state with local waiting state
-  const effectiveState: GenerationState = (() => {
-    if (!isWaitingForGeneration) {
-      return generationState;
-    }
-    // While waiting for generation, only trust server-provided status
-    if (serverStatus === "pending") return "pending";
-    if (serverStatus === "running") return "running";
-    if (serverStatus === "completed") return "completed";
-    if (serverStatus === "failed") return "failed";
-    // Server returned document instead of status → generation completed
-    // But only if fetch completed (to avoid treating cached data as new completion)
-    if (generationState === "completed" && !isFetching) return "completed";
-    // Still fetching or no server status yet
-    return "pending";
-  })();
-
-  // Single effect to handle generation state changes
-  const prevEffectiveStateRef = useRef<GenerationState | null>(null);
+  // Update TaskStore based on server status
   useEffect(() => {
-    if (!isWaitingForGeneration) {
-      prevEffectiveStateRef.current = null;
-      return;
-    }
+    if (generatingLanguage === null || !serverStatus) return;
 
-    // Update modal status for in-progress states
-    if (
-      effectiveState === "requesting" ||
-      effectiveState === "pending" ||
-      effectiveState === "running"
-    ) {
-      updateProgressStatus(effectiveState === "requesting" ? "pending" : effectiveState);
-
-      // Update TaskStore status
-      const taskId = `spec-generation-${analysisId}`;
-      const existingTask = getTask(taskId);
-      if (existingTask) {
-        if (effectiveState === "pending" && existingTask.status !== "queued") {
-          updateTask(taskId, { status: "queued" });
-        } else if (effectiveState === "running" && existingTask.status !== "processing") {
-          updateTask(taskId, { startedAt: new Date().toISOString(), status: "processing" });
-        }
+    const taskId = `spec-generation-${analysisId}`;
+    const existingTask = getTask(taskId);
+    if (existingTask) {
+      if (serverStatus === "pending" && existingTask.status !== "queued") {
+        updateTask(taskId, { status: "queued" });
+      } else if (serverStatus === "running" && existingTask.status !== "processing") {
+        updateTask(taskId, { startedAt: new Date().toISOString(), status: "processing" });
       }
     }
-
-    // Handle completion
-    if (effectiveState === "completed" && prevEffectiveStateRef.current !== "completed") {
-      updateProgressStatus("completed");
-      setIsWaitingForGeneration(false);
-      setPendingLanguage(null);
-
-      // Remove from TaskStore on completion
-      removeTask(`spec-generation-${analysisId}`);
-
-      if (isProgressInBackground) {
-        toast.success(t("generationComplete.title"), {
-          description: t("generationComplete.description"),
-        });
-      }
-      closeProgressModal();
-    }
-
-    // Handle failure
-    if (effectiveState === "failed") {
-      setIsWaitingForGeneration(false);
-      setPendingLanguage(null);
-
-      // Remove from TaskStore on failure
-      removeTask(`spec-generation-${analysisId}`);
-
-      if (isProgressInBackground) {
-        toast.error(t("generateFailed.title"));
-      }
-      closeProgressModal();
-    }
-
-    prevEffectiveStateRef.current = effectiveState;
-  }, [
-    analysisId,
-    effectiveState,
-    isWaitingForGeneration,
-    isProgressInBackground,
-    updateProgressStatus,
-    closeProgressModal,
-    t,
-  ]);
+  }, [analysisId, generatingLanguage, serverStatus]);
 
   // Show toast when switching to background
   const prevIsInBackgroundRef = useRef(false);
@@ -220,29 +192,50 @@ export const SpecPanel = ({
     prevIsInBackgroundRef.current = isProgressInBackground;
   }, [isProgressInBackground, t, bringProgressToForeground]);
 
-  const startGeneration = (language: SpecLanguage, forceRegenerate = false) => {
-    setPendingLanguage(language);
-    setIsWaitingForGeneration(true);
-    requestGenerate(language, forceRegenerate);
+  const startGeneration = async (language: SpecLanguage, forceRegenerate = false) => {
+    // Clear stale generation status cache to prevent previous "completed"
+    // from being misinterpreted as new generation completion
+    queryClient.removeQueries({
+      queryKey: specGenerationStatusKeys.status(analysisId, language),
+    });
+
+    // Open modal immediately for instant UX feedback (status=null shows "pending" state)
     openProgressModal({
       analysisId,
       onViewDocument: () => {},
-      status: "pending",
     });
 
-    // Register task to global TaskStore
-    addTask({
-      id: `spec-generation-${analysisId}`,
-      metadata: {
-        analysisId,
-        language,
-        owner,
-        repo,
-      },
-      startedAt: null,
-      status: "queued",
-      type: "spec-generation",
-    });
+    try {
+      // Await mutation so the backend River job is guaranteed to exist
+      // before polling starts — prevents race condition where polling
+      // returns stale "completed" from a previous generation
+      await requestGenerate(language, forceRegenerate);
+
+      // Register background task AFTER mutation succeeds.
+      // SpecGenerationMonitor subscribes to the task store and immediately
+      // starts polling when a task appears. If the task is added before the
+      // mutation, the monitor polls the backend before the new job exists,
+      // receives the previous job's "completed" status, and fires
+      // onCompleted prematurely — closing the modal and showing a stale toast.
+      addTask({
+        id: `spec-generation-${analysisId}`,
+        metadata: {
+          analysisId,
+          language,
+          owner,
+          repo,
+        },
+        startedAt: null,
+        status: "queued",
+        type: "spec-generation",
+      });
+
+      setGeneratingLanguage(language);
+    } catch (error) {
+      // Toast already shown by useSpecView.onError handler
+      console.error("Spec generation request failed:", error);
+      closeProgressModal();
+    }
   };
 
   const handleGenerate = () => {
@@ -255,8 +248,8 @@ export const SpecPanel = ({
       analysisId,
       estimatedCost: totalTests,
       locale,
-      onConfirm: (selectedLanguage, forceRegenerate) =>
-        startGeneration(selectedLanguage, forceRegenerate ?? false),
+      onConfirm: (confirmedLanguage, forceRegenerate) =>
+        startGeneration(confirmedLanguage, forceRegenerate ?? false),
       usage: usageData ?? null,
     });
   };
@@ -273,8 +266,8 @@ export const SpecPanel = ({
       initialLanguage: specDocument?.language,
       isRegenerate: true,
       locale,
-      onConfirm: (selectedLanguage, isForceRegenerate) =>
-        startGeneration(selectedLanguage, isForceRegenerate ?? false),
+      onConfirm: (confirmedLanguage, isForceRegenerate) =>
+        startGeneration(confirmedLanguage, isForceRegenerate ?? false),
       usage: usageData ?? null,
     });
   };
@@ -282,9 +275,10 @@ export const SpecPanel = ({
   /**
    * Switch to an already-generated language (free, instant).
    * No authentication required for viewing existing documents.
+   * Does NOT trigger polling - only updates document query.
    */
   const handleExistingLanguageSwitch = (language: SpecLanguage) => {
-    setPendingLanguage(language);
+    setSelectedLanguage(language);
     setSelectedVersion(undefined); // Reset to latest version when switching language
   };
 
@@ -321,9 +315,12 @@ export const SpecPanel = ({
     });
   };
 
-  // Derive UI states from effectiveState
-  const isGenerating = effectiveState === "pending" || effectiveState === "running";
-  const isGeneratingOtherLanguage = isWaitingForGeneration && specDocument !== null;
+  // Derive UI states from server status (single source of truth)
+  const isGenerating = serverStatus === "pending" || serverStatus === "running";
+  const isGeneratingOtherLanguage = generatingLanguage !== null && specDocument !== null;
+
+  // Map server status to GenerationStatus component status
+  const displayStatus: SpecGenerationStatusEnum | null = serverStatus;
 
   const resetFilters = () => {
     setQuery(null);
@@ -376,12 +373,13 @@ export const SpecPanel = ({
       );
     }
 
-    if (effectiveState === "pending" || effectiveState === "running") {
-      return <GenerationStatus onRetry={() => requestGenerate()} status={effectiveState} />;
+    // Show generation status when actively generating without existing document
+    if (displayStatus === "pending" || displayStatus === "running") {
+      return <GenerationStatus onRetry={() => void requestGenerate()} status={displayStatus} />;
     }
 
     // Show loading while fetching spec document
-    if (isFetching) {
+    if (isFetching || isRequesting) {
       return <LoadingFallback className="py-16" fullScreen={false} />;
     }
 
@@ -413,7 +411,7 @@ export const SpecPanel = ({
       />
 
       <QuotaConfirmDialog />
-      <GenerationProgressModal />
+      <GenerationProgressModal status={serverStatus} />
       {renderContent()}
     </div>
   );

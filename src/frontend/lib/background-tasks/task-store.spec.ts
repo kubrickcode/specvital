@@ -5,12 +5,10 @@ import {
   type BackgroundTask,
   clearCompletedTasks,
   getAllTasks,
-  getServerSnapshot,
   getTask,
-  getTasksSnapshot,
   removeTask,
-  subscribe,
   updateTask,
+  useTaskStore,
 } from "./task-store";
 
 const createTask = (overrides: Partial<BackgroundTask> = {}): BackgroundTask => ({
@@ -61,9 +59,9 @@ describe("task-store", () => {
       vi.useRealTimers();
     });
 
-    it("should notify listeners on add", () => {
+    it("should notify subscribers on add", () => {
       const listener = vi.fn();
-      const unsubscribe = subscribe(listener);
+      const unsubscribe = useTaskStore.subscribe(listener);
 
       addTask(createTask());
 
@@ -94,7 +92,7 @@ describe("task-store", () => {
 
     it("should not modify store for non-existent task", () => {
       const listener = vi.fn();
-      const unsubscribe = subscribe(listener);
+      const unsubscribe = useTaskStore.subscribe(listener);
 
       updateTask("non-existent", { status: "completed" });
 
@@ -102,11 +100,11 @@ describe("task-store", () => {
       unsubscribe();
     });
 
-    it("should notify listeners on update", () => {
+    it("should notify subscribers on update", () => {
       addTask(createTask());
 
       const listener = vi.fn();
-      const unsubscribe = subscribe(listener);
+      const unsubscribe = useTaskStore.subscribe(listener);
 
       updateTask("task-1", { status: "completed" });
 
@@ -126,7 +124,7 @@ describe("task-store", () => {
 
     it("should not modify store for non-existent task", () => {
       const listener = vi.fn();
-      const unsubscribe = subscribe(listener);
+      const unsubscribe = useTaskStore.subscribe(listener);
 
       removeTask("non-existent");
 
@@ -162,11 +160,11 @@ describe("task-store", () => {
       expect(getTask("task-4")).not.toBeNull();
     });
 
-    it("should not notify listeners if nothing to clear", () => {
+    it("should not notify subscribers if nothing to clear", () => {
       addTask(createTask({ id: "task-1", status: "processing" }));
 
       const listener = vi.fn();
-      const unsubscribe = subscribe(listener);
+      const unsubscribe = useTaskStore.subscribe(listener);
 
       clearCompletedTasks();
 
@@ -178,7 +176,7 @@ describe("task-store", () => {
   describe("subscribe", () => {
     it("should return unsubscribe function", () => {
       const listener = vi.fn();
-      const unsubscribe = subscribe(listener);
+      const unsubscribe = useTaskStore.subscribe(listener);
 
       addTask(createTask());
       expect(listener).toHaveBeenCalledTimes(1);
@@ -189,21 +187,14 @@ describe("task-store", () => {
     });
   });
 
-  describe("snapshots", () => {
-    it("getTasksSnapshot should return current tasks Map", () => {
+  describe("state access", () => {
+    it("getState should return current tasks Map", () => {
       addTask(createTask());
 
-      const snapshot = getTasksSnapshot();
+      const { tasks } = useTaskStore.getState();
 
-      expect(snapshot).toBeInstanceOf(Map);
-      expect(snapshot.get("task-1")).toBeDefined();
-    });
-
-    it("getServerSnapshot should return empty Map for SSR", () => {
-      const snapshot = getServerSnapshot();
-
-      expect(snapshot).toBeInstanceOf(Map);
-      expect(snapshot.size).toBe(0);
+      expect(tasks).toBeInstanceOf(Map);
+      expect(tasks.get("task-1")).toBeDefined();
     });
   });
 });

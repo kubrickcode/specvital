@@ -52,6 +52,8 @@ export interface MockHandlersOptions {
   onBookmark?: (owner: string, repo: string, method: string) => BookmarkResponse;
   onReanalyze?: (owner: string, repo: string) => ReanalyzeResponse;
   onSpecGeneration?: (analysisId: string, language: string) => RequestSpecGenerationResponse;
+  // Dynamic handler for spec generation status polling
+  onSpecGenerationStatus?: (analysisId: string, callCount: number) => RequestSpecGenerationResponse;
   // Analysis status for polling tests
   onAnalysisStatus?: (owner: string, repo: string, callCount: number) => AnalysisStatusResponse;
   // Update status for update banner tests
@@ -373,10 +375,27 @@ export async function setupMockHandlers(
   }
 
   // /api/spec-view/status/{analysisId} - Get generation status
-  if (options.specGeneration) {
+  if (options.specGeneration || options.onSpecGenerationStatus) {
+    const statusCallCounts = new Map<string, number>();
     handlers.push({
-      pattern: /\/api\/spec-view\/status\/[0-9a-f-]+$/,
+      pattern: /\/api\/spec-view\/status\/[0-9a-f-]+(\?.*)?$/,
       handler: async (route) => {
+        const url = new URL(route.request().url());
+        const match = url.pathname.match(/\/api\/spec-view\/status\/([0-9a-f-]+)/);
+        const analysisId = match?.[1] ?? "";
+
+        // Use dynamic handler if provided
+        if (options.onSpecGenerationStatus) {
+          const callCount = (statusCallCounts.get(analysisId) ?? 0) + 1;
+          statusCallCounts.set(analysisId, callCount);
+          const response = options.onSpecGenerationStatus(analysisId, callCount);
+          return route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(response),
+          });
+        }
+
         return route.fulfill({
           status: 200,
           contentType: "application/json",

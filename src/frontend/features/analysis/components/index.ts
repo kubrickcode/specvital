@@ -1,5 +1,6 @@
 export { AnalysisContent } from "./analysis-content";
 export { AnalysisHeader } from "./analysis-header";
+export { AnalysisMonitor } from "./analysis-monitor";
 export { AnalysisSkeleton } from "./analysis-skeleton";
 export { DataViewToggle } from "./data-view-toggle";
 export { EmptyState } from "./empty-state";

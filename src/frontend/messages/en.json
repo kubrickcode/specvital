@@ -626,6 +626,10 @@
     "activeTasks": {
       "title": "Active Tasks",
       "viewTask": "View"
+    },
+    "toast": {
+      "analysisComplete": "{repo} analysis completed",
+      "analysisFailed": "{repo} analysis failed"
     }
   },
   "globalSearch": {
