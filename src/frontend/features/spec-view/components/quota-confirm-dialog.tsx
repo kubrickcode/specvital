@@ -79,6 +79,7 @@ export const QuotaConfirmDialog = () => {
     isOpen,
     isRegenerate,
     onOpenChange,
+    regeneratingLanguage,
     selectedLanguage,
     setForceRegenerate,
     setSelectedLanguage,
@@ -93,9 +94,13 @@ export const QuotaConfirmDialog = () => {
     staleTime: 60000, // 1 minute
   });
 
-  // Check if previous spec exists for selected language (defaults to false on error)
-  const hasPreviousSpec =
+  // Check if previous spec exists for selected language.
+  // Cache availability API excludes the current analysis, so for regeneration
+  // we supplement with the known language from the current analysis.
+  const hasCacheFromCurrentAnalysis = regeneratingLanguage === selectedLanguage;
+  const hasCacheFromPreviousAnalysis =
     !isCacheAvailabilityError && (cacheAvailability?.languages?.[selectedLanguage] ?? false);
+  const hasPreviousSpec = hasCacheFromCurrentAnalysis || hasCacheFromPreviousAnalysis;
 
   const specview = usage?.specview;
   const percentage = specview?.percentage ?? null;
@@ -143,12 +148,12 @@ export const QuotaConfirmDialog = () => {
           </div>
 
           {/* Cache availability check error warning */}
-          {isCacheAvailabilityError && !isRegenerate && (
+          {isCacheAvailabilityError && (
             <p className="text-xs text-muted-foreground">{tGenerate("cacheCheckFailed")}</p>
           )}
 
           {/* Analysis Mode Selection - only show when cache is available */}
-          {hasPreviousSpec && !isRegenerate && (
+          {hasPreviousSpec && (
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-medium">
                 <Zap className="h-4 w-4 text-muted-foreground" />

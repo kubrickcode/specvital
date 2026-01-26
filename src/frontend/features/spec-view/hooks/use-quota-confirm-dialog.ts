@@ -28,6 +28,7 @@ type QuotaConfirmDialogStore = {
   onConfirm: ((language: SpecLanguage, isForceRegenerate: boolean) => void) | null;
   onOpenChange: (open: boolean) => void;
   open: (options: OpenOptions) => void;
+  regeneratingLanguage: SpecLanguage | null;
   selectedLanguage: SpecLanguage;
   setForceRegenerate: (value: boolean) => void;
   setSelectedLanguage: (language: SpecLanguage) => void;
@@ -128,6 +129,7 @@ const INITIAL_STATE = {
   isOpen: false,
   isRegenerate: false,
   onConfirm: null as ((language: SpecLanguage, isForceRegenerate: boolean) => void) | null,
+  regeneratingLanguage: null as SpecLanguage | null,
   selectedLanguage: "English" as SpecLanguage,
   usage: null as UsageStatusResponse | null,
 };
@@ -160,6 +162,7 @@ const useQuotaConfirmDialogStore = create<QuotaConfirmDialogStore>((set, get) =>
       isOpen: true,
       isRegenerate,
       onConfirm,
+      regeneratingLanguage: isRegenerate && initialLanguage ? initialLanguage : null,
       selectedLanguage: resolveDefaultLanguage(analysisId, initialLanguage, locale),
       usage,
     });
