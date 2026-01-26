@@ -39,6 +39,7 @@ export type {
   SpecDocument,
   SpecDomain,
   SpecFeature,
+  SpecGenerationMode,
   SpecGenerationStatusEnum,
   SpecLanguage,
 } from "./types";

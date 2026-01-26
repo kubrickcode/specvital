@@ -2660,6 +2660,19 @@ components:
       default: English
       description: Target language for spec document generation (24 languages supported)
 
+    SpecGenerationMode:
+      type: string
+      enum:
+        - initial
+        - regenerate_cached
+        - regenerate_fresh
+      default: initial
+      description: |
+        Controls generation behavior:
+        - initial: First-time generation. Rejects if document already exists.
+        - regenerate_cached: Regeneration reusing cached classifications for speed.
+        - regenerate_fresh: Full regeneration from scratch, discarding all caches.
+
     RequestSpecGenerationRequest:
       type: object
       required:
@@ -2671,10 +2684,8 @@ components:
           description: Analysis ID to generate spec document for
         language:
           $ref: "#/components/schemas/SpecLanguage"
-        isForceRegenerate:
-          type: boolean
-          default: false
-          description: Force regeneration even if document exists
+        generationMode:
+          $ref: "#/components/schemas/SpecGenerationMode"
 
     RequestSpecGenerationResponse:
       type: object

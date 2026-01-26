@@ -13,11 +13,11 @@ import (
 )
 
 type RequestGenerationInput struct {
-	AnalysisID        string
-	IsForceRegenerate bool
-	Language          string
-	Tier              subscription.PlanTier
-	UserID            string
+	AnalysisID string
+	Language   string
+	Mode       entity.GenerationMode
+	Tier       subscription.PlanTier
+	UserID     string
 }
 
 type RequestGenerationOutput struct {
@@ -81,9 +81,9 @@ func (uc *RequestGenerationUseCase) Execute(ctx context.Context, input RequestGe
 		}
 	}
 
-	// Force regenerate: Worker will create a new version (no delete needed)
-	// Normal generation: Check if any version already exists
-	if !input.IsForceRegenerate {
+	// Regeneration: Worker will create a new version (no delete needed)
+	// Initial generation: Check if any version already exists
+	if !input.Mode.IsRegeneration() {
 		docExists, err := uc.repo.CheckSpecDocumentExistsByLanguage(ctx, input.AnalysisID, language)
 		if err != nil {
 			return nil, err
@@ -116,7 +116,7 @@ func (uc *RequestGenerationUseCase) Execute(ctx context.Context, input RequestGe
 		userIDPtr = &input.UserID
 	}
 
-	if err := uc.queue.EnqueueSpecGeneration(ctx, input.AnalysisID, language, userIDPtr, input.Tier, input.IsForceRegenerate); err != nil {
+	if err := uc.queue.EnqueueSpecGeneration(ctx, input.AnalysisID, language, userIDPtr, input.Tier, input.Mode); err != nil {
 		return nil, err
 	}
 

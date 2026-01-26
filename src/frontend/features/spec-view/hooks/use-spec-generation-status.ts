@@ -55,11 +55,16 @@ export const useSpecGenerationStatus = (
   onCompletedRef.current = onCompleted;
   onFailedRef.current = onFailed;
 
-  // Reset refs when dependencies change
+  // Reset refs when dependencies change or when a new polling session begins.
+  // Tracking `enabled` ensures refs are cleared for same-language regeneration,
+  // where analysisId and language stay constant but polling is disabled then
+  // re-enabled.
   useEffect(() => {
-    pollingStartTimeRef.current = null;
-    previousStatusRef.current = null;
-  }, [analysisId, language]);
+    if (enabled) {
+      pollingStartTimeRef.current = null;
+      previousStatusRef.current = null;
+    }
+  }, [analysisId, enabled, language]);
 
   const query = useQuery({
     enabled: enabled && Boolean(analysisId),
@@ -102,7 +107,6 @@ export const useSpecGenerationStatus = (
     const prevStatus = previousStatusRef.current;
 
     // Detect completion transition
-    // Note: Allow transition from null to detect fast completions (first poll returns completed)
     if (status === "completed" && prevStatus !== "completed") {
       // Invalidate document queries for fresh data
       queryClient.invalidateQueries({
@@ -128,7 +132,6 @@ export const useSpecGenerationStatus = (
     }
 
     // Detect failure transition
-    // Note: Allow transition from null to detect fast failures (first poll returns failed)
     if (status === "failed" && prevStatus !== "failed") {
       onFailedRef.current?.();
     }

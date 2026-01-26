@@ -73,6 +73,13 @@ const (
 	Desc SortOrderParam = "desc"
 )
 
+// Defines values for SpecGenerationMode.
+const (
+	Initial          SpecGenerationMode = "initial"
+	RegenerateCached SpecGenerationMode = "regenerate_cached"
+	RegenerateFresh  SpecGenerationMode = "regenerate_fresh"
+)
+
 // Defines values for SpecGenerationStatusEnum.
 const (
 	SpecGenerationStatusEnumCompleted SpecGenerationStatusEnum = "completed"
@@ -751,8 +758,11 @@ type RequestSpecGenerationRequest struct {
 	// AnalysisID Analysis ID to generate spec document for
 	AnalysisID openapi_types.UUID `json:"analysisId"`
 
-	// IsForceRegenerate Force regeneration even if document exists
-	IsForceRegenerate *bool `json:"isForceRegenerate,omitempty"`
+	// GenerationMode Controls generation behavior:
+	// - initial: First-time generation. Rejects if document already exists.
+	// - regenerate_cached: Regeneration reusing cached classifications for speed.
+	// - regenerate_fresh: Full regeneration from scratch, discarding all caches.
+	GenerationMode *SpecGenerationMode `json:"generationMode,omitempty"`
 
 	// Language Target language for spec document generation (24 languages supported)
 	Language *SpecLanguage `json:"language,omitempty"`
@@ -912,6 +922,12 @@ type SpecFeature struct {
 	// SortOrder Display order within domain
 	SortOrder int `json:"sortOrder"`
 }
+
+// SpecGenerationMode Controls generation behavior:
+// - initial: First-time generation. Rejects if document already exists.
+// - regenerate_cached: Regeneration reusing cached classifications for speed.
+// - regenerate_fresh: Full regeneration from scratch, discarding all caches.
+type SpecGenerationMode string
 
 // SpecGenerationStatus defines model for SpecGenerationStatus.
 type SpecGenerationStatus struct {

@@ -41,6 +41,7 @@ export type SpecGenerationStatusEnum = components["schemas"]["SpecGenerationStat
 export type SpecGenerationStatusResponse = components["schemas"]["SpecGenerationStatusResponse"];
 export type RequestSpecGenerationRequest = components["schemas"]["RequestSpecGenerationRequest"];
 export type RequestSpecGenerationResponse = components["schemas"]["RequestSpecGenerationResponse"];
+export type SpecGenerationMode = components["schemas"]["SpecGenerationMode"];
 
 // Type guards
 export const isDocumentCompleted = (

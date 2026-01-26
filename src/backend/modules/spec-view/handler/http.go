@@ -170,19 +170,19 @@ func (h *Handler) RequestSpecGeneration(ctx context.Context, request api.Request
 		language = string(*request.Body.Language)
 	}
 
-	isForce := false
-	if request.Body.IsForceRegenerate != nil {
-		isForce = *request.Body.IsForceRegenerate
+	mode := entity.GenerationModeInitial
+	if request.Body.GenerationMode != nil {
+		mode = entity.GenerationMode(*request.Body.GenerationMode)
 	}
 
 	tier := h.lookupUserTier(ctx, userID)
 
 	result, err := h.requestGeneration.Execute(ctx, usecase.RequestGenerationInput{
-		AnalysisID:        request.Body.AnalysisID.String(),
-		IsForceRegenerate: isForce,
-		Language:          language,
-		Tier:              tier,
-		UserID:            userID,
+		AnalysisID: request.Body.AnalysisID.String(),
+		Language:   language,
+		Mode:       mode,
+		Tier:       tier,
+		UserID:     userID,
 	})
 	if err != nil {
 		switch {

@@ -24,7 +24,11 @@ import {
   useSpecGenerationStatus,
   useSpecView,
 } from "@/features/spec-view";
-import type { SpecGenerationStatusEnum, SpecLanguage } from "@/features/spec-view";
+import type {
+  SpecGenerationMode,
+  SpecGenerationStatusEnum,
+  SpecLanguage,
+} from "@/features/spec-view";
 import { addTask, getTask, removeTask, updateTask } from "@/lib/background-tasks";
 
 import { SpecToolbar } from "./spec-toolbar";
@@ -192,7 +196,7 @@ export const SpecPanel = ({
     prevIsInBackgroundRef.current = isProgressInBackground;
   }, [isProgressInBackground, t, bringProgressToForeground]);
 
-  const startGeneration = async (language: SpecLanguage, forceRegenerate = false) => {
+  const startGeneration = async (language: SpecLanguage, mode: SpecGenerationMode = "initial") => {
     // Clear stale generation status cache to prevent previous "completed"
     // from being misinterpreted as new generation completion
     queryClient.removeQueries({
@@ -209,7 +213,7 @@ export const SpecPanel = ({
       // Await mutation so the backend River job is guaranteed to exist
       // before polling starts — prevents race condition where polling
       // returns stale "completed" from a previous generation
-      await requestGenerate(language, forceRegenerate);
+      await requestGenerate(language, mode);
 
       // Register background task AFTER mutation succeeds.
       // SpecGenerationMonitor subscribes to the task store and immediately
@@ -248,8 +252,7 @@ export const SpecPanel = ({
       analysisId,
       estimatedCost: totalTests,
       locale,
-      onConfirm: (confirmedLanguage, forceRegenerate) =>
-        startGeneration(confirmedLanguage, forceRegenerate ?? false),
+      onConfirm: (confirmedLanguage, mode) => startGeneration(confirmedLanguage, mode),
       usage: usageData ?? null,
     });
   };
@@ -266,8 +269,7 @@ export const SpecPanel = ({
       initialLanguage: specDocument?.language,
       isRegenerate: true,
       locale,
-      onConfirm: (confirmedLanguage, isForceRegenerate) =>
-        startGeneration(confirmedLanguage, isForceRegenerate ?? false),
+      onConfirm: (confirmedLanguage, mode) => startGeneration(confirmedLanguage, mode),
       usage: usageData ?? null,
     });
   };
@@ -310,7 +312,7 @@ export const SpecPanel = ({
       estimatedCost: totalTests,
       initialLanguage: language,
       locale,
-      onConfirm: () => startGeneration(language, false),
+      onConfirm: (_confirmedLanguage, mode) => startGeneration(language, mode),
       usage: usageData ?? null,
     });
   };

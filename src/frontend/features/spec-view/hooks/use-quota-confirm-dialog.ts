@@ -5,7 +5,7 @@ import { create } from "zustand";
 import type { UsageStatusResponse } from "@/features/account/api/usage";
 
 import { isValidSpecLanguage } from "../constants/spec-languages";
-import type { SpecLanguage } from "../types";
+import type { SpecGenerationMode, SpecLanguage } from "../types";
 
 type OpenOptions = {
   analysisId: string;
@@ -13,7 +13,7 @@ type OpenOptions = {
   initialLanguage?: SpecLanguage;
   isRegenerate?: boolean;
   locale?: string;
-  onConfirm: (language: SpecLanguage, isForceRegenerate: boolean) => void;
+  onConfirm: (language: SpecLanguage, mode: SpecGenerationMode) => void;
   usage: UsageStatusResponse | null;
 };
 
@@ -25,7 +25,7 @@ type QuotaConfirmDialogStore = {
   forceRegenerate: boolean;
   isOpen: boolean;
   isRegenerate: boolean;
-  onConfirm: ((language: SpecLanguage, isForceRegenerate: boolean) => void) | null;
+  onConfirm: ((language: SpecLanguage, mode: SpecGenerationMode) => void) | null;
   onOpenChange: (open: boolean) => void;
   open: (options: OpenOptions) => void;
   regeneratingLanguage: SpecLanguage | null;
@@ -128,7 +128,7 @@ const INITIAL_STATE = {
   forceRegenerate: false,
   isOpen: false,
   isRegenerate: false,
-  onConfirm: null as ((language: SpecLanguage, isForceRegenerate: boolean) => void) | null,
+  onConfirm: null as ((language: SpecLanguage, mode: SpecGenerationMode) => void) | null,
   regeneratingLanguage: null as SpecLanguage | null,
   selectedLanguage: "English" as SpecLanguage,
   usage: null as UsageStatusResponse | null,
@@ -138,9 +138,16 @@ const useQuotaConfirmDialogStore = create<QuotaConfirmDialogStore>((set, get) =>
   ...INITIAL_STATE,
   close: () => set(INITIAL_STATE),
   confirm: () => {
-    const { forceRegenerate, onConfirm, selectedLanguage } = get();
+    const { forceRegenerate, isRegenerate, onConfirm, selectedLanguage } = get();
     set(INITIAL_STATE);
-    onConfirm?.(selectedLanguage, forceRegenerate);
+
+    const mode: SpecGenerationMode = isRegenerate
+      ? forceRegenerate
+        ? "regenerate_fresh"
+        : "regenerate_cached"
+      : "initial";
+
+    onConfirm?.(selectedLanguage, mode);
   },
   onOpenChange: (open) => {
     if (!open) set(INITIAL_STATE);

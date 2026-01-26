@@ -16,7 +16,7 @@ import {
   UnauthorizedError,
 } from "../api";
 import { repoSpecViewKeys } from "./use-repo-spec-view";
-import type { RequestSpecGenerationResponse, SpecLanguage } from "../types";
+import type { RequestSpecGenerationResponse, SpecGenerationMode, SpecLanguage } from "../types";
 
 const DEFAULT_LANGUAGE: SpecLanguage = "Korean";
 
@@ -44,7 +44,7 @@ type UseSpecViewReturn = {
   isRequesting: boolean;
   requestGenerate: (
     language?: SpecLanguage,
-    isForceRegenerate?: boolean
+    mode?: SpecGenerationMode
   ) => Promise<RequestSpecGenerationResponse>;
 };
 
@@ -73,15 +73,15 @@ export const useSpecView = (
 
   const generateMutation = useMutation({
     mutationFn: ({
-      isForceRegenerate = false,
+      generationMode = "initial",
       language = DEFAULT_LANGUAGE,
     }: {
-      isForceRegenerate?: boolean;
+      generationMode?: SpecGenerationMode;
       language?: SpecLanguage;
     }) =>
       requestSpecGeneration({
         analysisId,
-        isForceRegenerate,
+        generationMode,
         language,
       }),
     onError: (error) => {
@@ -135,9 +135,9 @@ export const useSpecView = (
 
   const requestGenerate = (
     language: SpecLanguage = DEFAULT_LANGUAGE,
-    isForceRegenerate = false
+    mode: SpecGenerationMode = "initial"
   ): Promise<RequestSpecGenerationResponse> => {
-    return generateMutation.mutateAsync({ isForceRegenerate, language });
+    return generateMutation.mutateAsync({ generationMode: mode, language });
   };
 
   const isRequesting = generateMutation.isPending;

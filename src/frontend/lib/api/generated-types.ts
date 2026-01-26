@@ -1756,6 +1756,16 @@ export interface components {
          * @enum {string}
          */
         SpecLanguage: "Arabic" | "Chinese" | "Czech" | "Danish" | "Dutch" | "English" | "Finnish" | "French" | "German" | "Greek" | "Hindi" | "Indonesian" | "Italian" | "Japanese" | "Korean" | "Polish" | "Portuguese" | "Russian" | "Spanish" | "Swedish" | "Thai" | "Turkish" | "Ukrainian" | "Vietnamese";
+        /**
+         * @description Controls generation behavior:
+         *     - initial: First-time generation. Rejects if document already exists.
+         *     - regenerate_cached: Regeneration reusing cached classifications for speed.
+         *     - regenerate_fresh: Full regeneration from scratch, discarding all caches.
+         *
+         * @default initial
+         * @enum {string}
+         */
+        SpecGenerationMode: "initial" | "regenerate_cached" | "regenerate_fresh";
         RequestSpecGenerationRequest: {
             /**
              * Format: uuid
@@ -1763,11 +1773,7 @@ export interface components {
              */
             analysisId: string;
             language?: components["schemas"]["SpecLanguage"];
-            /**
-             * @description Force regeneration even if document exists
-             * @default false
-             */
-            isForceRegenerate: boolean;
+            generationMode?: components["schemas"]["SpecGenerationMode"];
         };
         RequestSpecGenerationResponse: {
             status: components["schemas"]["SpecGenerationStatusEnum"];

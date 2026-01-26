@@ -99,7 +99,7 @@ type mockQueueService struct {
 	enqueueErr error
 }
 
-func (m *mockQueueService) EnqueueSpecGeneration(_ context.Context, _ string, _ string, _ *string, _ subscriptionentity.PlanTier, _ bool) error {
+func (m *mockQueueService) EnqueueSpecGeneration(_ context.Context, _ string, _ string, _ *string, _ subscriptionentity.PlanTier, _ entity.GenerationMode) error {
 	return m.enqueueErr
 }
 
@@ -343,10 +343,10 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 		{
 			name: "should enqueue when force regenerate with explicit language (version management)",
 			input: RequestGenerationInput{
-				AnalysisID:        "test-analysis-id",
-				IsForceRegenerate: true,
-				Language:          "Korean",
-				UserID:            "test-user-id",
+				AnalysisID: "test-analysis-id",
+				Mode:       entity.GenerationModeRegenerateFresh,
+				Language:   "Korean",
+				UserID:     "test-user-id",
 			},
 			mockRepo: &mockSpecViewRepository{
 				analysisExists: true,
@@ -357,10 +357,10 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 		{
 			name: "should use default language (English) when force regenerate without language",
 			input: RequestGenerationInput{
-				AnalysisID:        "test-analysis-id",
-				IsForceRegenerate: true,
-				Language:          "",
-				UserID:            "test-user-id",
+				AnalysisID: "test-analysis-id",
+				Mode:       entity.GenerationModeRegenerateFresh,
+				Language:   "",
+				UserID:     "test-user-id",
 			},
 			mockRepo: &mockSpecViewRepository{
 				analysisExists: true,
@@ -371,9 +371,9 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 		{
 			name: "should check document exists when not force regenerate",
 			input: RequestGenerationInput{
-				AnalysisID:        "test-analysis-id",
-				IsForceRegenerate: false,
-				UserID:            "test-user-id",
+				AnalysisID: "test-analysis-id",
+				Mode:       entity.GenerationModeInitial,
+				UserID:     "test-user-id",
 			},
 			mockRepo: &mockSpecViewRepository{
 				analysisExists: true,
@@ -385,9 +385,9 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 		{
 			name: "should return already exists when document exists and not force regenerate",
 			input: RequestGenerationInput{
-				AnalysisID:        "test-analysis-id",
-				IsForceRegenerate: false,
-				UserID:            "test-user-id",
+				AnalysisID: "test-analysis-id",
+				Mode:       entity.GenerationModeInitial,
+				UserID:     "test-user-id",
 			},
 			mockRepo: &mockSpecViewRepository{
 				analysisExists: true,
@@ -400,10 +400,10 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 		{
 			name: "should reject force regenerate when generation is pending",
 			input: RequestGenerationInput{
-				AnalysisID:        "test-analysis-id",
-				IsForceRegenerate: true,
-				Language:          "English",
-				UserID:            "test-user-id",
+				AnalysisID: "test-analysis-id",
+				Mode:       entity.GenerationModeRegenerateFresh,
+				Language:   "English",
+				UserID:     "test-user-id",
 			},
 			mockRepo: &mockSpecViewRepository{
 				analysisExists: true,
@@ -416,10 +416,10 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 		{
 			name: "should reject force regenerate when generation is running",
 			input: RequestGenerationInput{
-				AnalysisID:        "test-analysis-id",
-				IsForceRegenerate: true,
-				Language:          "Korean",
-				UserID:            "test-user-id",
+				AnalysisID: "test-analysis-id",
+				Mode:       entity.GenerationModeRegenerateFresh,
+				Language:   "Korean",
+				UserID:     "test-user-id",
 			},
 			mockRepo: &mockSpecViewRepository{
 				analysisExists: true,

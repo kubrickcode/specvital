@@ -9,6 +9,7 @@ import (
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/specvital/web/src/backend/common/queue"
+	"github.com/specvital/web/src/backend/modules/spec-view/domain/entity"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/port"
 	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 )
@@ -27,11 +28,13 @@ const (
 // Unique key: (AnalysisID, Language) - allows different languages for same analysis,
 // but prevents duplicate jobs for the same analysis+language combination.
 type SpecGenerationArgs struct {
-	AnalysisID      string  `json:"analysis_id" river:"unique"`
-	Language        string  `json:"language" river:"unique"`
-	ModelID         string  `json:"model_id"`
-	UserID          *string `json:"user_id,omitempty"`
-	ForceRegenerate bool    `json:"force_regenerate,omitempty"`
+	AnalysisID     string  `json:"analysis_id" river:"unique"`
+	Language       string  `json:"language" river:"unique"`
+	ModelID        string  `json:"model_id"`
+	UserID         *string `json:"user_id,omitempty"`
+	GenerationMode string  `json:"generation_mode,omitempty"`
+	// Backward compatibility: derived from GenerationMode for workers not yet updated.
+	ForceRegenerate bool `json:"force_regenerate,omitempty"`
 }
 
 func (SpecGenerationArgs) Kind() string { return TypeSpecGeneration }
@@ -44,7 +47,7 @@ func NewRiverQueueService(client *river.Client[pgx.Tx]) *RiverQueueService {
 	return &RiverQueueService{client: client}
 }
 
-func (s *RiverQueueService) EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string, tier subscription.PlanTier, forceRegenerate bool) error {
+func (s *RiverQueueService) EnqueueSpecGeneration(ctx context.Context, analysisID string, language string, userID *string, tier subscription.PlanTier, mode entity.GenerationMode) error {
 	ctx, cancel := context.WithTimeout(ctx, enqueueTimeout)
 	defer cancel()
 
@@ -53,7 +56,8 @@ func (s *RiverQueueService) EnqueueSpecGeneration(ctx context.Context, analysisI
 		Language:        language,
 		ModelID:         "gemini-2.5-pro",
 		UserID:          userID,
-		ForceRegenerate: forceRegenerate,
+		GenerationMode:  string(mode),
+		ForceRegenerate: mode.IsRegeneration(),
 	}
 
 	targetQueue := queue.SelectQueueForSpecView(tier, false)
