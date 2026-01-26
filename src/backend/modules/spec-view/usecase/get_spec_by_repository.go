@@ -65,7 +65,7 @@ func (uc *GetSpecByRepositoryUseCase) Execute(ctx context.Context, input GetSpec
 		if len(availableLanguages) == 0 {
 			return nil, domain.ErrDocumentNotFound
 		}
-		// Use the first available language (most recently created)
+		// Use the first available language (alphabetical order from DB query)
 		language = availableLanguages[0].Language
 	}
 

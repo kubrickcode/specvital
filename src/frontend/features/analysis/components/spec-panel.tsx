@@ -118,6 +118,7 @@ export const SpecPanel = ({
         }
       }
       closeProgressModal();
+      setSelectedLanguage(generatingLanguage ?? undefined);
       setGeneratingLanguage(null);
     },
     onFailed: () => {
