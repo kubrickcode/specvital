@@ -58,8 +58,11 @@ func TestBuildPhase3UserPrompt(t *testing.T) {
 	if !strings.Contains(result, "- 유효한 자격 증명으로 로그인 성공") {
 		t.Error("should contain behavior description")
 	}
-	if !strings.Contains(result, "2 domains, 3 total behaviors") {
-		t.Error("should contain summary counts")
+	if strings.Contains(result, "domains") && strings.Contains(result, "behaviors") {
+		t.Error("should not contain summary counts")
+	}
+	if !strings.Contains(result, "</document_structure>") {
+		t.Error("should contain closing document_structure tag")
 	}
 }
 
@@ -71,7 +74,10 @@ func TestBuildPhase3UserPrompt_emptyDomains(t *testing.T) {
 
 	result := BuildPhase3UserPrompt(input)
 
-	if !strings.Contains(result, "0 domains, 0 total behaviors") {
-		t.Error("should handle empty domains with zero counts")
+	if !strings.Contains(result, "<document_structure>") {
+		t.Error("should contain document_structure tag even with empty domains")
+	}
+	if !strings.Contains(result, "Target Language: English") {
+		t.Error("should contain target language")
 	}
 }
