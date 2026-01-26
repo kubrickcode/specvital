@@ -1008,45 +1008,7 @@
         },
         "how": {
           "title": "How It Works",
-          "description": "SpecVital uses Tree-sitter parsing to analyze source code across 10+ programming languages. Framework detection follows a priority-based approach:",
-          "detectionOrder": {
-            "title": "Detection Priority",
-            "step1Title": "Import Statements",
-            "step1Desc": "Highest reliability. e.g., import '{' test '}' from 'vitest'",
-            "step2Title": "Config Scope",
-            "step2Desc": "Files within a framework's config scope. e.g., jest.config.js",
-            "step3Title": "Content Patterns",
-            "step3Desc": "Framework-specific patterns. e.g., jest.fn(), vi.mock()"
-          }
-        },
-        "frameworks": {
-          "title": "Supported Frameworks",
-          "description": "SpecVital supports 20+ testing frameworks across 10+ programming languages:",
-          "table": {
-            "language": "Language",
-            "frameworks": "Frameworks"
-          }
-        },
-        "filePatterns": {
-          "title": "File Patterns",
-          "description": "Tests are detected based on standard naming conventions for each language:",
-          "table": {
-            "language": "Language",
-            "patterns": "File Patterns"
-          }
-        },
-        "countDifference": {
-          "title": "Why Counts May Differ from CLI",
-          "description": "SpecVital counts dynamically generated tests (parameterized tests) as 1 test, regardless of actual runtime count. This is because static analysis cannot evaluate runtime values.",
-          "table": {
-            "pattern": "Pattern",
-            "specvital": "SpecVital",
-            "cli": "CLI"
-          },
-          "tip": {
-            "title": "Accurate Counts with C# Attributes",
-            "description": "C# attribute-based tests like [TestCase] and [InlineData] are accurately counted because each attribute is individually detected in the AST."
-          }
+          "description": "SpecVital uses Tree-sitter based AST parsing to analyze source code across 10+ programming languages and 20+ testing frameworks. Tests are detected using import statements, config scope, and content patterns."
         },
         "status": {
           "title": "Test Status Detection",
@@ -1074,15 +1036,9 @@
         },
         "limitations": {
           "title": "Known Limitations",
-          "description": "Due to the nature of static analysis, some patterns cannot be fully detected:",
-          "indirect": {
-            "title": "Indirect Imports Not Supported",
-            "description": "Files that import test functions via re-export chains may show 0 tests. SpecVital parses each file independently without following import chains."
-          },
-          "items": {
-            "singleFile": "Single-file parsing - cannot resolve aliases across files",
-            "dynamicImports": "Dynamic imports and runtime-generated test names",
-            "macros": "External macro-based tests (Rust crates without 'test' in name)"
+          "staticAnalysis": {
+            "title": "Static Analysis Limitations",
+            "description": "As a static analysis tool, SpecVital parses source files independently without executing code. This means parameterized test counts, dynamic imports, and cross-file references may not be fully resolved. For exact test counts, use your framework's native CLI."
           }
         },
         "accuracy": {
@@ -1096,14 +1052,6 @@
         "faq": {
           "title": "FAQ",
           "q1": {
-            "question": "Why does my test count differ from jest --listTests?",
-            "answer": "Parameterized tests (it.each, test.each) are counted as 1 test in SpecVital because the number of iterations is only known at runtime. Jest counts each iteration separately."
-          },
-          "q2": {
-            "question": "Why are some of my tests showing 0 tests?",
-            "answer": "This usually happens when tests import test utilities through re-export chains. SpecVital cannot trace imports across multiple files. Try importing directly from the testing framework."
-          },
-          "q3": {
             "question": "How often is the parser updated?",
             "answer": "The parser is updated regularly to support new framework versions and patterns. When an update affects your results, you'll see a banner suggesting reanalysis."
           }
@@ -1356,69 +1304,6 @@
             }
           }
         },
-        "howItWorks": {
-          "title": "Processing Flow",
-          "description": "Here's what happens when you submit an analysis request:",
-          "steps": {
-            "title": "Processing Steps",
-            "submit": {
-              "title": "Submit Request",
-              "description": "You enter a repository URL and click Analyze. The request is received by our API."
-            },
-            "route": {
-              "title": "Queue Routing",
-              "description": "Based on your plan tier, the job is routed to the appropriate queue (Standard, Priority, or Dedicated)."
-            },
-            "process": {
-              "title": "Worker Processing",
-              "description": "A worker picks up your job, clones the repository, and runs the test parser on all detected test files."
-            },
-            "complete": {
-              "title": "Results Ready",
-              "description": "Analysis results are cached and immediately available. You're redirected to the results page."
-            }
-          }
-        },
-        "waitFactors": {
-          "title": "What Affects Wait Time?",
-          "description": "Several factors influence how long you wait in the queue:",
-          "factors": {
-            "queueLength": {
-              "title": "Queue Length",
-              "description": "More jobs ahead means longer wait. Premium queues typically have fewer jobs."
-            },
-            "jobSize": {
-              "title": "Repository Size",
-              "description": "Larger repositories with more test files take longer to process, affecting overall queue throughput."
-            },
-            "planTier": {
-              "title": "Your Plan Tier",
-              "description": "Higher tiers get dedicated queues with more workers and less competition."
-            },
-            "timeOfDay": {
-              "title": "Time of Day",
-              "description": "Peak hours (weekday business hours) may have longer queues. Off-peak times are typically faster."
-            }
-          }
-        },
-        "whyPriority": {
-          "title": "Why Priority Queues?",
-          "description": "Our multi-queue system balances accessibility with premium service:",
-          "benefits": {
-            "fairness": {
-              "title": "Fairness for Free Users",
-              "description": "Free tier users always have access to analysis. Their queue is processed continuously, ensuring everyone can use the service."
-            },
-            "predictability": {
-              "title": "Predictable Performance",
-              "description": "Premium users get predictable, fast response times. Important for CI/CD integration and professional workflows."
-            },
-            "scalability": {
-              "title": "System Scalability",
-              "description": "Separate queues allow us to scale each tier independently based on demand patterns."
-            }
-          }
-        },
         "status": {
           "title": "Real-Time Status",
           "description": "You can track your analysis status in the UI:",
@@ -1443,17 +1328,9 @@
             "question": "Why is my analysis taking longer than expected?",
             "answer": "Wait times depend on current queue load and your repository size. Large repositories with thousands of test files take longer to process. During peak hours, standard queue may experience longer waits."
           },
-          "q2": {
-            "question": "Can I cancel a queued analysis?",
-            "answer": "Currently, you cannot cancel a queued job. Once submitted, it will be processed. If you need to analyze a different branch, submit a new request."
-          },
           "q3": {
             "question": "Do cached results skip the queue?",
             "answer": "Yes! If your repository was previously analyzed at the same commit, results are served instantly from cache without entering any queue."
-          },
-          "q4": {
-            "question": "What happens during system maintenance?",
-            "answer": "During maintenance windows, queues pause temporarily. Your job remains queued and will be processed when maintenance completes. We announce scheduled maintenance in advance."
           }
         }
       }
@@ -1472,22 +1349,6 @@
           "keyPoint": {
             "title": "Tests as Living Documentation",
             "description": "Your test suite already contains valuable specification information. AI Spec Generation surfaces this knowledge, making it accessible to developers, QA, and stakeholders alike."
-          }
-        },
-        "pipeline": {
-          "title": "Two-Phase Generation Pipeline",
-          "description": "AI Spec Generation uses a two-phase approach to ensure accuracy and consistency in the generated documents.",
-          "phase1": {
-            "title": "Classification Phase",
-            "description": "The AI analyzes each test to determine its type and purpose. Tests are categorized into functional, edge case, integration, unit, or performance tests.",
-            "input": "Raw test cases with names and assertions",
-            "output": "Classified and categorized tests"
-          },
-          "phase2": {
-            "title": "Document Generation Phase",
-            "description": "Classified tests are grouped by feature and transformed into structured specification documents with clear descriptions and acceptance criteria.",
-            "input": "Classified test groups",
-            "output": "Structured spec document (Markdown)"
           }
         },
         "classification": {
@@ -1526,29 +1387,6 @@
             }
           }
         },
-        "howItWorks": {
-          "title": "Generation Process",
-          "description": "Here's what happens when you generate a spec document:",
-          "steps": {
-            "title": "Processing Steps",
-            "parse": {
-              "title": "Parse Test Structure",
-              "description": "The system extracts test names, describe blocks, and assertion patterns from your test files."
-            },
-            "classify": {
-              "title": "Classify Tests",
-              "description": "Each test is analyzed and classified by type (functional, edge case, integration, etc.)."
-            },
-            "group": {
-              "title": "Group by Feature",
-              "description": "Tests are grouped into logical features based on file structure and describe block hierarchy."
-            },
-            "generate": {
-              "title": "Generate Document",
-              "description": "The AI generates a structured specification document with feature descriptions, acceptance criteria, and test coverage information."
-            }
-          }
-        },
         "output": {
           "title": "Output Format",
           "description": "Generated spec documents include the following elements:",
@@ -1573,7 +1411,6 @@
         },
         "limitations": {
           "title": "Known Limitations",
-          "description": "While powerful, AI Spec Generation has some limitations to be aware of:",
           "items": {
             "accuracy": {
               "title": "Classification Accuracy",
@@ -1595,7 +1432,6 @@
         },
         "bestPractices": {
           "title": "Best Practices",
-          "description": "Follow these tips to get the best results from AI Spec Generation:",
           "tips": {
             "naming": {
               "title": "Use Descriptive Test Names",
@@ -1620,10 +1456,6 @@
           "q2": {
             "question": "Can I edit the generated spec document?",
             "answer": "Generated documents are read-only in SpecVital, but you can export them as Markdown and edit them in any text editor or documentation system."
-          },
-          "q3": {
-            "question": "Why doesn't the spec match my actual implementation?",
-            "answer": "Spec documents are generated from tests, not implementation code. If there's a mismatch, it may indicate your tests don't fully cover the actual behavior."
           },
           "q4": {
             "question": "How often should I regenerate specs?",

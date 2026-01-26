@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Clock, HelpCircle, Layers, Rocket, Timer, Users, Zap } from "lucide-react";
+import { HelpCircle, Rocket, Users, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -20,8 +20,6 @@ const QUEUE_TIERS = [
   { priorityKey: "pro", queueKey: "priority" },
   { priorityKey: "proPlusEnterprise", queueKey: "dedicated" },
 ] as const;
-
-const WAIT_TIME_FACTORS = ["queueLength", "jobSize", "planTier", "timeOfDay"] as const;
 
 export const QueueProcessingContent = () => {
   const t = useTranslations("docs.queueProcessing");
@@ -177,145 +175,6 @@ export const QueueProcessingContent = () => {
         </Card>
       </section>
 
-      {/* How Queue Processing Works */}
-      <section>
-        <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-          {t("sections.howItWorks.title")}
-        </h2>
-        <p className="mb-6 leading-7 text-muted-foreground">
-          {t("sections.howItWorks.description")}
-        </p>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{t("sections.howItWorks.steps.title")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-              <Badge className="mt-0.5 shrink-0" variant="secondary">
-                1
-              </Badge>
-              <div>
-                <p className="font-medium">{t("sections.howItWorks.steps.submit.title")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("sections.howItWorks.steps.submit.description")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-              <Badge className="mt-0.5 shrink-0" variant="secondary">
-                2
-              </Badge>
-              <div>
-                <p className="font-medium">{t("sections.howItWorks.steps.route.title")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("sections.howItWorks.steps.route.description")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-              <Badge className="mt-0.5 shrink-0" variant="secondary">
-                3
-              </Badge>
-              <div>
-                <p className="font-medium">{t("sections.howItWorks.steps.process.title")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("sections.howItWorks.steps.process.description")}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-              <Badge className="mt-0.5 shrink-0" variant="secondary">
-                4
-              </Badge>
-              <div>
-                <p className="font-medium">{t("sections.howItWorks.steps.complete.title")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("sections.howItWorks.steps.complete.description")}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Wait Time Factors */}
-      <section>
-        <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-          {t("sections.waitFactors.title")}
-        </h2>
-        <p className="mb-4 leading-7 text-muted-foreground">
-          {t("sections.waitFactors.description")}
-        </p>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          {WAIT_TIME_FACTORS.map((factorKey) => (
-            <Card key={factorKey}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  {factorKey === "queueLength" && <Layers className="size-4 text-primary" />}
-                  {factorKey === "jobSize" && <Timer className="size-4 text-primary" />}
-                  {factorKey === "planTier" && <Rocket className="size-4 text-primary" />}
-                  {factorKey === "timeOfDay" && <Clock className="size-4 text-primary" />}
-                  <CardTitle className="text-sm font-medium">
-                    {t(`sections.waitFactors.factors.${factorKey}.title`)}
-                  </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {t(`sections.waitFactors.factors.${factorKey}.description`)}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* Why Priority Queues Matter */}
-      <section>
-        <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-          {t("sections.whyPriority.title")}
-        </h2>
-        <p className="mb-4 leading-7 text-muted-foreground">
-          {t("sections.whyPriority.description")}
-        </p>
-
-        <Card>
-          <CardContent className="pt-6">
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-500" />
-                <div>
-                  <p className="font-medium text-foreground">
-                    {t("sections.whyPriority.benefits.fairness.title")}
-                  </p>
-                  <p>{t("sections.whyPriority.benefits.fairness.description")}</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-500" />
-                <div>
-                  <p className="font-medium text-foreground">
-                    {t("sections.whyPriority.benefits.predictability.title")}
-                  </p>
-                  <p>{t("sections.whyPriority.benefits.predictability.description")}</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-500" />
-                <div>
-                  <p className="font-medium text-foreground">
-                    {t("sections.whyPriority.benefits.scalability.title")}
-                  </p>
-                  <p>{t("sections.whyPriority.benefits.scalability.description")}</p>
-                </div>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </section>
-
       {/* Real-Time Status */}
       <section>
         <h2 className="mb-4 text-2xl font-semibold tracking-tight">{t("sections.status.title")}</h2>
@@ -386,40 +245,12 @@ export const QueueProcessingContent = () => {
             <CardHeader className="pb-2">
               <div className="flex items-start gap-2">
                 <HelpCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                <CardTitle className="text-base">{t("sections.faq.q2.question")}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {t("sections.faq.q2.answer")}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-start gap-2">
-                <HelpCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                 <CardTitle className="text-base">{t("sections.faq.q3.question")}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {t("sections.faq.q3.answer")}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-start gap-2">
-                <HelpCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                <CardTitle className="text-base">{t("sections.faq.q4.question")}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {t("sections.faq.q4.answer")}
               </p>
             </CardContent>
           </Card>
