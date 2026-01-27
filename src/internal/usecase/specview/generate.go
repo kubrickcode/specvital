@@ -218,6 +218,7 @@ func (uc *GenerateSpecViewUseCase) Execute(
 
 	phase2Results, internalStats, phase2Usage, err := uc.executePhase2(
 		ctx,
+		req.AnalysisID,
 		phase1Output,
 		req.Language,
 		modelID,
@@ -531,6 +532,7 @@ type phase2Result struct {
 
 func (uc *GenerateSpecViewUseCase) executePhase2(
 	ctx context.Context,
+	analysisID string,
 	phase1Output *specview.Phase1Output,
 	lang specview.Language,
 	modelID string,
@@ -595,6 +597,7 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 	}
 
 	slog.InfoContext(ctx, "phase 2 started",
+		"analysis_id", analysisID,
 		"feature_count", len(featureTasks),
 		"total_tests", totalTests,
 		"cache_hits", cacheStats.cacheHits,
@@ -605,7 +608,7 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 	var (
 		results   = make([]phase2Result, len(featureTasks))
 		resultsMu sync.Mutex
-		tracker   = newProgressTracker(len(featureTasks))
+		tracker   = newProgressTracker(len(featureTasks), analysisID)
 	)
 
 	// Per-job semaphore: prevents concurrent jobs from competing for shared slots
@@ -685,6 +688,7 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 
 	durationMs := time.Since(startTime).Milliseconds()
 	slog.InfoContext(ctx, "phase 2 complete",
+		"analysis_id", analysisID,
 		"feature_count", len(featureTasks),
 		"failed_count", failedCount,
 		"duration_ms", durationMs,
@@ -817,15 +821,22 @@ type featureTask struct {
 
 // progressTracker tracks Phase 2 progress and handles batch logging.
 type progressTracker struct {
-	completed   atomic.Int32
-	failed      atomic.Int32
+	analysisID string
+	completed  atomic.Int32
+	failed     atomic.Int32
 	lastLogTime atomic.Int64 // unix nano
-	total       int32
+	startTime  time.Time
+	total      int32
 }
 
-func newProgressTracker(total int) *progressTracker {
-	pt := &progressTracker{total: int32(total)}
-	pt.lastLogTime.Store(time.Now().UnixNano())
+func newProgressTracker(total int, analysisID string) *progressTracker {
+	now := time.Now()
+	pt := &progressTracker{
+		analysisID: analysisID,
+		startTime:  now,
+		total:      int32(total),
+	}
+	pt.lastLogTime.Store(now.UnixNano())
 	return pt
 }
 
@@ -859,10 +870,21 @@ func (pt *progressTracker) maybeLogProgress(ctx context.Context, completed int32
 	}
 
 	if pt.lastLogTime.CompareAndSwap(lastLog, now) {
+		progressPct := float64(completed) / float64(pt.total) * 100
+		elapsed := time.Since(pt.startTime)
+		etaSeconds := int64(0)
+		if completed > 0 {
+			remaining := pt.total - completed
+			etaSeconds = int64(elapsed.Seconds() / float64(completed) * float64(remaining))
+		}
+
 		slog.InfoContext(ctx, "phase 2 progress",
+			"analysis_id", pt.analysisID,
 			"completed", completed,
 			"total", pt.total,
 			"failed", pt.failed.Load(),
+			"progress_pct", int(progressPct),
+			"eta_seconds", etaSeconds,
 		)
 	}
 }

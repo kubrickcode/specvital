@@ -1,9 +1,12 @@
 package specview
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
 	"errors"
+	"log/slog"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -1245,7 +1248,7 @@ func TestGenerateSpecViewUseCase_RecordUsageEvent(t *testing.T) {
 
 func TestProgressTracker(t *testing.T) {
 	t.Run("increments completed count", func(t *testing.T) {
-		tracker := newProgressTracker(5)
+		tracker := newProgressTracker(5, "test-analysis")
 
 		tracker.recordCompletion(context.Background(), false)
 		tracker.recordCompletion(context.Background(), false)
@@ -1259,7 +1262,7 @@ func TestProgressTracker(t *testing.T) {
 	})
 
 	t.Run("increments failed count on failure", func(t *testing.T) {
-		tracker := newProgressTracker(5)
+		tracker := newProgressTracker(5, "test-analysis")
 
 		tracker.recordCompletion(context.Background(), false)
 		tracker.recordCompletion(context.Background(), true)
@@ -1274,7 +1277,7 @@ func TestProgressTracker(t *testing.T) {
 	})
 
 	t.Run("skips progress logging for small task counts", func(t *testing.T) {
-		tracker := newProgressTracker(5)
+		tracker := newProgressTracker(5, "test-analysis")
 
 		for range 5 {
 			tracker.recordCompletion(context.Background(), false)
@@ -1286,7 +1289,7 @@ func TestProgressTracker(t *testing.T) {
 	})
 
 	t.Run("concurrent access safety", func(t *testing.T) {
-		tracker := newProgressTracker(100)
+		tracker := newProgressTracker(100, "test-analysis")
 
 		done := make(chan struct{})
 		for i := range 100 {
@@ -1305,6 +1308,45 @@ func TestProgressTracker(t *testing.T) {
 		}
 		if tracker.failed.Load() != 20 {
 			t.Errorf("expected failed=20, got %d", tracker.failed.Load())
+		}
+	})
+
+	t.Run("stores analysis_id and startTime", func(t *testing.T) {
+		before := time.Now()
+		tracker := newProgressTracker(10, "analysis-abc-123")
+		after := time.Now()
+
+		if tracker.analysisID != "analysis-abc-123" {
+			t.Errorf("expected analysisID=%q, got %q", "analysis-abc-123", tracker.analysisID)
+		}
+		if tracker.startTime.Before(before) || tracker.startTime.After(after) {
+			t.Errorf("startTime %v not in range [%v, %v]", tracker.startTime, before, after)
+		}
+	})
+
+	t.Run("includes analysis_id in progress log", func(t *testing.T) {
+		var buf bytes.Buffer
+		handler := slog.NewJSONHandler(&buf, nil)
+		logger := slog.New(handler)
+		prevLogger := slog.Default()
+		slog.SetDefault(logger)
+		defer slog.SetDefault(prevLogger)
+
+		tracker := newProgressTracker(20, "analysis-xyz-789")
+		// Force lastLogTime far in the past to trigger time-based log
+		tracker.lastLogTime.Store(time.Now().Add(-time.Minute).UnixNano())
+
+		tracker.recordCompletion(context.Background(), false)
+
+		output := buf.String()
+		if !strings.Contains(output, "analysis-xyz-789") {
+			t.Errorf("expected log to contain analysis_id, got: %s", output)
+		}
+		if !strings.Contains(output, "progress_pct") {
+			t.Errorf("expected log to contain progress_pct, got: %s", output)
+		}
+		if !strings.Contains(output, "eta_seconds") {
+			t.Errorf("expected log to contain eta_seconds, got: %s", output)
 		}
 	})
 }
