@@ -8,7 +8,6 @@ import {
   Database,
   FileText,
   HelpCircle,
-  RefreshCw,
   Zap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -340,35 +339,6 @@ export const UsageBillingContent = () => {
             </AlertDescription>
           </Alert>
         </div>
-      </section>
-
-      {/* Check Usage */}
-      <section>
-        <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-          {t("sections.checkUsage.title")}
-        </h2>
-        <p className="mb-4 leading-7 text-muted-foreground">
-          {t("sections.checkUsage.description")}
-        </p>
-
-        <Card>
-          <CardContent className="pt-6">
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <RefreshCw className="mt-0.5 size-4 shrink-0" />
-                <span>{t("sections.checkUsage.items.accountPage")}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <RefreshCw className="mt-0.5 size-4 shrink-0" />
-                <span>{t("sections.checkUsage.items.generateDialog")}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <RefreshCw className="mt-0.5 size-4 shrink-0" />
-                <span>{t("sections.checkUsage.items.resetDate")}</span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
       </section>
 
       {/* FAQ */}

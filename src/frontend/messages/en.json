@@ -946,15 +946,6 @@
             "description": "When you hit your limit, you won't be able to perform new analyses or generate spec docs until reset. Existing results remain accessible."
           }
         },
-        "checkUsage": {
-          "title": "Checking Your Usage",
-          "description": "You can monitor your usage in several places throughout the app.",
-          "items": {
-            "accountPage": "Account page shows current usage and limits",
-            "generateDialog": "AI Spec generation dialog shows remaining quota",
-            "resetDate": "Reset date displayed with days remaining"
-          }
-        },
         "faq": {
           "title": "FAQ",
           "q1": {
