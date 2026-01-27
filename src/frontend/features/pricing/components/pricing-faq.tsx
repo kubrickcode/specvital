@@ -66,7 +66,7 @@ export const PricingFaq = () => {
       <h2 className="mb-8 text-center text-2xl font-bold" id="faq-heading">
         {t("title")}
       </h2>
-      <div className="mx-auto max-w-2xl rounded-lg border bg-card p-4">
+      <div className="mx-auto max-w-2xl rounded-lg border bg-card px-4">
         {FAQ_ITEMS.map((key, index) => (
           <FaqItem
             answer={t(`items.${key}.answer`)}
