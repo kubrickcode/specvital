@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 
 import { useGlobalSearchStore } from "../hooks";
 
@@ -27,9 +28,10 @@ export const SearchTriggerButton = () => {
       {/* Desktop: Text button with shortcut hint */}
       <Button
         aria-keyshortcuts={isMac() ? "Meta+K" : "Control+K"}
-        className="hidden h-8 w-64 justify-between gap-2 px-3 text-sm text-muted-foreground md:inline-flex"
+        className="hidden w-64 justify-between gap-2 px-3 text-muted-foreground md:inline-flex"
         onClick={open}
-        variant="outline"
+        size="sm"
+        variant="header-action"
       >
         <span className="flex items-center gap-2">
           <Search className="size-4" />
@@ -41,15 +43,17 @@ export const SearchTriggerButton = () => {
       </Button>
 
       {/* Mobile: Icon-only button */}
-      <Button
-        aria-label={t("title")}
-        className="size-9 md:hidden"
-        onClick={open}
-        size="icon"
-        variant="ghost"
-      >
-        <Search className="size-5" />
-      </Button>
+      <ResponsiveTooltip content={t("title")} side="bottom" sideOffset={8}>
+        <Button
+          aria-label={t("title")}
+          className="md:hidden"
+          onClick={open}
+          size="header-icon"
+          variant="header-action"
+        >
+          <Search className="size-4" />
+        </Button>
+      </ResponsiveTooltip>
     </>
   );
 };

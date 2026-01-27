@@ -12,7 +12,7 @@ export const SignInTrigger = () => {
   const { open } = useLoginModal();
 
   return (
-    <Button onClick={open} size="sm" variant="cta">
+    <Button onClick={open} size="sm" variant="header-action">
       <LogIn className="size-4 shrink-0 sm:mr-1.5" />
       <span className="hidden sm:inline">{t("login")}</span>
     </Button>

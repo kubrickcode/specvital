@@ -39,7 +39,7 @@ export const AnalyzeDialog = ({
 
   const defaultTrigger =
     variant === "header" ? (
-      <Button size="sm" variant="header-primary">
+      <Button size="sm" variant="header-action">
         <Plus className="h-4 w-4" />
         <span className="hidden sm:inline">{t("trigger")}</span>
       </Button>

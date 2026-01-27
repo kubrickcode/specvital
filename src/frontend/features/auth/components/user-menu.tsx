@@ -26,7 +26,7 @@ export const UserMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="relative h-8 w-8 rounded-full p-0" size="sm" variant="ghost">
+        <Button className="relative rounded-full p-0" size="header-icon" variant="ghost">
           {user.avatarUrl ? (
             <img
               alt={user.login}

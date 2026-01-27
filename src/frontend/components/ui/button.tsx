@@ -26,9 +26,7 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         "header-action":
-          "bg-gradient-to-b from-white to-accent text-foreground border border-border/50 shadow-sm hover:shadow-md hover:border-border dark:from-secondary dark:to-accent dark:border-border/30 active:scale-[0.98] motion-reduce:active:scale-100 transition-all duration-150",
-        "header-primary":
-          "rounded-lg bg-gradient-to-b from-white to-accent text-foreground border border-border/50 shadow-sm hover:shadow-md hover:border-border dark:from-secondary dark:to-accent dark:border-border/30 active:scale-[0.98] motion-reduce:active:scale-100 transition-all duration-150",
+          "bg-background text-foreground border border-border shadow-sm dark:bg-secondary dark:shadow-none hover:bg-accent hover:shadow-md dark:hover:shadow-none active:scale-[0.98] motion-reduce:active:scale-100 transition-all duration-150",
         link: "text-primary underline-offset-4 hover:underline",
         "mobile-nav":
           "text-muted-foreground hover:text-foreground hover:bg-accent/60 active:bg-accent active:scale-[0.95] motion-reduce:active:scale-100 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-primary/50",
