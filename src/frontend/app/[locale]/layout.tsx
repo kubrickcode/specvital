@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { MotionProvider } from "@/components/feedback";
 import { Header, MobileBottomBar } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme";
 import { Toaster } from "@/components/ui/sonner";
@@ -55,16 +56,18 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
           <QueryProvider>
             <NextIntlClientProvider messages={messages}>
               <ThemeProvider>
-                <GlobalSearchProvider>
-                  <Header />
-                  <main className="flex flex-1 flex-col pb-16 md:pb-0" id="main-content">
-                    {children}
-                  </main>
-                  <MobileBottomBar />
-                  <AnalysisMonitor />
-                  <SpecGenerationMonitor />
-                  <Toaster richColors />
-                </GlobalSearchProvider>
+                <MotionProvider>
+                  <GlobalSearchProvider>
+                    <Header />
+                    <main className="flex flex-1 flex-col pb-16 md:pb-0" id="main-content">
+                      {children}
+                    </main>
+                    <MobileBottomBar />
+                    <AnalysisMonitor />
+                    <SpecGenerationMonitor />
+                    <Toaster richColors />
+                  </GlobalSearchProvider>
+                </MotionProvider>
               </ThemeProvider>
             </NextIntlClientProvider>
           </QueryProvider>
