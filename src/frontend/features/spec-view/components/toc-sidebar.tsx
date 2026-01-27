@@ -307,7 +307,7 @@ export const TocSidebar = ({ document, filteredDocument, hasFilter = false }: To
         <Sheet>
           <SheetTrigger asChild>
             <Button
-              className="fixed bottom-20 right-4 z-[100] shadow-lg rounded-full h-12 w-12"
+              className="fixed bottom-20 right-4 z-40 shadow-lg rounded-full h-12 w-12"
               size="icon"
             >
               <List className="h-5 w-5" />

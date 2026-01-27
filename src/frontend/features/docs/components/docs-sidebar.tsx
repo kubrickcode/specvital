@@ -66,7 +66,7 @@ export const DocsSidebar = () => {
         <Sheet>
           <SheetTrigger asChild>
             <Button
-              className="fixed bottom-20 right-4 z-[100] h-12 w-12 rounded-full shadow-lg"
+              className="fixed bottom-20 right-4 z-40 h-12 w-12 rounded-full shadow-lg"
               size="icon"
             >
               <Menu className="size-5" />
