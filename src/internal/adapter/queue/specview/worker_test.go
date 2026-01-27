@@ -218,8 +218,8 @@ func TestWorker_Timeout(t *testing.T) {
 	job := newTestJob(Args{AnalysisID: "test-id", Language: "en"})
 	timeout := worker.Timeout(job)
 
-	if timeout != 10*time.Minute {
-		t.Errorf("expected timeout 10 minutes, got %v", timeout)
+	if timeout != 35*time.Minute {
+		t.Errorf("expected timeout 35 minutes, got %v", timeout)
 	}
 }
 

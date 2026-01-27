@@ -42,8 +42,8 @@ func (s *internalCacheStats) toPublic() *specview.BehaviorCacheStats {
 }
 
 const (
-	DefaultPhase1Timeout        = 270 * time.Second // 4m30s, below Gemini's 5min server limit
-	DefaultPhase2Timeout        = 7 * time.Minute
+	DefaultPhase1Timeout        = 5 * time.Minute
+	DefaultPhase2Timeout        = 25 * time.Minute
 	DefaultPhase2Concurrency    = int64(5)
 	DefaultFailureThreshold     = 0.5 // 50% feature failure threshold
 	DefaultPhase2FeatureTimeout = 90 * time.Second  // 1m30s for single feature conversion
@@ -1039,7 +1039,7 @@ func (uc *GenerateSpecViewUseCase) assembleDocument(
 
 const (
 	// DefaultPhase3Timeout is the timeout for Phase 3 executive summary generation.
-	DefaultPhase3Timeout = 60 * time.Second
+	DefaultPhase3Timeout = 2 * time.Minute
 )
 
 // executePhase3 generates an executive summary from the assembled document.

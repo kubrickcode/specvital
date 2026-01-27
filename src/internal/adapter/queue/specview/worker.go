@@ -20,7 +20,7 @@ const (
 
 	jobKind          = "specview:generate"
 	maxRetryAttempts = 3
-	jobTimeout       = 10 * time.Minute
+	jobTimeout       = 35 * time.Minute
 	initialBackoff   = 10 * time.Second
 )
 
