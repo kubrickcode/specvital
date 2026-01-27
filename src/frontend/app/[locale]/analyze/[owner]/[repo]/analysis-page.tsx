@@ -11,18 +11,17 @@ import {
   useAnalysis,
   useAutoTrackHistory,
 } from "@/features/analysis";
+import type { AnalysisStatus } from "@/features/analysis";
 
 type AnalysisPageProps = {
   owner: string;
   repo: string;
 };
 
-type SkeletonStatus = "loading" | "queued" | "analyzing";
-
 const getSkeletonProps = (
   status: string,
   t: ReturnType<typeof useTranslations<"analyze">>
-): { description: string; status: SkeletonStatus; title: string } => {
+): { description: string; status: AnalysisStatus; title: string } => {
   switch (status) {
     case "queued":
       return {
@@ -61,12 +60,19 @@ const getDisplayErrorMessage = (
 
 export const AnalysisPage = ({ owner, repo }: AnalysisPageProps) => {
   const t = useTranslations("analyze");
-  const { data, error, isLoading, refetch, status } = useAnalysis(owner, repo);
+  const { data, error, isLoading, refetch, startedAt, status } = useAnalysis(owner, repo);
 
   useAutoTrackHistory(owner, repo, status === "completed");
 
   if (isLoading) {
-    return <AnalysisSkeleton {...getSkeletonProps(status, t)} />;
+    return (
+      <AnalysisSkeleton
+        {...getSkeletonProps(status, t)}
+        owner={owner}
+        repo={repo}
+        startedAt={startedAt}
+      />
+    );
   }
 
   if (status === "error" || status === "failed") {

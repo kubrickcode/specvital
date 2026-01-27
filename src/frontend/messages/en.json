@@ -93,6 +93,24 @@
     "noTestsInSuite": "No tests in this suite.",
     "testCount": "{count} {count, plural, =1 {test} other {tests}}",
     "retry": "Try Again",
+    "waiting": {
+      "queued": {
+        "0": "Queued for analysis",
+        "1": "Waiting for an available worker...",
+        "2": "Your request is in the queue",
+        "3": "Analysis will start shortly",
+        "4": "Thanks for your patience"
+      },
+      "analyzing": {
+        "0": "Cloning repository from GitHub",
+        "1": "Scanning for test files",
+        "2": "Parsing test specifications",
+        "3": "Analyzing test structure",
+        "4": "Almost done..."
+      },
+      "elapsed": "Elapsed time",
+      "longWait": "You can leave this page - analysis continues in the background"
+    },
     "filter": {
       "clearSearch": "Clear search",
       "frameworkFilter": "Framework",

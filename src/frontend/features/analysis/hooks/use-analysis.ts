@@ -34,6 +34,7 @@ type UseAnalysisReturn = {
   error: Error | null;
   isLoading: boolean;
   refetch: () => void;
+  startedAt: string | null;
   status: AnalysisResponse["status"] | "error" | "pending";
 };
 
@@ -141,11 +142,24 @@ export const useAnalysis = (owner: string, repo: string): UseAnalysisReturn => {
   const isLoading =
     query.isPending || status === "queued" || status === "analyzing" || status === "pending";
 
+  // Get startedAt from TaskStore with fallback for race condition
+  const taskFromStore = getTask(taskId);
+  let startedAt = taskFromStore?.startedAt ?? null;
+
+  // Fallback: If analyzing but no startedAt, use current time as approximation
+  if (status === "analyzing" && !startedAt) {
+    startedAt = new Date().toISOString();
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`[useAnalysis] TaskStore missing startedAt for ${taskId}, using fallback`);
+    }
+  }
+
   return {
     data,
     error: query.error,
     isLoading,
     refetch,
+    startedAt,
     status,
   };
 };

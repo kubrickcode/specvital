@@ -3,13 +3,16 @@ import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
+import type { AnalysisStatus } from "../types";
+import { AnalysisWaitingCard } from "./analysis-waiting-card";
 import { InlineStatsSkeleton } from "./inline-stats-skeleton";
 import { TestListSkeleton } from "./test-list-skeleton";
 
-type AnalysisStatus = "loading" | "queued" | "analyzing";
-
 type AnalysisSkeletonProps = {
   description?: string;
+  owner?: string;
+  repo?: string;
+  startedAt?: string | null;
   status?: AnalysisStatus;
   title?: string;
 };
@@ -43,9 +46,25 @@ const STATUS_CONFIG: Record<
 
 export const AnalysisSkeleton = ({
   description,
+  owner,
+  repo,
+  startedAt,
   status = "loading",
   title,
 }: AnalysisSkeletonProps) => {
+  // Render AnalysisWaitingCard for queued/analyzing states
+  if ((status === "queued" || status === "analyzing") && owner && repo) {
+    return (
+      <AnalysisWaitingCard
+        owner={owner}
+        repo={repo}
+        startedAt={startedAt ?? null}
+        status={status}
+      />
+    );
+  }
+
+  // Render traditional skeleton for loading state
   const config = STATUS_CONFIG[status];
   const displayTitle = title ?? config.defaultTitle;
   const displayDescription = description ?? config.defaultDescription;
