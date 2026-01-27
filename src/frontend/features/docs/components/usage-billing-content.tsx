@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Link } from "@/i18n/navigation";
 
 const USAGE_EVENTS = [
   { countsUsage: true, eventKey: "analysisRun" },
@@ -35,16 +36,9 @@ const USAGE_EVENTS = [
 
 const CACHE_SCENARIOS = [
   { cached: true, cacheKey: "sameCommit" },
-  { cached: false, cacheKey: "newCommit" },
-  { cached: false, cacheKey: "parserUpdate" },
+  { cached: true, cacheKey: "newCommit" },
+  { cached: true, cacheKey: "parserUpdate" },
   { cached: false, cacheKey: "manualReanalysis" },
-] as const;
-
-const PLAN_LIMITS = [
-  { analysisKey: "freeAnalysis", plan: "free", specviewKey: "freeSpecview" },
-  { analysisKey: "proAnalysis", plan: "pro", specviewKey: "proSpecview" },
-  { analysisKey: "proPlusAnalysis", plan: "pro_plus", specviewKey: "proPlusSpecview" },
-  { analysisKey: "enterpriseAnalysis", plan: "enterprise", specviewKey: "enterpriseSpecview" },
 ] as const;
 
 export const UsageBillingContent = () => {
@@ -233,15 +227,27 @@ export const UsageBillingContent = () => {
           </CardContent>
         </Card>
 
-        <Alert className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/50">
-          <CheckCircle2 className="size-4 text-green-600 dark:text-green-400" />
-          <AlertTitle className="text-green-900 dark:text-green-100">
-            {t("sections.cache.tip.title")}
-          </AlertTitle>
-          <AlertDescription className="text-green-800 dark:text-green-200">
-            {t("sections.cache.tip.description")}
-          </AlertDescription>
-        </Alert>
+        <div className="space-y-3">
+          <Alert className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/50">
+            <CheckCircle2 className="size-4 text-green-600 dark:text-green-400" />
+            <AlertTitle className="text-green-900 dark:text-green-100">
+              {t("sections.cache.tip.title")}
+            </AlertTitle>
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              {t("sections.cache.tip.description")}
+            </AlertDescription>
+          </Alert>
+
+          <Alert className="border-purple-200 bg-purple-50 dark:border-purple-900 dark:bg-purple-950/50">
+            <FileText className="size-4 text-purple-600 dark:text-purple-400" />
+            <AlertTitle className="text-purple-900 dark:text-purple-100">
+              {t("sections.cache.specDocCache.title")}
+            </AlertTitle>
+            <AlertDescription className="text-purple-800 dark:text-purple-200">
+              {t("sections.cache.specDocCache.description")}
+            </AlertDescription>
+          </Alert>
+        </div>
       </section>
 
       {/* Billing Cycle */}
@@ -297,42 +303,13 @@ export const UsageBillingContent = () => {
       {/* Plan Limits */}
       <section>
         <h2 className="mb-4 text-2xl font-semibold tracking-tight">{t("sections.limits.title")}</h2>
-        <p className="mb-4 leading-7 text-muted-foreground">{t("sections.limits.description")}</p>
-
-        <Card className="py-0">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="px-4 py-2 font-semibold">
-                    {t("sections.limits.table.plan")}
-                  </TableHead>
-                  <TableHead className="px-4 py-2 text-center font-semibold">
-                    {t("sections.limits.table.analysis")}
-                  </TableHead>
-                  <TableHead className="px-4 py-2 text-center font-semibold">
-                    {t("sections.limits.table.specview")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {PLAN_LIMITS.map(({ analysisKey, plan, specviewKey }) => (
-                  <TableRow key={plan}>
-                    <TableCell className="px-4 py-2.5 font-medium">
-                      {t(`sections.limits.plans.${plan}`)}
-                    </TableCell>
-                    <TableCell className="px-4 py-2.5 text-center text-muted-foreground">
-                      {t(`sections.limits.${analysisKey}`)}
-                    </TableCell>
-                    <TableCell className="px-4 py-2.5 text-center text-muted-foreground">
-                      {t(`sections.limits.${specviewKey}`)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <p className="leading-7 text-muted-foreground">{t("sections.limits.description")}</p>
+        <Link
+          className="mt-2 inline-flex items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+          href="/pricing"
+        >
+          {t("sections.limits.viewPricing")}
+        </Link>
       </section>
 
       {/* Quota Warnings */}

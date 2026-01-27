@@ -896,20 +896,24 @@
             },
             "newCommit": {
               "name": "새 커밋 존재",
-              "description": "마지막 분석 이후 새로운 커밋이 있음"
+              "description": "캐시된 결과가 그대로 표시됩니다. 배너에서 선택적으로 업데이트할 수 있습니다."
             },
             "parserUpdate": {
               "name": "파서 업데이트",
-              "description": "SpecVital 파서 버전이 변경됨"
+              "description": "캐시된 결과가 그대로 표시됩니다. 배너에서 선택적으로 재분석할 수 있습니다."
             },
             "manualReanalysis": {
               "name": "수동 재분석",
-              "description": "'지금 업데이트' 또는 '재분석' 클릭"
+              "description": "'지금 업데이트' 또는 '재분석' 클릭으로 새 분석 실행"
             }
           },
           "tip": {
             "title": "효율적인 사용",
             "description": "캐시된 결과는 즉시 제공되며 할당량에 포함되지 않습니다. 최신 분석이 필요할 때만 업데이트하세요."
+          },
+          "specDocCache": {
+            "title": "AI 스펙 문서 재생성 캐시",
+            "description": "AI 스펙 문서를 재생성할 때 이전 결과를 재사용할 수 있습니다. 새로운 테스트나 변경된 테스트만 AI가 재생성하여 할당량을 절약합니다."
           }
         },
         "cycle": {
@@ -919,41 +923,23 @@
             "title": "월간 초기화 방식",
             "step1Title": "시작일",
             "step1Desc": "결제 주기는 계정을 생성한 날부터 시작됩니다.",
-            "step2Title": "30일 주기",
-            "step2Desc": "시작일로부터 30일 동안 사용량이 누적됩니다.",
+            "step2Title": "월간 주기",
+            "step2Desc": "시작일로부터 1개월 동안 사용량이 누적됩니다.",
             "step3Title": "자동 초기화",
-            "step3Desc": "31일째에 사용량 카운터가 자동으로 0으로 초기화됩니다."
+            "step3Desc": "월간 주기가 끝나면 사용량 카운터가 자동으로 0으로 초기화됩니다."
           }
         },
         "limits": {
           "title": "플랜별 한도",
           "description": "각 플랜은 분석과 AI 스펙 생성에 대해 서로 다른 월간 한도를 제공합니다.",
-          "table": {
-            "plan": "플랜",
-            "analysis": "분석 / 월",
-            "specview": "AI 스펙 문서 / 월"
-          },
-          "plans": {
-            "free": "무료",
-            "pro": "Pro",
-            "pro_plus": "Pro+",
-            "enterprise": "Enterprise"
-          },
-          "freeAnalysis": "100회",
-          "freeSpecview": "500 테스트",
-          "proAnalysis": "무제한",
-          "proSpecview": "5,000 테스트",
-          "proPlusAnalysis": "무제한",
-          "proPlusSpecview": "50,000 테스트",
-          "enterpriseAnalysis": "무제한",
-          "enterpriseSpecview": "맞춤형"
+          "viewPricing": "요금제 보기 →"
         },
         "warnings": {
           "title": "할당량 경고",
           "description": "SpecVital은 할당량이 소진되기 전에 경고하여 미리 대비할 수 있도록 합니다.",
           "approaching": {
-            "title": "한도 접근 중 (80%)",
-            "description": "할당량의 80%에 도달하면 UI에 경고 표시가 나타납니다. 업그레이드를 고려하거나 초기화를 기다리세요."
+            "title": "한도 접근 중 (70%)",
+            "description": "할당량의 70%에 도달하면 UI에 경고 표시가 나타납니다. 업그레이드를 고려하거나 초기화를 기다리세요."
           },
           "exceeded": {
             "title": "할당량 초과 (100%)",
@@ -981,7 +967,7 @@
           },
           "q3": {
             "question": "스펙 문서를 재생성하면 사용량이 차감되나요?",
-            "answer": "예. 각 생성은 그 시점의 테스트 수를 기준으로 집계됩니다. 저장소가 100개에서 150개 테스트로 증가했다면 재생성 시 150 단위가 사용됩니다."
+            "answer": "모드에 따라 다릅니다. '캐시 사용' 모드에서는 새로운 테스트나 변경된 테스트만 할당량이 차감되며, 이전 결과는 재사용됩니다. '새로 분석' 모드에서는 모든 테스트가 재생성되어 전체 테스트 수가 차감됩니다."
           },
           "q4": {
             "question": "주기 중간에 추가 할당량을 구매할 수 있나요?",
