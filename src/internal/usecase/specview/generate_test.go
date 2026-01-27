@@ -2101,3 +2101,152 @@ func TestSalvageBehaviorCache(t *testing.T) {
 	})
 }
 
+func TestPerJobSemaphoreIsolation(t *testing.T) {
+	t.Run("should not block small job when large job occupies semaphore", func(t *testing.T) {
+		// Concurrency=1: with shared semaphore, large job would block small job.
+		// With per-job semaphore, each job gets its own 1-slot semaphore.
+
+		largeJobFiles := []specview.FileInfo{
+			{
+				Path:      "test/large_test.go",
+				Framework: "go",
+				Tests: []specview.TestInfo{
+					{Index: 0, Name: "TestLargeA", TestCaseID: "tc-100"},
+					{Index: 1, Name: "TestLargeB", TestCaseID: "tc-101"},
+				},
+			},
+		}
+		largeJobPhase1 := &specview.Phase1Output{
+			Domains: []specview.DomainGroup{
+				{
+					Name: "LargeDomain", Description: "Large domain", Confidence: 0.9,
+					Features: []specview.FeatureGroup{
+						{Name: "FeatureA", Description: "Feature A", Confidence: 0.9, TestIndices: []int{0}},
+						{Name: "FeatureB", Description: "Feature B", Confidence: 0.9, TestIndices: []int{1}},
+					},
+				},
+			},
+		}
+
+		smallJobFiles := []specview.FileInfo{
+			{
+				Path:      "test/small_test.go",
+				Framework: "go",
+				Tests: []specview.TestInfo{
+					{Index: 0, Name: "TestSmallA", TestCaseID: "tc-200"},
+				},
+			},
+		}
+		smallJobPhase1 := &specview.Phase1Output{
+			Domains: []specview.DomainGroup{
+				{
+					Name: "SmallDomain", Description: "Small domain", Confidence: 0.9,
+					Features: []specview.FeatureGroup{
+						{Name: "SmallFeature", Description: "Small feature", Confidence: 0.9, TestIndices: []int{0}},
+					},
+				},
+			},
+		}
+
+		largeJobStarted := make(chan struct{})
+		largeJobBlock := make(chan struct{})
+		smallJobDone := make(chan struct{})
+
+		repo := &mockRepository{
+			getTestDataByAnalysisIDFn: func(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
+				if analysisID == "large-job" {
+					return largeJobFiles, nil
+				}
+				return smallJobFiles, nil
+			},
+			findDocumentByContentHashFn: func(ctx context.Context, userID string, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error) {
+				return nil, nil
+			},
+			saveDocumentFn: func(ctx context.Context, doc *specview.SpecDocument) error {
+				doc.ID = "doc-" + doc.AnalysisID
+				return nil
+			},
+		}
+
+		aiProvider := &mockAIProvider{
+			classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+				// Distinguish jobs by file test count
+				totalTests := 0
+				for _, f := range input.Files {
+					totalTests += len(f.Tests)
+				}
+				if totalTests == 2 {
+					return largeJobPhase1, nil, nil
+				}
+				return smallJobPhase1, nil, nil
+			},
+			convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+				if input.FeatureName == "FeatureA" {
+					close(largeJobStarted)
+					// Block until test signals release
+					select {
+					case <-largeJobBlock:
+					case <-ctx.Done():
+						return nil, nil, ctx.Err()
+					}
+				}
+
+				behaviors := make([]specview.BehaviorSpec, len(input.Tests))
+				for i, test := range input.Tests {
+					behaviors[i] = specview.BehaviorSpec{
+						TestIndex:   test.Index,
+						Description: "Converted: " + test.Name,
+						Confidence:  0.9,
+					}
+				}
+				return &specview.Phase2Output{Behaviors: behaviors}, nil, nil
+			},
+		}
+
+		uc := NewGenerateSpecViewUseCase(repo, aiProvider, "gemini-2.5-flash",
+			WithPhase2Concurrency(1),
+			WithPhase2Timeout(10*time.Second),
+		)
+
+		// Launch large job (blocks on FeatureA conversion)
+		largeJobErr := make(chan error, 1)
+		go func() {
+			_, err := uc.Execute(context.Background(), specview.SpecViewRequest{
+				AnalysisID: "large-job",
+				Language:   "Korean",
+				UserID:     "user-1",
+			})
+			largeJobErr <- err
+		}()
+
+		// Wait for large job to acquire semaphore slot
+		<-largeJobStarted
+
+		// Launch small job — must complete independently of large job
+		go func() {
+			defer close(smallJobDone)
+			_, err := uc.Execute(context.Background(), specview.SpecViewRequest{
+				AnalysisID: "small-job",
+				Language:   "Korean",
+				UserID:     "user-1",
+			})
+			if err != nil {
+				t.Errorf("small job should succeed independently, got %v", err)
+			}
+		}()
+
+		// Small job must complete within 3s (would timeout if blocked by large job's semaphore)
+		select {
+		case <-smallJobDone:
+			// Success: small job completed independently
+		case <-time.After(3 * time.Second):
+			t.Fatal("small job blocked by large job — semaphore not isolated per job")
+		}
+
+		// Release large job so it completes cleanly
+		close(largeJobBlock)
+		if err := <-largeJobErr; err != nil {
+			t.Errorf("large job should succeed after release, got %v", err)
+		}
+	})
+}

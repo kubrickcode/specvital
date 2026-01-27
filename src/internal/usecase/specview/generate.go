@@ -108,7 +108,6 @@ type GenerateSpecViewUseCase struct {
 	config         Config
 	defaultModelID string
 	repository     specview.Repository
-	phase2Sem      *semaphore.Weighted
 }
 
 // NewGenerateSpecViewUseCase creates a new GenerateSpecViewUseCase.
@@ -134,7 +133,6 @@ func NewGenerateSpecViewUseCase(
 		config:         cfg,
 		defaultModelID: defaultModelID,
 		repository:     repo,
-		phase2Sem:      semaphore.NewWeighted(cfg.Phase2Concurrency),
 	}
 }
 
@@ -610,14 +608,17 @@ func (uc *GenerateSpecViewUseCase) executePhase2(
 		tracker   = newProgressTracker(len(featureTasks))
 	)
 
+	// Per-job semaphore: prevents concurrent jobs from competing for shared slots
+	phase2Sem := semaphore.NewWeighted(uc.config.Phase2Concurrency)
+
 	g, gCtx := errgroup.WithContext(phase2Ctx)
 
 	for i, task := range featureTasks {
 		g.Go(func() error {
-			if err := uc.phase2Sem.Acquire(gCtx, 1); err != nil {
+			if err := phase2Sem.Acquire(gCtx, 1); err != nil {
 				return err
 			}
-			defer uc.phase2Sem.Release(1)
+			defer phase2Sem.Release(1)
 
 			behaviors, usage, failed, newEntries := uc.convertFeatureWithCache(
 				gCtx,
