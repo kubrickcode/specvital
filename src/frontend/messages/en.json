@@ -1345,121 +1345,68 @@
       "sections": {
         "overview": {
           "title": "What is AI Spec Generation?",
-          "description": "AI Spec Generation transforms your test cases into human-readable specification documents. By analyzing test names, assertions, and structure, the AI extracts the underlying business requirements and presents them in a clear, organized format.",
+          "description": "AI Spec Generation automatically turns your test suite into a structured specification document. Instead of reading through hundreds of test files, you get a clear overview of what your project does — organized by business area and written in plain language.",
           "keyPoint": {
             "title": "Tests as Living Documentation",
-            "description": "Your test suite already contains valuable specification information. AI Spec Generation surfaces this knowledge, making it accessible to developers, QA, and stakeholders alike."
-          }
-        },
-        "classification": {
-          "title": "Test Classification",
-          "description": "The AI classifies tests into the following categories based on their characteristics:",
-          "table": {
-            "type": "Type",
-            "description": "Description",
-            "example": "Example Pattern"
-          },
-          "types": {
-            "functional": {
-              "name": "Functional",
-              "description": "Tests that verify core business logic and user-facing features",
-              "example": "should create user with valid email"
-            },
-            "edge": {
-              "name": "Edge Case",
-              "description": "Tests that verify boundary conditions and error handling",
-              "example": "should reject empty password"
-            },
-            "integration": {
-              "name": "Integration",
-              "description": "Tests that verify interactions between multiple components",
-              "example": "should sync data with external API"
-            },
-            "unit": {
-              "name": "Unit",
-              "description": "Tests that verify individual functions or methods in isolation",
-              "example": "should calculate tax correctly"
-            },
-            "performance": {
-              "name": "Performance",
-              "description": "Tests that verify response times and resource usage",
-              "example": "should complete within 100ms"
-            }
+            "description": "Your test suite already describes how your system behaves. AI Spec Generation makes this knowledge readable and shareable with your entire team — developers, QA, and stakeholders alike."
           }
         },
         "output": {
-          "title": "Output Format",
-          "description": "Generated spec documents include the following elements:",
+          "title": "What You Get",
+          "description": "The generated spec document includes:",
           "features": {
-            "structure": {
-              "title": "Hierarchical Structure",
-              "description": "Documents are organized by feature areas, making it easy to navigate and understand the system."
+            "domains": {
+              "title": "Organized by Domain",
+              "description": "Tests are grouped into business domains and features, so you can quickly see what each part of your project covers."
             },
-            "context": {
-              "title": "Business Context",
-              "description": "Each feature includes a description explaining its business purpose and user value."
+            "descriptions": {
+              "title": "Readable Descriptions",
+              "description": "Technical test names like 'should_return_404_when_not_found' become clear behavior descriptions like 'Returns 404 when the resource is not found'."
             },
-            "markdown": {
-              "title": "Markdown Format",
-              "description": "Documents are generated in Markdown for easy viewing, sharing, and integration with documentation systems."
+            "summary": {
+              "title": "Project Summary",
+              "description": "An auto-generated overview that describes what your project does based on its test coverage — great for onboarding and documentation."
             },
             "caching": {
-              "title": "Result Caching",
-              "description": "Generated documents are cached. Regeneration only occurs when tests change or you explicitly request it."
+              "title": "Smart Caching",
+              "description": "Results are cached automatically. When you regenerate, only changed tests are reprocessed — saving time and quota."
             }
           }
         },
         "limitations": {
-          "title": "Known Limitations",
+          "title": "Things to Keep in Mind",
           "items": {
-            "accuracy": {
-              "title": "Classification Accuracy",
-              "description": "Test classification is based on naming patterns and heuristics. Some tests may be miscategorized if they don't follow common conventions."
+            "namesBased": {
+              "title": "Based on Test Metadata",
+              "description": "The AI works with test names, file paths, and imports — not the actual test implementation. The quality of the output depends on how descriptive your test names are."
             },
-            "language": {
-              "title": "Language Support",
-              "description": "Best results with English test names. Tests in other languages may have reduced accuracy in classification and description generation."
+            "nameQuality": {
+              "title": "Cryptic Names, Lower Quality",
+              "description": "Tests with vague or abbreviated names (e.g., 'test1', 'checkA') will produce less useful descriptions. The more descriptive the name, the better the result."
             },
-            "context": {
-              "title": "Limited Context",
-              "description": "The AI only sees test code, not implementation. It infers behavior from test names and assertions, not actual functionality."
-            },
-            "complexity": {
-              "title": "Complex Tests",
-              "description": "Highly complex tests with many nested conditions may produce less accurate or overly simplified descriptions."
+            "languageSupport": {
+              "title": "Multi-language Support",
+              "description": "Spec documents can be generated in 24 languages. English, Korean, Japanese, Chinese, and Spanish produce the best results."
             }
           }
         },
-        "bestPractices": {
-          "title": "Best Practices",
-          "tips": {
-            "naming": {
-              "title": "Use Descriptive Test Names",
-              "description": "Write test names that describe the expected behavior (e.g., 'should return 404 when user not found' rather than 'test404')."
-            },
-            "structure": {
-              "title": "Organize with Describe Blocks",
-              "description": "Group related tests under describe blocks that name the feature or component being tested."
-            },
-            "coverage": {
-              "title": "Include Edge Cases",
-              "description": "Tests for edge cases and error conditions provide valuable specification details about system boundaries."
-            }
-          }
+        "relatedGuide": {
+          "title": "Want better results?",
+          "description": "Learn how to write and organize tests for higher-quality spec documents in the Test Writing Guide."
         },
         "faq": {
           "title": "FAQ",
           "q1": {
-            "question": "How is usage counted for spec generation?",
-            "answer": "Spec generation usage is counted by the number of tests processed. Each test in your repository counts toward your monthly quota when generating a new spec document."
+            "question": "How is usage counted?",
+            "answer": "Only newly generated descriptions count toward your quota. If a test was already processed before, the cached result is reused for free. Regenerating an unchanged repository costs nothing."
           },
           "q2": {
-            "question": "Can I edit the generated spec document?",
-            "answer": "Generated documents are read-only in SpecVital, but you can export them as Markdown and edit them in any text editor or documentation system."
+            "question": "Can I edit the generated document?",
+            "answer": "Documents are read-only in SpecVital, but you can export them as Markdown and edit them in any text editor or documentation system."
           },
-          "q4": {
-            "question": "How often should I regenerate specs?",
-            "answer": "Regenerate when you make significant changes to your test suite. For active projects, we recommend regenerating after each sprint or major feature completion."
+          "q3": {
+            "question": "When should I regenerate?",
+            "answer": "Regenerate after significant changes to your test suite — such as adding new features or major refactoring. For active projects, after each sprint or milestone is a good cadence."
           }
         }
       }

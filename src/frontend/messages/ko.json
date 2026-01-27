@@ -1345,121 +1345,68 @@
       "sections": {
         "overview": {
           "title": "AI 스펙 생성이란?",
-          "description": "AI 스펙 생성은 테스트 케이스를 사람이 읽을 수 있는 스펙 문서로 변환합니다. 테스트 이름, 어설션, 구조를 분석하여 AI가 기저의 비즈니스 요구사항을 추출하고 명확하고 체계적인 형식으로 제시합니다.",
+          "description": "AI 스펙 생성은 테스트 스위트를 구조화된 스펙 문서로 자동 변환합니다. 수백 개의 테스트 파일을 직접 읽는 대신, 프로젝트가 무엇을 하는지 비즈니스 영역별로 정리된 명확한 개요를 받아볼 수 있습니다.",
           "keyPoint": {
             "title": "살아있는 문서로서의 테스트",
-            "description": "테스트 스위트에는 이미 귀중한 스펙 정보가 포함되어 있습니다. AI 스펙 생성은 이 지식을 표면화하여 개발자, QA, 이해관계자 모두가 접근할 수 있게 만듭니다."
-          }
-        },
-        "classification": {
-          "title": "테스트 분류",
-          "description": "AI는 특성에 따라 테스트를 다음 카테고리로 분류합니다:",
-          "table": {
-            "type": "유형",
-            "description": "설명",
-            "example": "예시 패턴"
-          },
-          "types": {
-            "functional": {
-              "name": "기능",
-              "description": "핵심 비즈니스 로직과 사용자 대면 기능을 검증하는 테스트",
-              "example": "should create user with valid email"
-            },
-            "edge": {
-              "name": "엣지 케이스",
-              "description": "경계 조건과 오류 처리를 검증하는 테스트",
-              "example": "should reject empty password"
-            },
-            "integration": {
-              "name": "통합",
-              "description": "여러 컴포넌트 간 상호작용을 검증하는 테스트",
-              "example": "should sync data with external API"
-            },
-            "unit": {
-              "name": "유닛",
-              "description": "개별 함수나 메서드를 격리된 상태로 검증하는 테스트",
-              "example": "should calculate tax correctly"
-            },
-            "performance": {
-              "name": "성능",
-              "description": "응답 시간과 리소스 사용량을 검증하는 테스트",
-              "example": "should complete within 100ms"
-            }
+            "description": "테스트 스위트는 이미 시스템의 동작을 설명하고 있습니다. AI 스펙 생성은 이 지식을 읽기 쉽고 공유 가능한 형태로 만들어 개발자, QA, 이해관계자 모두가 활용할 수 있게 합니다."
           }
         },
         "output": {
-          "title": "출력 형식",
-          "description": "생성된 스펙 문서에는 다음 요소가 포함됩니다:",
+          "title": "결과물",
+          "description": "생성된 스펙 문서에는 다음이 포함됩니다:",
           "features": {
-            "structure": {
-              "title": "계층적 구조",
-              "description": "문서는 기능 영역별로 구성되어 시스템을 탐색하고 이해하기 쉽습니다."
+            "domains": {
+              "title": "도메인별 구성",
+              "description": "테스트가 비즈니스 도메인과 기능별로 그룹화되어, 프로젝트의 각 부분이 무엇을 다루는지 빠르게 파악할 수 있습니다."
             },
-            "context": {
-              "title": "비즈니스 컨텍스트",
-              "description": "각 기능에는 비즈니스 목적과 사용자 가치를 설명하는 설명이 포함됩니다."
+            "descriptions": {
+              "title": "읽기 쉬운 설명",
+              "description": "'should_return_404_when_not_found' 같은 기술적 테스트 이름이 '리소스를 찾을 수 없을 때 404 반환' 같은 명확한 행동 설명으로 변환됩니다."
             },
-            "markdown": {
-              "title": "Markdown 형식",
-              "description": "문서는 쉬운 조회, 공유, 문서화 시스템과의 통합을 위해 Markdown으로 생성됩니다."
+            "summary": {
+              "title": "프로젝트 요약",
+              "description": "테스트 커버리지를 기반으로 프로젝트가 무엇을 하는지 설명하는 자동 생성 개요 — 온보딩과 문서화에 유용합니다."
             },
             "caching": {
-              "title": "결과 캐싱",
-              "description": "생성된 문서는 캐시됩니다. 테스트가 변경되거나 명시적으로 요청할 때만 재생성됩니다."
+              "title": "스마트 캐싱",
+              "description": "결과가 자동으로 캐시됩니다. 재생성 시 변경된 테스트만 다시 처리되어 시간과 할당량이 절약됩니다."
             }
           }
         },
         "limitations": {
-          "title": "알려진 제한사항",
+          "title": "참고 사항",
           "items": {
-            "accuracy": {
-              "title": "분류 정확도",
-              "description": "테스트 분류는 명명 패턴과 휴리스틱을 기반으로 합니다. 일반적인 규칙을 따르지 않는 테스트는 잘못 분류될 수 있습니다."
+            "namesBased": {
+              "title": "테스트 메타데이터 기반",
+              "description": "AI는 테스트 이름, 파일 경로, import를 활용하며 — 실제 테스트 구현 코드는 보지 않습니다. 출력 품질은 테스트 이름이 얼마나 설명적인지에 달려 있습니다."
             },
-            "language": {
-              "title": "언어 지원",
-              "description": "영어 테스트 이름에서 최상의 결과가 나옵니다. 다른 언어의 테스트는 분류 및 설명 생성의 정확도가 낮을 수 있습니다."
+            "nameQuality": {
+              "title": "불분명한 이름, 낮은 품질",
+              "description": "모호하거나 축약된 테스트 이름(예: 'test1', 'checkA')은 덜 유용한 설명을 생성합니다. 이름이 구체적일수록 결과가 좋아집니다."
             },
-            "context": {
-              "title": "제한된 컨텍스트",
-              "description": "AI는 테스트 코드만 보고 구현은 보지 않습니다. 실제 기능이 아닌 테스트 이름과 어설션에서 동작을 추론합니다."
-            },
-            "complexity": {
-              "title": "복잡한 테스트",
-              "description": "중첩된 조건이 많은 매우 복잡한 테스트는 덜 정확하거나 과도하게 단순화된 설명을 생성할 수 있습니다."
+            "languageSupport": {
+              "title": "다국어 지원",
+              "description": "스펙 문서는 24개 언어로 생성할 수 있습니다. 영어, 한국어, 일본어, 중국어, 스페인어에서 가장 좋은 결과를 보여줍니다."
             }
           }
         },
-        "bestPractices": {
-          "title": "모범 사례",
-          "tips": {
-            "naming": {
-              "title": "설명적인 테스트 이름 사용",
-              "description": "예상되는 동작을 설명하는 테스트 이름을 작성하세요 (예: 'test404'보다는 'should return 404 when user not found')."
-            },
-            "structure": {
-              "title": "Describe 블록으로 구성",
-              "description": "테스트 중인 기능이나 컴포넌트의 이름을 지정하는 describe 블록 아래에 관련 테스트를 그룹화하세요."
-            },
-            "coverage": {
-              "title": "엣지 케이스 포함",
-              "description": "엣지 케이스와 오류 조건에 대한 테스트는 시스템 경계에 대한 귀중한 스펙 세부 정보를 제공합니다."
-            }
-          }
+        "relatedGuide": {
+          "title": "더 좋은 결과를 원하시나요?",
+          "description": "테스트 작성 가이드에서 더 높은 품질의 스펙 문서를 위한 테스트 작성법과 구성 방법을 알아보세요."
         },
         "faq": {
           "title": "FAQ",
           "q1": {
-            "question": "스펙 생성 사용량은 어떻게 계산되나요?",
-            "answer": "스펙 생성 사용량은 처리된 테스트 수로 계산됩니다. 새 스펙 문서를 생성할 때 저장소의 각 테스트가 월간 할당량에 계산됩니다."
+            "question": "사용량은 어떻게 계산되나요?",
+            "answer": "새로 생성된 설명만 할당량에 포함됩니다. 이전에 처리된 테스트는 캐시된 결과가 무료로 재사용됩니다. 변경되지 않은 저장소를 재생성하면 할당량이 소비되지 않습니다."
           },
           "q2": {
-            "question": "생성된 스펙 문서를 편집할 수 있나요?",
-            "answer": "생성된 문서는 SpecVital에서 읽기 전용이지만, Markdown으로 내보내어 모든 텍스트 편집기나 문서화 시스템에서 편집할 수 있습니다."
+            "question": "생성된 문서를 편집할 수 있나요?",
+            "answer": "SpecVital에서 문서는 읽기 전용이지만, Markdown으로 내보내어 모든 텍스트 편집기나 문서화 시스템에서 편집할 수 있습니다."
           },
-          "q4": {
-            "question": "얼마나 자주 스펙을 재생성해야 하나요?",
-            "answer": "테스트 스위트에 중요한 변경 사항이 있을 때 재생성하세요. 활발한 프로젝트의 경우 각 스프린트 또는 주요 기능 완료 후 재생성하는 것을 권장합니다."
+          "q3": {
+            "question": "언제 재생성해야 하나요?",
+            "answer": "테스트 스위트에 큰 변경이 있을 때 재생성하세요 — 새 기능 추가나 대규모 리팩토링 후가 좋습니다. 활발한 프로젝트에서는 스프린트나 마일스톤 완료 후가 적절한 주기입니다."
           }
         }
       }

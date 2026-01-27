@@ -2,34 +2,25 @@
 
 import {
   AlertTriangle,
-  Brain,
-  CheckCircle2,
+  ArrowRight,
   FileText,
   HelpCircle,
   Layers,
+  Lightbulb,
   Sparkles,
   Zap,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
-const CLASSIFICATION_TYPES = ["functional", "edge", "integration", "unit", "performance"] as const;
-
-const LIMITATIONS = ["accuracy", "language", "context", "complexity"] as const;
+const LIMITATIONS = ["namesBased", "nameQuality", "languageSupport"] as const;
 
 export const SpecviewGenerationContent = () => {
   const t = useTranslations("docs.specviewGeneration");
+  const locale = useLocale();
 
   return (
     <div className="space-y-8">
@@ -51,66 +42,7 @@ export const SpecviewGenerationContent = () => {
         </Alert>
       </section>
 
-      {/* Classification Logic */}
-      <section>
-        <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-          {t("sections.classification.title")}
-        </h2>
-        <p className="mb-4 leading-7 text-muted-foreground">
-          {t("sections.classification.description")}
-        </p>
-
-        <Card className="py-0">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="px-4 py-2 font-semibold">
-                    {t("sections.classification.table.type")}
-                  </TableHead>
-                  <TableHead className="px-4 py-2 font-semibold">
-                    {t("sections.classification.table.description")}
-                  </TableHead>
-                  <TableHead className="px-4 py-2 font-semibold">
-                    {t("sections.classification.table.example")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {CLASSIFICATION_TYPES.map((typeKey) => (
-                  <TableRow key={typeKey}>
-                    <TableCell className="px-4 py-2.5">
-                      <Badge
-                        className={
-                          typeKey === "functional"
-                            ? "bg-green-500 hover:bg-green-600"
-                            : typeKey === "edge"
-                              ? "bg-amber-500 hover:bg-amber-600"
-                              : typeKey === "integration"
-                                ? "bg-blue-500 hover:bg-blue-600"
-                                : typeKey === "unit"
-                                  ? "bg-slate-500 hover:bg-slate-600"
-                                  : "bg-purple-500 hover:bg-purple-600"
-                        }
-                      >
-                        {t(`sections.classification.types.${typeKey}.name`)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="px-4 py-2.5 text-muted-foreground">
-                      {t(`sections.classification.types.${typeKey}.description`)}
-                    </TableCell>
-                    <TableCell className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
-                      {t(`sections.classification.types.${typeKey}.example`)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Output Format */}
+      {/* What You Get */}
       <section>
         <h2 className="mb-4 text-2xl font-semibold tracking-tight">{t("sections.output.title")}</h2>
         <p className="mb-4 leading-7 text-muted-foreground">{t("sections.output.description")}</p>
@@ -121,29 +53,13 @@ export const SpecviewGenerationContent = () => {
               <div className="flex items-center gap-2">
                 <Layers className="size-4 text-primary" />
                 <CardTitle className="text-sm font-medium">
-                  {t("sections.output.features.structure.title")}
+                  {t("sections.output.features.domains.title")}
                 </CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                {t("sections.output.features.structure.description")}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <Brain className="size-4 text-primary" />
-                <CardTitle className="text-sm font-medium">
-                  {t("sections.output.features.context.title")}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {t("sections.output.features.context.description")}
+                {t("sections.output.features.domains.description")}
               </p>
             </CardContent>
           </Card>
@@ -153,13 +69,29 @@ export const SpecviewGenerationContent = () => {
               <div className="flex items-center gap-2">
                 <FileText className="size-4 text-primary" />
                 <CardTitle className="text-sm font-medium">
-                  {t("sections.output.features.markdown.title")}
+                  {t("sections.output.features.descriptions.title")}
                 </CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                {t("sections.output.features.markdown.description")}
+                {t("sections.output.features.descriptions.description")}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-primary" />
+                <CardTitle className="text-sm font-medium">
+                  {t("sections.output.features.summary.title")}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {t("sections.output.features.summary.description")}
               </p>
             </CardContent>
           </Card>
@@ -182,7 +114,7 @@ export const SpecviewGenerationContent = () => {
         </div>
       </section>
 
-      {/* Limitations */}
+      {/* Things to Keep in Mind */}
       <section>
         <h2 className="mb-4 text-2xl font-semibold tracking-tight">
           {t("sections.limitations.title")}
@@ -207,45 +139,22 @@ export const SpecviewGenerationContent = () => {
         </Card>
       </section>
 
-      {/* Best Practices */}
+      {/* Related Guide */}
       <section>
-        <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-          {t("sections.bestPractices.title")}
-        </h2>
-
-        <Card>
-          <CardContent className="pt-6">
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-500" />
-                <div>
-                  <p className="font-medium text-foreground">
-                    {t("sections.bestPractices.tips.naming.title")}
-                  </p>
-                  <p>{t("sections.bestPractices.tips.naming.description")}</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-500" />
-                <div>
-                  <p className="font-medium text-foreground">
-                    {t("sections.bestPractices.tips.structure.title")}
-                  </p>
-                  <p>{t("sections.bestPractices.tips.structure.description")}</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-500" />
-                <div>
-                  <p className="font-medium text-foreground">
-                    {t("sections.bestPractices.tips.coverage.title")}
-                  </p>
-                  <p>{t("sections.bestPractices.tips.coverage.description")}</p>
-                </div>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+        <Link className="block" href={`/${locale}/docs/writing-guide`}>
+          <Card className="transition-colors hover:bg-muted/50">
+            <CardContent className="flex items-center gap-3 py-4">
+              <Lightbulb className="size-5 shrink-0 text-amber-500" />
+              <div className="flex-1">
+                <p className="font-medium">{t("sections.relatedGuide.title")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("sections.relatedGuide.description")}
+                </p>
+              </div>
+              <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+            </CardContent>
+          </Card>
+        </Link>
       </section>
 
       {/* FAQ */}
@@ -285,12 +194,12 @@ export const SpecviewGenerationContent = () => {
             <CardHeader className="pb-2">
               <div className="flex items-start gap-2">
                 <HelpCircle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                <CardTitle className="text-base">{t("sections.faq.q4.question")}</CardTitle>
+                <CardTitle className="text-base">{t("sections.faq.q3.question")}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                {t("sections.faq.q4.answer")}
+                {t("sections.faq.q3.answer")}
               </p>
             </CardContent>
           </Card>
