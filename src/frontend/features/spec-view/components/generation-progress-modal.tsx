@@ -4,7 +4,6 @@ import { AlertCircle, CheckCircle2, FileText, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { RotatingMessages } from "@/components/feedback/rotating-messages";
-import { ShimmerBar } from "@/components/feedback/shimmer-bar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -95,7 +94,7 @@ const GenerationProgressContent = ({
   const messageIndex = getMessageIndex(seconds, status);
 
   return (
-    <div className="flex flex-col items-center gap-6 py-4">
+    <div className="flex flex-col items-center gap-5 py-4">
       {/* Icon */}
       <div
         className={cn(
@@ -115,41 +114,32 @@ const GenerationProgressContent = ({
         )}
       </div>
 
-      {/* Title and Description */}
+      {/* Title, Description, and Elapsed Time */}
       <div className="text-center">
         <h3 className="text-lg font-semibold">{t(displayInfo.titleKey)}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{t(displayInfo.descriptionKey)}</p>
+        {!isInProgress && (
+          <p className="mt-1 text-sm text-muted-foreground">{t(displayInfo.descriptionKey)}</p>
+        )}
+        {isInProgress && startedAt && (
+          <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            <span>{t("elapsed")}</span>
+            <span aria-hidden>·</span>
+            <time aria-label={ariaLabel} className="font-mono tabular-nums" dateTime={startedAt}>
+              {formatted}
+            </time>
+          </div>
+        )}
       </div>
 
       {/* Pipeline visualization (only when in progress) */}
       {isInProgress && (
         <div className="flex w-full flex-col gap-4" role="status">
           <GenerationPipeline status={status} />
-          <div className="space-y-3">
-            <ShimmerBar
-              color="var(--ai-primary)"
-              duration={status === "pending" || status === "not_found" ? 3 : 2}
-              height="sm"
-            />
-            <RotatingMessages
-              className="text-center"
-              currentIndex={messageIndex}
-              messages={messages}
-            />
-            {startedAt && (
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{t("elapsed")}</span>
-                <time
-                  aria-label={ariaLabel}
-                  className="font-mono tabular-nums"
-                  dateTime={startedAt}
-                >
-                  {formatted}
-                </time>
-              </div>
-            )}
-            <p className="text-center text-sm text-muted-foreground">{t("estimatedTime")}</p>
-          </div>
+          <RotatingMessages
+            className="text-center"
+            currentIndex={messageIndex}
+            messages={messages}
+          />
         </div>
       )}
 

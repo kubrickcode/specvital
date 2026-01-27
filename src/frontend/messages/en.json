@@ -420,11 +420,10 @@
       }
     },
     "generationProgress": {
-      "estimatedTime": "Estimated: 2-5 minutes",
       "continueBrowsing": "Continue Browsing",
       "viewDocument": "View Document",
       "retryButton": "Try Again",
-      "tip": "You can close this dialog and continue browsing. We'll notify you when it's done.",
+      "tip": "We'll notify you when it's ready.",
       "elapsed": "Elapsed time",
       "status": {
         "pending": "Waiting",
