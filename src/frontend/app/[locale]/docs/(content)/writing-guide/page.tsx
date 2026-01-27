@@ -1,4 +1,3 @@
-import { Lightbulb } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
@@ -35,9 +34,6 @@ const WritingGuidePage = async ({ params }: WritingGuidePageProps) => {
   return (
     <article>
       <header className="mb-10">
-        <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Lightbulb className="size-6" />
-        </div>
         <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
         <p className="mt-3 text-lg text-muted-foreground">{t("subtitle")}</p>
       </header>
