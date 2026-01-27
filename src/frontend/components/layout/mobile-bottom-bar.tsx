@@ -1,12 +1,15 @@
 "use client";
 
 import {
+  BookOpen,
   Compass,
+  CreditCard,
   Globe,
   LayoutDashboard,
   Loader2,
   LogIn,
   LogOut,
+  Menu,
   Moon,
   Plus,
   Sun,
@@ -218,6 +221,47 @@ const MobileNavItem = ({ href, icon, isActive, label }: MobileNavItemProps) => {
   );
 };
 
+const MobileMoreMenu = () => {
+  const tNav = useTranslations("navigation");
+  const t = useTranslations("header");
+  const pathname = usePathname();
+
+  const isDocsActive = pathname === "/docs" || pathname.startsWith("/docs/");
+  const isPricingActive = pathname === "/pricing" || pathname.startsWith("/pricing/");
+  const isMoreActive = isDocsActive || isPricingActive;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          aria-label={t("more")}
+          className={cn(
+            "flex h-full flex-col items-center justify-center gap-0.5 px-3 text-muted-foreground transition-colors",
+            isMoreActive && "text-primary"
+          )}
+        >
+          <Menu className="size-5" />
+          <span className="text-[10px] font-normal">{t("more")}</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="top" sideOffset={12}>
+        <DropdownMenuItem asChild>
+          <Link href="/docs">
+            <BookOpen className="mr-2 size-4" />
+            {tNav("docs")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/pricing">
+            <CreditCard className="mr-2 size-4" />
+            {tNav("pricing")}
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 export const MobileBottomBar = () => {
   const t = useTranslations("header");
   const tNav = useTranslations("navigation");
@@ -253,6 +297,7 @@ export const MobileBottomBar = () => {
             isActive={isExploreActive}
             label={tNav("explore")}
           />
+          <MobileMoreMenu />
         </div>
         <div className="flex h-full items-center">
           {!isHomePage && (
