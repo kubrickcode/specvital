@@ -53,7 +53,6 @@ test.describe("Documentation Pages", () => {
       // Verify all 5 document links are displayed
       await expect(docNav.getByRole("link", { name: "Test Detection" })).toBeVisible();
       await expect(docNav.getByRole("link", { name: "Usage & Billing" })).toBeVisible();
-      await expect(docNav.getByRole("link", { name: "GitHub Access" })).toBeVisible();
       await expect(docNav.getByRole("link", { name: "Queue Processing" })).toBeVisible();
       await expect(docNav.getByRole("link", { name: "AI Spec Generation" })).toBeVisible();
     });
@@ -131,27 +130,6 @@ test.describe("Documentation Pages", () => {
       await expect(table.getByText("Free")).toBeVisible();
       // Use exact match to avoid matching "Pro+"
       await expect(table.getByText("Pro", { exact: true })).toBeVisible();
-    });
-
-    test("should display GitHub Access page with OAuth scopes table", async ({
-      page,
-    }) => {
-      await page.goto("/en/docs/github-access");
-
-      // Verify page heading
-      await expect(
-        page.getByRole("heading", { name: "GitHub Access", level: 1 })
-      ).toBeVisible();
-
-      // Verify OAuth scopes section
-      await expect(
-        page.getByRole("heading", { name: "OAuth Scopes", level: 2 })
-      ).toBeVisible();
-
-      // Verify OAuth vs GitHub App comparison exists
-      await expect(
-        page.getByRole("heading", { name: "OAuth vs GitHub App", level: 2 })
-      ).toBeVisible();
     });
 
     test("should display Queue Processing page with priority tiers table", async ({

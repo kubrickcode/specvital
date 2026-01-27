@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, CreditCard, GitBranch, Layers, Lightbulb, Menu, Zap } from "lucide-react";
+import { BookOpen, CreditCard, Layers, Lightbulb, Menu, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,6 @@ import { DocsSidebarItem } from "./docs-sidebar-item";
 const SIDEBAR_ITEMS = [
   { icon: Layers, key: "testDetection" },
   { icon: CreditCard, key: "usageBilling" },
-  { icon: GitBranch, key: "githubAccess" },
   { icon: Zap, key: "queueProcessing" },
   { icon: BookOpen, key: "specviewGeneration" },
   { icon: Lightbulb, key: "writingGuide" },
