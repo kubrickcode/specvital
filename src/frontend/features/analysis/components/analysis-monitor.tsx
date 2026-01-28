@@ -63,20 +63,21 @@ const AnalysisTaskPoller = ({ owner, repo, taskId }: AnalysisTaskPollerProps) =>
 
     completedRef.current = true;
 
+    queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
+    queryClient.invalidateQueries({ queryKey: updateStatusKeys.detail(owner, repo) });
+
     const task = getTask(taskId);
     if (task) {
-      removeTask(taskId);
-
       if (status === "completed") {
         toast.success(t("analysisComplete", { repo: `${owner}/${repo}` }));
       } else {
         toast.error(t("analysisFailed", { repo: `${owner}/${repo}` }));
       }
-    }
 
-    // Skip analysisKeys invalidation — this query already has the terminal data in cache
-    queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
-    queryClient.invalidateQueries({ queryKey: updateStatusKeys.detail(owner, repo) });
+      setTimeout(() => {
+        removeTask(taskId);
+      }, 100);
+    }
   }, [pollingQuery.data, taskId, owner, repo, queryClient, t]);
 
   return null;

@@ -99,7 +99,7 @@ export const useAnalysis = (owner: string, repo: string): UseAnalysisReturn => {
   useEffect(() => {
     if (response?.status === "completed" && !hasTriggeredInvalidation.current) {
       hasTriggeredInvalidation.current = true;
-      queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
+      queryClient.removeQueries({ queryKey: paginatedRepositoriesKeys.all });
     }
   }, [response?.status, queryClient]);
 

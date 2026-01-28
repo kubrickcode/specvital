@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
+import { paginatedRepositoriesKeys } from "@/features/dashboard";
 import { getTask, updateTask } from "@/lib/background-tasks";
 
 import { fetchGenerationStatus, ForbiddenError, UnauthorizedError } from "../api";
@@ -149,6 +150,10 @@ export const useSpecGenerationStatus = (
       }
       queryClient.invalidateQueries({
         queryKey: repoSpecViewKeys.all,
+      });
+      // Remove cache completely to show skeleton on dashboard navigation
+      queryClient.removeQueries({
+        queryKey: paginatedRepositoriesKeys.all,
       });
 
       onCompletedRef.current?.();

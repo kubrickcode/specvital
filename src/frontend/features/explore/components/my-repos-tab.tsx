@@ -25,7 +25,7 @@ export const MyReposTab = ({ className }: MyReposTabProps) => {
 
   const { data: myRepos, error, isLoading, isRefreshing, refresh } = useMyRepositories();
 
-  const { data: analyzedRepos, isLoading: isLoadingAnalyzed } = usePaginatedRepositories({
+  const { data: analyzedRepos } = usePaginatedRepositories({
     view: "my",
   });
 
@@ -125,7 +125,7 @@ export const MyReposTab = ({ className }: MyReposTabProps) => {
 
         <RepositoryGrid>
           {filteredRepos.map((repo) => {
-            const analyzed = !isLoadingAnalyzed && isRepoAnalyzed(repo);
+            const analyzed = isRepoAnalyzed(repo);
 
             return (
               <li key={repo.id}>

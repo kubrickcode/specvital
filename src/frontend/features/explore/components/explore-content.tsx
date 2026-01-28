@@ -38,7 +38,7 @@ export const ExploreContent = () => {
     hasNextPage,
     isError,
     isFetchingNextPage,
-    isLoading: isLoadingCommunity,
+    isLoading,
     refetch,
   } = useExploreRepositories({
     sortBy,
@@ -76,7 +76,7 @@ export const ExploreContent = () => {
     setSearchQuery("");
   };
 
-  const hasNoRepositories = !isLoadingCommunity && communityRepositories.length === 0 && !isError;
+  const hasNoRepositories = !isLoading && communityRepositories.length === 0 && !isError;
   const hasNoSearchResults =
     searchQuery.trim() !== "" &&
     filteredRepositories.length === 0 &&
@@ -104,7 +104,7 @@ export const ExploreContent = () => {
           <p className="text-sm text-muted-foreground">{t("community.visibilityDisclosure")}</p>
           <SearchSortControls
             hasNextPage={hasNextPage}
-            isLoading={isLoadingCommunity}
+            isLoading={isLoading}
             onSearchChange={setSearchQuery}
             onSortChange={setSortBy}
             searchQuery={searchQuery}
@@ -112,7 +112,7 @@ export const ExploreContent = () => {
             totalLoaded={communityRepositories.length}
           />
 
-          {isLoadingCommunity ? (
+          {isLoading ? (
             <RepositoryList
               isLoading
               onReanalyze={handleReanalyze}

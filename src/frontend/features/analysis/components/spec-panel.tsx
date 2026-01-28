@@ -91,6 +91,7 @@ export const SpecPanel = ({
     commitSha,
     data: specDocument,
     isFetching,
+    isLoading: isLoadingDocument,
   } = useRepoSpecView(owner, repo, {
     language: documentLanguage,
     version: selectedVersion,
@@ -364,7 +365,6 @@ export const SpecPanel = ({
           document={specDocument}
           isGeneratingOtherLanguage={isGeneratingOtherLanguage}
           isLoadingVersions={isLoadingVersions}
-          isRefreshing={isFetching && !isGenerating}
           isRegenerating={isGenerating && !isGeneratingOtherLanguage}
           latestVersion={latestVersion}
           onGenerateForCurrentCommit={handleGenerate}
@@ -385,8 +385,8 @@ export const SpecPanel = ({
       return <GenerationStatus startedAt={taskStartedAt} status={displayStatus} />;
     }
 
-    // Show loading while fetching spec document
-    if (isFetching || isRequesting) {
+    // Show loading while initially fetching spec document
+    if (isLoadingDocument || isRequesting) {
       return <LoadingFallback className="py-16" fullScreen={false} />;
     }
 
