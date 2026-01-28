@@ -11,23 +11,26 @@ import { useGlobalSearchStore } from "../hooks";
 
 const isMac = () => {
   if (typeof window === "undefined") return false;
-  return navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+  return /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
 };
 
 export const SearchTriggerButton = () => {
   const { open } = useGlobalSearchStore();
   const t = useTranslations("globalSearch");
   const [shortcutKey, setShortcutKey] = useState("Ctrl");
+  const [ariaShortcut, setAriaShortcut] = useState("Control+K");
 
   useEffect(() => {
-    setShortcutKey(isMac() ? "⌘" : "Ctrl");
+    const isMacOS = isMac();
+    setShortcutKey(isMacOS ? "⌘" : "Ctrl");
+    setAriaShortcut(isMacOS ? "Meta+K" : "Control+K");
   }, []);
 
   return (
     <>
       {/* Desktop: Text button with shortcut hint */}
       <Button
-        aria-keyshortcuts={isMac() ? "Meta+K" : "Control+K"}
+        aria-keyshortcuts={ariaShortcut}
         className="hidden w-64 justify-between gap-2 px-3 text-muted-foreground md:inline-flex"
         onClick={open}
         size="sm"
