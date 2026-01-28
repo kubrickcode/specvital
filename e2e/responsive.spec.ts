@@ -44,4 +44,36 @@ test.describe("Responsive Layout", () => {
     await expect(page.getByRole("link", { name: "Explore" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Pricing" })).toBeVisible();
   });
+
+  test("should show More menu with Docs and Pricing in mobile bottom bar", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+
+    // Resize to mobile viewport
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    // Verify More button exists in mobile navigation
+    const moreButton = page.getByRole("button", { name: "More" });
+    await expect(moreButton).toBeVisible();
+
+    // Click More button
+    await moreButton.click();
+
+    // Verify menu appears with Docs and Pricing
+    const menu = page.getByRole("menu", { name: "More" });
+    await expect(menu).toBeVisible();
+
+    // Verify Docs menuitem
+    const docsItem = menu.getByRole("menuitem", { name: "Docs" });
+    await expect(docsItem).toBeVisible();
+
+    // Verify Pricing menuitem
+    const pricingItem = menu.getByRole("menuitem", { name: "Pricing" });
+    await expect(pricingItem).toBeVisible();
+
+    // Test navigation by clicking Docs
+    await docsItem.click();
+    await expect(page).toHaveURL("/en/docs/test-detection");
+  });
 });

@@ -41,6 +41,36 @@ test.describe("Pricing Page", () => {
     ).toBeVisible();
   });
 
+  test("should expand and collapse both first and last FAQ items", async ({
+    page,
+  }) => {
+    // Test first FAQ item
+    const firstFaq = page.getByRole("button", {
+      name: "What is an AI Spec Document?",
+    });
+    await expect(firstFaq).toBeVisible();
+    await firstFaq.click();
+    await expect(firstFaq).toHaveAttribute("aria-expanded", "true");
+    await expect(
+      page.getByText(/automatically organizes your test cases/i)
+    ).toBeVisible();
+
+    // Close first item
+    await firstFaq.click();
+    await expect(firstFaq).toHaveAttribute("aria-expanded", "false");
+
+    // Test last FAQ item
+    const lastFaq = page.getByRole("button", {
+      name: "What is data retention?",
+    });
+    await expect(lastFaq).toBeVisible();
+    await lastFaq.click();
+    await expect(lastFaq).toHaveAttribute("aria-expanded", "true");
+    await expect(
+      page.getByText(/Retention period determines how long/i)
+    ).toBeVisible();
+  });
+
   // Note: Pricing plan tests (display plans, Get Started buttons, Contact Us)
   // require API data and should be in pricing.mocked.spec.ts
 });

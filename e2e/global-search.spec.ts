@@ -120,6 +120,40 @@ test.describe("Global Search", () => {
       const searchButton = page.getByRole("button", { name: /search/i }).first();
       await expect(searchButton.locator("kbd")).toBeVisible();
     });
+
+    test("should not have hydration errors on initial load", async ({ page }) => {
+      // Listen for console messages
+      const consoleMessages: string[] = [];
+      page.on("console", (msg) => {
+        if (msg.type() === "error" || msg.type() === "warning") {
+          consoleMessages.push(msg.text());
+        }
+      });
+
+      await page.goto("/en");
+
+      // Wait for page to fully hydrate
+      await page.waitForLoadState("networkidle");
+
+      // Verify search button is immediately interactive (no hydration issues)
+      const searchButton = page.getByRole("button", { name: /search/i }).first();
+      await expect(searchButton).toBeVisible();
+      await expect(searchButton.locator("kbd")).toBeVisible();
+
+      // Click should work immediately (no hydration delay)
+      await searchButton.click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+
+      // Check for hydration errors in console
+      const hydrationErrors = consoleMessages.filter(
+        (msg) =>
+          msg.includes("hydration") ||
+          msg.includes("Hydration") ||
+          msg.includes("did not match")
+      );
+
+      expect(hydrationErrors).toHaveLength(0);
+    });
   });
 
   test.describe("Mobile", () => {

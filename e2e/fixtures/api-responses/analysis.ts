@@ -927,3 +927,32 @@ export const mockRepoVersionHistoryMultiple: RepoVersionHistoryResponse = {
   ],
   language: "English",
 };
+
+// Analysis waiting states (for polling tests)
+export interface AnalysisQueuedResponse {
+  status: "queued";
+  owner: string;
+  repo: string;
+  startedAt: string;
+}
+
+export interface AnalysisAnalyzingResponse {
+  status: "analyzing";
+  owner: string;
+  repo: string;
+  startedAt: string;
+}
+
+export const mockAnalysisQueued: AnalysisQueuedResponse = {
+  status: "queued",
+  owner: "test-owner",
+  repo: "test-repo",
+  startedAt: new Date().toISOString(),
+};
+
+export const mockAnalysisAnalyzing: AnalysisAnalyzingResponse = {
+  status: "analyzing",
+  owner: "test-owner",
+  repo: "test-repo",
+  startedAt: new Date(Date.now() - 10000).toISOString(), // Started 10s ago
+};

@@ -33,6 +33,34 @@ test.describe("Documentation Pages", () => {
       await expect(nav.getByRole("link", { name: "Pricing" })).toBeVisible();
       await expect(nav.getByRole("link", { name: "Docs" })).toBeVisible();
     });
+
+    test("should display navigation links in correct order: Explore, Docs, Pricing", async ({
+      page,
+    }) => {
+      await page.goto("/en");
+
+      const nav = page.getByRole("navigation", { name: /main/i });
+      const links = nav.getByRole("link");
+
+      // Get all link texts
+      const linkTexts = await links.allTextContents();
+
+      // Filter to only navigation links (Explore, Docs, Pricing)
+      const navLinks = linkTexts.filter((text) =>
+        ["Explore", "Docs", "Pricing"].includes(text)
+      );
+
+      // Verify order: Docs should come before Pricing
+      const docsIndex = navLinks.indexOf("Docs");
+      const pricingIndex = navLinks.indexOf("Pricing");
+
+      expect(docsIndex).toBeGreaterThan(-1);
+      expect(pricingIndex).toBeGreaterThan(-1);
+      expect(docsIndex).toBeLessThan(pricingIndex);
+
+      // Verify complete order
+      expect(navLinks).toEqual(["Explore", "Docs", "Pricing"]);
+    });
   });
 
   test.describe("Sidebar Navigation", () => {
@@ -50,11 +78,11 @@ test.describe("Documentation Pages", () => {
       });
       await expect(docNav).toBeVisible();
 
-      // Verify all 5 document links are displayed
+      // Verify all 4 document links are displayed
       await expect(docNav.getByRole("link", { name: "Test Detection" })).toBeVisible();
       await expect(docNav.getByRole("link", { name: "Usage & Billing" })).toBeVisible();
-      await expect(docNav.getByRole("link", { name: "Queue Processing" })).toBeVisible();
       await expect(docNav.getByRole("link", { name: "AI Spec Generation" })).toBeVisible();
+      await expect(docNav.getByRole("link", { name: "Test Writing Guide" })).toBeVisible();
     });
 
     test("should navigate to another doc page from sidebar", async ({
@@ -78,12 +106,12 @@ test.describe("Documentation Pages", () => {
     test("should highlight current page in sidebar", async ({ page }) => {
       await page.goto("/en/docs/test-detection");
 
-      // Verify Test Detection link is highlighted (uses bg-primary/10 class for active state)
+      // Verify Test Detection link is highlighted (uses gradient for active state)
       const docNav = page.getByRole("navigation", {
         name: /documentation navigation/i,
       });
       const testDetectionLink = docNav.getByRole("link", { name: "Test Detection" });
-      await expect(testDetectionLink).toHaveClass(/bg-primary/);
+      await expect(testDetectionLink).toHaveClass(/bg-gradient-to-r/);
     });
   });
 
@@ -132,26 +160,6 @@ test.describe("Documentation Pages", () => {
       await expect(table.getByText("Pro", { exact: true })).toBeVisible();
     });
 
-    test("should display Queue Processing page with priority tiers table", async ({
-      page,
-    }) => {
-      await page.goto("/en/docs/queue-processing");
-
-      // Verify page heading
-      await expect(
-        page.getByRole("heading", { name: "Queue Processing", level: 1 })
-      ).toBeVisible();
-
-      // Verify priority tiers section
-      await expect(
-        page.getByRole("heading", { name: "Priority Tiers", level: 2 })
-      ).toBeVisible();
-
-      // Verify queue types are displayed (use exact match to avoid matching description text)
-      await expect(page.getByText("Standard Queue", { exact: true })).toBeVisible();
-      await expect(page.getByText("Priority Queue", { exact: true })).toBeVisible();
-      await expect(page.getByText("Dedicated Queue", { exact: true })).toBeVisible();
-    });
 
     test("should display AI Spec Generation page with test classification table", async ({
       page,
