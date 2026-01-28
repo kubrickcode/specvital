@@ -13,8 +13,6 @@ import (
 	infraqueue "github.com/specvital/worker/internal/infra/queue"
 )
 
-const defaultConcurrency = 5
-
 // maskURL returns a sanitized URL for logging (hides credentials).
 func maskURL(rawURL string) string {
 	parsed, err := url.Parse(rawURL)

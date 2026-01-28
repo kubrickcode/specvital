@@ -20,12 +20,12 @@ import (
 
 // AnalyzerConfig holds configuration for the analyzer service.
 type AnalyzerConfig struct {
-	ServiceName     string
-	Concurrency     int               // Deprecated: Use QueueWorkers instead
-	ShutdownTimeout time.Duration
 	DatabaseURL     string
 	EncryptionKey   string
-	QueueWorkers    config.QueueWorkers // Worker allocation per queue
+	Fairness        config.FairnessConfig
+	QueueWorkers    config.QueueWorkers
+	ServiceName     string
+	ShutdownTimeout time.Duration
 }
 
 // Validate checks that required analyzer configuration fields are set.
@@ -44,9 +44,6 @@ func (c *AnalyzerConfig) Validate() error {
 
 // applyDefaults sets default values for optional analyzer configuration.
 func (c *AnalyzerConfig) applyDefaults() {
-	if c.Concurrency <= 0 {
-		c.Concurrency = defaultConcurrency
-	}
 	if c.ShutdownTimeout <= 0 {
 		c.ShutdownTimeout = infraqueue.DefaultShutdownTimeout
 	}
@@ -81,6 +78,7 @@ func StartAnalyzer(cfg AnalyzerConfig) error {
 
 	container, err := app.NewAnalyzerContainer(ctx, app.ContainerConfig{
 		EncryptionKey: cfg.EncryptionKey,
+		Fairness:      cfg.Fairness,
 		ParserVersion: parserVersion,
 		Pool:          pool,
 	})
@@ -93,12 +91,13 @@ func StartAnalyzer(cfg AnalyzerConfig) error {
 		}
 	}()
 
-	queues := buildAnalyzerQueues(cfg.QueueWorkers, cfg.Concurrency)
+	queues := buildAnalyzerQueues(cfg.QueueWorkers)
 	srv, err := infraqueue.NewServer(ctx, infraqueue.ServerConfig{
 		Pool:            pool,
 		Queues:          queues,
 		ShutdownTimeout: cfg.ShutdownTimeout,
 		Workers:         container.Workers,
+		Middleware:      container.Middleware,
 	})
 	if err != nil {
 		return fmt.Errorf("queue server: %w", err)
@@ -126,18 +125,7 @@ func StartAnalyzer(cfg AnalyzerConfig) error {
 }
 
 // buildAnalyzerQueues creates queue allocations for analyzer service.
-func buildAnalyzerQueues(qw config.QueueWorkers, legacyConcurrency int) []infraqueue.QueueAllocation {
-	// If QueueWorkers is zero-valued, fall back to single default queue
-	if qw.Priority == 0 && qw.Default == 0 && qw.Scheduled == 0 {
-		concurrency := legacyConcurrency
-		if concurrency <= 0 {
-			concurrency = defaultConcurrency
-		}
-		return []infraqueue.QueueAllocation{
-			{Name: analyze.QueueDefault, MaxWorkers: concurrency},
-		}
-	}
-
+func buildAnalyzerQueues(qw config.QueueWorkers) []infraqueue.QueueAllocation {
 	return []infraqueue.QueueAllocation{
 		{Name: analyze.QueuePriority, MaxWorkers: qw.Priority},
 		{Name: analyze.QueueDefault, MaxWorkers: qw.Default},

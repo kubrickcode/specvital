@@ -27,10 +27,11 @@ const (
 // Args represents the arguments for a spec-view generation job.
 type Args struct {
 	AnalysisID      string `json:"analysis_id" river:"unique"`
-	Language        string `json:"language" river:"unique"` // optional, defaults to "English"
-	ModelID         string `json:"model_id,omitempty"`
-	UserID          string `json:"user_id" river:"unique"` // required: document owner
 	ForceRegenerate bool   `json:"force_regenerate,omitempty"` // skip cache and create new version
+	Language        string `json:"language" river:"unique"`    // optional, defaults to "English"
+	ModelID         string `json:"model_id,omitempty"`
+	Tier            string `json:"tier,omitempty"`
+	UserID          string `json:"user_id" river:"unique"` // required: document owner
 }
 
 // Kind returns the unique identifier for this job type.

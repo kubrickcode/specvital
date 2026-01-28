@@ -55,55 +55,6 @@ func TestBuildQueueConfig_MultiQueueWithZeroWorkers(t *testing.T) {
 	}
 }
 
-func TestBuildQueueConfig_LegacySingleQueue(t *testing.T) {
-	cfg := ServerConfig{
-		QueueName:   "legacy:queue",
-		Concurrency: 10,
-	}
-
-	result := buildQueueConfig(cfg)
-
-	if len(result) != 1 {
-		t.Errorf("expected 1 queue, got %d", len(result))
-	}
-
-	if q, ok := result["legacy:queue"]; !ok {
-		t.Error("legacy queue not found")
-	} else if q.MaxWorkers != 10 {
-		t.Errorf("expected MaxWorkers 10, got %d", q.MaxWorkers)
-	}
-}
-
-func TestBuildQueueConfig_LegacyDefaults(t *testing.T) {
-	cfg := ServerConfig{}
-
-	result := buildQueueConfig(cfg)
-
-	if q, ok := result[river.QueueDefault]; !ok {
-		t.Errorf("expected default queue %q", river.QueueDefault)
-	} else if q.MaxWorkers != DefaultConcurrency {
-		t.Errorf("expected default concurrency %d, got %d", DefaultConcurrency, q.MaxWorkers)
-	}
-}
-
-func TestBuildQueueConfig_QueuesOverridesLegacy(t *testing.T) {
-	cfg := ServerConfig{
-		Queues:      []QueueAllocation{{Name: "new:queue", MaxWorkers: 5}},
-		QueueName:   "legacy:queue",
-		Concurrency: 10,
-	}
-
-	result := buildQueueConfig(cfg)
-
-	if _, ok := result["legacy:queue"]; ok {
-		t.Error("legacy queue should not exist when Queues is set")
-	}
-
-	if _, ok := result["new:queue"]; !ok {
-		t.Error("new queue should exist")
-	}
-}
-
 func TestBuildQueueConfig_MultiQueueWithEmptyName(t *testing.T) {
 	cfg := ServerConfig{
 		Queues: []QueueAllocation{
@@ -117,5 +68,17 @@ func TestBuildQueueConfig_MultiQueueWithEmptyName(t *testing.T) {
 		t.Errorf("expected empty name to fall back to default queue %q", river.QueueDefault)
 	} else if q.MaxWorkers != 5 {
 		t.Errorf("expected MaxWorkers 5, got %d", q.MaxWorkers)
+	}
+}
+
+func TestBuildQueueConfig_EmptyQueues(t *testing.T) {
+	cfg := ServerConfig{
+		Queues: []QueueAllocation{},
+	}
+
+	result := buildQueueConfig(cfg)
+
+	if len(result) != 0 {
+		t.Errorf("expected empty queue map, got %d queues", len(result))
 	}
 }

@@ -18,15 +18,15 @@ import (
 
 // SpecGeneratorConfig holds configuration for the spec-generator service.
 type SpecGeneratorConfig struct {
-	ServiceName       string
-	Concurrency       int               // Deprecated: Use QueueWorkers instead
-	ShutdownTimeout   time.Duration
 	DatabaseURL       string
+	Fairness          config.FairnessConfig
 	GeminiAPIKey      string
 	GeminiPhase1Model string
 	GeminiPhase2Model string
-	MockMode          bool              // Enable mock AI provider for development/testing
-	QueueWorkers      config.QueueWorkers // Worker allocation per queue
+	MockMode          bool
+	QueueWorkers      config.QueueWorkers
+	ServiceName       string
+	ShutdownTimeout   time.Duration
 }
 
 // Validate checks that required spec-generator configuration fields are set.
@@ -46,9 +46,6 @@ func (c *SpecGeneratorConfig) Validate() error {
 
 // applyDefaults sets default values for optional spec-generator configuration.
 func (c *SpecGeneratorConfig) applyDefaults() {
-	if c.Concurrency <= 0 {
-		c.Concurrency = defaultConcurrency
-	}
 	if c.ShutdownTimeout <= 0 {
 		c.ShutdownTimeout = infraqueue.DefaultShutdownTimeout
 	}
@@ -77,6 +74,7 @@ func StartSpecGenerator(cfg SpecGeneratorConfig) error {
 	slog.Info("postgres connected")
 
 	container, err := app.NewSpecGeneratorContainer(ctx, app.ContainerConfig{
+		Fairness:          cfg.Fairness,
 		GeminiAPIKey:      cfg.GeminiAPIKey,
 		GeminiPhase1Model: cfg.GeminiPhase1Model,
 		GeminiPhase2Model: cfg.GeminiPhase2Model,
@@ -92,12 +90,13 @@ func StartSpecGenerator(cfg SpecGeneratorConfig) error {
 		}
 	}()
 
-	queues := buildSpecGeneratorQueues(cfg.QueueWorkers, cfg.Concurrency)
+	queues := buildSpecGeneratorQueues(cfg.QueueWorkers)
 	srv, err := infraqueue.NewServer(ctx, infraqueue.ServerConfig{
 		Pool:            pool,
 		Queues:          queues,
 		ShutdownTimeout: cfg.ShutdownTimeout,
 		Workers:         container.Workers,
+		Middleware:      container.Middleware,
 	})
 	if err != nil {
 		return fmt.Errorf("queue server: %w", err)
@@ -125,18 +124,7 @@ func StartSpecGenerator(cfg SpecGeneratorConfig) error {
 }
 
 // buildSpecGeneratorQueues creates queue allocations for spec-generator service.
-func buildSpecGeneratorQueues(qw config.QueueWorkers, legacyConcurrency int) []infraqueue.QueueAllocation {
-	// If QueueWorkers is zero-valued, fall back to single default queue
-	if qw.Priority == 0 && qw.Default == 0 && qw.Scheduled == 0 {
-		concurrency := legacyConcurrency
-		if concurrency <= 0 {
-			concurrency = defaultConcurrency
-		}
-		return []infraqueue.QueueAllocation{
-			{Name: specview.QueueDefault, MaxWorkers: concurrency},
-		}
-	}
-
+func buildSpecGeneratorQueues(qw config.QueueWorkers) []infraqueue.QueueAllocation {
 	return []infraqueue.QueueAllocation{
 		{Name: specview.QueuePriority, MaxWorkers: qw.Priority},
 		{Name: specview.QueueDefault, MaxWorkers: qw.Default},

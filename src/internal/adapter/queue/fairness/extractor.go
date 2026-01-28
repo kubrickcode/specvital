@@ -1,6 +1,9 @@
 package fairness
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"log/slog"
+)
 
 const maxArgsByteSize = 64 * 1024 // 64KB - reasonable limit for job args
 
@@ -23,6 +26,10 @@ func NewJSONArgsExtractor() *JSONArgsExtractor {
 // Returns empty string if user_id is missing, invalid JSON, or args exceed size limit.
 func (e *JSONArgsExtractor) ExtractUserID(encodedArgs []byte) string {
 	if len(encodedArgs) > maxArgsByteSize {
+		slog.Warn("job args exceed size limit, skipping fairness",
+			"args_size", len(encodedArgs),
+			"max_size", maxArgsByteSize,
+		)
 		return ""
 	}
 
@@ -31,6 +38,10 @@ func (e *JSONArgsExtractor) ExtractUserID(encodedArgs []byte) string {
 	}
 
 	if err := json.Unmarshal(encodedArgs, &args); err != nil {
+		slog.Warn("failed to parse user_id from job args, skipping fairness",
+			"error", err,
+			"args_size", len(encodedArgs),
+		)
 		return ""
 	}
 
@@ -45,6 +56,10 @@ func (e *JSONArgsExtractor) ExtractUserID(encodedArgs []byte) string {
 // Defaults to TierFree if tier is missing, invalid, unknown, or args exceed size limit.
 func (e *JSONArgsExtractor) ExtractTier(encodedArgs []byte) PlanTier {
 	if len(encodedArgs) > maxArgsByteSize {
+		slog.Warn("job args exceed size limit, defaulting to free tier",
+			"args_size", len(encodedArgs),
+			"max_size", maxArgsByteSize,
+		)
 		return TierFree
 	}
 
@@ -53,6 +68,10 @@ func (e *JSONArgsExtractor) ExtractTier(encodedArgs []byte) PlanTier {
 	}
 
 	if err := json.Unmarshal(encodedArgs, &args); err != nil {
+		slog.Warn("failed to parse tier from job args, defaulting to free",
+			"error", err,
+			"args_size", len(encodedArgs),
+		)
 		return TierFree
 	}
 
@@ -63,6 +82,11 @@ func (e *JSONArgsExtractor) ExtractTier(encodedArgs []byte) PlanTier {
 	case TierFree, TierPro, TierProPlus, TierEnterprise:
 		return tier
 	default:
+		if args.Tier != "" {
+			slog.Warn("unknown tier, defaulting to free",
+				"tier", args.Tier,
+			)
+		}
 		return TierFree
 	}
 }

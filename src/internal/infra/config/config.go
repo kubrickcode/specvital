@@ -2,8 +2,10 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
+	"time"
 )
 
 // Default worker counts for queue allocation
@@ -30,9 +32,20 @@ type QueueConfig struct {
 	Specgen  QueueWorkers
 }
 
+// FairnessConfig defines per-tier concurrent job limits and snooze parameters.
+type FairnessConfig struct {
+	Enabled                   bool
+	FreeConcurrentLimit       int
+	ProConcurrentLimit        int
+	EnterpriseConcurrentLimit int
+	SnoozeDuration            time.Duration
+	SnoozeJitter              time.Duration
+}
+
 type Config struct {
 	DatabaseURL       string
 	EncryptionKey     string
+	Fairness          FairnessConfig
 	GeminiAPIKey      string
 	GeminiPhase1Model string
 	GeminiPhase2Model string
@@ -54,6 +67,7 @@ func Load() (*Config, error) {
 	return &Config{
 		DatabaseURL:       databaseURL,
 		EncryptionKey:     encryptionKey,
+		Fairness:          loadFairnessConfig(),
 		GeminiAPIKey:      os.Getenv("GEMINI_API_KEY"),
 		GeminiPhase1Model: os.Getenv("GEMINI_PHASE1_MODEL"),
 		GeminiPhase2Model: os.Getenv("GEMINI_PHASE2_MODEL"),
@@ -75,6 +89,63 @@ func loadQueueConfig() QueueConfig {
 			Scheduled: getEnvInt("SPECGEN_QUEUE_SCHEDULED_WORKERS", defaultSpecgenScheduledWorkers),
 		},
 	}
+}
+
+// loadFairnessConfig loads fairness settings from environment variables.
+// Defaults: ENABLED=true, FREE=1, PRO=3, ENTERPRISE=5, SNOOZE=30s, JITTER=10s
+func loadFairnessConfig() FairnessConfig {
+	cfg := FairnessConfig{
+		Enabled:                   getEnvBool("FAIRNESS_ENABLED", true),
+		FreeConcurrentLimit:       getEnvInt("FAIRNESS_FREE_LIMIT", 1),
+		ProConcurrentLimit:        getEnvInt("FAIRNESS_PRO_LIMIT", 3),
+		EnterpriseConcurrentLimit: getEnvInt("FAIRNESS_ENTERPRISE_LIMIT", 5),
+		SnoozeDuration:            getEnvDuration("FAIRNESS_SNOOZE_DURATION", 30*time.Second),
+		SnoozeJitter:              getEnvDuration("FAIRNESS_SNOOZE_JITTER", 10*time.Second),
+	}
+
+	if cfg.Enabled {
+		if cfg.FreeConcurrentLimit <= 0 {
+			panic(fmt.Errorf("FAIRNESS_FREE_LIMIT must be positive, got %d", cfg.FreeConcurrentLimit))
+		}
+		if cfg.ProConcurrentLimit <= 0 {
+			panic(fmt.Errorf("FAIRNESS_PRO_LIMIT must be positive, got %d", cfg.ProConcurrentLimit))
+		}
+		if cfg.EnterpriseConcurrentLimit <= 0 {
+			panic(fmt.Errorf("FAIRNESS_ENTERPRISE_LIMIT must be positive, got %d", cfg.EnterpriseConcurrentLimit))
+		}
+		if cfg.SnoozeDuration <= 0 {
+			panic(fmt.Errorf("FAIRNESS_SNOOZE_DURATION must be positive, got %v", cfg.SnoozeDuration))
+		}
+		if cfg.SnoozeJitter < 0 {
+			panic(fmt.Errorf("FAIRNESS_SNOOZE_JITTER must be non-negative, got %v", cfg.SnoozeJitter))
+		}
+	}
+
+	return cfg
+}
+
+func getEnvBool(key string, defaultValue bool) bool {
+	val := os.Getenv(key)
+	if val == "" {
+		return defaultValue
+	}
+	parsed, err := strconv.ParseBool(val)
+	if err != nil {
+		return defaultValue
+	}
+	return parsed
+}
+
+func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
+	val := os.Getenv(key)
+	if val == "" {
+		return defaultValue
+	}
+	parsed, err := time.ParseDuration(val)
+	if err != nil {
+		return defaultValue
+	}
+	return parsed
 }
 
 func getEnvInt(key string, defaultValue int) int {

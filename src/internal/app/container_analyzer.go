@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 	"github.com/specvital/core/pkg/crypto"
 	"github.com/specvital/worker/internal/adapter/parser"
 	"github.com/specvital/worker/internal/adapter/queue/analyze"
@@ -17,6 +18,7 @@ import (
 // AnalyzerContainer holds dependencies for the analyzer worker service.
 type AnalyzerContainer struct {
 	AnalyzeWorker *analyze.AnalyzeWorker
+	Middleware    []rivertype.WorkerMiddleware
 	QueueClient   *infraqueue.Client
 	Workers       *river.Workers
 }
@@ -52,8 +54,18 @@ func NewAnalyzerContainer(ctx context.Context, cfg ContainerConfig) (*AnalyzerCo
 		return nil, fmt.Errorf("create queue client: %w", err)
 	}
 
+	var middleware []rivertype.WorkerMiddleware
+	fm, err := NewFairnessMiddleware(cfg.Fairness)
+	if err != nil {
+		return nil, fmt.Errorf("create fairness middleware: %w", err)
+	}
+	if fm != nil {
+		middleware = append(middleware, fm)
+	}
+
 	return &AnalyzerContainer{
 		AnalyzeWorker: analyzeWorker,
+		Middleware:    middleware,
 		QueueClient:   queueClient,
 		Workers:       workers,
 	}, nil

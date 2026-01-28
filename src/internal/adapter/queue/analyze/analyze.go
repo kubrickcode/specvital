@@ -24,6 +24,7 @@ type AnalyzeArgs struct {
 	CommitSHA string  `json:"commit_sha" river:"unique"`
 	Owner     string  `json:"owner" river:"unique"`
 	Repo      string  `json:"repo" river:"unique"`
+	Tier      string  `json:"tier,omitempty"`
 	UserID    *string `json:"user_id,omitempty"`
 }
 

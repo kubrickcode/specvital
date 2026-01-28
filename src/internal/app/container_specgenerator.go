@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 	"github.com/specvital/worker/internal/adapter/ai/gemini"
 	"github.com/specvital/worker/internal/adapter/ai/mock"
 	specviewqueue "github.com/specvital/worker/internal/adapter/queue/specview"
@@ -18,6 +19,7 @@ import (
 // SpecGeneratorContainer holds dependencies for the spec-generator worker service.
 type SpecGeneratorContainer struct {
 	AIProvider     specview.AIProvider
+	Middleware     []rivertype.WorkerMiddleware
 	QueueClient    *infraqueue.Client
 	SpecViewWorker *specviewqueue.Worker
 	Workers        *river.Workers
@@ -68,8 +70,18 @@ func NewSpecGeneratorContainer(ctx context.Context, cfg ContainerConfig) (*SpecG
 		return nil, fmt.Errorf("create queue client: %w", err)
 	}
 
+	var middleware []rivertype.WorkerMiddleware
+	fm, err := NewFairnessMiddleware(cfg.Fairness)
+	if err != nil {
+		return nil, fmt.Errorf("create fairness middleware: %w", err)
+	}
+	if fm != nil {
+		middleware = append(middleware, fm)
+	}
+
 	return &SpecGeneratorContainer{
 		AIProvider:     aiProvider,
+		Middleware:     middleware,
 		QueueClient:    queueClient,
 		SpecViewWorker: specViewWorker,
 		Workers:        workers,

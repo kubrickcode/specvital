@@ -30,6 +30,7 @@ func main() {
 	if err := bootstrap.StartSpecGenerator(bootstrap.SpecGeneratorConfig{
 		ServiceName:       "spec-generator",
 		DatabaseURL:       cfg.DatabaseURL,
+		Fairness:          cfg.Fairness,
 		GeminiAPIKey:      cfg.GeminiAPIKey,
 		GeminiPhase1Model: cfg.GeminiPhase1Model,
 		GeminiPhase2Model: cfg.GeminiPhase2Model,
