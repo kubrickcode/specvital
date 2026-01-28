@@ -667,7 +667,9 @@
     },
     "toast": {
       "analysisComplete": "{repo} analysis completed",
-      "analysisFailed": "{repo} analysis failed"
+      "analysisFailed": "{repo} analysis failed",
+      "specGenerationComplete": "{repo} spec document generated",
+      "specGenerationFailed": "{repo} spec generation failed"
     }
   },
   "globalSearch": {

@@ -667,7 +667,9 @@
     },
     "toast": {
       "analysisComplete": "{repo} 분석이 완료되었습니다",
-      "analysisFailed": "{repo} 분석에 실패했습니다"
+      "analysisFailed": "{repo} 분석에 실패했습니다",
+      "specGenerationComplete": "{repo} 스펙 문서가 생성되었습니다",
+      "specGenerationFailed": "{repo} 스펙 생성에 실패했습니다"
     }
   },
   "globalSearch": {

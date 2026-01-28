@@ -147,8 +147,8 @@ export const useSpecGenerationStatus = (
       queryClient.invalidateQueries({
         queryKey: repoSpecViewKeys.all,
       });
-      // Remove cache completely to show skeleton on dashboard navigation
-      queryClient.removeQueries({
+      // Reset to initial state: shows skeleton on mounted dashboard + fresh fetch on navigation
+      queryClient.resetQueries({
         queryKey: paginatedRepositoriesKeys.all,
       });
 
