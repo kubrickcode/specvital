@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ExternalLink, Info } from "lucide-react";
+import { ChevronDown, Github, Info } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -81,8 +81,8 @@ export const AnalysisHeader = ({
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                <span className="sr-only sm:not-sr-only sm:mr-1.5">{t("viewOnGitHub")}</span>
-                <ExternalLink className="h-4 w-4" />
+                <Github className="h-4 w-4" />
+                <span className="sr-only sm:not-sr-only sm:ml-1.5">{t("viewOnGitHub")}</span>
               </a>
             </Button>
           </div>
