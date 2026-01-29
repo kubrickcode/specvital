@@ -8,7 +8,9 @@ import (
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
+	"google.golang.org/genai"
 
+	"github.com/specvital/worker/internal/adapter/ai/gemini/batch"
 	"github.com/specvital/worker/internal/domain/specview"
 	uc "github.com/specvital/worker/internal/usecase/specview"
 )
@@ -533,4 +535,488 @@ func TestIsPermanentError(t *testing.T) {
 			}
 		})
 	}
+}
+
+// mockBatchProvider implements BatchProvider for testing.
+type mockBatchProvider struct {
+	createClassificationJobFn func(input specview.Phase1Input) (batch.BatchRequest, error)
+	createJobFn               func(ctx context.Context, req batch.BatchRequest) (*batch.BatchResult, error)
+	getJobStatusFn            func(ctx context.Context, jobName string) (*batch.BatchResult, error)
+}
+
+func (m *mockBatchProvider) CreateClassificationJob(input specview.Phase1Input) (batch.BatchRequest, error) {
+	if m.createClassificationJobFn != nil {
+		return m.createClassificationJobFn(input)
+	}
+	return batch.BatchRequest{
+		AnalysisID: input.AnalysisID,
+		Model:      "test-model",
+	}, nil
+}
+
+func (m *mockBatchProvider) CreateJob(ctx context.Context, req batch.BatchRequest) (*batch.BatchResult, error) {
+	if m.createJobFn != nil {
+		return m.createJobFn(ctx, req)
+	}
+	return &batch.BatchResult{
+		JobName: "batch-job-123",
+		State:   batch.JobStatePending,
+	}, nil
+}
+
+func (m *mockBatchProvider) GetJobStatus(ctx context.Context, jobName string) (*batch.BatchResult, error) {
+	if m.getJobStatusFn != nil {
+		return m.getJobStatusFn(ctx, jobName)
+	}
+	return &batch.BatchResult{
+		JobName: jobName,
+		State:   batch.JobStateRunning,
+	}, nil
+}
+
+func newBatchTestWorker(
+	repo *mockRepository,
+	ai *mockAIProvider,
+	batchProvider *mockBatchProvider,
+	config WorkerConfig,
+) *Worker {
+	usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
+	return NewWorkerWithBatch(usecase, batchProvider, repo, config)
+}
+
+func TestNewWorkerWithBatch(t *testing.T) {
+	repo, ai := newSuccessfulMocks()
+	batchProvider := &mockBatchProvider{}
+	config := WorkerConfig{
+		UseBatchAPI:       true,
+		BatchPollInterval: 30 * time.Second,
+	}
+
+	worker := newBatchTestWorker(repo, ai, batchProvider, config)
+
+	if worker == nil {
+		t.Fatal("expected worker, got nil")
+	}
+	if worker.batchProvider == nil {
+		t.Error("expected batchProvider to be set")
+	}
+	if !worker.config.UseBatchAPI {
+		t.Error("expected UseBatchAPI to be true")
+	}
+}
+
+func TestWorker_IsBatchMode(t *testing.T) {
+	tests := []struct {
+		name          string
+		args          Args
+		config        WorkerConfig
+		hasBatchProv  bool
+		expectedBatch bool
+	}{
+		{
+			name:          "poll phase always returns true",
+			args:          Args{BatchPhase: BatchPhasePoll},
+			config:        WorkerConfig{UseBatchAPI: false},
+			hasBatchProv:  false,
+			expectedBatch: true,
+		},
+		{
+			name:          "batch enabled with provider",
+			args:          Args{},
+			config:        WorkerConfig{UseBatchAPI: true},
+			hasBatchProv:  true,
+			expectedBatch: true,
+		},
+		{
+			name:          "batch enabled without provider",
+			args:          Args{},
+			config:        WorkerConfig{UseBatchAPI: true},
+			hasBatchProv:  false,
+			expectedBatch: false,
+		},
+		{
+			name:          "batch disabled",
+			args:          Args{},
+			config:        WorkerConfig{UseBatchAPI: false},
+			hasBatchProv:  true,
+			expectedBatch: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo, ai := newSuccessfulMocks()
+			var batchProvider *mockBatchProvider
+			if tt.hasBatchProv {
+				batchProvider = &mockBatchProvider{}
+			}
+
+			usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
+			var worker *Worker
+			if batchProvider != nil {
+				worker = NewWorkerWithBatch(usecase, batchProvider, repo, tt.config)
+			} else {
+				worker = &Worker{
+					usecase: usecase,
+					config:  tt.config,
+				}
+			}
+
+			result := worker.isBatchMode(tt.args)
+			if result != tt.expectedBatch {
+				t.Errorf("expected isBatchMode=%v, got %v", tt.expectedBatch, result)
+			}
+		})
+	}
+}
+
+func TestWorker_SubmitBatchJob_Snooze(t *testing.T) {
+	t.Run("should return JobSnooze on successful submit", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		batchProvider := &mockBatchProvider{
+			createJobFn: func(ctx context.Context, req batch.BatchRequest) (*batch.BatchResult, error) {
+				return &batch.BatchResult{
+					JobName: "batch-job-456",
+					State:   batch.JobStatePending,
+				}, nil
+			},
+		}
+		config := WorkerConfig{
+			UseBatchAPI:       true,
+			BatchPollInterval: 30 * time.Second,
+		}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID: "test-analysis",
+			UserID:     "test-user",
+			BatchPhase: BatchPhaseSubmit,
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		var snoozeErr *rivertype.JobSnoozeError
+		if !errors.As(err, &snoozeErr) {
+			t.Errorf("expected JobSnoozeError, got %T: %v", err, err)
+		}
+
+		if job.Args.BatchJobName != "batch-job-456" {
+			t.Errorf("expected BatchJobName='batch-job-456', got '%s'", job.Args.BatchJobName)
+		}
+		if job.Args.BatchPhase != BatchPhasePoll {
+			t.Errorf("expected BatchPhase='poll', got '%s'", job.Args.BatchPhase)
+		}
+		if job.Args.BatchStarted.IsZero() {
+			t.Error("expected BatchStarted to be set")
+		}
+	})
+
+	t.Run("should return error when no test files", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		repo.getTestDataByAnalysisIDFn = func(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
+			return []specview.FileInfo{}, nil
+		}
+		batchProvider := &mockBatchProvider{}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID: "empty-analysis",
+			UserID:     "test-user",
+			BatchPhase: BatchPhaseSubmit,
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		var cancelErr *rivertype.JobCancelError
+		if !errors.As(err, &cancelErr) {
+			t.Errorf("expected JobCancelError for empty files, got %T: %v", err, err)
+		}
+	})
+
+	t.Run("should return cancel on analysis not found", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		repo.getTestDataByAnalysisIDFn = func(ctx context.Context, analysisID string) ([]specview.FileInfo, error) {
+			return nil, specview.ErrAnalysisNotFound
+		}
+		batchProvider := &mockBatchProvider{}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID: "not-found",
+			UserID:     "test-user",
+			BatchPhase: BatchPhaseSubmit,
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		var cancelErr *rivertype.JobCancelError
+		if !errors.As(err, &cancelErr) {
+			t.Errorf("expected JobCancelError, got %T: %v", err, err)
+		}
+	})
+}
+
+func TestWorker_PollBatchJob(t *testing.T) {
+	t.Run("poll succeeded - should complete job", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		batchProvider := &mockBatchProvider{
+			getJobStatusFn: func(ctx context.Context, jobName string) (*batch.BatchResult, error) {
+				// Create a valid batch response with Phase1Output JSON
+				phase1JSON := `{"domains":[{"name":"Test Domain","description":"Test description","confidence":0.9,"features":[{"name":"Feature 1","description":"Feature desc","confidence":0.85,"test_indices":[0]}]}]}`
+				return &batch.BatchResult{
+					JobName: jobName,
+					State:   batch.JobStateSucceeded,
+					Responses: []*genai.InlinedResponse{
+						{
+							Response: &genai.GenerateContentResponse{
+								Candidates: []*genai.Candidate{
+									{
+										Content: &genai.Content{
+											Parts: []*genai.Part{
+												{Text: phase1JSON},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					TokenUsage: &specview.TokenUsage{
+						PromptTokens:     1000,
+						CandidatesTokens: 500,
+						TotalTokens:      1500,
+					},
+				}, nil
+			},
+		}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID:   "test-analysis",
+			UserID:       "test-user",
+			BatchPhase:   BatchPhasePoll,
+			BatchJobName: "batch-job-789",
+			BatchStarted: time.Now().Add(-5 * time.Minute),
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		// completeBatchJob currently returns nil (TODO in Commit 5)
+		if err != nil {
+			t.Errorf("expected success (nil), got %v", err)
+		}
+	})
+
+	t.Run("poll running - should re-snooze", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		batchProvider := &mockBatchProvider{
+			getJobStatusFn: func(ctx context.Context, jobName string) (*batch.BatchResult, error) {
+				return &batch.BatchResult{
+					JobName: jobName,
+					State:   batch.JobStateRunning,
+				}, nil
+			},
+		}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID:   "test-analysis",
+			UserID:       "test-user",
+			BatchPhase:   BatchPhasePoll,
+			BatchJobName: "batch-job-running",
+			BatchStarted: time.Now().Add(-2 * time.Minute),
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		var snoozeErr *rivertype.JobSnoozeError
+		if !errors.As(err, &snoozeErr) {
+			t.Errorf("expected JobSnoozeError for running job, got %T: %v", err, err)
+		}
+	})
+
+	t.Run("poll failed - should return error", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		batchProvider := &mockBatchProvider{
+			getJobStatusFn: func(ctx context.Context, jobName string) (*batch.BatchResult, error) {
+				return &batch.BatchResult{
+					JobName: jobName,
+					State:   batch.JobStateFailed,
+					Error:   errors.New("internal batch error"),
+				}, nil
+			},
+		}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID:   "test-analysis",
+			UserID:       "test-user",
+			BatchPhase:   BatchPhasePoll,
+			BatchJobName: "batch-job-failed",
+			BatchStarted: time.Now().Add(-10 * time.Minute),
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		if err == nil {
+			t.Error("expected error for failed batch job, got nil")
+		}
+
+		// Should be retryable (not JobCancelError)
+		var cancelErr *rivertype.JobCancelError
+		if errors.As(err, &cancelErr) {
+			t.Errorf("expected retryable error, got JobCancelError: %v", err)
+		}
+	})
+
+	t.Run("poll expired - should return JobCancel", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		batchProvider := &mockBatchProvider{
+			getJobStatusFn: func(ctx context.Context, jobName string) (*batch.BatchResult, error) {
+				return &batch.BatchResult{
+					JobName: jobName,
+					State:   batch.JobStateExpired,
+				}, nil
+			},
+		}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID:   "test-analysis",
+			UserID:       "test-user",
+			BatchPhase:   BatchPhasePoll,
+			BatchJobName: "batch-job-expired",
+			BatchStarted: time.Now().Add(-1 * time.Hour), // within max wait time
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		var cancelErr *rivertype.JobCancelError
+		if !errors.As(err, &cancelErr) {
+			t.Errorf("expected JobCancelError for expired batch, got %T: %v", err, err)
+		}
+	})
+
+	t.Run("poll cancelled - should return JobCancel", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		batchProvider := &mockBatchProvider{
+			getJobStatusFn: func(ctx context.Context, jobName string) (*batch.BatchResult, error) {
+				return &batch.BatchResult{
+					JobName: jobName,
+					State:   batch.JobStateCancelled,
+				}, nil
+			},
+		}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID:   "test-analysis",
+			UserID:       "test-user",
+			BatchPhase:   BatchPhasePoll,
+			BatchJobName: "batch-job-cancelled",
+			BatchStarted: time.Now().Add(-1 * time.Hour),
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		var cancelErr *rivertype.JobCancelError
+		if !errors.As(err, &cancelErr) {
+			t.Errorf("expected JobCancelError for cancelled batch, got %T: %v", err, err)
+		}
+	})
+
+	t.Run("poll without batch_job_name - should cancel", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		batchProvider := &mockBatchProvider{}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID:   "test-analysis",
+			UserID:       "test-user",
+			BatchPhase:   BatchPhasePoll,
+			BatchJobName: "", // missing
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		var cancelErr *rivertype.JobCancelError
+		if !errors.As(err, &cancelErr) {
+			t.Errorf("expected JobCancelError for missing batch_job_name, got %T: %v", err, err)
+		}
+	})
+
+	t.Run("poll exceeded max wait time - should return error", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		batchProvider := &mockBatchProvider{
+			getJobStatusFn: func(ctx context.Context, jobName string) (*batch.BatchResult, error) {
+				return &batch.BatchResult{
+					JobName: jobName,
+					State:   batch.JobStateRunning,
+				}, nil
+			},
+		}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID:   "test-analysis",
+			UserID:       "test-user",
+			BatchPhase:   BatchPhasePoll,
+			BatchJobName: "batch-job-timeout",
+			BatchStarted: time.Now().Add(-25 * time.Hour), // exceeds 24h max
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		if err == nil {
+			t.Error("expected error for exceeded max wait time, got nil")
+		}
+		if !errors.Is(err, nil) && err.Error() == "" {
+			t.Errorf("expected non-empty error message, got empty")
+		}
+
+		// Should be retryable (not JobCancelError)
+		var cancelErr *rivertype.JobCancelError
+		if errors.As(err, &cancelErr) {
+			t.Errorf("expected retryable error, got JobCancelError: %v", err)
+		}
+	})
+
+	t.Run("poll succeeded but parse fails - should return error", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		batchProvider := &mockBatchProvider{
+			getJobStatusFn: func(ctx context.Context, jobName string) (*batch.BatchResult, error) {
+				// Return empty responses that will fail parsing
+				return &batch.BatchResult{
+					JobName:   jobName,
+					State:     batch.JobStateSucceeded,
+					Responses: nil, // no responses - will fail parsing
+				}, nil
+			},
+		}
+		config := WorkerConfig{UseBatchAPI: true, BatchPollInterval: 30 * time.Second}
+
+		worker := newBatchTestWorker(repo, ai, batchProvider, config)
+		job := newTestJob(Args{
+			AnalysisID:   "test-analysis",
+			UserID:       "test-user",
+			BatchPhase:   BatchPhasePoll,
+			BatchJobName: "batch-job-bad-response",
+			BatchStarted: time.Now().Add(-5 * time.Minute),
+		})
+
+		err := worker.Work(context.Background(), job)
+
+		if err == nil {
+			t.Error("expected error for parse failure, got nil")
+		}
+	})
 }
