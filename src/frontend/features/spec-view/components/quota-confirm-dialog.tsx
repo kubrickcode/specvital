@@ -188,17 +188,19 @@ export const QuotaConfirmDialog = () => {
         {specview && (
           <div className="mt-4 space-y-4">
             <div className="rounded-lg border bg-muted/30 p-4">
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between">
                 <span className="text-sm font-medium">{t("specviewUsage")}</span>
-                {!isUnlimited && (
+                {!isUnlimited && estimatedCost !== null && (
                   <span
                     className={cn(
-                      "text-sm font-semibold",
-                      level === "danger" && "text-destructive",
-                      level === "warning" && "text-amber-600 dark:text-amber-500"
+                      "text-xs font-medium",
+                      wouldExceed ? "text-destructive" : "text-muted-foreground"
                     )}
                   >
-                    {Math.round(percentage ?? 0)}%
+                    {t("afterUsageShort", {
+                      after: formatQuotaNumber(afterUsage),
+                      limit: formatQuotaNumber(specview.limit ?? 0),
+                    })}
                   </span>
                 )}
               </div>
@@ -212,47 +214,76 @@ export const QuotaConfirmDialog = () => {
                 </div>
               ) : (
                 <>
-                  <div className="mb-2 h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={cn("h-full transition-all", config.progressColor)}
-                      style={{ width: `${Math.min(percentage ?? 0, 100)}%` }}
-                    />
+                  {/* Unified progress bar with prediction overlay */}
+                  <div className="mb-3 h-2.5 overflow-hidden rounded-full bg-muted">
+                    <div className="relative h-full w-full">
+                      {/* Current usage */}
+                      <div
+                        className={cn(
+                          "absolute left-0 top-0 h-full transition-all",
+                          config.progressColor
+                        )}
+                        style={{ width: `${Math.min(percentage ?? 0, 100)}%` }}
+                      />
+                      {/* Predicted usage (striped pattern) */}
+                      {estimatedCost !== null && estimatedCost > 0 && (
+                        <div
+                          className={cn(
+                            "absolute top-0 h-full transition-all",
+                            wouldExceed ? "bg-destructive/60" : "bg-primary/40"
+                          )}
+                          style={{
+                            backgroundImage: wouldExceed
+                              ? "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 4px)"
+                              : "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.4) 2px, rgba(255,255,255,0.4) 4px)",
+                            left: `${Math.min(percentage ?? 0, 100)}%`,
+                            width: `${Math.min((estimatedCost / (specview.limit ?? 1)) * 100, 100 - (percentage ?? 0))}%`,
+                          }}
+                        />
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {formatQuotaNumber(specview.used)} / {formatQuotaNumber(specview.limit ?? 0)}{" "}
-                    {t("thisMonth")}
-                  </p>
+
+                  {/* Labels under progress bar */}
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1.5">
+                        <span
+                          className={cn("inline-block h-2 w-2 rounded-full", config.progressColor)}
+                        />
+                        <span className="text-muted-foreground">
+                          {t("current")}: {formatQuotaNumber(specview.used)}
+                        </span>
+                      </span>
+                      {estimatedCost !== null && estimatedCost > 0 && (
+                        <span className="flex items-center gap-1.5">
+                          <span
+                            className={cn(
+                              "inline-block h-2 w-2 rounded-full",
+                              wouldExceed ? "bg-destructive/60" : "bg-primary/40"
+                            )}
+                            style={{
+                              backgroundImage:
+                                "repeating-linear-gradient(45deg, transparent, transparent 1px, rgba(255,255,255,0.5) 1px, rgba(255,255,255,0.5) 2px)",
+                            }}
+                          />
+                          <span
+                            className={cn(
+                              wouldExceed ? "text-destructive" : "text-muted-foreground"
+                            )}
+                          >
+                            ~+{formatQuotaNumber(estimatedCost)}
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-muted-foreground">
+                      {t("limit")}: {formatQuotaNumber(specview.limit ?? 0)}
+                    </span>
+                  </div>
                 </>
               )}
             </div>
-
-            {estimatedCost !== null && (
-              <div
-                className={cn(
-                  "rounded-lg border p-3",
-                  wouldExceed
-                    ? "border-destructive/20 bg-destructive/10"
-                    : "border-primary/20 bg-primary/5"
-                )}
-              >
-                <p
-                  className={cn(
-                    "text-sm font-medium",
-                    wouldExceed ? "text-destructive" : "text-primary"
-                  )}
-                >
-                  {t("estimatedCost", { count: formatQuotaNumber(estimatedCost) })}
-                </p>
-                {!isUnlimited && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {t("afterGeneration", {
-                      after: formatQuotaNumber(afterUsage),
-                      limit: formatQuotaNumber(specview?.limit ?? 0),
-                    })}
-                  </p>
-                )}
-              </div>
-            )}
 
             {level === "warning" && (
               <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
