@@ -10,7 +10,7 @@ import {
   Plus,
   RefreshCw,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,8 +58,8 @@ type ExecutiveSummaryProps = {
   versions?: VersionInfoWithCommit[];
 };
 
-const formatShortDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString(undefined, {
+const formatShortDate = (dateString: string, locale: string): string => {
+  return new Date(dateString).toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
   });
@@ -83,6 +83,7 @@ export const ExecutiveSummary = ({
   repo,
   versions = [],
 }: ExecutiveSummaryProps) => {
+  const locale = useLocale();
   const t = useTranslations("specView");
 
   const hasExecutiveSummary = !!document.executiveSummary;
@@ -173,7 +174,7 @@ export const ExecutiveSummary = ({
                                 })}
                               </span>
                               <span className="text-muted-foreground/60">·</span>
-                              <span>{formatShortDate(langInfo.createdAt)}</span>
+                              <span>{formatShortDate(langInfo.createdAt, locale)}</span>
                             </div>
                           </DropdownMenuItem>
                         );
@@ -233,7 +234,7 @@ export const ExecutiveSummary = ({
                         variant="outline"
                       >
                         <History className="h-3 w-3" />
-                        {formatShortDate(document.createdAt)}
+                        {formatShortDate(document.createdAt, locale)}
                         {commitSha && (
                           <code className="text-[10px] text-muted-foreground/70 font-mono">
                             {formatCommitSha(commitSha)}
@@ -275,7 +276,7 @@ export const ExecutiveSummary = ({
                           ) : (
                             <span className="w-3.5" />
                           )}
-                          <span>{formatShortDate(versionInfo.createdAt)}</span>
+                          <span>{formatShortDate(versionInfo.createdAt, locale)}</span>
                           {versionCommitSha && (
                             <code className="text-[10px] text-muted-foreground/70 font-mono">
                               {formatCommitSha(versionCommitSha)}
@@ -303,7 +304,7 @@ export const ExecutiveSummary = ({
                     variant="outline"
                   >
                     <History className="h-3 w-3" />
-                    {formatShortDate(document.createdAt)}
+                    {formatShortDate(document.createdAt, locale)}
                     {currentVersion !== undefined && (
                       <span className="text-muted-foreground">
                         ({t("executiveSummary.latestLabel")})
