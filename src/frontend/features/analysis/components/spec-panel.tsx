@@ -259,7 +259,9 @@ export const SpecPanel = ({
     }
 
     openQuotaConfirmDialog({
+      analysisCommitSha,
       analysisId,
+      documentCommitSha: commitSha,
       estimatedCost: totalTests,
       initialLanguage: specDocument?.language,
       isRegenerate: true,

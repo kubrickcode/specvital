@@ -462,7 +462,8 @@
       "fresh": "Fresh analysis",
       "freshWarning": "Quota will be consumed for all tests",
       "recommended": "Recommended",
-      "cacheCheckFailed": "Could not check cache availability. Fresh analysis will be used."
+      "cacheCheckFailed": "Could not check cache availability. Fresh analysis will be used.",
+      "sameCommitCacheDisabled": "Cache is unavailable for the same commit"
     },
     "cacheStats": {
       "summary": "{cached} of {total} tests from cache ({rate}%)",

@@ -78,6 +78,7 @@ export const QuotaConfirmDialog = () => {
     forceRegenerate,
     isOpen,
     isRegenerate,
+    isSameCommit,
     onOpenChange,
     regeneratingLanguage,
     selectedLanguage,
@@ -159,6 +160,7 @@ export const QuotaConfirmDialog = () => {
                 <Zap className="h-4 w-4 text-muted-foreground" />
                 {tGenerate("analysisMode")}
               </Label>
+
               <RadioGroup
                 className="grid grid-cols-1 gap-2"
                 onValueChange={(value) => setForceRegenerate(value === "fresh")}
@@ -166,23 +168,33 @@ export const QuotaConfirmDialog = () => {
               >
                 <label
                   className={cn(
-                    "flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors",
-                    !forceRegenerate
+                    "flex items-start gap-3 rounded-lg border p-3 transition-colors",
+                    isSameCommit ? "cursor-not-allowed opacity-50 border-border" : "cursor-pointer",
+                    !forceRegenerate && !isSameCommit
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-muted-foreground/50"
                   )}
                   htmlFor="cache-mode"
                 >
-                  <RadioGroupItem className="mt-0.5" id="cache-mode" value="cache" />
+                  <RadioGroupItem
+                    className="mt-0.5"
+                    disabled={isSameCommit}
+                    id="cache-mode"
+                    value="cache"
+                  />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">{tGenerate("withCache")}</span>
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                        {tGenerate("recommended")}
-                      </span>
+                      {!isSameCommit && (
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                          {tGenerate("recommended")}
+                        </span>
+                      )}
                     </div>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {tGenerate("withCacheBenefit")}
+                      {isSameCommit
+                        ? tGenerate("sameCommitCacheDisabled")
+                        : tGenerate("withCacheBenefit")}
                     </p>
                   </div>
                 </label>

@@ -8,7 +8,17 @@ import { isValidSpecLanguage } from "../constants/spec-languages";
 import type { SpecGenerationMode, SpecLanguage } from "../types";
 
 type OpenOptions = {
+  /**
+   * Commit SHA of the current analysis being viewed.
+   * Compared with documentCommitSha to determine if cache would be ineffective.
+   */
+  analysisCommitSha?: string;
   analysisId: string;
+  /**
+   * Commit SHA of the currently viewed spec document.
+   * Used to detect if regeneration would produce identical results.
+   */
+  documentCommitSha?: string;
   estimatedCost?: number;
   initialLanguage?: SpecLanguage;
   isRegenerate?: boolean;
@@ -25,6 +35,11 @@ type QuotaConfirmDialogStore = {
   forceRegenerate: boolean;
   isOpen: boolean;
   isRegenerate: boolean;
+  /**
+   * True when regenerating the same commit - cache would be ineffective.
+   * When true, "Use Cache" option is disabled and only "Fresh" is allowed.
+   */
+  isSameCommit: boolean;
   onConfirm: ((language: SpecLanguage, mode: SpecGenerationMode) => void) | null;
   onOpenChange: (open: boolean) => void;
   open: (options: OpenOptions) => void;
@@ -128,6 +143,7 @@ const INITIAL_STATE = {
   forceRegenerate: false,
   isOpen: false,
   isRegenerate: false,
+  isSameCommit: false,
   onConfirm: null as ((language: SpecLanguage, mode: SpecGenerationMode) => void) | null,
   regeneratingLanguage: null as SpecLanguage | null,
   selectedLanguage: "English" as SpecLanguage,
@@ -153,7 +169,9 @@ const useQuotaConfirmDialogStore = create<QuotaConfirmDialogStore>((set, get) =>
     if (!open) set(INITIAL_STATE);
   },
   open: ({
+    analysisCommitSha,
     analysisId,
+    documentCommitSha,
     estimatedCost,
     initialLanguage,
     isRegenerate = false,
@@ -162,12 +180,22 @@ const useQuotaConfirmDialogStore = create<QuotaConfirmDialogStore>((set, get) =>
     usage,
   }) => {
     if (get().isOpen) return;
+
+    // Detect if regenerating from the same commit - cache would be ineffective
+    const isSameCommit =
+      isRegenerate &&
+      Boolean(analysisCommitSha) &&
+      Boolean(documentCommitSha) &&
+      analysisCommitSha === documentCommitSha;
+
     set({
       analysisId,
       estimatedCost: estimatedCost ?? null,
-      forceRegenerate: isRegenerate,
+      // Force fresh mode when same commit (cache is pointless)
+      forceRegenerate: isRegenerate || isSameCommit,
       isOpen: true,
       isRegenerate,
+      isSameCommit,
       onConfirm,
       regeneratingLanguage: isRegenerate && initialLanguage ? initialLanguage : null,
       selectedLanguage: resolveDefaultLanguage(analysisId, initialLanguage, locale),
