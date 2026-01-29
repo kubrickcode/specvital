@@ -382,7 +382,7 @@
       "thisMonth": "tests (this month)",
       "unit": "tests",
       "estimatedCost": "This generation will use ~{count} tests",
-      "afterGeneration": "After: {after} / {limit} tests",
+      "afterGeneration": "After: ~{after} / {limit} tests",
       "warningMessage": "You're running low on your monthly quota. Consider upgrading your plan for more generations.",
       "dangerMessage": "You're almost at your monthly limit. This generation will use most of your remaining quota.",
       "exceededMessage": "You've reached your monthly quota limit. Please upgrade your plan or wait until next month.",
