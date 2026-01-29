@@ -220,6 +220,60 @@ func extractFirstJSON(s string) string {
 	return s[start:] // Return as-is if incomplete (will fail parsing with clear error)
 }
 
+// removeTrailingCommas removes trailing commas before ] or } in JSON.
+// This handles a common LLM output issue where models generate invalid JSON with trailing commas.
+// Example: [1, 2, 3,] -> [1, 2, 3]
+// Example: {"a": 1,} -> {"a": 1}
+func removeTrailingCommas(s string) string {
+	result := make([]byte, 0, len(s))
+	inString := false
+	escaped := false
+
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+
+		if escaped {
+			escaped = false
+			result = append(result, c)
+			continue
+		}
+
+		if c == '\\' && inString {
+			escaped = true
+			result = append(result, c)
+			continue
+		}
+
+		if c == '"' {
+			inString = !inString
+			result = append(result, c)
+			continue
+		}
+
+		if inString {
+			result = append(result, c)
+			continue
+		}
+
+		// Skip comma if followed by ] or } (with optional whitespace)
+		if c == ',' {
+			// Look ahead to see if next non-whitespace is ] or }
+			j := i + 1
+			for j < len(s) && (s[j] == ' ' || s[j] == '\t' || s[j] == '\n' || s[j] == '\r') {
+				j++
+			}
+			if j < len(s) && (s[j] == ']' || s[j] == '}') {
+				// Skip this trailing comma
+				continue
+			}
+		}
+
+		result = append(result, c)
+	}
+
+	return string(result)
+}
+
 // parsePhase1JSON parses JSON string into Phase1Output.
 func parsePhase1JSON(jsonStr string) (*specview.Phase1Output, error) {
 	// Try to extract JSON from markdown code block if present
@@ -227,6 +281,9 @@ func parsePhase1JSON(jsonStr string) (*specview.Phase1Output, error) {
 
 	// Extract only the first JSON object (ignore trailing text)
 	cleaned = extractFirstJSON(cleaned)
+
+	// Remove trailing commas (common LLM output issue)
+	cleaned = removeTrailingCommas(cleaned)
 
 	var resp phase1Response
 	if err := json.Unmarshal([]byte(cleaned), &resp); err != nil {

@@ -611,3 +611,120 @@ func TestExtractFirstJSON(t *testing.T) {
 		}
 	})
 }
+
+func TestRemoveTrailingCommas(t *testing.T) {
+	t.Run("should remove trailing comma in array", func(t *testing.T) {
+		input := `[1, 2, 3,]`
+		expected := `[1, 2, 3]`
+
+		result := removeTrailingCommas(input)
+		if result != expected {
+			t.Errorf("removeTrailingCommas() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should remove trailing comma in object", func(t *testing.T) {
+		input := `{"a": 1, "b": 2,}`
+		expected := `{"a": 1, "b": 2}`
+
+		result := removeTrailingCommas(input)
+		if result != expected {
+			t.Errorf("removeTrailingCommas() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should remove trailing comma with whitespace", func(t *testing.T) {
+		input := `{"a": 1,
+		}`
+		expected := `{"a": 1
+		}`
+
+		result := removeTrailingCommas(input)
+		if result != expected {
+			t.Errorf("removeTrailingCommas() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should handle nested trailing commas", func(t *testing.T) {
+		input := `{"domains": [{"name": "Test", "features": [{"test_indices": [1, 2,]},]}]}`
+		expected := `{"domains": [{"name": "Test", "features": [{"test_indices": [1, 2]}]}]}`
+
+		result := removeTrailingCommas(input)
+		if result != expected {
+			t.Errorf("removeTrailingCommas() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should not remove commas inside strings", func(t *testing.T) {
+		input := `{"text": "hello,]"}`
+		expected := `{"text": "hello,]"}`
+
+		result := removeTrailingCommas(input)
+		if result != expected {
+			t.Errorf("removeTrailingCommas() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should handle escaped quotes in strings", func(t *testing.T) {
+		input := `{"text": "say \"hi,]\""}`
+		expected := `{"text": "say \"hi,]\""}`
+
+		result := removeTrailingCommas(input)
+		if result != expected {
+			t.Errorf("removeTrailingCommas() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should preserve valid JSON without trailing commas", func(t *testing.T) {
+		input := `{"a": [1, 2, 3], "b": {"c": 4}}`
+		expected := `{"a": [1, 2, 3], "b": {"c": 4}}`
+
+		result := removeTrailingCommas(input)
+		if result != expected {
+			t.Errorf("removeTrailingCommas() = %q, want %q", result, expected)
+		}
+	})
+}
+
+func TestParsePhase1JSONWithTrailingCommas(t *testing.T) {
+	t.Run("should parse JSON with trailing commas in test_indices", func(t *testing.T) {
+		jsonStr := `{
+			"domains": [
+				{
+					"name": "Auth",
+					"description": "Authentication",
+					"confidence": 0.9,
+					"features": [
+						{
+							"name": "Login",
+							"description": "Login feature",
+							"confidence": 0.85,
+							"test_indices": [0, 1, 2,]
+						},
+					]
+				},
+			]
+		}`
+
+		output, err := parsePhase1JSON(jsonStr)
+		if err != nil {
+			t.Fatalf("parsePhase1JSON() error = %v", err)
+		}
+
+		if len(output.Domains) != 1 {
+			t.Errorf("len(Domains) = %d, expected 1", len(output.Domains))
+		}
+
+		if output.Domains[0].Name != "Auth" {
+			t.Errorf("Domain.Name = %q, expected %q", output.Domains[0].Name, "Auth")
+		}
+
+		if len(output.Domains[0].Features) != 1 {
+			t.Errorf("len(Features) = %d, expected 1", len(output.Domains[0].Features))
+		}
+
+		if len(output.Domains[0].Features[0].TestIndices) != 3 {
+			t.Errorf("len(TestIndices) = %d, expected 3", len(output.Domains[0].Features[0].TestIndices))
+		}
+	})
+}
