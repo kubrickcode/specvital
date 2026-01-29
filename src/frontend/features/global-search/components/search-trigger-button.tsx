@@ -31,7 +31,7 @@ export const SearchTriggerButton = () => {
       {/* Desktop: Text button with shortcut hint */}
       <Button
         aria-keyshortcuts={ariaShortcut}
-        className="hidden w-64 justify-between gap-2 px-3 text-muted-foreground md:inline-flex"
+        className="hidden w-52 justify-between gap-2 px-3 text-muted-foreground lg:inline-flex xl:w-64"
         onClick={open}
         size="sm"
         variant="header-action"
@@ -49,7 +49,7 @@ export const SearchTriggerButton = () => {
       <ResponsiveTooltip content={t("title")} side="bottom" sideOffset={8}>
         <Button
           aria-label={t("title")}
-          className="md:hidden"
+          className="lg:hidden"
           onClick={open}
           size="header-icon"
           variant="header-action"
