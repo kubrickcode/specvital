@@ -127,7 +127,7 @@ func parseInlinedResponse(resp *genai.InlinedResponse) (*specview.Phase1Output, 
 }
 
 // extractResponseText extracts text content from a GenerateContentResponse.
-// Uses only the first text part to avoid JSON corruption from multiple parts.
+// Concatenates all text parts as Batch API may split a single JSON across multiple parts.
 func extractResponseText(resp *genai.GenerateContentResponse) (string, error) {
 	if resp == nil || len(resp.Candidates) == 0 {
 		return "", ErrEmptyResponse
@@ -138,15 +138,20 @@ func extractResponseText(resp *genai.GenerateContentResponse) (string, error) {
 		return "", ErrEmptyResponse
 	}
 
-	// Use only the first text part - Batch API may return multiple parts
-	// that when concatenated produce invalid JSON
+	// Concatenate all text parts - Batch API splits large JSON across multiple parts
+	var sb strings.Builder
 	for _, part := range candidate.Content.Parts {
 		if part.Text != "" {
-			return part.Text, nil
+			sb.WriteString(part.Text)
 		}
 	}
 
-	return "", ErrEmptyResponse
+	text := sb.String()
+	if text == "" {
+		return "", ErrEmptyResponse
+	}
+
+	return text, nil
 }
 
 // extractJSONFromMarkdown removes markdown code block wrapper if present.
@@ -167,14 +172,64 @@ func extractJSONFromMarkdown(s string) string {
 	return strings.TrimSpace(s)
 }
 
+// extractFirstJSON extracts the first complete JSON object from a string.
+// Handles cases where extra text appears after the JSON (e.g., "[Note: ...]").
+func extractFirstJSON(s string) string {
+	start := strings.Index(s, "{")
+	if start == -1 {
+		return s
+	}
+
+	depth := 0
+	inString := false
+	escaped := false
+
+	for i := start; i < len(s); i++ {
+		c := s[i]
+
+		if escaped {
+			escaped = false
+			continue
+		}
+
+		if c == '\\' && inString {
+			escaped = true
+			continue
+		}
+
+		if c == '"' {
+			inString = !inString
+			continue
+		}
+
+		if inString {
+			continue
+		}
+
+		switch c {
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return s[start : i+1]
+			}
+		}
+	}
+
+	return s[start:] // Return as-is if incomplete (will fail parsing with clear error)
+}
+
 // parsePhase1JSON parses JSON string into Phase1Output.
 func parsePhase1JSON(jsonStr string) (*specview.Phase1Output, error) {
 	// Try to extract JSON from markdown code block if present
 	cleaned := extractJSONFromMarkdown(jsonStr)
 
+	// Extract only the first JSON object (ignore trailing text)
+	cleaned = extractFirstJSON(cleaned)
+
 	var resp phase1Response
 	if err := json.Unmarshal([]byte(cleaned), &resp); err != nil {
-		// Log first 500 chars for debugging
 		preview := cleaned
 		if len(preview) > 500 {
 			preview = preview[:500] + "..."

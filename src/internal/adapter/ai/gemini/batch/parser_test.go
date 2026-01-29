@@ -510,15 +510,15 @@ func TestCountCoveredIndices(t *testing.T) {
 }
 
 func TestExtractResponseText(t *testing.T) {
-	t.Run("should use first text part only to avoid JSON corruption", func(t *testing.T) {
-		// Batch API may return multiple parts that produce invalid JSON when concatenated
+	t.Run("should concatenate multiple text parts for split JSON", func(t *testing.T) {
+		// Batch API may split a single large JSON across multiple parts
 		resp := &genai.GenerateContentResponse{
 			Candidates: []*genai.Candidate{
 				{
 					Content: &genai.Content{
 						Parts: []*genai.Part{
-							{Text: `{"domains":[]}`},
-							{Text: `[extra data]`}, // This would corrupt JSON if concatenated
+							{Text: `{"domains":[`},
+							{Text: `]}`},
 						},
 					},
 				},
@@ -530,7 +530,7 @@ func TestExtractResponseText(t *testing.T) {
 			t.Fatalf("extractResponseText() error = %v", err)
 		}
 		if text != `{"domains":[]}` {
-			t.Errorf("text = %q, expected first part only", text)
+			t.Errorf("text = %q, expected concatenated parts", text)
 		}
 	})
 
@@ -557,6 +557,57 @@ func TestExtractResponseText(t *testing.T) {
 		_, err := extractResponseText(resp)
 		if !errors.Is(err, ErrEmptyResponse) {
 			t.Errorf("error = %v, want ErrEmptyResponse", err)
+		}
+	})
+}
+
+func TestExtractFirstJSON(t *testing.T) {
+	t.Run("should extract JSON ignoring trailing text", func(t *testing.T) {
+		input := `{"domains":[]}[extra data after JSON]`
+		expected := `{"domains":[]}`
+
+		result := extractFirstJSON(input)
+		if result != expected {
+			t.Errorf("extractFirstJSON() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should handle nested objects", func(t *testing.T) {
+		input := `{"a":{"b":{"c":1}}}trailing`
+		expected := `{"a":{"b":{"c":1}}}`
+
+		result := extractFirstJSON(input)
+		if result != expected {
+			t.Errorf("extractFirstJSON() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should handle strings with braces", func(t *testing.T) {
+		input := `{"text":"hello {world}"} extra`
+		expected := `{"text":"hello {world}"}`
+
+		result := extractFirstJSON(input)
+		if result != expected {
+			t.Errorf("extractFirstJSON() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should handle escaped quotes in strings", func(t *testing.T) {
+		input := `{"text":"say \"hello\""}more`
+		expected := `{"text":"say \"hello\""}`
+
+		result := extractFirstJSON(input)
+		if result != expected {
+			t.Errorf("extractFirstJSON() = %q, want %q", result, expected)
+		}
+	})
+
+	t.Run("should return as-is if no opening brace", func(t *testing.T) {
+		input := `no json here`
+
+		result := extractFirstJSON(input)
+		if result != input {
+			t.Errorf("extractFirstJSON() = %q, want %q", result, input)
 		}
 	})
 }
