@@ -526,7 +526,7 @@
       },
       "noBookmarks": {
         "title": "No bookmarked repositories",
-        "description": "Star your favorite repositories to see them here"
+        "description": "Bookmark repositories to see them here"
       },
       "error": {
         "title": "Unable to load repositories",

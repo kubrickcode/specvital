@@ -1,7 +1,7 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { AlertCircle, GitFork, Search, Star } from "lucide-react";
+import { AlertCircle, Bookmark, GitFork, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Card } from "@/components/ui/card";
@@ -26,7 +26,7 @@ const VARIANT_CONFIG: Record<
     translationKey: "error",
   },
   "no-bookmarks": {
-    Icon: Star,
+    Icon: Bookmark,
     translationKey: "noBookmarks",
   },
   "no-repos": {
