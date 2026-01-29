@@ -1,14 +1,16 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { ChevronDown, ExternalLink, Info } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ResponsiveTooltip } from "@/components/ui/responsive-tooltip";
 import { useTruncateDetection } from "@/lib/hooks";
 import { fadeInUp } from "@/lib/motion";
-import { formatAnalysisDate, SHORT_SHA_LENGTH } from "@/lib/utils";
+import { cn, formatAnalysisDate } from "@/lib/utils";
 
 import { ShareButton } from "./share-button";
 
@@ -33,6 +35,7 @@ export const AnalysisHeader = ({
 }: AnalysisHeaderProps) => {
   const t = useTranslations("analyze");
   const { isTruncated, ref } = useTruncateDetection<HTMLHeadingElement>();
+  const [isOpen, setIsOpen] = useState(false);
   const fullName = `${owner}/${repo}`;
 
   const titleElement = (
@@ -43,60 +46,67 @@ export const AnalysisHeader = ({
 
   return (
     <motion.header className="py-4" variants={fadeInUp}>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        {/* Repository info */}
-        <div className="space-y-1.5 min-w-0">
+      <Collapsible onOpenChange={setIsOpen} open={isOpen}>
+        {/* Repository name */}
+        <div className="min-w-0">
           {isTruncated ? (
             <ResponsiveTooltip content={fullName}>{titleElement}</ResponsiveTooltip>
           ) : (
             titleElement
           )}
+        </div>
 
-          {/* Metadata line - simplified */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {branchName && (
-              <>
-                <span className="font-medium text-foreground">{branchName}</span>
-                <span className="text-border">·</span>
-              </>
-            )}
-            <ResponsiveTooltip
-              content={
-                <div className="space-y-1 text-xs">
-                  {committedAt && (
-                    <div>{t("committedAt", { date: formatAnalysisDate(committedAt) })}</div>
-                  )}
-                  <div>{t("analyzedAt", { date: formatAnalysisDate(analyzedAt) })}</div>
-                  {parserVersion && <div>{t("parserVersion", { version: parserVersion })}</div>}
-                </div>
-              }
-              side="bottom"
+        {/* Details button and Action buttons in one row */}
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <CollapsibleTrigger asChild>
+            <button
+              aria-label={t("details")}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-2 py-1 -ml-2"
+              type="button"
             >
-              <button
-                className="font-mono text-xs hover:text-foreground transition-colors"
-                type="button"
+              <Info className="h-3.5 w-3.5" />
+              {t("details")}
+              <ChevronDown
+                className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")}
+              />
+            </button>
+          </CollapsibleTrigger>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <ShareButton />
+            <Button asChild size="sm" variant="ghost">
+              <a
+                href={`https://github.com/${owner}/${repo}`}
+                rel="noopener noreferrer"
+                target="_blank"
               >
-                {commitSha.slice(0, SHORT_SHA_LENGTH)}
-              </button>
-            </ResponsiveTooltip>
+                <span className="sr-only sm:not-sr-only sm:mr-1.5">{t("viewOnGitHub")}</span>
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
           </div>
         </div>
 
-        {/* Action buttons - more subtle */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <ShareButton />
-          <Button asChild size="sm" variant="ghost">
-            <a
-              href={`https://github.com/${owner}/${repo}`}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <span className="sr-only sm:not-sr-only sm:mr-1.5">{t("viewOnGitHub")}</span>
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          </Button>
-        </div>
-      </div>
+        {/* Details panel */}
+        <CollapsibleContent>
+          <div className="mt-2 space-y-1 text-xs text-muted-foreground pl-5 border-l-2 border-border">
+            {branchName && (
+              <div>
+                {t("branch")}: <span className="font-medium">{branchName}</span>
+              </div>
+            )}
+            <div>
+              {t("commit")}: <span className="font-mono font-medium">{commitSha.slice(0, 8)}</span>
+            </div>
+            {committedAt && (
+              <div>{t("committedAt", { date: formatAnalysisDate(committedAt) })}</div>
+            )}
+            <div>{t("analyzedAt", { date: formatAnalysisDate(analyzedAt) })}</div>
+            {parserVersion && <div>{t("parserVersion", { version: parserVersion })}</div>}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </motion.header>
   );
 };

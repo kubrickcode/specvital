@@ -83,9 +83,11 @@
       "ariaLabel": "Generate test specification document with AI"
     },
     "viewOnGitHub": "View on GitHub",
+    "details": "Details",
     "analyzedAt": "Analyzed: {date}",
     "parserVersion": "Parser: {version}",
     "branch": "Branch",
+    "commit": "Commit",
     "commitDetails": "Commit Details",
     "committedAt": "Committed: {date}",
     "testSuites": "Test Suites",

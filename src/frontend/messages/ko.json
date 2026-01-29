@@ -83,9 +83,11 @@
       "ariaLabel": "AI로 테스트 스펙 문서 생성"
     },
     "viewOnGitHub": "GitHub에서 보기",
+    "details": "상세 정보",
     "analyzedAt": "분석 시각: {date}",
     "parserVersion": "파서 버전: {version}",
     "branch": "브랜치",
+    "commit": "커밋",
     "commitDetails": "커밋 상세",
     "committedAt": "커밋 시각: {date}",
     "testSuites": "테스트 스위트",
