@@ -371,7 +371,7 @@
       "title": "Generate Specification",
       "description": "This will use your AI Spec Doc generation quota. Please review your current usage before proceeding.",
       "regenerateTitle": "Regenerate Specification",
-      "regenerateDescription": "This will replace your existing document with a newly generated one.",
+      "regenerateDescription": "A new version of the spec document will be generated. You can still view previous versions.",
       "outputLanguage": "Output Language",
       "selectLanguage": "Select language",
       "searchLanguage": "Search languages...",
