@@ -45,6 +45,7 @@ type Provider struct {
 	phase1Model     string
 	phase1V2Enabled bool
 	phase2Model     string
+	taxonomyCache   *TaxonomyCache
 
 	rateLimiter *reliability.RateLimiter
 	phase1CB    *reliability.CircuitBreaker
@@ -86,6 +87,7 @@ func NewProvider(ctx context.Context, config Config) (*Provider, error) {
 		phase1Model:     phase1Model,
 		phase1V2Enabled: config.Phase1V2Enabled,
 		phase2Model:     phase2Model,
+		taxonomyCache:   NewTaxonomyCache(),
 		rateLimiter:     reliability.GetGlobalRateLimiter(),
 		phase1CB:        reliability.NewCircuitBreaker(reliability.DefaultPhase1CircuitConfig()),
 		phase2CB:        reliability.NewCircuitBreaker(reliability.DefaultPhase2CircuitConfig()),

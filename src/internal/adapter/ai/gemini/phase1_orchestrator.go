@@ -35,16 +35,35 @@ func (p *Provider) classifyDomainsV2(ctx context.Context, input specview.Phase1I
 
 	totalUsage := &specview.TokenUsage{Model: p.phase1Model}
 
-	// Stage 1: Taxonomy Extraction
-	taxonomyInput := prepareTaxonomyInput(input)
-	taxonomy, stage1Usage, err := p.extractTaxonomy(ctx, taxonomyInput)
-	if err != nil {
-		slog.WarnContext(ctx, "stage 1 taxonomy extraction failed, using heuristic fallback",
-			"error", err,
+	// Stage 1: Taxonomy Extraction (with cache)
+	cacheKey := TaxonomyCacheKey{
+		AnalysisID: input.AnalysisID,
+		Language:   lang,
+		ModelID:    p.phase1Model,
+	}
+
+	taxonomy := p.taxonomyCache.Get(cacheKey)
+	if taxonomy != nil {
+		slog.InfoContext(ctx, "taxonomy cache hit, skipping Stage 1 API call",
+			"analysis_id", input.AnalysisID,
+			"domain_count", len(taxonomy.Domains),
 		)
-		taxonomy = generateHeuristicTaxonomy(input.Files)
 	} else {
-		aggregateUsage(totalUsage, stage1Usage)
+		taxonomyInput := prepareTaxonomyInput(input)
+		var stage1Usage *specview.TokenUsage
+		var err error
+		taxonomy, stage1Usage, err = p.extractTaxonomy(ctx, taxonomyInput)
+		if err != nil {
+			slog.WarnContext(ctx, "stage 1 taxonomy extraction failed, using heuristic fallback",
+				"error", err,
+			)
+			// Intentionally NOT caching heuristic fallback - retry API on next call
+			taxonomy = generateHeuristicTaxonomy(input.Files)
+		} else {
+			aggregateUsage(totalUsage, stage1Usage)
+			// Cache successful taxonomy extraction
+			p.taxonomyCache.Set(cacheKey, taxonomy)
+		}
 	}
 
 	slog.InfoContext(ctx, "stage 1 complete",
