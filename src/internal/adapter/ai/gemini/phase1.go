@@ -12,11 +12,6 @@ import (
 	"github.com/specvital/worker/internal/domain/specview"
 )
 
-const (
-	// interChunkDelay is the delay between chunk API calls to avoid rate limiting.
-	interChunkDelay = 5 * time.Second
-)
-
 // phase1Response represents the expected JSON response from Phase 1.
 type phase1Response struct {
 	Domains []phase1Domain `json:"domains"`
@@ -145,11 +140,13 @@ func (p *Provider) classifyDomainsChunked(ctx context.Context, input specview.Ph
 
 	for i := startChunk; i < len(chunks); i++ {
 		chunk := chunks[i]
+		chunkStartTime := time.Now()
 
 		slog.InfoContext(ctx, "processing chunk",
 			"chunk", i+1,
 			"total_chunks", len(chunks),
 			"tests_in_chunk", countTests(chunk.Files),
+			"remaining_chunks", len(chunks)-i,
 		)
 
 		// Reindex tests within chunk to start from 0
@@ -190,6 +187,12 @@ func (p *Provider) classifyDomainsChunked(ctx context.Context, input specview.Ph
 			totalUsage.TotalTokens += usage.TotalTokens
 		}
 
+		slog.InfoContext(ctx, "chunk processing complete",
+			"chunk", i+1,
+			"total_chunks", len(chunks),
+			"elapsed", time.Since(chunkStartTime).Round(time.Millisecond),
+		)
+
 		// Update anchor domains incrementally (avoid quadratic complexity)
 		if len(anchorDomains) == 0 {
 			anchorDomains = output.Domains
@@ -201,14 +204,6 @@ func (p *Provider) classifyDomainsChunked(ctx context.Context, input specview.Ph
 			anchorDomains = merged.Domains
 		}
 
-		// Delay between chunks to avoid rate limiting (except after last chunk)
-		if i < len(chunks)-1 {
-			select {
-			case <-ctx.Done():
-				return nil, nil, ctx.Err()
-			case <-time.After(interChunkDelay):
-			}
-		}
 	}
 
 	// Clear cache on successful completion
