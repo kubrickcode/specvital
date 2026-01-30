@@ -169,6 +169,30 @@ func (p *Provider) generateContent(ctx context.Context, model, systemPrompt, use
 		return "", nil, err
 	}
 
+	// Check FinishReason before extracting text.
+	// MAX_TOKENS indicates output was truncated - not retryable, requires input reduction.
+	if len(result.Candidates) > 0 {
+		candidate := result.Candidates[0]
+		switch candidate.FinishReason {
+		case genai.FinishReasonMaxTokens:
+			cb.RecordSuccess() // API worked correctly, just hit limit
+			slog.WarnContext(ctx, "gemini output truncated due to token limit",
+				"model", model,
+				"finish_reason", candidate.FinishReason,
+				"finish_message", candidate.FinishMessage,
+			)
+			return "", nil, fmt.Errorf("%w: reduce input size or split into chunks", specview.ErrOutputTruncated)
+		case genai.FinishReasonSafety, genai.FinishReasonRecitation, genai.FinishReasonBlocklist, genai.FinishReasonProhibitedContent, genai.FinishReasonSPII:
+			cb.RecordSuccess() // API worked, content was blocked
+			slog.WarnContext(ctx, "gemini output blocked by safety filters",
+				"model", model,
+				"finish_reason", candidate.FinishReason,
+				"finish_message", candidate.FinishMessage,
+			)
+			return "", nil, fmt.Errorf("%w: content blocked (%s)", specview.ErrInvalidInput, candidate.FinishReason)
+		}
+	}
+
 	// Extract text from response
 	text := result.Text()
 	if text == "" {

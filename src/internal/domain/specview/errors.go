@@ -7,5 +7,6 @@ var (
 	ErrAnalysisNotFound = errors.New("analysis not found")
 	ErrDocumentNotFound = errors.New("document not found")
 	ErrInvalidInput     = errors.New("invalid input")
+	ErrOutputTruncated  = errors.New("AI output truncated due to token limit")
 	ErrRateLimited      = errors.New("rate limit exceeded")
 )

@@ -52,7 +52,8 @@ func (p *Provider) classifyDomainsV2(ctx context.Context, input specview.Phase1I
 		taxonomyInput := prepareTaxonomyInput(input)
 		var stage1Usage *specview.TokenUsage
 		var err error
-		taxonomy, stage1Usage, err = p.extractTaxonomy(ctx, taxonomyInput)
+		// Use chunking for large file sets to avoid output token truncation
+		taxonomy, stage1Usage, err = p.extractTaxonomyWithChunking(ctx, taxonomyInput)
 		if err != nil {
 			slog.WarnContext(ctx, "stage 1 taxonomy extraction failed, using heuristic fallback",
 				"error", err,
