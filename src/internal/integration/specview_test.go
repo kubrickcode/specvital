@@ -745,3 +745,293 @@ func setupTestUser(t *testing.T, ctx context.Context, pool *pgxpool.Pool) string
 
 	return uuidBytesToString(userID)
 }
+
+// --- V3 Architecture Integration Tests ---
+// V3 uses sequential batch processing with order-based mapping.
+// These tests simulate V3-style responses at the UseCase level.
+
+// TestSpecViewIntegration_V3_SmallInput tests V3 with a small input (under batch size).
+// Under 20 tests = single batch processing.
+func TestSpecViewIntegration_V3_SmallInput(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool, cleanup := testdb.SetupTestDB(t)
+	defer cleanup()
+
+	ctx := context.Background()
+	analysisRepo := postgres.NewAnalysisRepository(pool)
+	specRepo := postgres.NewSpecDocumentRepository(pool)
+
+	// 15 tests = single batch in V3 (batch size = 20)
+	analysisID := setupAnalysisWithTests(t, ctx, analysisRepo, pool, 3, 5)
+
+	var phase1CallCount atomic.Int32
+	aiProvider := &mockAIProvider{
+		classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+			phase1CallCount.Add(1)
+			// V3-style: domain/feature pairs per test, order-based mapping
+			return v3StylePhase1Output(input), nil, nil
+		},
+	}
+
+	userID := setupTestUser(t, ctx, pool)
+	uc := specviewuc.NewGenerateSpecViewUseCase(specRepo, aiProvider, "test-model")
+
+	req := specview.SpecViewRequest{
+		AnalysisID: analysisID,
+		Language:   "Korean",
+		UserID:     userID,
+	}
+
+	result, err := uc.Execute(ctx, req)
+	if err != nil {
+		t.Fatalf("Execute failed: %v", err)
+	}
+
+	if result.CacheHit {
+		t.Error("expected cache miss")
+	}
+	if phase1CallCount.Load() != 1 {
+		t.Errorf("expected 1 Phase 1 call, got %d", phase1CallCount.Load())
+	}
+
+	verifyDocumentSaved(t, ctx, pool, result.DocumentID)
+}
+
+// TestSpecViewIntegration_V3_MediumInput tests V3 with 100 tests.
+// 100 tests = 5 batches in V3 (batch size = 20).
+func TestSpecViewIntegration_V3_MediumInput(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool, cleanup := testdb.SetupTestDB(t)
+	defer cleanup()
+
+	ctx := context.Background()
+	analysisRepo := postgres.NewAnalysisRepository(pool)
+	specRepo := postgres.NewSpecDocumentRepository(pool)
+
+	// 100 tests = 5 batches in V3
+	analysisID := setupAnalysisWithTests(t, ctx, analysisRepo, pool, 10, 10)
+
+	var phase2CallCount atomic.Int32
+	aiProvider := &mockAIProvider{
+		classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+			// Simulate V3 multi-domain output
+			return v3MultiDomainPhase1Output(input), nil, nil
+		},
+		convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+			phase2CallCount.Add(1)
+			return defaultPhase2Output(input), nil, nil
+		},
+	}
+
+	userID := setupTestUser(t, ctx, pool)
+	uc := specviewuc.NewGenerateSpecViewUseCase(specRepo, aiProvider, "test-model")
+
+	req := specview.SpecViewRequest{
+		AnalysisID: analysisID,
+		Language:   "Korean",
+		UserID:     userID,
+	}
+
+	result, err := uc.Execute(ctx, req)
+	if err != nil {
+		t.Fatalf("Execute failed: %v", err)
+	}
+
+	if result.CacheHit {
+		t.Error("expected cache miss")
+	}
+
+	// Multiple Phase 2 calls expected for multiple features
+	if phase2CallCount.Load() < 2 {
+		t.Errorf("expected multiple Phase 2 calls, got %d", phase2CallCount.Load())
+	}
+
+	verifyDocumentSaved(t, ctx, pool, result.DocumentID)
+}
+
+// TestSpecViewIntegration_V3_LargeInput tests V3 with 500+ tests.
+// 500 tests = 25 batches in V3 (batch size = 20).
+func TestSpecViewIntegration_V3_LargeInput(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool, cleanup := testdb.SetupTestDB(t)
+	defer cleanup()
+
+	ctx := context.Background()
+	analysisRepo := postgres.NewAnalysisRepository(pool)
+	specRepo := postgres.NewSpecDocumentRepository(pool)
+
+	// 500 tests = 25 batches in V3
+	analysisID := setupAnalysisWithTests(t, ctx, analysisRepo, pool, 50, 10)
+
+	var phase2CallCount atomic.Int32
+	aiProvider := &mockAIProvider{
+		classifyDomainsFn: func(ctx context.Context, input specview.Phase1Input) (*specview.Phase1Output, *specview.TokenUsage, error) {
+			// Large input produces many domains
+			return v3LargeInputPhase1Output(input), nil, nil
+		},
+		convertTestNamesFn: func(ctx context.Context, input specview.Phase2Input) (*specview.Phase2Output, *specview.TokenUsage, error) {
+			phase2CallCount.Add(1)
+			return defaultPhase2Output(input), nil, nil
+		},
+	}
+
+	userID := setupTestUser(t, ctx, pool)
+	uc := specviewuc.NewGenerateSpecViewUseCase(specRepo, aiProvider, "test-model")
+
+	req := specview.SpecViewRequest{
+		AnalysisID: analysisID,
+		Language:   "Korean",
+		UserID:     userID,
+	}
+
+	result, err := uc.Execute(ctx, req)
+	if err != nil {
+		t.Fatalf("Execute failed: %v", err)
+	}
+
+	if result.CacheHit {
+		t.Error("expected cache miss")
+	}
+
+	// Many Phase 2 calls expected for large input
+	if phase2CallCount.Load() < 5 {
+		t.Errorf("expected many Phase 2 calls, got %d", phase2CallCount.Load())
+	}
+
+	verifyDocumentSaved(t, ctx, pool, result.DocumentID)
+}
+
+// V3-style Phase 1 output helpers
+
+// v3StylePhase1Output simulates V3 order-based output.
+// Each test gets a domain/feature assignment.
+func v3StylePhase1Output(input specview.Phase1Input) *specview.Phase1Output {
+	var allIndices []int
+	for _, file := range input.Files {
+		for _, test := range file.Tests {
+			allIndices = append(allIndices, test.Index)
+		}
+	}
+
+	return &specview.Phase1Output{
+		Domains: []specview.DomainGroup{
+			{
+				Name:        "Authentication",
+				Description: "User authentication functionality",
+				Confidence:  0.95,
+				Features: []specview.FeatureGroup{
+					{
+						Name:        "Login",
+						Description: "Login related tests",
+						Confidence:  0.90,
+						TestIndices: allIndices,
+					},
+				},
+			},
+		},
+	}
+}
+
+// v3MultiDomainPhase1Output simulates V3 output with multiple domains.
+// Tests are distributed across multiple domains and features.
+func v3MultiDomainPhase1Output(input specview.Phase1Input) *specview.Phase1Output {
+	var allIndices []int
+	for _, file := range input.Files {
+		for _, test := range file.Tests {
+			allIndices = append(allIndices, test.Index)
+		}
+	}
+
+	// Split tests into 3 domains
+	third := len(allIndices) / 3
+
+	return &specview.Phase1Output{
+		Domains: []specview.DomainGroup{
+			{
+				Name:        "Authentication",
+				Description: "User authentication",
+				Confidence:  0.95,
+				Features: []specview.FeatureGroup{
+					{
+						Name:        "Login",
+						Confidence:  0.90,
+						TestIndices: allIndices[:third],
+					},
+				},
+			},
+			{
+				Name:        "Payment",
+				Description: "Payment processing",
+				Confidence:  0.93,
+				Features: []specview.FeatureGroup{
+					{
+						Name:        "Checkout",
+						Confidence:  0.88,
+						TestIndices: allIndices[third : 2*third],
+					},
+				},
+			},
+			{
+				Name:        "User",
+				Description: "User management",
+				Confidence:  0.91,
+				Features: []specview.FeatureGroup{
+					{
+						Name:        "Profile",
+						Confidence:  0.85,
+						TestIndices: allIndices[2*third:],
+					},
+				},
+			},
+		},
+	}
+}
+
+// v3LargeInputPhase1Output simulates V3 output for large inputs.
+// Creates multiple domains based on file structure.
+func v3LargeInputPhase1Output(input specview.Phase1Input) *specview.Phase1Output {
+	domains := make([]specview.DomainGroup, 0)
+	testIdx := 0
+
+	// Group every 10 files into a domain
+	fileGroup := 0
+	for i := 0; i < len(input.Files); i += 10 {
+		end := i + 10
+		if end > len(input.Files) {
+			end = len(input.Files)
+		}
+
+		var indices []int
+		for j := i; j < end; j++ {
+			for range input.Files[j].Tests {
+				indices = append(indices, testIdx)
+				testIdx++
+			}
+		}
+
+		domains = append(domains, specview.DomainGroup{
+			Name:        "Domain" + string(rune('A'+fileGroup)),
+			Description: "Domain group " + string(rune('A'+fileGroup)),
+			Confidence:  0.90,
+			Features: []specview.FeatureGroup{
+				{
+					Name:        "Feature" + string(rune('A'+fileGroup)),
+					Confidence:  0.85,
+					TestIndices: indices,
+				},
+			},
+		})
+		fileGroup++
+	}
+
+	return &specview.Phase1Output{Domains: domains}
+}
