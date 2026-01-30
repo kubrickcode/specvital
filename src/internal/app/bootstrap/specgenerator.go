@@ -24,6 +24,7 @@ type SpecGeneratorConfig struct {
 	GeminiPhase1Model string
 	GeminiPhase2Model string
 	MockMode          bool
+	Phase1V2Enabled   bool
 	QueueWorkers      config.QueueWorkers
 	ServiceName       string
 	ShutdownTimeout   time.Duration
@@ -79,6 +80,7 @@ func StartSpecGenerator(cfg SpecGeneratorConfig) error {
 		GeminiPhase1Model: cfg.GeminiPhase1Model,
 		GeminiPhase2Model: cfg.GeminiPhase2Model,
 		MockMode:          cfg.MockMode,
+		Phase1V2Enabled:   cfg.Phase1V2Enabled,
 		Pool:              pool,
 	})
 	if err != nil {

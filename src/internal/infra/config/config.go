@@ -50,6 +50,7 @@ type Config struct {
 	GeminiPhase1Model string
 	GeminiPhase2Model string
 	MockMode          bool
+	Phase1V2Enabled   bool
 	Queue             QueueConfig
 }
 
@@ -72,6 +73,7 @@ func Load() (*Config, error) {
 		GeminiPhase1Model: os.Getenv("GEMINI_PHASE1_MODEL"),
 		GeminiPhase2Model: os.Getenv("GEMINI_PHASE2_MODEL"),
 		MockMode:          os.Getenv("MOCK_MODE") == "true",
+		Phase1V2Enabled:   getEnvBool("SPECVIEW_PHASE1_V2", false),
 		Queue:             loadQueueConfig(),
 	}, nil
 }
