@@ -78,7 +78,7 @@ func TestParseV3BatchResponse_MalformedJSON(t *testing.T) {
 }
 
 func TestParseV3BatchResponse_SingleItem(t *testing.T) {
-	jsonStr := `[{"d": "Uncategorized", "f": "General"}]`
+	jsonStr := `[{"d": "User Management", "f": "Profile"}]`
 
 	results, err := parseV3BatchResponse(jsonStr)
 
@@ -88,8 +88,8 @@ func TestParseV3BatchResponse_SingleItem(t *testing.T) {
 	if len(results) != 1 {
 		t.Fatalf("expected 1 result, got %d", len(results))
 	}
-	if results[0].Domain != "Uncategorized" {
-		t.Errorf("expected domain 'Uncategorized', got %q", results[0].Domain)
+	if results[0].Domain != "User Management" {
+		t.Errorf("expected domain 'User Management', got %q", results[0].Domain)
 	}
 }
 
@@ -405,7 +405,7 @@ func (s *v3RetryStrategy) processWithRetry(
 		return results, totalUsage, retryCount, fallbackCount
 	}
 
-	// Fall back to individual processing
+	// Fall back to individual processing with path-based domains
 	results := make([]v3BatchResult, 0, len(tests))
 	for _, test := range tests {
 		singleTest := []specview.TestForAssignment{test}
@@ -415,9 +415,11 @@ func (s *v3RetryStrategy) processWithRetry(
 		}
 
 		if err != nil || len(result) != 1 {
+			domain, feature := deriveDomainFromPath(test.FilePath)
 			results = append(results, v3BatchResult{
-				Domain:  uncategorizedDomainName,
-				Feature: uncategorizedFeatureName,
+				Domain:     domain,
+				DomainDesc: "Derived from file path",
+				Feature:    feature,
 			})
 			fallbackCount++
 			continue
@@ -568,7 +570,7 @@ func TestV3RetryStrategy_IndividualFallback(t *testing.T) {
 	}
 }
 
-func TestV3RetryStrategy_UncategorizedFallback(t *testing.T) {
+func TestV3RetryStrategy_PathBasedFallback(t *testing.T) {
 	strategy := &v3RetryStrategy{
 		model: "test-model",
 		batchProcessor: func(tests []specview.TestForAssignment) ([]v3BatchResult, *specview.TokenUsage, error) {
@@ -589,13 +591,17 @@ func TestV3RetryStrategy_UncategorizedFallback(t *testing.T) {
 	if fallbacks != 2 {
 		t.Errorf("expected 2 fallbacks, got %d", fallbacks)
 	}
-	// All results should be Uncategorized
+	// All results should be path-based (Project Root for test.spec.ts)
 	for i, r := range results {
-		if r.Domain != uncategorizedDomainName {
-			t.Errorf("result %d: expected domain %q, got %q", i, uncategorizedDomainName, r.Domain)
+		if r.Domain == uncategorizedDomainName {
+			t.Errorf("result %d: expected path-based domain, got Uncategorized", i)
 		}
-		if r.Feature != uncategorizedFeatureName {
-			t.Errorf("result %d: expected feature %q, got %q", i, uncategorizedFeatureName, r.Feature)
+		// makeTestsForAssignment uses "test.spec.ts" -> should derive to "Project Root"
+		if r.Domain != "Project Root" {
+			t.Errorf("result %d: expected domain 'Project Root', got %q", i, r.Domain)
+		}
+		if r.Feature != "General Tests" {
+			t.Errorf("result %d: expected feature 'General Tests', got %q", i, r.Feature)
 		}
 	}
 }

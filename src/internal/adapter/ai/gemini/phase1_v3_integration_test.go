@@ -179,9 +179,11 @@ func (m *mockV3Provider) processV3Individual(
 		}
 
 		if err != nil || len(result) != 1 {
+			domain, feature := deriveDomainFromPath(test.FilePath)
 			results = append(results, v3BatchResult{
-				Domain:  uncategorizedDomainName,
-				Feature: uncategorizedFeatureName,
+				Domain:     domain,
+				DomainDesc: "Derived from file path",
+				Feature:    feature,
 			})
 			fallbackCount++
 			continue
@@ -510,8 +512,8 @@ func TestV3Integration_IndividualFallback(t *testing.T) {
 	}
 }
 
-func TestV3Integration_UncategorizedFallback(t *testing.T) {
-	// All API calls fail - tests should be assigned to Uncategorized
+func TestV3Integration_PathBasedFallback(t *testing.T) {
+	// All API calls fail - tests should be assigned path-based domains
 	input := createV3TestInput(1, 2)
 	var callCount atomic.Int32
 
@@ -527,17 +529,18 @@ func TestV3Integration_UncategorizedFallback(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	// All tests should be in Uncategorized
+	// All tests should be path-based
 	if len(output.Domains) != 1 {
 		t.Fatalf("expected 1 domain, got %d", len(output.Domains))
 	}
 
-	if output.Domains[0].Name != uncategorizedDomainName {
-		t.Errorf("expected domain %q, got %q", uncategorizedDomainName, output.Domains[0].Name)
+	// Input path is "src/file_0_test.go" -> src is the only directory, becomes "Src"
+	if output.Domains[0].Name == uncategorizedDomainName {
+		t.Errorf("expected path-based domain, got Uncategorized")
 	}
-
-	if len(output.Domains[0].Features) != 1 || output.Domains[0].Features[0].Name != uncategorizedFeatureName {
-		t.Errorf("expected feature %q, got %v", uncategorizedFeatureName, output.Domains[0].Features)
+	// When src is the only significant part (and it's skipped), fallback to last part of allParts
+	if output.Domains[0].Name != "Src" {
+		t.Errorf("expected domain 'Src' (from path), got %q", output.Domains[0].Name)
 	}
 }
 
