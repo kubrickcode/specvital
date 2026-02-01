@@ -74,12 +74,12 @@ const getSteps = (
   ];
 };
 
-type PipelineNodeProps = {
+type PipelineNodeIconProps = {
   isCurrent: boolean;
   step: PipelineStep;
 };
 
-const PipelineNode = ({ isCurrent, step }: PipelineNodeProps) => {
+const PipelineNodeIcon = ({ isCurrent, step }: PipelineNodeIconProps) => {
   const shouldReduceMotion = useReducedMotion();
 
   const nodeContent = (() => {
@@ -120,11 +120,7 @@ const PipelineNode = ({ isCurrent, step }: PipelineNodeProps) => {
   })();
 
   return (
-    <li
-      aria-current={isCurrent ? "step" : undefined}
-      className="flex shrink-0 flex-col items-center gap-2"
-      role="listitem"
-    >
+    <div aria-current={isCurrent ? "step" : undefined} className="shrink-0" role="listitem">
       {shouldReduceMotion || step.status !== "active" ? (
         nodeContent
       ) : (
@@ -136,18 +132,27 @@ const PipelineNode = ({ isCurrent, step }: PipelineNodeProps) => {
           {nodeContent}
         </m.div>
       )}
-      <span
-        className={cn(
-          "text-center text-xs font-medium",
-          step.status === "active" && "text-foreground",
-          step.status === "completed" && "text-muted-foreground",
-          step.status === "failed" && "text-destructive",
-          step.status === "upcoming" && "text-muted-foreground"
-        )}
-      >
-        {step.label}
-      </span>
-    </li>
+    </div>
+  );
+};
+
+type PipelineNodeLabelProps = {
+  step: PipelineStep;
+};
+
+const PipelineNodeLabel = ({ step }: PipelineNodeLabelProps) => {
+  return (
+    <span
+      className={cn(
+        "w-10 text-center text-xs font-medium",
+        step.status === "active" && "text-foreground",
+        step.status === "completed" && "text-muted-foreground",
+        step.status === "failed" && "text-destructive",
+        step.status === "upcoming" && "text-muted-foreground"
+      )}
+    >
+      {step.label}
+    </span>
   );
 };
 
@@ -179,19 +184,27 @@ export const GenerationPipeline = ({ className, status }: GenerationPipelineProp
   return (
     <div
       aria-label="Spec generation progress steps"
-      className={cn("w-full", className)}
+      className={cn("flex w-full flex-col gap-2", className)}
       role="list"
     >
       <div className="flex items-center">
         {steps.map((step, index) => (
           <Fragment key={step.number}>
-            <PipelineNode isCurrent={step.status === "active"} step={step} />
+            <PipelineNodeIcon isCurrent={step.status === "active"} step={step} />
             {index < steps.length - 1 && (
               <PipelineConnector
                 isActive={step.status === "active"}
                 isCompleted={step.status === "completed"}
               />
             )}
+          </Fragment>
+        ))}
+      </div>
+      <div className="flex items-start">
+        {steps.map((step, index) => (
+          <Fragment key={step.number}>
+            <PipelineNodeLabel step={step} />
+            {index < steps.length - 1 && <div className="mx-3 flex-1" />}
           </Fragment>
         ))}
       </div>
