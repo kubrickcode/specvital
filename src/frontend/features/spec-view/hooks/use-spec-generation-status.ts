@@ -151,6 +151,10 @@ export const useSpecGenerationStatus = (
       queryClient.resetQueries({
         queryKey: paginatedRepositoriesKeys.all,
       });
+      // Invalidate usage for fresh quota display in re-analyze modal
+      queryClient.invalidateQueries({
+        queryKey: ["user", "usage"],
+      });
 
       onCompletedRef.current?.();
     }

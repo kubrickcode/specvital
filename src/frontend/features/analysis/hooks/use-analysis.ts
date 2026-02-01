@@ -110,6 +110,8 @@ export const useAnalysis = (
     if (response?.status === "completed" && !hasTriggeredInvalidation.current) {
       hasTriggeredInvalidation.current = true;
       queryClient.removeQueries({ queryKey: paginatedRepositoriesKeys.all });
+      // Invalidate usage for fresh quota display
+      queryClient.invalidateQueries({ queryKey: ["user", "usage"] });
     }
   }, [response?.status, queryClient]);
 
