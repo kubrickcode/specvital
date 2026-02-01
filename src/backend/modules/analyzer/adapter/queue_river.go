@@ -74,6 +74,40 @@ func (s *RiverQueueService) Enqueue(ctx context.Context, owner, repo, commitSHA 
 	return nil
 }
 
+func (s *RiverQueueService) EnqueueTx(ctx context.Context, tx pgx.Tx, owner, repo, commitSHA string, userID *string, tier subscription.PlanTier) (int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, enqueueTimeout)
+	defer cancel()
+
+	args := AnalyzeArgs{
+		CommitSHA: commitSHA,
+		Owner:     owner,
+		Repo:      repo,
+		UserID:    userID,
+	}
+
+	targetQueue := queue.SelectQueueForAnalysis(tier, false)
+
+	result, err := s.client.InsertTx(ctx, tx, args, &river.InsertOpts{
+		MaxAttempts: maxRetries,
+		Queue:       targetQueue,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs: true,
+			ByState: []rivertype.JobState{
+				rivertype.JobStateAvailable,
+				rivertype.JobStatePending,
+				rivertype.JobStateRunning,
+				rivertype.JobStateRetryable,
+				rivertype.JobStateScheduled,
+			},
+		},
+	})
+	if err != nil {
+		return 0, fmt.Errorf("enqueue task for %s/%s: %w", owner, repo, err)
+	}
+
+	return result.Job.ID, nil
+}
+
 func (s *RiverQueueService) FindTaskByRepo(ctx context.Context, owner, repo string) (*port.TaskInfo, error) {
 	info, err := s.repo.FindActiveRiverJobByRepo(ctx, TypeAnalyze, owner, repo)
 	if err != nil {

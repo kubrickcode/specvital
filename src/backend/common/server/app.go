@@ -169,7 +169,7 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 	analyzerGitClient := analyzeradapter.NewGitClientAdapter(container.GitClient)
 	systemConfig := analyzeradapter.NewSystemConfigPostgres(queries)
 
-	analyzeRepositoryUC := analyzerusecase.NewAnalyzeRepositoryUseCase(analyzerGitClient, analyzerQueue, analyzerRepo, systemConfig, tokenProvider)
+	analyzeRepositoryUC := analyzerusecase.NewAnalyzeRepositoryUseCase(analyzerGitClient, analyzerQueue, analyzerRepo, systemConfig, tokenProvider, container.DB, reservationRepo)
 	getAnalysisUC := analyzerusecase.NewGetAnalysisUseCase(analyzerQueue, analyzerRepo)
 	listRepositoryCardsUC := analyzerusecase.NewListRepositoryCardsUseCase(analyzerGitClient, analyzerRepo, tokenProvider)
 	getUpdateStatusUC := analyzerusecase.NewGetUpdateStatusUseCase(analyzerGitClient, analyzerRepo, systemConfig, tokenProvider)

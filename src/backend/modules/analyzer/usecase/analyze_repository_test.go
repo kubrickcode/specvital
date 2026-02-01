@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
 	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
@@ -38,6 +40,8 @@ func (m *analyzeRepoMocks) newUseCase() *usecase.AnalyzeRepositoryUseCase {
 		m.repository,
 		m.systemConfig,
 		m.tokenProvider,
+		nil, // dbPool - nil for unit tests (fallback to non-reservation path)
+		nil, // reservationRepo - nil for unit tests
 	)
 }
 
@@ -99,6 +103,15 @@ func (m *mockQueueServiceForAnalyze) Enqueue(_ context.Context, _, _, commitSHA 
 	m.enqueuedCommitSHA = commitSHA
 	m.enqueuedTier = tier
 	return m.enqueueErr
+}
+func (m *mockQueueServiceForAnalyze) EnqueueTx(_ context.Context, _ pgx.Tx, _, _, commitSHA string, _ *string, tier subscription.PlanTier) (int64, error) {
+	m.enqueueCalled = true
+	m.enqueuedCommitSHA = commitSHA
+	m.enqueuedTier = tier
+	if m.enqueueErr != nil {
+		return 0, m.enqueueErr
+	}
+	return 1, nil
 }
 func (m *mockQueueServiceForAnalyze) FindTaskByRepo(_ context.Context, _, _ string) (*port.TaskInfo, error) {
 	return m.taskInfo, nil

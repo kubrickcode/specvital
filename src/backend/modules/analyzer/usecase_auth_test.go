@@ -20,7 +20,7 @@ func TestAnalyzeRepositoryUseCaseWithAuth(t *testing.T) {
 		systemConfig := &mockSystemConfigReader{parserVersion: "v1.0.0"}
 		tokenProvider := &mockTokenProvider{token: "github-token"}
 
-		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider)
+		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider, nil, nil)
 
 		ctx := context.Background()
 		result, err := uc.Execute(ctx, usecase.AnalyzeRepositoryInput{
@@ -49,7 +49,7 @@ func TestAnalyzeRepositoryUseCaseWithAuth(t *testing.T) {
 		systemConfig := &mockSystemConfigReader{parserVersion: "v1.0.0"}
 		tokenProvider := &mockTokenProvider{err: authdomain.ErrNoGitHubToken}
 
-		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider)
+		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider, nil, nil)
 
 		ctx := context.Background()
 		result, err := uc.Execute(ctx, usecase.AnalyzeRepositoryInput{
@@ -80,7 +80,7 @@ func TestAnalyzeRepositoryUseCaseWithAuth(t *testing.T) {
 		systemConfig := &mockSystemConfigReader{parserVersion: "v1.0.0"}
 		tokenProvider := &mockTokenProvider{token: "github-token"}
 
-		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider)
+		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider, nil, nil)
 
 		ctx := context.Background()
 		result, err := uc.Execute(ctx, usecase.AnalyzeRepositoryInput{
@@ -108,7 +108,7 @@ func TestAnalyzeRepositoryUseCaseWithAuth(t *testing.T) {
 		systemConfig := &mockSystemConfigReader{parserVersion: "v1.0.0"}
 		tokenProvider := &mockTokenProvider{token: "github-token"}
 
-		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider)
+		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider, nil, nil)
 
 		ctx := context.Background()
 		_, err := uc.Execute(ctx, usecase.AnalyzeRepositoryInput{
@@ -132,7 +132,7 @@ func TestAnalyzeRepositoryUseCaseWithAuth(t *testing.T) {
 		systemConfig := &mockSystemConfigReader{parserVersion: "v1.0.0"}
 		tokenProvider := &mockTokenProvider{token: "github-token"}
 
-		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider)
+		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider, nil, nil)
 
 		ctx := context.Background()
 		_, err := uc.Execute(ctx, usecase.AnalyzeRepositoryInput{
@@ -163,7 +163,7 @@ func TestAnalyzeRepositoryUseCaseWithAuth(t *testing.T) {
 		systemConfig := &mockSystemConfigReader{parserVersion: "v1.0.0"}
 		tokenProvider := &mockTokenProvider{token: "github-token"}
 
-		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider)
+		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider, nil, nil)
 
 		ctx := context.Background()
 		result, err := uc.Execute(ctx, usecase.AnalyzeRepositoryInput{
@@ -195,7 +195,7 @@ func TestAnalyzeRepositoryUseCaseWithAuth(t *testing.T) {
 		gitClient := &mockGitClient{commitSHA: "public-sha"}
 		systemConfig := &mockSystemConfigReader{parserVersion: "v1.0.0"}
 
-		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, nil)
+		uc := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, nil, nil, nil)
 
 		ctx := context.Background()
 		result, err := uc.Execute(ctx, usecase.AnalyzeRepositoryInput{

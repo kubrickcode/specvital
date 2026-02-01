@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 
 	"github.com/specvital/web/src/backend/common/logger"
 	"github.com/specvital/web/src/backend/internal/api"
@@ -121,6 +122,19 @@ func (m *mockQueueService) Enqueue(ctx context.Context, owner, repo, commitSHA s
 	return m.err
 }
 
+func (m *mockQueueService) EnqueueTx(ctx context.Context, tx pgx.Tx, owner, repo, commitSHA string, userID *string, tier subscription.PlanTier) (int64, error) {
+	m.enqueueCalled = true
+	m.enqueuedOwner = owner
+	m.enqueuedRepo = repo
+	m.enqueuedCommitSHA = commitSHA
+	m.enqueuedUserID = userID
+	m.enqueuedTier = tier
+	if m.err != nil {
+		return 0, m.err
+	}
+	return 1, nil
+}
+
 func (m *mockQueueService) FindTaskByRepo(ctx context.Context, owner, repo string) (*port.TaskInfo, error) {
 	return m.findTaskInfo, nil
 }
@@ -188,7 +202,7 @@ func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gi
 	log := logger.New()
 	systemConfig := &mockSystemConfigReader{parserVersion: "v1.0.0"}
 
-	analyzeRepositoryUC := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider)
+	analyzeRepositoryUC := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider, nil, nil)
 	getAnalysisUC := usecase.NewGetAnalysisUseCase(queue, repo)
 	listRepositoryCardsUC := usecase.NewListRepositoryCardsUseCase(gitClient, repo, tokenProvider)
 	getUpdateStatusUC := usecase.NewGetUpdateStatusUseCase(gitClient, repo, systemConfig, tokenProvider)
