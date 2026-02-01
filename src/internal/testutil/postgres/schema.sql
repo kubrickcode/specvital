@@ -269,6 +269,22 @@ CREATE TABLE public.oauth_accounts (
 
 
 --
+-- Name: quota_reservations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.quota_reservations (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    event_type public.usage_event_type NOT NULL,
+    reserved_amount integer NOT NULL,
+    job_id bigint NOT NULL,
+    expires_at timestamp with time zone DEFAULT (now() + '01:00:00'::interval) NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT chk_reserved_amount_positive CHECK ((reserved_amount > 0))
+);
+
+
+--
 -- Name: refresh_tokens; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -729,6 +745,14 @@ ALTER TABLE ONLY public.oauth_accounts
 
 
 --
+-- Name: quota_reservations quota_reservations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quota_reservations
+    ADD CONSTRAINT quota_reservations_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -894,6 +918,14 @@ ALTER TABLE ONLY public.github_organizations
 
 ALTER TABLE ONLY public.oauth_accounts
     ADD CONSTRAINT uq_oauth_provider_user UNIQUE (provider, provider_user_id);
+
+
+--
+-- Name: quota_reservations uq_quota_reservations_job_id; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quota_reservations
+    ADD CONSTRAINT uq_quota_reservations_job_id UNIQUE (job_id);
 
 
 --
@@ -1129,6 +1161,20 @@ CREATE INDEX idx_oauth_accounts_user_id ON public.oauth_accounts USING btree (us
 --
 
 CREATE INDEX idx_oauth_accounts_user_provider ON public.oauth_accounts USING btree (user_id, provider);
+
+
+--
+-- Name: idx_quota_reservations_expires; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_quota_reservations_expires ON public.quota_reservations USING btree (expires_at);
+
+
+--
+-- Name: idx_quota_reservations_user_event; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_quota_reservations_user_event ON public.quota_reservations USING btree (user_id, event_type);
 
 
 --
@@ -1440,6 +1486,14 @@ ALTER TABLE ONLY public.github_app_installations
 
 ALTER TABLE ONLY public.oauth_accounts
     ADD CONSTRAINT fk_oauth_accounts_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: quota_reservations fk_quota_reservations_user; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quota_reservations
+    ADD CONSTRAINT fk_quota_reservations_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
