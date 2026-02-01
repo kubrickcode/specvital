@@ -18,6 +18,7 @@ type CheckQuotaInput struct {
 type CheckQuotaOutput struct {
 	IsAllowed bool
 	Used      int64
+	Reserved  int64
 	Limit     *int32
 	ResetAt   time.Time
 }
@@ -25,15 +26,18 @@ type CheckQuotaOutput struct {
 type CheckQuotaUseCase struct {
 	subscriptionRepo port.SubscriptionRepository
 	usageRepo        usageport.UsageRepository
+	reservationRepo  usageport.QuotaReservationRepository
 }
 
 func NewCheckQuotaUseCase(
 	subscriptionRepo port.SubscriptionRepository,
 	usageRepo usageport.UsageRepository,
+	reservationRepo usageport.QuotaReservationRepository,
 ) *CheckQuotaUseCase {
 	return &CheckQuotaUseCase{
 		subscriptionRepo: subscriptionRepo,
 		usageRepo:        usageRepo,
+		reservationRepo:  reservationRepo,
 	}
 }
 
@@ -47,6 +51,11 @@ func (uc *CheckQuotaUseCase) Execute(ctx context.Context, input CheckQuotaInput)
 	periodEnd := subscription.CurrentPeriodEnd
 
 	used, err := uc.usageRepo.GetMonthlyUsage(ctx, input.UserID, input.EventType, periodStart, periodEnd)
+	if err != nil {
+		return nil, err
+	}
+
+	reserved, err := uc.reservationRepo.GetTotalReservedAmount(ctx, input.UserID, input.EventType)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +74,8 @@ func (uc *CheckQuotaUseCase) Execute(ctx context.Context, input CheckQuotaInput)
 		}
 
 		if limit != nil {
-			if used+int64(input.Amount) > int64(*limit) {
+			effective := used + reserved
+			if effective+int64(input.Amount) > int64(*limit) {
 				isAllowed = false
 			}
 		}
@@ -74,6 +84,7 @@ func (uc *CheckQuotaUseCase) Execute(ctx context.Context, input CheckQuotaInput)
 	return &CheckQuotaOutput{
 		IsAllowed: isAllowed,
 		Used:      used,
+		Reserved:  reserved,
 		Limit:     limit,
 		ResetAt:   periodEnd,
 	}, nil

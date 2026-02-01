@@ -53,6 +53,23 @@ func (m *mockUsageRepo) GetUsageByPeriod(_ context.Context, _ string, _, _ time.
 	return m.usageStats, m.err
 }
 
+type mockReservationRepo struct {
+	reservedAmount int64
+	err            error
+}
+
+func (m *mockReservationRepo) CreateReservation(_ context.Context, _ string, _ usageentity.EventType, _ int32, _ int64) error {
+	return m.err
+}
+
+func (m *mockReservationRepo) GetTotalReservedAmount(_ context.Context, _ string, _ usageentity.EventType) (int64, error) {
+	return m.reservedAmount, m.err
+}
+
+func (m *mockReservationRepo) DeleteReservationByJobID(_ context.Context, _ int64) error {
+	return m.err
+}
+
 func TestCheckQuotaUseCase_Execute(t *testing.T) {
 	now := time.Now()
 	periodStart := now.AddDate(0, -1, 0)
@@ -62,12 +79,14 @@ func TestCheckQuotaUseCase_Execute(t *testing.T) {
 	analysisLimit := int32(50)
 
 	tests := []struct {
-		name          string
-		input         usecase.CheckQuotaInput
-		subscription  *subscriptionentity.SubscriptionWithPlan
-		monthlyUsage  int64
-		wantIsAllowed bool
-		wantLimit     *int32
+		name           string
+		input          usecase.CheckQuotaInput
+		subscription   *subscriptionentity.SubscriptionWithPlan
+		monthlyUsage   int64
+		reservedAmount int64
+		wantIsAllowed  bool
+		wantReserved   int64
+		wantLimit      *int32
 	}{
 		{
 			name: "free user under limit",
@@ -87,9 +106,11 @@ func TestCheckQuotaUseCase_Execute(t *testing.T) {
 					AnalysisMonthlyLimit: &analysisLimit,
 				},
 			},
-			monthlyUsage:  100,
-			wantIsAllowed: true,
-			wantLimit:     &specviewLimit,
+			monthlyUsage:   100,
+			reservedAmount: 0,
+			wantIsAllowed:  true,
+			wantReserved:   0,
+			wantLimit:      &specviewLimit,
 		},
 		{
 			name: "free user at limit",
@@ -109,9 +130,11 @@ func TestCheckQuotaUseCase_Execute(t *testing.T) {
 					AnalysisMonthlyLimit: &analysisLimit,
 				},
 			},
-			monthlyUsage:  5000,
-			wantIsAllowed: false,
-			wantLimit:     &specviewLimit,
+			monthlyUsage:   5000,
+			reservedAmount: 0,
+			wantIsAllowed:  false,
+			wantReserved:   0,
+			wantLimit:      &specviewLimit,
 		},
 		{
 			name: "enterprise user unlimited",
@@ -131,9 +154,11 @@ func TestCheckQuotaUseCase_Execute(t *testing.T) {
 					AnalysisMonthlyLimit: nil,
 				},
 			},
-			monthlyUsage:  1000000,
-			wantIsAllowed: true,
-			wantLimit:     nil,
+			monthlyUsage:   1000000,
+			reservedAmount: 500,
+			wantIsAllowed:  true,
+			wantReserved:   500,
+			wantLimit:      nil,
 		},
 		{
 			name: "analysis quota check",
@@ -153,9 +178,59 @@ func TestCheckQuotaUseCase_Execute(t *testing.T) {
 					AnalysisMonthlyLimit: &analysisLimit,
 				},
 			},
-			monthlyUsage:  49,
-			wantIsAllowed: true,
-			wantLimit:     &analysisLimit,
+			monthlyUsage:   49,
+			reservedAmount: 0,
+			wantIsAllowed:  true,
+			wantReserved:   0,
+			wantLimit:      &analysisLimit,
+		},
+		{
+			name: "rejected when used + reserved exceeds limit",
+			input: usecase.CheckQuotaInput{
+				UserID:    "user-1",
+				EventType: usageentity.EventTypeSpecview,
+				Amount:    100,
+			},
+			subscription: &subscriptionentity.SubscriptionWithPlan{
+				Subscription: subscriptionentity.Subscription{
+					CurrentPeriodStart: periodStart,
+					CurrentPeriodEnd:   periodEnd,
+				},
+				Plan: subscriptionentity.Plan{
+					Tier:                 subscriptionentity.PlanTierFree,
+					SpecviewMonthlyLimit: &specviewLimit,
+					AnalysisMonthlyLimit: &analysisLimit,
+				},
+			},
+			monthlyUsage:   4500,
+			reservedAmount: 450,
+			wantIsAllowed:  false,
+			wantReserved:   450,
+			wantLimit:      &specviewLimit,
+		},
+		{
+			name: "allowed when used + reserved + amount equals limit",
+			input: usecase.CheckQuotaInput{
+				UserID:    "user-1",
+				EventType: usageentity.EventTypeSpecview,
+				Amount:    50,
+			},
+			subscription: &subscriptionentity.SubscriptionWithPlan{
+				Subscription: subscriptionentity.Subscription{
+					CurrentPeriodStart: periodStart,
+					CurrentPeriodEnd:   periodEnd,
+				},
+				Plan: subscriptionentity.Plan{
+					Tier:                 subscriptionentity.PlanTierFree,
+					SpecviewMonthlyLimit: &specviewLimit,
+					AnalysisMonthlyLimit: &analysisLimit,
+				},
+			},
+			monthlyUsage:   4500,
+			reservedAmount: 450,
+			wantIsAllowed:  true,
+			wantReserved:   450,
+			wantLimit:      &specviewLimit,
 		},
 	}
 
@@ -163,8 +238,9 @@ func TestCheckQuotaUseCase_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			subscriptionRepo := &mockSubscriptionRepo{subscription: tt.subscription}
 			usageRepo := &mockUsageRepo{monthlyUsage: tt.monthlyUsage}
+			reservationRepo := &mockReservationRepo{reservedAmount: tt.reservedAmount}
 
-			uc := usecase.NewCheckQuotaUseCase(subscriptionRepo, usageRepo)
+			uc := usecase.NewCheckQuotaUseCase(subscriptionRepo, usageRepo, reservationRepo)
 			result, err := uc.Execute(context.Background(), tt.input)
 
 			if err != nil {
@@ -190,6 +266,10 @@ func TestCheckQuotaUseCase_Execute(t *testing.T) {
 
 			if result.Used != tt.monthlyUsage {
 				t.Errorf("Used = %v, want %v", result.Used, tt.monthlyUsage)
+			}
+
+			if result.Reserved != tt.wantReserved {
+				t.Errorf("Reserved = %v, want %v", result.Reserved, tt.wantReserved)
 			}
 		})
 	}

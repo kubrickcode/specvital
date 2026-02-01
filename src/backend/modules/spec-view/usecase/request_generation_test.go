@@ -145,20 +145,38 @@ func (m *mockUsageRepository) GetUsageByPeriod(_ context.Context, _ string, _, _
 	return nil, nil
 }
 
+type mockReservationRepository struct {
+	reservedAmount int64
+	err            error
+}
+
+func (m *mockReservationRepository) CreateReservation(_ context.Context, _ string, _ usageentity.EventType, _ int32, _ int64) error {
+	return m.err
+}
+
+func (m *mockReservationRepository) GetTotalReservedAmount(_ context.Context, _ string, _ usageentity.EventType) (int64, error) {
+	return m.reservedAmount, m.err
+}
+
+func (m *mockReservationRepository) DeleteReservationByJobID(_ context.Context, _ int64) error {
+	return m.err
+}
+
 func TestRequestGenerationUseCase_Execute_QuotaCheck(t *testing.T) {
 	now := time.Now()
 	periodEnd := now.AddDate(0, 1, 0)
 
 	tests := []struct {
-		name            string
-		input           RequestGenerationInput
-		mockRepo        *mockSpecViewRepository
-		mockQueue       *mockQueueService
-		mockSubRepo     *mockSubscriptionRepository
-		mockUsageRepo   *mockUsageRepository
-		expectedErr     error
-		wantErrContains string
-		expectedOutput  bool
+		name                string
+		input               RequestGenerationInput
+		mockRepo            *mockSpecViewRepository
+		mockQueue           *mockQueueService
+		mockSubRepo         *mockSubscriptionRepository
+		mockUsageRepo       *mockUsageRepository
+		mockReservationRepo *mockReservationRepository
+		expectedErr         error
+		wantErrContains     string
+		expectedOutput      bool
 	}{
 		{
 			name: "should allow when user is under quota",
@@ -185,6 +203,9 @@ func TestRequestGenerationUseCase_Execute_QuotaCheck(t *testing.T) {
 			},
 			mockUsageRepo: &mockUsageRepository{
 				monthlyUsage: 100,
+			},
+			mockReservationRepo: &mockReservationRepository{
+				reservedAmount: 0,
 			},
 			expectedErr:    nil,
 			expectedOutput: true,
@@ -214,6 +235,9 @@ func TestRequestGenerationUseCase_Execute_QuotaCheck(t *testing.T) {
 			},
 			mockUsageRepo: &mockUsageRepository{
 				monthlyUsage: 5000,
+			},
+			mockReservationRepo: &mockReservationRepository{
+				reservedAmount: 0,
 			},
 			expectedErr:    domain.ErrQuotaExceeded,
 			expectedOutput: false,
@@ -245,6 +269,9 @@ func TestRequestGenerationUseCase_Execute_QuotaCheck(t *testing.T) {
 			mockUsageRepo: &mockUsageRepository{
 				monthlyUsage: 100000,
 			},
+			mockReservationRepo: &mockReservationRepository{
+				reservedAmount: 500,
+			},
 			expectedErr:    nil,
 			expectedOutput: true,
 		},
@@ -254,12 +281,13 @@ func TestRequestGenerationUseCase_Execute_QuotaCheck(t *testing.T) {
 				AnalysisID: "test-analysis-id",
 				UserID:     "",
 			},
-			mockRepo:       &mockSpecViewRepository{},
-			mockQueue:      &mockQueueService{},
-			mockSubRepo:    nil,
-			mockUsageRepo:  nil,
-			expectedErr:    domain.ErrUnauthorized,
-			expectedOutput: false,
+			mockRepo:            &mockSpecViewRepository{},
+			mockQueue:           &mockQueueService{},
+			mockSubRepo:         nil,
+			mockUsageRepo:       nil,
+			mockReservationRepo: nil,
+			expectedErr:         domain.ErrUnauthorized,
+			expectedOutput:      false,
 		},
 		{
 			name: "should propagate error when subscription lookup fails",
@@ -276,17 +304,50 @@ func TestRequestGenerationUseCase_Execute_QuotaCheck(t *testing.T) {
 			mockSubRepo: &mockSubscriptionRepository{
 				err: errors.New("database connection failed"),
 			},
-			mockUsageRepo:   &mockUsageRepository{},
-			wantErrContains: "database connection failed",
-			expectedOutput:  false,
+			mockUsageRepo:       &mockUsageRepository{},
+			mockReservationRepo: &mockReservationRepository{},
+			wantErrContains:     "database connection failed",
+			expectedOutput:      false,
+		},
+		{
+			name: "should reject when used + reserved exceeds quota",
+			input: RequestGenerationInput{
+				AnalysisID: "test-analysis-id",
+				UserID:     "test-user-id",
+			},
+			mockRepo: &mockSpecViewRepository{
+				analysisExists: true,
+				documentExists: false,
+				status:         nil,
+			},
+			mockQueue: &mockQueueService{},
+			mockSubRepo: &mockSubscriptionRepository{
+				subscription: &subscriptionentity.SubscriptionWithPlan{
+					Subscription: subscriptionentity.Subscription{
+						CurrentPeriodStart: now,
+						CurrentPeriodEnd:   periodEnd,
+					},
+					Plan: subscriptionentity.Plan{
+						SpecviewMonthlyLimit: ptr(int32(5000)),
+					},
+				},
+			},
+			mockUsageRepo: &mockUsageRepository{
+				monthlyUsage: 4500,
+			},
+			mockReservationRepo: &mockReservationRepository{
+				reservedAmount: 501,
+			},
+			expectedErr:    domain.ErrQuotaExceeded,
+			expectedOutput: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var checkQuotaUC *usageusecase.CheckQuotaUseCase
-			if tt.mockSubRepo != nil && tt.mockUsageRepo != nil {
-				checkQuotaUC = usageusecase.NewCheckQuotaUseCase(tt.mockSubRepo, tt.mockUsageRepo)
+			if tt.mockSubRepo != nil && tt.mockUsageRepo != nil && tt.mockReservationRepo != nil {
+				checkQuotaUC = usageusecase.NewCheckQuotaUseCase(tt.mockSubRepo, tt.mockUsageRepo, tt.mockReservationRepo)
 			}
 
 			uc := NewRequestGenerationUseCase(tt.mockRepo, tt.mockQueue, checkQuotaUC)

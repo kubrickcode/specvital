@@ -101,8 +101,9 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 	assignDefaultPlanUC := subscriptionusecase.NewAssignDefaultPlanUseCase(subscriptionConfig.DefaultPlanTier, subscriptionRepo)
 
 	usageRepo := usageadapter.NewPostgresRepository(queries)
+	reservationRepo := usageadapter.NewQuotaReservationPostgresRepository(queries)
 
-	checkQuotaUC := usageusecase.NewCheckQuotaUseCase(subscriptionRepo, usageRepo)
+	checkQuotaUC := usageusecase.NewCheckQuotaUseCase(subscriptionRepo, usageRepo, reservationRepo)
 	getCurrentUsageUC := usageusecase.NewGetCurrentUsageUseCase(subscriptionRepo, usageRepo)
 
 	handleOAuthCallbackUC := authusecase.NewHandleOAuthCallbackUseCase(
