@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/riverqueue/river"
+
 	"github.com/specvital/worker/internal/domain/analysis"
+	"github.com/specvital/worker/internal/domain/quota"
 	uc "github.com/specvital/worker/internal/usecase/analysis"
 )
 
@@ -43,10 +45,14 @@ func (AnalyzeArgs) InsertOpts() river.InsertOpts {
 type AnalyzeWorker struct {
 	river.WorkerDefaults[AnalyzeArgs]
 	analyzeUC *uc.AnalyzeUseCase
+	quotaRepo quota.ReservationRepository
 }
 
-func NewAnalyzeWorker(analyzeUC *uc.AnalyzeUseCase) *AnalyzeWorker {
-	return &AnalyzeWorker{analyzeUC: analyzeUC}
+func NewAnalyzeWorker(analyzeUC *uc.AnalyzeUseCase, quotaRepo quota.ReservationRepository) *AnalyzeWorker {
+	return &AnalyzeWorker{
+		analyzeUC: analyzeUC,
+		quotaRepo: quotaRepo,
+	}
 }
 
 func (w *AnalyzeWorker) Timeout(job *river.Job[AnalyzeArgs]) time.Duration {
@@ -62,6 +68,9 @@ func (w *AnalyzeWorker) NextRetry(job *river.Job[AnalyzeArgs]) time.Time {
 
 func (w *AnalyzeWorker) Work(ctx context.Context, job *river.Job[AnalyzeArgs]) error {
 	args := job.Args
+
+	// Release quota reservation on completion or final failure.
+	defer quota.ReleaseReservation(w.quotaRepo, job.ID, "analyze")
 
 	slog.InfoContext(ctx, "processing analyze task",
 		"job_id", job.ID,

@@ -117,6 +117,19 @@ func (q *Queries) DeleteExpiredClassificationCaches(ctx context.Context, dollar_
 	return result.RowsAffected(), nil
 }
 
+const deleteQuotaReservationByJobID = `-- name: DeleteQuotaReservationByJobID :exec
+
+DELETE FROM quota_reservations WHERE job_id = $1
+`
+
+// =============================================================================
+// QUOTA RESERVATIONS
+// =============================================================================
+func (q *Queries) DeleteQuotaReservationByJobID(ctx context.Context, jobID int64) error {
+	_, err := q.db.Exec(ctx, deleteQuotaReservationByJobID, jobID)
+	return err
+}
+
 const findBehaviorCachesByHashes = `-- name: FindBehaviorCachesByHashes :many
 
 SELECT cache_key_hash, converted_description

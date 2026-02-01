@@ -36,6 +36,7 @@ func NewAnalyzerContainer(ctx context.Context, cfg ContainerConfig) (*AnalyzerCo
 
 	analysisRepo := postgres.NewAnalysisRepository(cfg.Pool)
 	codebaseRepo := postgres.NewCodebaseRepository(cfg.Pool)
+	quotaRepo := postgres.NewQuotaReservationRepository(cfg.Pool)
 	userRepo := postgres.NewUserRepository(cfg.Pool, encryptor)
 	gitVCS := vcs.NewGitVCS()
 	githubAPIClient := vcs.NewGitHubAPIClient(nil)
@@ -44,7 +45,7 @@ func NewAnalyzerContainer(ctx context.Context, cfg ContainerConfig) (*AnalyzerCo
 		analysisRepo, codebaseRepo, gitVCS, githubAPIClient, coreParser, userRepo,
 		analysisuc.WithParserVersion(cfg.ParserVersion),
 	)
-	analyzeWorker := analyze.NewAnalyzeWorker(analyzeUC)
+	analyzeWorker := analyze.NewAnalyzeWorker(analyzeUC, quotaRepo)
 
 	workers := river.NewWorkers()
 	river.AddWorker(workers, analyzeWorker)

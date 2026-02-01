@@ -222,7 +222,7 @@ func TestNewAnalyzeWorker(t *testing.T) {
 	vcsAPI := &mockVCSAPIClient{}
 	analyzeUC := uc.NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil, uc.WithParserVersion(testParserVersion))
 
-	worker := NewAnalyzeWorker(analyzeUC)
+	worker := NewAnalyzeWorker(analyzeUC, nil)
 
 	if worker == nil {
 		t.Error("expected worker, got nil")
@@ -355,7 +355,7 @@ func TestAnalyzeWorker_Work(t *testing.T) {
 			codebaseRepo := &mockCodebaseRepository{}
 			vcsAPI := &mockVCSAPIClient{}
 			analyzeUC := uc.NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil, uc.WithParserVersion(testParserVersion))
-			worker := NewAnalyzeWorker(analyzeUC)
+			worker := NewAnalyzeWorker(analyzeUC, nil)
 
 			job := newTestJob(tt.args)
 			err := worker.Work(context.Background(), job)
@@ -398,7 +398,7 @@ func TestAnalyzeWorker_Work_ContextPropagation(t *testing.T) {
 		codebaseRepo := &mockCodebaseRepository{}
 		vcsAPI := &mockVCSAPIClient{}
 		analyzeUC := uc.NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil, uc.WithParserVersion(testParserVersion))
-		worker := NewAnalyzeWorker(analyzeUC)
+		worker := NewAnalyzeWorker(analyzeUC, nil)
 
 		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"})
 		ctx := context.WithValue(context.Background(), testKey, testValue)
@@ -427,7 +427,7 @@ func TestAnalyzeWorker_Work_ContextPropagation(t *testing.T) {
 		codebaseRepo := &mockCodebaseRepository{}
 		vcsAPI := &mockVCSAPIClient{}
 		analyzeUC := uc.NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil, uc.WithParserVersion(testParserVersion))
-		worker := NewAnalyzeWorker(analyzeUC)
+		worker := NewAnalyzeWorker(analyzeUC, nil)
 
 		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"})
 		ctx, cancel := context.WithCancel(context.Background())
@@ -526,7 +526,7 @@ func TestAnalyzeWorker_Work_ErrorPropagation(t *testing.T) {
 			codebaseRepo := &mockCodebaseRepository{}
 			vcsAPI := &mockVCSAPIClient{}
 			analyzeUC := uc.NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil, uc.WithParserVersion(testParserVersion))
-			worker := NewAnalyzeWorker(analyzeUC)
+			worker := NewAnalyzeWorker(analyzeUC, nil)
 
 			job := newTestJob(tt.args)
 			err := worker.Work(context.Background(), job)
@@ -568,7 +568,7 @@ func TestAnalyzeWorker_Work_AlreadyCompleted(t *testing.T) {
 		codebaseRepo := &mockCodebaseRepository{}
 		vcsAPI := &mockVCSAPIClient{}
 		analyzeUC := uc.NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil, uc.WithParserVersion(testParserVersion))
-		worker := NewAnalyzeWorker(analyzeUC)
+		worker := NewAnalyzeWorker(analyzeUC, nil)
 
 		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"})
 		err := worker.Work(context.Background(), job)
@@ -580,6 +580,86 @@ func TestAnalyzeWorker_Work_AlreadyCompleted(t *testing.T) {
 		// Check that ErrAlreadyCompleted is wrapped in the error chain
 		if !errors.Is(err, analysis.ErrAlreadyCompleted) {
 			t.Errorf("expected error to wrap ErrAlreadyCompleted, got %v", err)
+		}
+	})
+}
+
+// mockQuotaRepository tracks calls to DeleteByJobID for testing quota release behavior.
+type mockQuotaRepository struct {
+	deletedJobIDs []int64
+	deleteErr     error
+}
+
+func (m *mockQuotaRepository) DeleteByJobID(ctx context.Context, jobID int64) error {
+	m.deletedJobIDs = append(m.deletedJobIDs, jobID)
+	return m.deleteErr
+}
+
+func TestAnalyzeWorker_QuotaRelease(t *testing.T) {
+	t.Run("should release quota on successful job completion", func(t *testing.T) {
+		repo, vcs, parser := newSuccessfulMocks()
+		codebaseRepo := &mockCodebaseRepository{}
+		vcsAPI := &mockVCSAPIClient{}
+		quotaRepo := &mockQuotaRepository{}
+		analyzeUC := uc.NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil, uc.WithParserVersion(testParserVersion))
+		worker := NewAnalyzeWorker(analyzeUC, quotaRepo)
+
+		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"})
+		job.JobRow.ID = 12345
+		err := worker.Work(context.Background(), job)
+
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(quotaRepo.deletedJobIDs) != 1 {
+			t.Errorf("expected 1 quota release call, got %d", len(quotaRepo.deletedJobIDs))
+		}
+		if quotaRepo.deletedJobIDs[0] != 12345 {
+			t.Errorf("expected job ID 12345, got %d", quotaRepo.deletedJobIDs[0])
+		}
+	})
+
+	t.Run("should release quota on job failure", func(t *testing.T) {
+		repo, _, parser := newSuccessfulMocks()
+		codebaseRepo := &mockCodebaseRepository{}
+		vcsAPI := &mockVCSAPIClient{}
+		quotaRepo := &mockQuotaRepository{}
+
+		vcs := &mockVCS{
+			cloneFn: func(ctx context.Context, url string, token *string) (analysis.Source, error) {
+				return nil, errors.New("clone failed")
+			},
+		}
+
+		analyzeUC := uc.NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil, uc.WithParserVersion(testParserVersion))
+		worker := NewAnalyzeWorker(analyzeUC, quotaRepo)
+
+		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"})
+		job.JobRow.ID = 67890
+		_ = worker.Work(context.Background(), job)
+
+		// Quota should be released even on failure
+		if len(quotaRepo.deletedJobIDs) != 1 {
+			t.Errorf("expected 1 quota release call on failure, got %d", len(quotaRepo.deletedJobIDs))
+		}
+		if quotaRepo.deletedJobIDs[0] != 67890 {
+			t.Errorf("expected job ID 67890, got %d", quotaRepo.deletedJobIDs[0])
+		}
+	})
+
+	t.Run("should handle nil quota repository gracefully", func(t *testing.T) {
+		repo, vcs, parser := newSuccessfulMocks()
+		codebaseRepo := &mockCodebaseRepository{}
+		vcsAPI := &mockVCSAPIClient{}
+		analyzeUC := uc.NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil, uc.WithParserVersion(testParserVersion))
+		worker := NewAnalyzeWorker(analyzeUC, nil)
+
+		job := newTestJob(AnalyzeArgs{Owner: "owner", Repo: "repo", CommitSHA: "abc123"})
+
+		// Should not panic with nil quota repo
+		err := worker.Work(context.Background(), job)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
 		}
 	})
 }

@@ -181,7 +181,7 @@ func newSuccessfulMocks() (*mockRepository, *mockAIProvider) {
 func TestNewWorker(t *testing.T) {
 	repo, ai := newSuccessfulMocks()
 	usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
-	worker := NewWorker(usecase)
+	worker := NewWorker(usecase, nil)
 
 	if worker == nil {
 		t.Error("expected worker, got nil")
@@ -213,7 +213,7 @@ func TestArgs_InsertOpts(t *testing.T) {
 func TestWorker_Timeout(t *testing.T) {
 	repo, ai := newSuccessfulMocks()
 	usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
-	worker := NewWorker(usecase)
+	worker := NewWorker(usecase, nil)
 
 	job := newTestJob(Args{AnalysisID: "test-id", Language: "en"})
 	timeout := worker.Timeout(job)
@@ -236,7 +236,7 @@ func TestWorker_NextRetry(t *testing.T) {
 
 	repo, ai := newSuccessfulMocks()
 	usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
-	worker := NewWorker(usecase)
+	worker := NewWorker(usecase, nil)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -405,7 +405,7 @@ func TestWorker_Work(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo, ai := tt.setupMocks()
 			usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
-			worker := NewWorker(usecase)
+			worker := NewWorker(usecase, nil)
 
 			job := newTestJob(tt.args)
 			err := worker.Work(context.Background(), job)
@@ -449,7 +449,7 @@ func TestWorker_Work_ContextPropagation(t *testing.T) {
 		}
 
 		usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
-		worker := NewWorker(usecase)
+		worker := NewWorker(usecase, nil)
 
 		job := newTestJob(Args{AnalysisID: "test-id", Language: "en", UserID: "test-user-001"})
 		ctx := context.WithValue(context.Background(), testKey, testValue)
@@ -474,7 +474,7 @@ func TestWorker_Work_ContextPropagation(t *testing.T) {
 		}
 
 		usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
-		worker := NewWorker(usecase)
+		worker := NewWorker(usecase, nil)
 
 		job := newTestJob(Args{AnalysisID: "test-id", Language: "en", UserID: "test-user-001"})
 		ctx, cancel := context.WithCancel(context.Background())
@@ -533,4 +533,74 @@ func TestIsPermanentError(t *testing.T) {
 			}
 		})
 	}
+}
+
+// mockQuotaRepository tracks calls to DeleteByJobID for testing quota release behavior.
+type mockQuotaRepository struct {
+	deletedJobIDs []int64
+	deleteErr     error
+}
+
+func (m *mockQuotaRepository) DeleteByJobID(ctx context.Context, jobID int64) error {
+	m.deletedJobIDs = append(m.deletedJobIDs, jobID)
+	return m.deleteErr
+}
+
+func TestWorker_QuotaRelease(t *testing.T) {
+	t.Run("should release quota on successful job completion", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		quotaRepo := &mockQuotaRepository{}
+		usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
+		worker := NewWorker(usecase, quotaRepo)
+
+		job := newTestJob(Args{AnalysisID: "test-id", Language: "en", UserID: "test-user-001"})
+		job.JobRow.ID = 12345
+		err := worker.Work(context.Background(), job)
+
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(quotaRepo.deletedJobIDs) != 1 {
+			t.Errorf("expected 1 quota release call, got %d", len(quotaRepo.deletedJobIDs))
+		}
+		if quotaRepo.deletedJobIDs[0] != 12345 {
+			t.Errorf("expected job ID 12345, got %d", quotaRepo.deletedJobIDs[0])
+		}
+	})
+
+	t.Run("should release quota on job failure", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		repo.getAnalysisContextFn = func(ctx context.Context, analysisID string) (*specview.AnalysisContext, error) {
+			return nil, errors.New("database error")
+		}
+		quotaRepo := &mockQuotaRepository{}
+		usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
+		worker := NewWorker(usecase, quotaRepo)
+
+		job := newTestJob(Args{AnalysisID: "test-id", Language: "en", UserID: "test-user-001"})
+		job.JobRow.ID = 67890
+		_ = worker.Work(context.Background(), job)
+
+		// Quota should be released even on failure
+		if len(quotaRepo.deletedJobIDs) != 1 {
+			t.Errorf("expected 1 quota release call on failure, got %d", len(quotaRepo.deletedJobIDs))
+		}
+		if quotaRepo.deletedJobIDs[0] != 67890 {
+			t.Errorf("expected job ID 67890, got %d", quotaRepo.deletedJobIDs[0])
+		}
+	})
+
+	t.Run("should handle nil quota repository gracefully", func(t *testing.T) {
+		repo, ai := newSuccessfulMocks()
+		usecase := uc.NewGenerateSpecViewUseCase(repo, ai, "test-model")
+		worker := NewWorker(usecase, nil)
+
+		job := newTestJob(Args{AnalysisID: "test-id", Language: "en", UserID: "test-user-001"})
+
+		// Should not panic with nil quota repo
+		err := worker.Work(context.Background(), job)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
 }

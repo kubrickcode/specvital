@@ -57,12 +57,13 @@ func NewSpecGeneratorContainer(ctx context.Context, cfg ContainerConfig) (*SpecG
 	}
 
 	specDocRepo := postgres.NewSpecDocumentRepository(cfg.Pool)
+	quotaRepo := postgres.NewQuotaReservationRepository(cfg.Pool)
 	specViewUC := specviewuc.NewGenerateSpecViewUseCase(
 		specDocRepo,
 		aiProvider,
 		defaultModelID,
 	)
-	specViewWorker := specviewqueue.NewWorker(specViewUC)
+	specViewWorker := specviewqueue.NewWorker(specViewUC, quotaRepo)
 
 	workers := river.NewWorkers()
 	river.AddWorker(workers, specViewWorker)

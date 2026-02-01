@@ -8,6 +8,7 @@ import (
 
 	"github.com/riverqueue/river"
 
+	"github.com/specvital/worker/internal/domain/quota"
 	"github.com/specvital/worker/internal/domain/specview"
 	uc "github.com/specvital/worker/internal/usecase/specview"
 )
@@ -51,12 +52,16 @@ func (Args) InsertOpts() river.InsertOpts {
 // Worker processes spec-view generation jobs.
 type Worker struct {
 	river.WorkerDefaults[Args]
-	usecase *uc.GenerateSpecViewUseCase
+	quotaRepo quota.ReservationRepository
+	usecase   *uc.GenerateSpecViewUseCase
 }
 
 // NewWorker creates a new spec-view worker.
-func NewWorker(usecase *uc.GenerateSpecViewUseCase) *Worker {
-	return &Worker{usecase: usecase}
+func NewWorker(usecase *uc.GenerateSpecViewUseCase, quotaRepo quota.ReservationRepository) *Worker {
+	return &Worker{
+		quotaRepo: quotaRepo,
+		usecase:   usecase,
+	}
 }
 
 // Timeout returns the maximum duration for this job.
@@ -76,6 +81,9 @@ func (w *Worker) NextRetry(job *river.Job[Args]) time.Time {
 func (w *Worker) Work(ctx context.Context, job *river.Job[Args]) error {
 	startTime := time.Now()
 	args := job.Args
+
+	// Release quota reservation on completion or final failure.
+	defer quota.ReleaseReservation(w.quotaRepo, job.ID, "specview")
 
 	// Default language to English if not specified
 	language := args.Language
@@ -144,7 +152,6 @@ func (w *Worker) Work(ctx context.Context, job *river.Job[Args]) error {
 
 	return nil
 }
-
 
 func (w *Worker) handleError(ctx context.Context, job *river.Job[Args], err error) error {
 	args := job.Args

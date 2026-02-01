@@ -269,3 +269,10 @@ SET phase1_output = EXCLUDED.phase1_output,
 -- name: DeleteExpiredClassificationCaches :execrows
 DELETE FROM classification_caches
 WHERE created_at < now() - $1::interval;
+
+-- =============================================================================
+-- QUOTA RESERVATIONS
+-- =============================================================================
+
+-- name: DeleteQuotaReservationByJobID :exec
+DELETE FROM quota_reservations WHERE job_id = $1;
