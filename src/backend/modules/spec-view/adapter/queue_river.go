@@ -82,3 +82,39 @@ func (s *RiverQueueService) EnqueueSpecGeneration(ctx context.Context, analysisI
 
 	return nil
 }
+
+func (s *RiverQueueService) EnqueueSpecGenerationTx(ctx context.Context, tx pgx.Tx, analysisID string, language string, userID *string, tier subscription.PlanTier, mode entity.GenerationMode) (int64, error) {
+	ctx, cancel := context.WithTimeout(ctx, enqueueTimeout)
+	defer cancel()
+
+	args := SpecGenerationArgs{
+		AnalysisID:      analysisID,
+		Language:        language,
+		ModelID:         "gemini-2.5-pro",
+		UserID:          userID,
+		GenerationMode:  string(mode),
+		ForceRegenerate: mode.IsRegeneration(),
+	}
+
+	targetQueue := queue.SelectQueueForSpecView(tier, false)
+
+	result, err := s.client.InsertTx(ctx, tx, args, &river.InsertOpts{
+		MaxAttempts: maxRetries,
+		Queue:       targetQueue,
+		UniqueOpts: river.UniqueOpts{
+			ByArgs: true,
+			ByState: []rivertype.JobState{
+				rivertype.JobStateAvailable,
+				rivertype.JobStatePending,
+				rivertype.JobStateRunning,
+				rivertype.JobStateRetryable,
+				rivertype.JobStateScheduled,
+			},
+		},
+	})
+	if err != nil {
+		return 0, fmt.Errorf("enqueue spec generation for analysis %s: %w", analysisID, err)
+	}
+
+	return result.Job.ID, nil
+}

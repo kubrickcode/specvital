@@ -247,7 +247,7 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 	specViewQueue := specviewadapter.NewRiverQueueService(container.River.Client())
 
 	getSpecDocumentUC := specviewusecase.NewGetSpecDocumentUseCase(specViewRepo)
-	requestGenerationUC := specviewusecase.NewRequestGenerationUseCase(specViewRepo, specViewQueue, checkQuotaUC)
+	requestGenerationUC := specviewusecase.NewRequestGenerationUseCase(specViewRepo, specViewQueue, checkQuotaUC, container.DB, reservationRepo)
 	getGenerationStatusUC := specviewusecase.NewGetGenerationStatusUseCase(specViewRepo)
 	getVersionsUC := specviewusecase.NewGetVersionsUseCase(specViewRepo)
 	getCacheAvailabilityUC := specviewusecase.NewGetCacheAvailabilityUseCase(specViewRepo)

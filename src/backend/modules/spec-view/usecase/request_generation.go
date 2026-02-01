@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/specvital/web/src/backend/internal/db"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/entity"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/port"
 	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 	usageentity "github.com/specvital/web/src/backend/modules/usage/domain/entity"
+	usageport "github.com/specvital/web/src/backend/modules/usage/domain/port"
 	usageusecase "github.com/specvital/web/src/backend/modules/usage/usecase"
 )
 
@@ -27,20 +31,26 @@ type RequestGenerationOutput struct {
 }
 
 type RequestGenerationUseCase struct {
-	checkQuota *usageusecase.CheckQuotaUseCase
-	queue      port.QueueService
-	repo       port.SpecViewRepository
+	checkQuota      *usageusecase.CheckQuotaUseCase
+	dbPool          *pgxpool.Pool
+	queue           port.QueueService
+	repo            port.SpecViewRepository
+	reservationRepo usageport.QuotaReservationRepository
 }
 
 func NewRequestGenerationUseCase(
 	repo port.SpecViewRepository,
 	queue port.QueueService,
 	checkQuota *usageusecase.CheckQuotaUseCase,
+	dbPool *pgxpool.Pool,
+	reservationRepo usageport.QuotaReservationRepository,
 ) *RequestGenerationUseCase {
 	return &RequestGenerationUseCase{
-		checkQuota: checkQuota,
-		queue:      queue,
-		repo:       repo,
+		checkQuota:      checkQuota,
+		dbPool:          dbPool,
+		queue:           queue,
+		repo:            repo,
+		reservationRepo: reservationRepo,
 	}
 }
 
@@ -94,9 +104,6 @@ func (uc *RequestGenerationUseCase) Execute(ctx context.Context, input RequestGe
 	}
 
 	// Quota check: validates user has remaining quota before enqueueing.
-	// Note: This check is not atomic with queue enrollment. Concurrent requests may
-	// pass validation before usage is recorded, allowing marginal over-usage.
-	// This is acceptable as usage recording happens asynchronously in the worker.
 	if input.UserID != "" && uc.checkQuota != nil {
 		quotaResult, err := uc.checkQuota.Execute(ctx, usageusecase.CheckQuotaInput{
 			UserID:    input.UserID,
@@ -116,12 +123,56 @@ func (uc *RequestGenerationUseCase) Execute(ctx context.Context, input RequestGe
 		userIDPtr = &input.UserID
 	}
 
-	if err := uc.queue.EnqueueSpecGeneration(ctx, input.AnalysisID, language, userIDPtr, input.Tier, input.Mode); err != nil {
-		return nil, err
+	// Enqueue with reservation if transaction support is available.
+	// Reservation prevents race conditions by tracking pending usage.
+	if uc.dbPool != nil && uc.reservationRepo != nil {
+		if err := uc.enqueueWithReservation(ctx, input.AnalysisID, language, input.UserID, input.Tier, input.Mode); err != nil {
+			return nil, err
+		}
+	} else {
+		// Fallback: enqueue without reservation (for tests or configurations without quota tracking)
+		if err := uc.queue.EnqueueSpecGeneration(ctx, input.AnalysisID, language, userIDPtr, input.Tier, input.Mode); err != nil {
+			return nil, err
+		}
 	}
 
 	return &RequestGenerationOutput{
 		AnalysisID: input.AnalysisID,
 		Status:     entity.StatusPending,
 	}, nil
+}
+
+// enqueueWithReservation creates a quota reservation and enqueues the job atomically.
+// If enqueue fails, the transaction is rolled back and the reservation is not created.
+func (uc *RequestGenerationUseCase) enqueueWithReservation(
+	ctx context.Context,
+	analysisID string,
+	language string,
+	userID string,
+	tier subscription.PlanTier,
+	mode entity.GenerationMode,
+) error {
+	tx, err := uc.dbPool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	// Enqueue job within transaction - get job ID
+	jobID, err := uc.queue.EnqueueSpecGenerationTx(ctx, tx, analysisID, language, &userID, tier, mode)
+	if err != nil {
+		return err
+	}
+
+	// Create reservation with job ID (amount=1 for now, will be enhanced with test count later)
+	qtx := db.New(tx)
+	if err := uc.reservationRepo.CreateReservationTx(ctx, qtx, userID, usageentity.EventTypeSpecview, 1, jobID); err != nil {
+		return fmt.Errorf("create quota reservation: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
 }

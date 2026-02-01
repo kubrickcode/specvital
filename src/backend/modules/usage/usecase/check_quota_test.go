@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/specvital/web/src/backend/internal/db"
 	subscriptionentity "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 	usageentity "github.com/specvital/web/src/backend/modules/usage/domain/entity"
 	"github.com/specvital/web/src/backend/modules/usage/usecase"
@@ -59,6 +60,10 @@ type mockReservationRepo struct {
 }
 
 func (m *mockReservationRepo) CreateReservation(_ context.Context, _ string, _ usageentity.EventType, _ int32, _ int64) error {
+	return m.err
+}
+
+func (m *mockReservationRepo) CreateReservationTx(_ context.Context, _ *db.Queries, _ string, _ usageentity.EventType, _ int32, _ int64) error {
 	return m.err
 }
 

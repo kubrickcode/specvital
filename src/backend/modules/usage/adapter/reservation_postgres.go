@@ -22,12 +22,16 @@ func NewQuotaReservationPostgresRepository(queries *db.Queries) *QuotaReservatio
 }
 
 func (r *QuotaReservationPostgresRepository) CreateReservation(ctx context.Context, userID string, eventType entity.EventType, amount int32, jobID int64) error {
+	return r.CreateReservationTx(ctx, r.queries, userID, eventType, amount, jobID)
+}
+
+func (r *QuotaReservationPostgresRepository) CreateReservationTx(ctx context.Context, qtx *db.Queries, userID string, eventType entity.EventType, amount int32, jobID int64) error {
 	userUUID, err := uuidFromString(userID)
 	if err != nil {
 		return fmt.Errorf("invalid userID: %w", err)
 	}
 
-	_, err = r.queries.CreateQuotaReservation(ctx, db.CreateQuotaReservationParams{
+	_, err = qtx.CreateQuotaReservation(ctx, db.CreateQuotaReservationParams{
 		UserID:         pgtype.UUID{Bytes: userUUID, Valid: true},
 		EventType:      db.UsageEventType(eventType),
 		ReservedAmount: amount,

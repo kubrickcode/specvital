@@ -7,6 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
+	"github.com/specvital/web/src/backend/internal/db"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/entity"
 	subscriptionentity "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
@@ -97,10 +100,21 @@ func (m *mockSpecViewRepository) GetAvailableLanguagesByRepository(_ context.Con
 
 type mockQueueService struct {
 	enqueueErr error
+	jobID      int64
 }
 
 func (m *mockQueueService) EnqueueSpecGeneration(_ context.Context, _ string, _ string, _ *string, _ subscriptionentity.PlanTier, _ entity.GenerationMode) error {
 	return m.enqueueErr
+}
+
+func (m *mockQueueService) EnqueueSpecGenerationTx(_ context.Context, _ pgx.Tx, _ string, _ string, _ *string, _ subscriptionentity.PlanTier, _ entity.GenerationMode) (int64, error) {
+	if m.enqueueErr != nil {
+		return 0, m.enqueueErr
+	}
+	if m.jobID == 0 {
+		return 1, nil
+	}
+	return m.jobID, nil
 }
 
 type mockSubscriptionRepository struct {
@@ -151,6 +165,10 @@ type mockReservationRepository struct {
 }
 
 func (m *mockReservationRepository) CreateReservation(_ context.Context, _ string, _ usageentity.EventType, _ int32, _ int64) error {
+	return m.err
+}
+
+func (m *mockReservationRepository) CreateReservationTx(_ context.Context, _ *db.Queries, _ string, _ usageentity.EventType, _ int32, _ int64) error {
 	return m.err
 }
 
@@ -350,7 +368,8 @@ func TestRequestGenerationUseCase_Execute_QuotaCheck(t *testing.T) {
 				checkQuotaUC = usageusecase.NewCheckQuotaUseCase(tt.mockSubRepo, tt.mockUsageRepo, tt.mockReservationRepo)
 			}
 
-			uc := NewRequestGenerationUseCase(tt.mockRepo, tt.mockQueue, checkQuotaUC)
+			// Pass nil for dbPool and reservationRepo to use fallback path without transaction
+			uc := NewRequestGenerationUseCase(tt.mockRepo, tt.mockQueue, checkQuotaUC, nil, nil)
 
 			result, err := uc.Execute(context.Background(), tt.input)
 
@@ -494,7 +513,7 @@ func TestRequestGenerationUseCase_Execute_ForceRegenerate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			uc := NewRequestGenerationUseCase(tt.mockRepo, tt.mockQueue, nil)
+			uc := NewRequestGenerationUseCase(tt.mockRepo, tt.mockQueue, nil, nil, nil)
 
 			_, err := uc.Execute(context.Background(), tt.input)
 
