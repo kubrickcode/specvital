@@ -30,6 +30,7 @@
 | [public.user_subscriptions](public.user_subscriptions.md)                                         | 9       |         | BASE TABLE |
 | [public.behavior_caches](public.behavior_caches.md)                                               | 4       |         | BASE TABLE |
 | [public.classification_caches](public.classification_caches.md)                                   | 7       |         | BASE TABLE |
+| [public.quota_reservations](public.quota_reservations.md)                                         | 7       |         | BASE TABLE |
 
 ## Enums
 
@@ -79,6 +80,7 @@ erDiagram
 "public.usage_events" }o--o| "public.spec_documents" : "FOREIGN KEY (document_id) REFERENCES spec_documents(id) ON DELETE SET NULL"
 "public.user_subscriptions" }o--|| "public.users" : "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
 "public.user_subscriptions" }o--|| "public.subscription_plans" : "FOREIGN KEY (plan_id) REFERENCES subscription_plans(id) ON DELETE RESTRICT"
+"public.quota_reservations" }o--|| "public.users" : "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
 
 "atlas_schema_revisions.atlas_schema_revisions" {
   varchar version
@@ -336,6 +338,15 @@ erDiagram
   varchar_100_ model_id
   jsonb phase1_output
   jsonb test_index_map
+  timestamp_with_time_zone created_at
+}
+"public.quota_reservations" {
+  uuid id
+  uuid user_id FK
+  usage_event_type event_type
+  integer reserved_amount
+  bigint job_id
+  timestamp_with_time_zone expires_at
   timestamp_with_time_zone created_at
 }
 ```

@@ -2546,6 +2546,111 @@
           "columns": ["content_hash", "language", "model_id"]
         }
       ]
+    },
+    {
+      "name": "public.quota_reservations",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "default": "gen_random_uuid()"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "event_type",
+          "type": "usage_event_type",
+          "nullable": false
+        },
+        {
+          "name": "reserved_amount",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "job_id",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "(now() + '01:00:00'::interval)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "quota_reservations_pkey",
+          "def": "CREATE UNIQUE INDEX quota_reservations_pkey ON public.quota_reservations USING btree (id)",
+          "table": "public.quota_reservations",
+          "columns": ["id"]
+        },
+        {
+          "name": "uq_quota_reservations_job_id",
+          "def": "CREATE UNIQUE INDEX uq_quota_reservations_job_id ON public.quota_reservations USING btree (job_id)",
+          "table": "public.quota_reservations",
+          "columns": ["job_id"]
+        },
+        {
+          "name": "idx_quota_reservations_expires",
+          "def": "CREATE INDEX idx_quota_reservations_expires ON public.quota_reservations USING btree (expires_at)",
+          "table": "public.quota_reservations",
+          "columns": ["expires_at"]
+        },
+        {
+          "name": "idx_quota_reservations_user_event",
+          "def": "CREATE INDEX idx_quota_reservations_user_event ON public.quota_reservations USING btree (user_id, event_type)",
+          "table": "public.quota_reservations",
+          "columns": ["user_id", "event_type"]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "chk_reserved_amount_positive",
+          "type": "CHECK",
+          "def": "CHECK ((reserved_amount \u003e 0))",
+          "table": "public.quota_reservations",
+          "referenced_table": "",
+          "columns": ["reserved_amount"]
+        },
+        {
+          "name": "fk_quota_reservations_user",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+          "table": "public.quota_reservations",
+          "referenced_table": "users",
+          "columns": ["user_id"],
+          "referenced_columns": ["id"]
+        },
+        {
+          "name": "quota_reservations_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.quota_reservations",
+          "referenced_table": "",
+          "columns": ["id"]
+        },
+        {
+          "name": "uq_quota_reservations_job_id",
+          "type": "UNIQUE",
+          "def": "UNIQUE (job_id)",
+          "table": "public.quota_reservations",
+          "referenced_table": "",
+          "columns": ["job_id"]
+        }
+      ]
     }
   ],
   "relations": [
@@ -2818,6 +2923,15 @@
       "parent_columns": ["id"],
       "parent_cardinality": "exactly_one",
       "def": "FOREIGN KEY (plan_id) REFERENCES subscription_plans(id) ON DELETE RESTRICT"
+    },
+    {
+      "table": "public.quota_reservations",
+      "columns": ["user_id"],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.users",
+      "parent_columns": ["id"],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
     }
   ],
   "enums": [
