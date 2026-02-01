@@ -390,6 +390,7 @@ export const SpecPanel = ({
       ? {
           limit: usageData.specview.limit ?? null,
           percentage: usageData.specview.percentage ?? null,
+          reserved: usageData.specview.reserved,
           used: usageData.specview.used,
         }
       : null;

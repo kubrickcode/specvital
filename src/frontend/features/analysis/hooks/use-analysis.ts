@@ -29,6 +29,10 @@ export const analysisKeys = {
 const isTerminalStatus = (response: AnalysisResponse): boolean =>
   response.status === "completed" || response.status === "failed";
 
+type UseAnalysisOptions = {
+  enabled?: boolean;
+};
+
 type UseAnalysisReturn = {
   data: AnalysisResult | null;
   error: Error | null;
@@ -38,7 +42,12 @@ type UseAnalysisReturn = {
   status: AnalysisResponse["status"] | "error" | "pending";
 };
 
-export const useAnalysis = (owner: string, repo: string): UseAnalysisReturn => {
+export const useAnalysis = (
+  owner: string,
+  repo: string,
+  options: UseAnalysisOptions = {}
+): UseAnalysisReturn => {
+  const { enabled = true } = options;
   const queryClient = useQueryClient();
   const intervalRef = useRef(INITIAL_INTERVAL_MS);
   const startTimeRef = useRef(Date.now());
@@ -51,6 +60,7 @@ export const useAnalysis = (owner: string, repo: string): UseAnalysisReturn => {
   }, [owner, repo]);
 
   const query = useQuery({
+    enabled,
     queryFn: async () => {
       if (Date.now() - startTimeRef.current > MAX_WAIT_MS) {
         throw new AnalysisTimeoutError();

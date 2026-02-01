@@ -148,6 +148,11 @@ SELECT EXISTS(
     SELECT 1 FROM analyses WHERE id = $1 AND status = 'completed'
 ) AS exists;
 
+-- name: GetAnalysisTestCount :one
+-- Returns the total test count for a completed analysis.
+-- Used for quota calculation before spec generation.
+SELECT total_tests FROM analyses WHERE id = $1 AND status = 'completed';
+
 -- name: GetAvailableLanguagesByAnalysisID :many
 -- Returns all available languages for an analysis with their latest version info (legacy - no user filter)
 SELECT

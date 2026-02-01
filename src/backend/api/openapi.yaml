@@ -2787,6 +2787,7 @@ components:
       required:
         - isAllowed
         - used
+        - reserved
         - resetAt
       properties:
         isAllowed:
@@ -2796,6 +2797,10 @@ components:
           type: integer
           minimum: 0
           description: Current usage count for the event type
+        reserved:
+          type: integer
+          minimum: 0
+          description: Currently reserved amount (pending jobs)
         limit:
           type: integer
           minimum: 0
@@ -2810,11 +2815,16 @@ components:
       type: object
       required:
         - used
+        - reserved
       properties:
         used:
           type: integer
           minimum: 0
           description: Current usage count
+        reserved:
+          type: integer
+          minimum: 0
+          description: Currently reserved amount (pending jobs)
         limit:
           type: integer
           minimum: 0

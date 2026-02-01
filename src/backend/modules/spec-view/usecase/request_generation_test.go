@@ -30,6 +30,10 @@ func (m *mockSpecViewRepository) CheckAnalysisExists(_ context.Context, _ string
 	return m.analysisExists, m.analysisErr
 }
 
+func (m *mockSpecViewRepository) GetAnalysisTestCount(_ context.Context, _ string) (int, error) {
+	return 100, nil
+}
+
 func (m *mockSpecViewRepository) CheckSpecDocumentExistsByLanguage(_ context.Context, _ string, _ string) (bool, error) {
 	return m.documentExists, m.documentErr
 }

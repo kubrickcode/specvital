@@ -64,6 +64,9 @@ func (m *repoMockRepository) GetAvailableLanguagesByRepository(_ context.Context
 func (m *repoMockRepository) CheckAnalysisExists(_ context.Context, _ string) (bool, error) {
 	return false, nil
 }
+func (m *repoMockRepository) GetAnalysisTestCount(_ context.Context, _ string) (int, error) {
+	return 100, nil
+}
 func (m *repoMockRepository) CheckSpecDocumentExistsByLanguage(_ context.Context, _, _ string) (bool, error) {
 	return false, nil
 }
@@ -175,6 +178,9 @@ func TestGetSpecByRepositoryUseCase_Execute(t *testing.T) {
 		mock := &repoMockRepository{
 			codebaseExists: true,
 			repoDocument:   doc,
+			availableLanguages: []entity.AvailableLanguageInfo{
+				{Language: "English", LatestVersion: 1},
+			},
 		}
 		uc := NewGetSpecByRepositoryUseCase(mock)
 		_, err := uc.Execute(context.Background(), GetSpecByRepositoryInput{
@@ -303,6 +309,9 @@ func TestGetSpecByRepositoryUseCase_Execute(t *testing.T) {
 		mock := &repoMockRepository{
 			codebaseExists:  true,
 			repoDocumentErr: dbErr,
+			availableLanguages: []entity.AvailableLanguageInfo{
+				{Language: "English", LatestVersion: 1},
+			},
 		}
 		uc := NewGetSpecByRepositoryUseCase(mock)
 		_, err := uc.Execute(context.Background(), GetSpecByRepositoryInput{

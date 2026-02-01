@@ -64,6 +64,7 @@ export const UsageSection = ({ error, isLoading, usage }: UsageSectionProps) => 
           label={t("usage.specview")}
           limit={usage.specview.limit ?? null}
           percentage={usage.specview.percentage ?? null}
+          reserved={usage.specview.reserved}
           unit={tFeatures("specview.unit")}
           used={usage.specview.used}
         />
@@ -71,6 +72,7 @@ export const UsageSection = ({ error, isLoading, usage }: UsageSectionProps) => 
           label={t("usage.analysis")}
           limit={usage.analysis.limit ?? null}
           percentage={usage.analysis.percentage ?? null}
+          reserved={usage.analysis.reserved}
           unit={tFeatures("analysis.unit")}
           used={usage.analysis.used}
         />

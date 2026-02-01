@@ -15,6 +15,7 @@ func ToCheckQuotaResponse(output *usecase.CheckQuotaOutput) api.CheckQuotaRespon
 	return api.CheckQuotaResponse{
 		IsAllowed: output.IsAllowed,
 		Used:      int(output.Used),
+		Reserved:  int(output.Reserved),
 		Limit:     limit,
 		ResetAt:   output.ResetAt,
 	}
@@ -38,6 +39,7 @@ func toUsageMetric(metric usecase.UsageMetricOutput) api.UsageMetric {
 
 	return api.UsageMetric{
 		Used:       int(metric.Used),
+		Reserved:   int(metric.Reserved),
 		Limit:      limit,
 		Percentage: metric.Percentage,
 	}

@@ -319,6 +319,9 @@ type CheckQuotaResponse struct {
 	// Limit Usage limit (null for unlimited/enterprise)
 	Limit *int `json:"limit"`
 
+	// Reserved Currently reserved amount (pending jobs)
+	Reserved int `json:"reserved"`
+
 	// ResetAt When the usage period resets
 	ResetAt time.Time `json:"resetAt"`
 
@@ -1100,6 +1103,9 @@ type UsageMetric struct {
 
 	// Percentage Usage percentage (null for unlimited/enterprise)
 	Percentage *float32 `json:"percentage"`
+
+	// Reserved Currently reserved amount (pending jobs)
+	Reserved int `json:"reserved"`
 
 	// Used Current usage count
 	Used int `json:"used"`

@@ -66,17 +66,20 @@ export const QuotaConfirmDialog = () => {
     !isCacheAvailabilityError && (cacheAvailability?.languages?.[selectedLanguage] ?? false);
   const hasPreviousSpec = hasCacheFromCurrentAnalysis || hasCacheFromPreviousAnalysis;
 
+  const tQuota = useTranslations("specView.quota");
   const specview = usage?.specview;
   const percentage = specview?.percentage ?? null;
+  const reserved = specview?.reserved ?? 0;
   const level = getQuotaLevel(percentage);
   const isExceeded = isQuotaExceeded(percentage);
   const isUnlimited = specview?.limit === null || specview?.limit === undefined;
   const config = LEVEL_CONFIG[level];
 
-  // Calculate if generation would exceed limit
-  const afterUsage = specview ? specview.used + (estimatedCost ?? 0) : 0;
+  // Calculate if generation would exceed limit (including reserved)
+  const afterUsage = specview ? specview.used + reserved + (estimatedCost ?? 0) : 0;
   const wouldExceed =
     !isUnlimited && specview?.limit && estimatedCost ? afterUsage > specview.limit : false;
+  const reservedPercentage = specview?.limit ? (reserved / specview.limit) * 100 : 0;
 
   return (
     <Dialog onOpenChange={onOpenChange} open={isOpen}>
@@ -210,6 +213,11 @@ export const QuotaConfirmDialog = () => {
                   <InfinityIcon className="h-4 w-4" />
                   <span>
                     {formatQuotaNumber(specview.used)} {t("unit")} {t("used")} · {t("unlimited")}
+                    {reserved > 0 && (
+                      <span className="ml-1 opacity-70">
+                        · {reserved} {tQuota("processing")}
+                      </span>
+                    )}
                   </span>
                 </div>
               ) : (
@@ -225,6 +233,16 @@ export const QuotaConfirmDialog = () => {
                         )}
                         style={{ width: `${Math.min(percentage ?? 0, 100)}%` }}
                       />
+                      {/* Reserved usage */}
+                      {reserved > 0 && (
+                        <div
+                          className="absolute top-0 h-full bg-primary/40 transition-all"
+                          style={{
+                            left: `${Math.min(percentage ?? 0, 100)}%`,
+                            width: `${Math.min(reservedPercentage, 100 - (percentage ?? 0))}%`,
+                          }}
+                        />
+                      )}
                       {/* Predicted usage (striped pattern) */}
                       {estimatedCost !== null && estimatedCost > 0 && (
                         <div
@@ -236,8 +254,8 @@ export const QuotaConfirmDialog = () => {
                             backgroundImage: wouldExceed
                               ? "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 4px)"
                               : "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.4) 2px, rgba(255,255,255,0.4) 4px)",
-                            left: `${Math.min(percentage ?? 0, 100)}%`,
-                            width: `${Math.min((estimatedCost / (specview.limit ?? 1)) * 100, 100 - (percentage ?? 0))}%`,
+                            left: `${Math.min((percentage ?? 0) + reservedPercentage, 100)}%`,
+                            width: `${Math.min((estimatedCost / (specview.limit ?? 1)) * 100, 100 - (percentage ?? 0) - reservedPercentage)}%`,
                           }}
                         />
                       )}
@@ -255,6 +273,14 @@ export const QuotaConfirmDialog = () => {
                           {t("current")}: {formatQuotaNumber(specview.used)}
                         </span>
                       </span>
+                      {reserved > 0 && (
+                        <span className="flex items-center gap-1.5">
+                          <span className="inline-block h-2 w-2 rounded-full bg-primary/40" />
+                          <span className="text-muted-foreground">
+                            {reserved} {tQuota("processing")}
+                          </span>
+                        </span>
+                      )}
                       {estimatedCost !== null && estimatedCost > 0 && (
                         <span className="flex items-center gap-1.5">
                           <span

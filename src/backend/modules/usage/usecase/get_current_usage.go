@@ -6,6 +6,7 @@ import (
 
 	subscriptionentity "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
 	"github.com/specvital/web/src/backend/modules/subscription/domain/port"
+	usageentity "github.com/specvital/web/src/backend/modules/usage/domain/entity"
 	usageport "github.com/specvital/web/src/backend/modules/usage/domain/port"
 )
 
@@ -15,6 +16,7 @@ type GetCurrentUsageInput struct {
 
 type UsageMetricOutput struct {
 	Used       int64
+	Reserved   int64
 	Limit      *int32
 	Percentage *float32
 }
@@ -36,15 +38,18 @@ type GetCurrentUsageOutput struct {
 type GetCurrentUsageUseCase struct {
 	subscriptionRepo port.SubscriptionRepository
 	usageRepo        usageport.UsageRepository
+	reservationRepo  usageport.QuotaReservationRepository
 }
 
 func NewGetCurrentUsageUseCase(
 	subscriptionRepo port.SubscriptionRepository,
 	usageRepo usageport.UsageRepository,
+	reservationRepo usageport.QuotaReservationRepository,
 ) *GetCurrentUsageUseCase {
 	return &GetCurrentUsageUseCase{
 		subscriptionRepo: subscriptionRepo,
 		usageRepo:        usageRepo,
+		reservationRepo:  reservationRepo,
 	}
 }
 
@@ -62,8 +67,18 @@ func (uc *GetCurrentUsageUseCase) Execute(ctx context.Context, input GetCurrentU
 		return nil, err
 	}
 
-	specview := buildUsageMetric(stats.Specview.Used, subscription.Plan.SpecviewMonthlyLimit, subscription.Plan.IsUnlimited())
-	analysis := buildUsageMetric(stats.Analysis.Used, subscription.Plan.AnalysisMonthlyLimit, subscription.Plan.IsUnlimited())
+	specviewReserved, err := uc.reservationRepo.GetTotalReservedAmount(ctx, input.UserID, usageentity.EventTypeSpecview)
+	if err != nil {
+		return nil, err
+	}
+
+	analysisReserved, err := uc.reservationRepo.GetTotalReservedAmount(ctx, input.UserID, usageentity.EventTypeAnalysis)
+	if err != nil {
+		return nil, err
+	}
+
+	specview := buildUsageMetric(stats.Specview.Used, specviewReserved, subscription.Plan.SpecviewMonthlyLimit, subscription.Plan.IsUnlimited())
+	analysis := buildUsageMetric(stats.Analysis.Used, analysisReserved, subscription.Plan.AnalysisMonthlyLimit, subscription.Plan.IsUnlimited())
 
 	return &GetCurrentUsageOutput{
 		Specview: specview,
@@ -78,10 +93,11 @@ func (uc *GetCurrentUsageUseCase) Execute(ctx context.Context, input GetCurrentU
 	}, nil
 }
 
-func buildUsageMetric(used int64, limit *int32, isUnlimited bool) UsageMetricOutput {
+func buildUsageMetric(used, reserved int64, limit *int32, isUnlimited bool) UsageMetricOutput {
 	if isUnlimited {
 		return UsageMetricOutput{
 			Used:       used,
+			Reserved:   reserved,
 			Limit:      nil,
 			Percentage: nil,
 		}
@@ -98,6 +114,7 @@ func buildUsageMetric(used int64, limit *int32, isUnlimited bool) UsageMetricOut
 
 	return UsageMetricOutput{
 		Used:       used,
+		Reserved:   reserved,
 		Limit:      limit,
 		Percentage: percentage,
 	}

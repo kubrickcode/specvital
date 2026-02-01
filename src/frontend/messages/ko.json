@@ -99,6 +99,12 @@
     "noTestsInSuite": "이 스위트에 테스트가 없습니다.",
     "testCount": "{count}개 테스트",
     "retry": "다시 시도",
+    "quotaExceeded": {
+      "title": "분석 할당량 초과",
+      "description": "이번 기간의 분석 할당량을 모두 사용했습니다. 할당량은 {resetDate}에 초기화됩니다.",
+      "currentUsage": "현재 사용량: {used} / {limit}",
+      "viewAccount": "계정 확인"
+    },
     "waiting": {
       "queued": {
         "0": "분석 대기 중",
@@ -369,7 +375,8 @@
       "unlimited": "(무제한)",
       "warning": "거의 소진됨",
       "almostFull": "한도 임박",
-      "viewAccount": "계정 보기"
+      "viewAccount": "계정 보기",
+      "processing": "처리 중"
     },
     "quotaConfirm": {
       "title": "스펙 문서 생성",

@@ -112,6 +112,19 @@ func (q *Queries) GetAiSpecSummariesByAnalysisIDs(ctx context.Context, arg GetAi
 	return items, nil
 }
 
+const getAnalysisTestCount = `-- name: GetAnalysisTestCount :one
+SELECT total_tests FROM analyses WHERE id = $1 AND status = 'completed'
+`
+
+// Returns the total test count for a completed analysis.
+// Used for quota calculation before spec generation.
+func (q *Queries) GetAnalysisTestCount(ctx context.Context, id pgtype.UUID) (int32, error) {
+	row := q.db.QueryRow(ctx, getAnalysisTestCount, id)
+	var total_tests int32
+	err := row.Scan(&total_tests)
+	return total_tests, err
+}
+
 const getAvailableLanguagesByAnalysisID = `-- name: GetAvailableLanguagesByAnalysisID :many
 SELECT
     sd.language,

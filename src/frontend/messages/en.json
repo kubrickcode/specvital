@@ -99,6 +99,12 @@
     "noTestsInSuite": "No tests in this suite.",
     "testCount": "{count} {count, plural, =1 {test} other {tests}}",
     "retry": "Try Again",
+    "quotaExceeded": {
+      "title": "Analysis Quota Exceeded",
+      "description": "You've used all your analysis quota for this period. Your quota will reset on {resetDate}.",
+      "currentUsage": "Current usage: {used} / {limit}",
+      "viewAccount": "View Account"
+    },
     "waiting": {
       "queued": {
         "0": "Queued for analysis",
@@ -369,7 +375,8 @@
       "unlimited": "(No limit)",
       "warning": "Running low",
       "almostFull": "Almost at limit",
-      "viewAccount": "View Account"
+      "viewAccount": "View Account",
+      "processing": "processing"
     },
     "quotaConfirm": {
       "title": "Generate Specification",

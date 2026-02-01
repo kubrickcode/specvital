@@ -12,6 +12,7 @@ import { isQuotaExceeded } from "../utils/quota";
 type QuotaInfo = {
   limit: number | null;
   percentage: number | null;
+  reserved: number;
   used: number;
 };
 
@@ -38,7 +39,12 @@ export const EmptyDocument = ({ isLoading = false, onGenerate, quota }: EmptyDoc
       <CardContent className="flex flex-col items-center gap-4 pt-2">
         {quota && (
           <div className="w-full max-w-sm">
-            <QuotaIndicator limit={quota.limit} percentage={quota.percentage} used={quota.used} />
+            <QuotaIndicator
+              limit={quota.limit}
+              percentage={quota.percentage}
+              reserved={quota.reserved}
+              used={quota.used}
+            />
           </div>
         )}
         <Button disabled={isDisabled} onClick={onGenerate} size="lg">

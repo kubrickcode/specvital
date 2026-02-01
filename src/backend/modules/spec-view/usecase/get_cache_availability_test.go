@@ -20,6 +20,10 @@ func (m *mockCacheAvailabilityRepository) CheckAnalysisExists(_ context.Context,
 	return m.analysisExists, m.analysisExistsErr
 }
 
+func (m *mockCacheAvailabilityRepository) GetAnalysisTestCount(_ context.Context, _ string) (int, error) {
+	return 100, nil
+}
+
 func (m *mockCacheAvailabilityRepository) CheckSpecDocumentExistsByLanguage(_ context.Context, _ string, _ string) (bool, error) {
 	return false, nil
 }

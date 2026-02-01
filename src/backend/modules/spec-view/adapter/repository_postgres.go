@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/specvital/web/src/backend/internal/db"
+	"github.com/specvital/web/src/backend/modules/spec-view/domain"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/entity"
 	"github.com/specvital/web/src/backend/modules/spec-view/domain/port"
 )
@@ -30,6 +31,23 @@ func (r *PostgresRepository) CheckAnalysisExists(ctx context.Context, analysisID
 	}
 
 	return r.queries.CheckAnalysisExists(ctx, uid)
+}
+
+func (r *PostgresRepository) GetAnalysisTestCount(ctx context.Context, analysisID string) (int, error) {
+	uid, err := parseUUID(analysisID)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := r.queries.GetAnalysisTestCount(ctx, uid)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, domain.ErrAnalysisNotCompleted
+		}
+		return 0, err
+	}
+
+	return int(count), nil
 }
 
 func (r *PostgresRepository) CheckSpecDocumentExistsByLanguage(ctx context.Context, analysisID string, language string) (bool, error) {

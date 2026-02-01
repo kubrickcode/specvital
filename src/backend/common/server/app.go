@@ -104,7 +104,7 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 	reservationRepo := usageadapter.NewQuotaReservationPostgresRepository(queries)
 
 	checkQuotaUC := usageusecase.NewCheckQuotaUseCase(subscriptionRepo, usageRepo, reservationRepo)
-	getCurrentUsageUC := usageusecase.NewGetCurrentUsageUseCase(subscriptionRepo, usageRepo)
+	getCurrentUsageUC := usageusecase.NewGetCurrentUsageUseCase(subscriptionRepo, usageRepo, reservationRepo)
 
 	handleOAuthCallbackUC := authusecase.NewHandleOAuthCallbackUseCase(
 		container.Encryptor,

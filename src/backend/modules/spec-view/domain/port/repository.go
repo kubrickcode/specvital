@@ -8,6 +8,9 @@ import (
 
 type SpecViewRepository interface {
 	CheckAnalysisExists(ctx context.Context, analysisID string) (bool, error)
+	// GetAnalysisTestCount returns the total test count for an analysis.
+	// Used for quota calculation before spec generation.
+	GetAnalysisTestCount(ctx context.Context, analysisID string) (int, error)
 	CheckSpecDocumentExistsByLanguage(ctx context.Context, analysisID string, language string) (bool, error)
 	// HasPreviousSpecByLanguage checks if user has a spec document for the same codebase
 	// but different analysis. Used to determine if behavior cache might exist.

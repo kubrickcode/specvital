@@ -103,12 +103,18 @@ func (uc *RequestGenerationUseCase) Execute(ctx context.Context, input RequestGe
 		}
 	}
 
+	// Get actual test count for quota calculation
+	testCount, err := uc.repo.GetAnalysisTestCount(ctx, input.AnalysisID)
+	if err != nil {
+		return nil, fmt.Errorf("get analysis test count: %w", err)
+	}
+
 	// Quota check: validates user has remaining quota before enqueueing.
 	if input.UserID != "" && uc.checkQuota != nil {
 		quotaResult, err := uc.checkQuota.Execute(ctx, usageusecase.CheckQuotaInput{
 			UserID:    input.UserID,
 			EventType: usageentity.EventTypeSpecview,
-			Amount:    1,
+			Amount:    testCount,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("check quota for user %s: %w", input.UserID, err)
@@ -126,7 +132,7 @@ func (uc *RequestGenerationUseCase) Execute(ctx context.Context, input RequestGe
 	// Enqueue with reservation if transaction support is available.
 	// Reservation prevents race conditions by tracking pending usage.
 	if uc.dbPool != nil && uc.reservationRepo != nil {
-		if err := uc.enqueueWithReservation(ctx, input.AnalysisID, language, input.UserID, input.Tier, input.Mode); err != nil {
+		if err := uc.enqueueWithReservation(ctx, input.AnalysisID, language, input.UserID, input.Tier, input.Mode, testCount); err != nil {
 			return nil, err
 		}
 	} else {
@@ -151,6 +157,7 @@ func (uc *RequestGenerationUseCase) enqueueWithReservation(
 	userID string,
 	tier subscription.PlanTier,
 	mode entity.GenerationMode,
+	testCount int,
 ) error {
 	tx, err := uc.dbPool.Begin(ctx)
 	if err != nil {
@@ -164,9 +171,9 @@ func (uc *RequestGenerationUseCase) enqueueWithReservation(
 		return err
 	}
 
-	// Create reservation with job ID (amount=1 for now, will be enhanced with test count later)
+	// Create reservation with actual test count
 	qtx := db.New(tx)
-	if err := uc.reservationRepo.CreateReservationTx(ctx, qtx, userID, usageentity.EventTypeSpecview, 1, jobID); err != nil {
+	if err := uc.reservationRepo.CreateReservationTx(ctx, qtx, userID, usageentity.EventTypeSpecview, int32(testCount), jobID); err != nil {
 		return fmt.Errorf("create quota reservation: %w", err)
 	}
 

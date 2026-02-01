@@ -11,6 +11,7 @@ import { formatQuotaNumber, getQuotaLevel, isQuotaExceeded, type QuotaLevel } fr
 type QuotaIndicatorProps = {
   limit: number | null;
   percentage: number | null;
+  reserved: number;
   used: number;
 };
 
@@ -44,7 +45,7 @@ const LEVEL_CONFIG: Record<
   },
 };
 
-export const QuotaIndicator = ({ limit, percentage, used }: QuotaIndicatorProps) => {
+export const QuotaIndicator = ({ limit, percentage, reserved, used }: QuotaIndicatorProps) => {
   const t = useTranslations("specView.quota");
   const level = getQuotaLevel(percentage);
   const config = LEVEL_CONFIG[level];
@@ -65,10 +66,20 @@ export const QuotaIndicator = ({ limit, percentage, used }: QuotaIndicatorProps)
           {level === "unlimited" ? (
             <>
               {formatQuotaNumber(used)} {t("unlimited")}
+              {reserved > 0 && (
+                <span className="ml-1 text-xs opacity-70">
+                  · {reserved} {t("processing")}
+                </span>
+              )}
             </>
           ) : (
             <>
               {formatQuotaNumber(used)} / {formatQuotaNumber(limit ?? 0)} {t("thisMonth")}
+              {reserved > 0 && (
+                <span className="ml-1 text-xs opacity-70">
+                  · {reserved} {t("processing")}
+                </span>
+              )}
             </>
           )}
         </span>

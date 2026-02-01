@@ -1842,6 +1842,8 @@ export interface components {
             isAllowed: boolean;
             /** @description Current usage count for the event type */
             used: number;
+            /** @description Currently reserved amount (pending jobs) */
+            reserved: number;
             /** @description Usage limit (null for unlimited/enterprise) */
             limit?: number | null;
             /**
@@ -1853,6 +1855,8 @@ export interface components {
         UsageMetric: {
             /** @description Current usage count */
             used: number;
+            /** @description Currently reserved amount (pending jobs) */
+            reserved: number;
             /** @description Usage limit (null for unlimited/enterprise) */
             limit?: number | null;
             /**
