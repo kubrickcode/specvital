@@ -681,6 +681,13 @@ table "user_analysis_history" {
     default = sql("now()")
   }
 
+  // Retention days snapshot at creation time
+  // NULL = unlimited (enterprise or legacy data before retention feature)
+  column "retention_days_at_creation" {
+    type = int
+    null = true
+  }
+
   primary_key {
     columns = [column.id]
   }
@@ -707,6 +714,17 @@ table "user_analysis_history" {
 
   index "idx_user_analysis_history_analysis" {
     columns = [column.analysis_id]
+  }
+
+  // Retention cleanup query optimization
+  // Partial index excludes unlimited retention (NULL) records
+  index "idx_user_analysis_history_retention_cleanup" {
+    columns = [column.created_at]
+    where   = "retention_days_at_creation IS NOT NULL"
+  }
+
+  check "chk_retention_days_positive" {
+    expr = "retention_days_at_creation IS NULL OR retention_days_at_creation > 0"
   }
 }
 
@@ -982,6 +1000,13 @@ table "spec_documents" {
     default = sql("now()")
   }
 
+  // Retention days snapshot at creation time
+  // NULL = unlimited (enterprise or legacy data before retention feature)
+  column "retention_days_at_creation" {
+    type = int
+    null = true
+  }
+
   primary_key {
     columns = [column.id]
   }
@@ -1016,6 +1041,17 @@ table "spec_documents" {
 
   index "idx_spec_documents_content_hash_lang_model" {
     columns = [column.content_hash, column.language, column.model_id]
+  }
+
+  // Retention cleanup query optimization
+  // Partial index excludes unlimited retention (NULL) records
+  index "idx_spec_documents_retention_cleanup" {
+    columns = [column.created_at]
+    where   = "retention_days_at_creation IS NOT NULL"
+  }
+
+  check "chk_retention_days_positive" {
+    expr = "retention_days_at_creation IS NULL OR retention_days_at_creation > 0"
   }
 }
 
