@@ -225,15 +225,23 @@ func (r *AnalysisRepository) SaveAnalysisInventory(ctx context.Context, params a
 				"error", parseErr,
 			)
 		} else {
+			pgUserID := toPgUUID(userUUID)
+
+			retentionDays, retErr := queries.GetUserRetentionDays(ctx, pgUserID)
+			if retErr != nil && !errors.Is(retErr, pgx.ErrNoRows) {
+				return fmt.Errorf("get user retention days: %w", retErr)
+			}
+
 			if err := queries.RecordUserAnalysisHistory(ctx, db.RecordUserAnalysisHistoryParams{
-				UserID:     toPgUUID(userUUID),
-				AnalysisID: pgID,
+				UserID:                  pgUserID,
+				AnalysisID:              pgID,
+				RetentionDaysAtCreation: retentionDays,
 			}); err != nil {
 				return fmt.Errorf("record user analysis history: %w", err)
 			}
 
 			if err := queries.RecordAnalysisUsageEvent(ctx, db.RecordAnalysisUsageEventParams{
-				UserID:      toPgUUID(userUUID),
+				UserID:      pgUserID,
 				AnalysisID:  pgID,
 				QuotaAmount: 1,
 			}); err != nil {

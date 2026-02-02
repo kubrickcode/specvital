@@ -276,14 +276,20 @@ func (r *SpecDocumentRepository) SaveDocument(
 		executiveSummary = pgtype.Text{String: doc.ExecutiveSummary, Valid: true}
 	}
 
+	retentionDays, retErr := queries.GetUserRetentionDays(ctx, toPgUUID(userID))
+	if retErr != nil && !errors.Is(retErr, pgx.ErrNoRows) {
+		return fmt.Errorf("get user retention days: %w", retErr)
+	}
+
 	docID, err := queries.InsertSpecDocument(ctx, db.InsertSpecDocumentParams{
-		UserID:           toPgUUID(userID),
-		AnalysisID:       toPgUUID(analysisID),
-		ContentHash:      doc.ContentHash,
-		Language:         string(doc.Language),
-		ExecutiveSummary: executiveSummary,
-		ModelID:          doc.ModelID,
-		Version:          currentVersion + 1,
+		UserID:                  toPgUUID(userID),
+		AnalysisID:              toPgUUID(analysisID),
+		ContentHash:             doc.ContentHash,
+		Language:                string(doc.Language),
+		ExecutiveSummary:        executiveSummary,
+		ModelID:                 doc.ModelID,
+		Version:                 currentVersion + 1,
+		RetentionDaysAtCreation: retentionDays,
 	})
 	if err != nil {
 		return fmt.Errorf("insert spec document: %w", err)

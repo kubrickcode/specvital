@@ -1710,4 +1710,236 @@ func TestAnalysisRepository_UserAnalysisHistory(t *testing.T) {
 			t.Errorf("expected 2 history records (one per user), got %d", historyCount)
 		}
 	})
+
+	t.Run("should store retention_days_at_creation from active subscription", func(t *testing.T) {
+		_, err := pool.Exec(ctx, "TRUNCATE codebases CASCADE")
+		if err != nil {
+			t.Fatalf("failed to truncate: %v", err)
+		}
+
+		var userID string
+		err = pool.QueryRow(ctx, "INSERT INTO users (email, username) VALUES ('retention@example.com', 'retentionuser') RETURNING id::text").Scan(&userID)
+		if err != nil {
+			t.Fatalf("failed to create test user: %v", err)
+		}
+
+		var planID pgtype.UUID
+		err = pool.QueryRow(ctx, `
+			INSERT INTO subscription_plans (tier, retention_days, specview_monthly_limit, analysis_monthly_limit)
+			VALUES ('pro', 90, 100, 100) RETURNING id
+		`).Scan(&planID)
+		if err != nil {
+			t.Fatalf("failed to create subscription plan: %v", err)
+		}
+
+		_, err = pool.Exec(ctx, `
+			INSERT INTO user_subscriptions (user_id, plan_id, status, current_period_start, current_period_end)
+			VALUES ($1, $2, 'active', now(), now() + interval '1 month')
+		`, userID, planID)
+		if err != nil {
+			t.Fatalf("failed to create user subscription: %v", err)
+		}
+
+		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
+			Owner:          "retention-owner",
+			Repo:           "retention-repo",
+			CommitSHA:      "ret123",
+			Branch:         "main",
+			ExternalRepoID:  "retention-id",
+			ParserVersion:  testParserVersion,
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		inventory := &analysis.Inventory{
+			Files: []analysis.TestFile{
+				{
+					Path:      "test.go",
+					Framework: "go-test",
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "TestSuite",
+							Location: analysis.Location{StartLine: 10},
+							Tests: []analysis.Test{
+								{Name: "Test1", Location: analysis.Location{StartLine: 12}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		err = repo.SaveAnalysisInventory(ctx, analysis.SaveAnalysisInventoryParams{
+			AnalysisID: analysisID,
+			Inventory:  inventory,
+			UserID:     &userID,
+		})
+		if err != nil {
+			t.Fatalf("SaveAnalysisInventory failed: %v", err)
+		}
+
+		var retentionDays pgtype.Int4
+		err = pool.QueryRow(ctx,
+			"SELECT retention_days_at_creation FROM user_analysis_history WHERE user_id = $1",
+			userID,
+		).Scan(&retentionDays)
+		if err != nil {
+			t.Fatalf("failed to query retention_days: %v", err)
+		}
+
+		if !retentionDays.Valid {
+			t.Error("expected retention_days_at_creation to be set")
+		}
+		if retentionDays.Int32 != 90 {
+			t.Errorf("expected retention_days_at_creation = 90, got %d", retentionDays.Int32)
+		}
+	})
+
+	t.Run("should store NULL retention_days_at_creation for enterprise plan", func(t *testing.T) {
+		_, err := pool.Exec(ctx, "TRUNCATE codebases CASCADE")
+		if err != nil {
+			t.Fatalf("failed to truncate: %v", err)
+		}
+
+		var userID string
+		err = pool.QueryRow(ctx, "INSERT INTO users (email, username) VALUES ('enterprise@example.com', 'enterpriseuser') RETURNING id::text").Scan(&userID)
+		if err != nil {
+			t.Fatalf("failed to create test user: %v", err)
+		}
+
+		var planID pgtype.UUID
+		err = pool.QueryRow(ctx, `
+			INSERT INTO subscription_plans (tier, retention_days, specview_monthly_limit, analysis_monthly_limit)
+			VALUES ('enterprise', NULL, NULL, NULL) RETURNING id
+		`).Scan(&planID)
+		if err != nil {
+			t.Fatalf("failed to create enterprise plan: %v", err)
+		}
+
+		_, err = pool.Exec(ctx, `
+			INSERT INTO user_subscriptions (user_id, plan_id, status, current_period_start, current_period_end)
+			VALUES ($1, $2, 'active', now(), now() + interval '1 year')
+		`, userID, planID)
+		if err != nil {
+			t.Fatalf("failed to create user subscription: %v", err)
+		}
+
+		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
+			Owner:          "enterprise-owner",
+			Repo:           "enterprise-repo",
+			CommitSHA:      "ent123",
+			Branch:         "main",
+			ExternalRepoID:  "enterprise-id",
+			ParserVersion:  testParserVersion,
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		inventory := &analysis.Inventory{
+			Files: []analysis.TestFile{
+				{
+					Path:      "test.go",
+					Framework: "go-test",
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "TestSuite",
+							Location: analysis.Location{StartLine: 10},
+							Tests: []analysis.Test{
+								{Name: "Test1", Location: analysis.Location{StartLine: 12}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		err = repo.SaveAnalysisInventory(ctx, analysis.SaveAnalysisInventoryParams{
+			AnalysisID: analysisID,
+			Inventory:  inventory,
+			UserID:     &userID,
+		})
+		if err != nil {
+			t.Fatalf("SaveAnalysisInventory failed: %v", err)
+		}
+
+		var retentionDays pgtype.Int4
+		err = pool.QueryRow(ctx,
+			"SELECT retention_days_at_creation FROM user_analysis_history WHERE user_id = $1",
+			userID,
+		).Scan(&retentionDays)
+		if err != nil {
+			t.Fatalf("failed to query retention_days: %v", err)
+		}
+
+		if retentionDays.Valid {
+			t.Errorf("expected retention_days_at_creation to be NULL for enterprise, got %d", retentionDays.Int32)
+		}
+	})
+
+	t.Run("should store NULL retention_days_at_creation for user without subscription", func(t *testing.T) {
+		_, err := pool.Exec(ctx, "TRUNCATE codebases CASCADE")
+		if err != nil {
+			t.Fatalf("failed to truncate: %v", err)
+		}
+
+		var userID string
+		err = pool.QueryRow(ctx, "INSERT INTO users (email, username) VALUES ('nosub@example.com', 'nosubuser') RETURNING id::text").Scan(&userID)
+		if err != nil {
+			t.Fatalf("failed to create test user: %v", err)
+		}
+
+		analysisID, err := repo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
+			Owner:          "nosub-owner",
+			Repo:           "nosub-repo",
+			CommitSHA:      "nosub123",
+			Branch:         "main",
+			ExternalRepoID:  "nosub-id",
+			ParserVersion:  testParserVersion,
+		})
+		if err != nil {
+			t.Fatalf("CreateAnalysisRecord failed: %v", err)
+		}
+
+		inventory := &analysis.Inventory{
+			Files: []analysis.TestFile{
+				{
+					Path:      "test.go",
+					Framework: "go-test",
+					Suites: []analysis.TestSuite{
+						{
+							Name:     "TestSuite",
+							Location: analysis.Location{StartLine: 10},
+							Tests: []analysis.Test{
+								{Name: "Test1", Location: analysis.Location{StartLine: 12}},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		err = repo.SaveAnalysisInventory(ctx, analysis.SaveAnalysisInventoryParams{
+			AnalysisID: analysisID,
+			Inventory:  inventory,
+			UserID:     &userID,
+		})
+		if err != nil {
+			t.Fatalf("SaveAnalysisInventory failed: %v", err)
+		}
+
+		var retentionDays pgtype.Int4
+		err = pool.QueryRow(ctx,
+			"SELECT retention_days_at_creation FROM user_analysis_history WHERE user_id = $1",
+			userID,
+		).Scan(&retentionDays)
+		if err != nil {
+			t.Fatalf("failed to query retention_days: %v", err)
+		}
+
+		if retentionDays.Valid {
+			t.Errorf("expected retention_days_at_creation to be NULL for user without subscription, got %d", retentionDays.Int32)
+		}
+	})
 }

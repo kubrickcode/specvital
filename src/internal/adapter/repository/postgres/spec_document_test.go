@@ -900,6 +900,151 @@ func TestSpecDocumentRepository_ClassificationCache(t *testing.T) {
 	})
 }
 
+func TestSpecDocumentRepository_RetentionSnapshot(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool, cleanup := testdb.SetupTestDB(t)
+	defer cleanup()
+
+	analysisRepo := NewAnalysisRepository(pool)
+	specRepo := NewSpecDocumentRepository(pool)
+	ctx := context.Background()
+
+	t.Run("should store retention_days_at_creation from active subscription", func(t *testing.T) {
+		analysisID := setupTestAnalysisWithNestedSuites(t, ctx, analysisRepo, pool)
+		userID := setupTestUser(t, ctx, pool)
+
+		var planID [16]byte
+		err := pool.QueryRow(ctx, `
+			INSERT INTO subscription_plans (tier, retention_days, specview_monthly_limit, analysis_monthly_limit)
+			VALUES ('pro', 90, 100, 100) RETURNING id
+		`).Scan(&planID)
+		if err != nil {
+			t.Fatalf("failed to create subscription plan: %v", err)
+		}
+
+		_, err = pool.Exec(ctx, `
+			INSERT INTO user_subscriptions (user_id, plan_id, status, current_period_start, current_period_end)
+			VALUES ($1, $2, 'active', now(), now() + interval '1 month')
+		`, userID, planID)
+		if err != nil {
+			t.Fatalf("failed to create user subscription: %v", err)
+		}
+
+		doc := &specview.SpecDocument{
+			AnalysisID:  analysisID.String(),
+			ContentHash: []byte("retention-test-hash"),
+			Language:    "English",
+			ModelID:     "gemini-2.5-flash",
+			UserID:      userID,
+			Domains:     []specview.Domain{},
+		}
+
+		err = specRepo.SaveDocument(ctx, doc)
+		if err != nil {
+			t.Fatalf("SaveDocument failed: %v", err)
+		}
+
+		var retentionDays *int32
+		err = pool.QueryRow(ctx,
+			"SELECT retention_days_at_creation FROM spec_documents WHERE id = $1",
+			doc.ID,
+		).Scan(&retentionDays)
+		if err != nil {
+			t.Fatalf("failed to query retention_days: %v", err)
+		}
+
+		if retentionDays == nil {
+			t.Error("expected retention_days_at_creation to be set")
+		} else if *retentionDays != 90 {
+			t.Errorf("expected retention_days_at_creation = 90, got %d", *retentionDays)
+		}
+	})
+
+	t.Run("should store NULL for enterprise plan", func(t *testing.T) {
+		analysisID := setupTestAnalysisWithNestedSuites(t, ctx, analysisRepo, pool)
+		userID := setupTestUser(t, ctx, pool)
+
+		var planID [16]byte
+		err := pool.QueryRow(ctx, `
+			INSERT INTO subscription_plans (tier, retention_days, specview_monthly_limit, analysis_monthly_limit)
+			VALUES ('enterprise', NULL, NULL, NULL) RETURNING id
+		`).Scan(&planID)
+		if err != nil {
+			t.Fatalf("failed to create enterprise plan: %v", err)
+		}
+
+		_, err = pool.Exec(ctx, `
+			INSERT INTO user_subscriptions (user_id, plan_id, status, current_period_start, current_period_end)
+			VALUES ($1, $2, 'active', now(), now() + interval '1 year')
+		`, userID, planID)
+		if err != nil {
+			t.Fatalf("failed to create user subscription: %v", err)
+		}
+
+		doc := &specview.SpecDocument{
+			AnalysisID:  analysisID.String(),
+			ContentHash: []byte("enterprise-test-hash"),
+			Language:    "English",
+			ModelID:     "gemini-2.5-flash",
+			UserID:      userID,
+			Domains:     []specview.Domain{},
+		}
+
+		err = specRepo.SaveDocument(ctx, doc)
+		if err != nil {
+			t.Fatalf("SaveDocument failed: %v", err)
+		}
+
+		var retentionDays *int32
+		err = pool.QueryRow(ctx,
+			"SELECT retention_days_at_creation FROM spec_documents WHERE id = $1",
+			doc.ID,
+		).Scan(&retentionDays)
+		if err != nil {
+			t.Fatalf("failed to query retention_days: %v", err)
+		}
+
+		if retentionDays != nil {
+			t.Errorf("expected retention_days_at_creation to be NULL for enterprise, got %d", *retentionDays)
+		}
+	})
+
+	t.Run("should store NULL for user without subscription", func(t *testing.T) {
+		analysisID := setupTestAnalysisWithNestedSuites(t, ctx, analysisRepo, pool)
+		userID := setupTestUser(t, ctx, pool)
+
+		doc := &specview.SpecDocument{
+			AnalysisID:  analysisID.String(),
+			ContentHash: []byte("nosub-test-hash"),
+			Language:    "English",
+			ModelID:     "gemini-2.5-flash",
+			UserID:      userID,
+			Domains:     []specview.Domain{},
+		}
+
+		err := specRepo.SaveDocument(ctx, doc)
+		if err != nil {
+			t.Fatalf("SaveDocument failed: %v", err)
+		}
+
+		var retentionDays *int32
+		err = pool.QueryRow(ctx,
+			"SELECT retention_days_at_creation FROM spec_documents WHERE id = $1",
+			doc.ID,
+		).Scan(&retentionDays)
+		if err != nil {
+			t.Fatalf("failed to query retention_days: %v", err)
+		}
+
+		if retentionDays != nil {
+			t.Errorf("expected retention_days_at_creation to be NULL for user without subscription, got %d", *retentionDays)
+		}
+	})
+}
+
 func createNestedSuiteInventory() *parser.ScanResult {
 	return &parser.ScanResult{
 		Inventory: &domain.Inventory{

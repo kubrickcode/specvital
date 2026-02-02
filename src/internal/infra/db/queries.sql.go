@@ -665,20 +665,41 @@ func (q *Queries) GetTestSuitesByFileID(ctx context.Context, fileID pgtype.UUID)
 	return items, nil
 }
 
+const getUserRetentionDays = `-- name: GetUserRetentionDays :one
+
+SELECT sp.retention_days
+FROM user_subscriptions us
+JOIN subscription_plans sp ON us.plan_id = sp.id
+WHERE us.user_id = $1 AND us.status = 'active'
+`
+
+// =============================================================================
+// RETENTION
+// =============================================================================
+// Returns retention_days from user's active subscription plan.
+// NULL means unlimited (enterprise) or no active subscription.
+func (q *Queries) GetUserRetentionDays(ctx context.Context, userID pgtype.UUID) (pgtype.Int4, error) {
+	row := q.db.QueryRow(ctx, getUserRetentionDays, userID)
+	var retention_days pgtype.Int4
+	err := row.Scan(&retention_days)
+	return retention_days, err
+}
+
 const insertSpecDocument = `-- name: InsertSpecDocument :one
-INSERT INTO spec_documents (user_id, analysis_id, content_hash, language, executive_summary, model_id, version)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO spec_documents (user_id, analysis_id, content_hash, language, executive_summary, model_id, version, retention_days_at_creation)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id
 `
 
 type InsertSpecDocumentParams struct {
-	UserID           pgtype.UUID `json:"user_id"`
-	AnalysisID       pgtype.UUID `json:"analysis_id"`
-	ContentHash      []byte      `json:"content_hash"`
-	Language         string      `json:"language"`
-	ExecutiveSummary pgtype.Text `json:"executive_summary"`
-	ModelID          string      `json:"model_id"`
-	Version          int32       `json:"version"`
+	UserID                  pgtype.UUID `json:"user_id"`
+	AnalysisID              pgtype.UUID `json:"analysis_id"`
+	ContentHash             []byte      `json:"content_hash"`
+	Language                string      `json:"language"`
+	ExecutiveSummary        pgtype.Text `json:"executive_summary"`
+	ModelID                 string      `json:"model_id"`
+	Version                 int32       `json:"version"`
+	RetentionDaysAtCreation pgtype.Int4 `json:"retention_days_at_creation"`
 }
 
 func (q *Queries) InsertSpecDocument(ctx context.Context, arg InsertSpecDocumentParams) (pgtype.UUID, error) {
@@ -690,6 +711,7 @@ func (q *Queries) InsertSpecDocument(ctx context.Context, arg InsertSpecDocument
 		arg.ExecutiveSummary,
 		arg.ModelID,
 		arg.Version,
+		arg.RetentionDaysAtCreation,
 	)
 	var id pgtype.UUID
 	err := row.Scan(&id)
@@ -846,19 +868,20 @@ func (q *Queries) RecordSpecViewUsageEvent(ctx context.Context, arg RecordSpecVi
 }
 
 const recordUserAnalysisHistory = `-- name: RecordUserAnalysisHistory :exec
-INSERT INTO user_analysis_history (user_id, analysis_id)
-VALUES ($1, $2)
+INSERT INTO user_analysis_history (user_id, analysis_id, retention_days_at_creation)
+VALUES ($1, $2, $3)
 ON CONFLICT ON CONSTRAINT uq_user_analysis_history_user_analysis
 DO UPDATE SET updated_at = now()
 `
 
 type RecordUserAnalysisHistoryParams struct {
-	UserID     pgtype.UUID `json:"user_id"`
-	AnalysisID pgtype.UUID `json:"analysis_id"`
+	UserID                  pgtype.UUID `json:"user_id"`
+	AnalysisID              pgtype.UUID `json:"analysis_id"`
+	RetentionDaysAtCreation pgtype.Int4 `json:"retention_days_at_creation"`
 }
 
 func (q *Queries) RecordUserAnalysisHistory(ctx context.Context, arg RecordUserAnalysisHistoryParams) error {
-	_, err := q.db.Exec(ctx, recordUserAnalysisHistory, arg.UserID, arg.AnalysisID)
+	_, err := q.db.Exec(ctx, recordUserAnalysisHistory, arg.UserID, arg.AnalysisID, arg.RetentionDaysAtCreation)
 	return err
 }
 

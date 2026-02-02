@@ -85,8 +85,8 @@ LEFT JOIN (
 WHERE c.host = $1 AND c.owner = $2 AND c.name = $3 AND c.is_stale = false;
 
 -- name: RecordUserAnalysisHistory :exec
-INSERT INTO user_analysis_history (user_id, analysis_id)
-VALUES ($1, $2)
+INSERT INTO user_analysis_history (user_id, analysis_id, retention_days_at_creation)
+VALUES ($1, $2, $3)
 ON CONFLICT ON CONSTRAINT uq_user_analysis_history_user_analysis
 DO UPDATE SET updated_at = now();
 
@@ -133,8 +133,8 @@ WHERE sd.user_id = $1
   );
 
 -- name: InsertSpecDocument :one
-INSERT INTO spec_documents (user_id, analysis_id, content_hash, language, executive_summary, model_id, version)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO spec_documents (user_id, analysis_id, content_hash, language, executive_summary, model_id, version, retention_days_at_creation)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id;
 
 -- name: InsertSpecDomain :one
@@ -241,6 +241,18 @@ WHERE created_at < now() - $1::interval;
 
 -- name: DeleteQuotaReservationByJobID :exec
 DELETE FROM quota_reservations WHERE job_id = $1;
+
+-- =============================================================================
+-- RETENTION
+-- =============================================================================
+
+-- name: GetUserRetentionDays :one
+-- Returns retention_days from user's active subscription plan.
+-- NULL means unlimited (enterprise) or no active subscription.
+SELECT sp.retention_days
+FROM user_subscriptions us
+JOIN subscription_plans sp ON us.plan_id = sp.id
+WHERE us.user_id = $1 AND us.status = 'active';
 
 -- =============================================================================
 -- RETENTION CLEANUP

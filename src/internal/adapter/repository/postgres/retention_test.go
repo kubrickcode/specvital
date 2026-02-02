@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -210,7 +211,7 @@ func TestRetentionRepository_DeleteExpiredUserAnalysisHistory(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			analysisID, err := analysisRepo.CreateAnalysisRecord(ctx, analysis.CreateAnalysisRecordParams{
 				Owner:          "batch-owner",
-				Repo:           "batch-repo",
+				Repo:           fmt.Sprintf("batch-repo-%d", i),
 				CommitSHA:      "batch" + string(rune('0'+i)),
 				Branch:         "main",
 				ExternalRepoID: "batch-id-" + string(rune('0'+i)),
