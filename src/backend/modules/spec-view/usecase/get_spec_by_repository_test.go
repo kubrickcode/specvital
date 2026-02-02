@@ -20,10 +20,11 @@ type repoMockRepository struct {
 	availableLanguages []entity.AvailableLanguageInfo
 	availableLangsErr  error
 
-	calledLanguage string
-	calledVersion  int
-	calledOwner    string
-	calledName     string
+	calledDocumentID string
+	calledLanguage   string
+	calledVersion    int
+	calledOwner      string
+	calledName       string
 }
 
 func (m *repoMockRepository) CheckCodebaseExists(_ context.Context, owner, name string) (bool, error) {
@@ -44,6 +45,13 @@ func (m *repoMockRepository) GetSpecDocumentByRepositoryAndVersion(_ context.Con
 	m.calledName = name
 	m.calledLanguage = language
 	m.calledVersion = version
+	return m.repoDocument, m.repoDocumentErr
+}
+
+func (m *repoMockRepository) GetSpecDocumentByRepositoryAndDocumentId(_ context.Context, _, owner, name, documentID string) (*entity.RepoSpecDocument, error) {
+	m.calledOwner = owner
+	m.calledName = name
+	m.calledDocumentID = documentID
 	return m.repoDocument, m.repoDocumentErr
 }
 
@@ -321,6 +329,114 @@ func TestGetSpecByRepositoryUseCase_Execute(t *testing.T) {
 		})
 		if !errors.Is(err, dbErr) {
 			t.Errorf("Execute() error = %v, want %v", err, dbErr)
+		}
+	})
+
+	t.Run("fetches document by documentID when specified", func(t *testing.T) {
+		doc := &entity.RepoSpecDocument{
+			ID:        "550e8400-e29b-41d4-a716-446655440000",
+			Version:   1,
+			Language:  "Korean",
+			CommitSHA: "abc123",
+		}
+		mock := &repoMockRepository{
+			codebaseExists: true,
+			repoDocument:   doc,
+			availableLanguages: []entity.AvailableLanguageInfo{
+				{Language: "Korean", LatestVersion: 1},
+			},
+		}
+		uc := NewGetSpecByRepositoryUseCase(mock)
+		result, err := uc.Execute(context.Background(), GetSpecByRepositoryInput{
+			Owner:      "facebook",
+			Name:       "react",
+			UserID:     "user-1",
+			DocumentID: "550e8400-e29b-41d4-a716-446655440000",
+		})
+		if err != nil {
+			t.Fatalf("Execute() error = %v", err)
+		}
+		if result.Document == nil {
+			t.Fatal("Execute() Document is nil")
+		}
+		if result.Document.ID != "550e8400-e29b-41d4-a716-446655440000" {
+			t.Errorf("Execute() Document.ID = %q, want %q", result.Document.ID, "550e8400-e29b-41d4-a716-446655440000")
+		}
+		if mock.calledDocumentID != "550e8400-e29b-41d4-a716-446655440000" {
+			t.Errorf("Repository called with documentID = %q, want %q", mock.calledDocumentID, "550e8400-e29b-41d4-a716-446655440000")
+		}
+	})
+
+	t.Run("returns ErrInvalidDocumentID when documentID format is invalid", func(t *testing.T) {
+		mock := &repoMockRepository{
+			codebaseExists: true,
+			availableLanguages: []entity.AvailableLanguageInfo{
+				{Language: "English", LatestVersion: 1},
+			},
+		}
+		uc := NewGetSpecByRepositoryUseCase(mock)
+		_, err := uc.Execute(context.Background(), GetSpecByRepositoryInput{
+			Owner:      "facebook",
+			Name:       "react",
+			UserID:     "user-1",
+			DocumentID: "invalid-uuid-format",
+		})
+		if !errors.Is(err, domain.ErrInvalidDocumentID) {
+			t.Errorf("Execute() error = %v, want %v", err, domain.ErrInvalidDocumentID)
+		}
+	})
+
+	t.Run("returns ErrDocumentNotFound when documentID not found", func(t *testing.T) {
+		mock := &repoMockRepository{
+			codebaseExists: true,
+			repoDocument:   nil,
+		}
+		uc := NewGetSpecByRepositoryUseCase(mock)
+		_, err := uc.Execute(context.Background(), GetSpecByRepositoryInput{
+			Owner:      "facebook",
+			Name:       "react",
+			UserID:     "user-1",
+			DocumentID: "550e8400-e29b-41d4-a716-446655440000",
+		})
+		if !errors.Is(err, domain.ErrDocumentNotFound) {
+			t.Errorf("Execute() error = %v, want %v", err, domain.ErrDocumentNotFound)
+		}
+	})
+
+	t.Run("documentID takes precedence over version parameter", func(t *testing.T) {
+		doc := &entity.RepoSpecDocument{
+			ID:        "550e8400-e29b-41d4-a716-446655440000",
+			Version:   3,
+			Language:  "English",
+			CommitSHA: "abc123",
+		}
+		mock := &repoMockRepository{
+			codebaseExists: true,
+			repoDocument:   doc,
+			availableLanguages: []entity.AvailableLanguageInfo{
+				{Language: "English", LatestVersion: 5},
+			},
+		}
+		uc := NewGetSpecByRepositoryUseCase(mock)
+		result, err := uc.Execute(context.Background(), GetSpecByRepositoryInput{
+			Owner:      "facebook",
+			Name:       "react",
+			UserID:     "user-1",
+			DocumentID: "550e8400-e29b-41d4-a716-446655440000",
+			Version:    1, // Should be ignored when documentID is provided
+		})
+		if err != nil {
+			t.Fatalf("Execute() error = %v", err)
+		}
+		// Verify documentID was used, not version
+		if mock.calledDocumentID != "550e8400-e29b-41d4-a716-446655440000" {
+			t.Errorf("Repository called with documentID = %q, want %q", mock.calledDocumentID, "550e8400-e29b-41d4-a716-446655440000")
+		}
+		if mock.calledVersion != 0 {
+			t.Errorf("Repository should not call version-based method, but calledVersion = %d", mock.calledVersion)
+		}
+		if result.Document.Version != 3 {
+			t.Errorf("Execute() Document.Version = %d, want 3 (from documentID lookup)", result.Document.Version)
 		}
 	})
 }

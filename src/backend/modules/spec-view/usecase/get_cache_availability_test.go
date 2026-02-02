@@ -85,6 +85,9 @@ func (m *mockCacheAvailabilityRepository) GetSpecDocumentByRepository(_ context.
 func (m *mockCacheAvailabilityRepository) GetSpecDocumentByRepositoryAndVersion(_ context.Context, _, _, _, _ string, _ int) (*entity.RepoSpecDocument, error) {
 	return nil, nil
 }
+func (m *mockCacheAvailabilityRepository) GetSpecDocumentByRepositoryAndDocumentId(_ context.Context, _, _, _, _ string) (*entity.RepoSpecDocument, error) {
+	return nil, nil
+}
 func (m *mockCacheAvailabilityRepository) GetVersionHistoryByRepository(_ context.Context, _, _, _, _ string) ([]entity.RepoVersionInfo, error) {
 	return nil, nil
 }

@@ -12,6 +12,7 @@ var (
 	ErrGenerationPending    = errors.New("generation already pending")
 	ErrGenerationRunning    = errors.New("generation already running")
 	ErrInvalidAnalysisID    = errors.New("invalid analysis ID")
+	ErrInvalidDocumentID    = errors.New("invalid document ID format")
 	ErrInvalidLanguage      = errors.New("invalid language")
 	ErrInvalidRepository    = errors.New("invalid repository (owner or name empty)")
 	ErrQuotaExceeded        = errors.New("quota exceeded")

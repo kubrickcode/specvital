@@ -9,6 +9,8 @@ import (
 )
 
 type GetSpecByRepositoryInput struct {
+	// DocumentID is optional. If set, returns the specific document (takes precedence over Version).
+	DocumentID string
 	// Language is optional. If empty, defaults to "English".
 	Language string
 	// Name is the repository name. Required.
@@ -69,18 +71,30 @@ func (uc *GetSpecByRepositoryUseCase) Execute(ctx context.Context, input GetSpec
 		language = availableLanguages[0].Language
 	}
 
-	if !entity.IsValidLanguage(language) {
-		return nil, domain.ErrInvalidLanguage
-	}
-
 	var doc *entity.RepoSpecDocument
-	if input.Version > 0 {
-		doc, err = uc.repo.GetSpecDocumentByRepositoryAndVersion(ctx, input.UserID, input.Owner, input.Name, language, input.Version)
+	if input.DocumentID != "" {
+		// Validate document ID format before querying
+		if !entity.IsValidDocumentID(input.DocumentID) {
+			return nil, domain.ErrInvalidDocumentID
+		}
+		// DocumentID takes precedence - fetch specific document directly
+		doc, err = uc.repo.GetSpecDocumentByRepositoryAndDocumentId(ctx, input.UserID, input.Owner, input.Name, input.DocumentID)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		doc, err = uc.repo.GetSpecDocumentByRepository(ctx, input.UserID, input.Owner, input.Name, language)
-	}
-	if err != nil {
-		return nil, err
+		if !entity.IsValidLanguage(language) {
+			return nil, domain.ErrInvalidLanguage
+		}
+
+		if input.Version > 0 {
+			doc, err = uc.repo.GetSpecDocumentByRepositoryAndVersion(ctx, input.UserID, input.Owner, input.Name, language, input.Version)
+		} else {
+			doc, err = uc.repo.GetSpecDocumentByRepository(ctx, input.UserID, input.Owner, input.Name, language)
+		}
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if doc == nil {

@@ -31,7 +31,7 @@ type DocumentViewProps = {
   onGenerateNewLanguage?: (language: SpecLanguage) => void;
   onLanguageSwitch?: (language: SpecLanguage) => void;
   onRegenerate?: () => void;
-  onVersionSwitch?: (version: number) => void;
+  onVersionSwitch?: (documentId: string) => void;
   onViewLatest?: () => void;
   owner?: string;
   repo?: string;

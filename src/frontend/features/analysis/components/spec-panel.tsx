@@ -95,7 +95,7 @@ export const SpecPanel = ({
 
   // Local state
   const [selectedLanguage, setSelectedLanguage] = useState<SpecLanguage | undefined>(undefined);
-  const [selectedVersion, setSelectedVersion] = useState<number | undefined>(undefined);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>(undefined);
 
   // Determine which language to use for document fetching
   // Priority: generatingLanguage (during generation) > selectedLanguage (user selection)
@@ -123,8 +123,8 @@ export const SpecPanel = ({
     isFetching,
     isLoading: isLoadingDocument,
   } = useRepoSpecView(owner, repo, {
+    documentId: selectedDocumentId,
     language: documentLanguage,
-    version: selectedVersion,
   });
 
   // Generation mutation - analysisId based (generation targets specific analysis)
@@ -278,21 +278,21 @@ export const SpecPanel = ({
    */
   const handleExistingLanguageSwitch = (language: SpecLanguage) => {
     setSelectedLanguage(language);
-    setSelectedVersion(undefined); // Reset to latest version when switching language
+    setSelectedDocumentId(undefined); // Reset to latest document when switching language
   };
 
   /**
-   * Switch to a specific version (free, instant).
+   * Switch to a specific document by ID (free, instant).
    */
-  const handleVersionSwitch = (version: number) => {
-    setSelectedVersion(version);
+  const handleVersionSwitch = (documentId: string) => {
+    setSelectedDocumentId(documentId);
   };
 
   /**
    * Switch to the latest version (triggered from old version banner).
    */
   const handleViewLatest = () => {
-    setSelectedVersion(undefined);
+    setSelectedDocumentId(undefined);
   };
 
   /**

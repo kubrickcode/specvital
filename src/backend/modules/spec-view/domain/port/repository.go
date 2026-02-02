@@ -55,6 +55,8 @@ type SpecViewRepository interface {
 	GetSpecDocumentByRepository(ctx context.Context, userID, owner, name, language string) (*entity.RepoSpecDocument, error)
 	// GetSpecDocumentByRepositoryAndVersion retrieves a specific version of spec document for a repository.
 	GetSpecDocumentByRepositoryAndVersion(ctx context.Context, userID, owner, name, language string, version int) (*entity.RepoSpecDocument, error)
+	// GetSpecDocumentByRepositoryAndDocumentId retrieves a specific spec document by its ID for a repository.
+	GetSpecDocumentByRepositoryAndDocumentId(ctx context.Context, userID, owner, name, documentID string) (*entity.RepoSpecDocument, error)
 	// GetVersionHistoryByRepository returns all spec versions for a repository across all analyses.
 	// Each version includes the commit SHA at generation time.
 	GetVersionHistoryByRepository(ctx context.Context, userID, owner, name, language string) ([]entity.RepoVersionInfo, error)

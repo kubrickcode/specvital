@@ -418,12 +418,18 @@ func (h *Handler) GetSpecDocumentByRepository(ctx context.Context, request api.G
 		version = *request.Params.Version
 	}
 
+	documentID := ""
+	if request.Params.DocumentID != nil {
+		documentID = request.Params.DocumentID.String()
+	}
+
 	result, err := h.getSpecByRepository.Execute(ctx, usecase.GetSpecByRepositoryInput{
-		Language: language,
-		Name:     request.Repo,
-		Owner:    request.Owner,
-		UserID:   userID,
-		Version:  version,
+		DocumentID: documentID,
+		Language:   language,
+		Name:       request.Repo,
+		Owner:      request.Owner,
+		UserID:     userID,
+		Version:    version,
 	})
 	if err != nil {
 		switch {

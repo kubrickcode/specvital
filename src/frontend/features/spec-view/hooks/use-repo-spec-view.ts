@@ -13,17 +13,26 @@ import { isRepoDocumentCompleted } from "../types";
 
 export const repoSpecViewKeys = {
   all: ["repo-spec-view"] as const,
-  document: (owner: string, repo: string, language?: SpecLanguage, version?: number) =>
-    version !== undefined
-      ? ([...repoSpecViewKeys.all, "document", owner, repo, language, version] as const)
-      : language
-        ? ([...repoSpecViewKeys.all, "document", owner, repo, language] as const)
-        : ([...repoSpecViewKeys.all, "document", owner, repo] as const),
+  document: (
+    owner: string,
+    repo: string,
+    language?: SpecLanguage,
+    version?: number,
+    documentId?: string
+  ) =>
+    documentId
+      ? ([...repoSpecViewKeys.all, "document", owner, repo, "id", documentId] as const)
+      : version !== undefined
+        ? ([...repoSpecViewKeys.all, "document", owner, repo, language, version] as const)
+        : language
+          ? ([...repoSpecViewKeys.all, "document", owner, repo, language] as const)
+          : ([...repoSpecViewKeys.all, "document", owner, repo] as const),
   versions: (owner: string, repo: string, language: SpecLanguage) =>
     [...repoSpecViewKeys.all, "versions", owner, repo, language] as const,
 };
 
 type UseRepoSpecViewOptions = {
+  documentId?: string;
   enabled?: boolean;
   language?: SpecLanguage;
   version?: number;
@@ -48,12 +57,12 @@ export const useRepoSpecView = (
   repo: string,
   options: UseRepoSpecViewOptions = {}
 ): UseRepoSpecViewReturn => {
-  const { enabled = true, language, version } = options;
+  const { documentId, enabled = true, language, version } = options;
 
   const query = useQuery({
     enabled: enabled && Boolean(owner) && Boolean(repo),
-    queryFn: () => fetchRepoSpecDocument(owner, repo, { language, version }),
-    queryKey: repoSpecViewKeys.document(owner, repo, language, version),
+    queryFn: () => fetchRepoSpecDocument(owner, repo, { documentId, language, version }),
+    queryKey: repoSpecViewKeys.document(owner, repo, language, version, documentId),
     retry: false,
   });
 

@@ -59,7 +59,7 @@ type ExecutiveSummaryProps = {
   onGenerateNewLanguage?: (language: SpecLanguage) => void;
   onLanguageSwitch?: (language: SpecLanguage) => void;
   onRegenerate?: () => void;
-  onVersionSwitch?: (version: number) => void;
+  onVersionSwitch?: (documentId: string) => void;
   owner?: string;
   repo?: string;
   versions?: VersionInfoWithCommit[];
@@ -320,7 +320,7 @@ export const ExecutiveSummary = ({
 
                       {/* Version items */}
                       {group.versions.map((versionInfo) => {
-                        const isCurrentVersion = versionInfo.version === currentVersion;
+                        const isCurrentVersion = versionInfo.id === document.id;
                         return (
                           <DropdownMenuItem
                             className={cn(
@@ -328,7 +328,7 @@ export const ExecutiveSummary = ({
                               isCurrentVersion && "bg-muted font-medium"
                             )}
                             key={versionInfo.id}
-                            onClick={() => onVersionSwitch(versionInfo.version)}
+                            onClick={() => onVersionSwitch(versionInfo.id)}
                           >
                             <div className="flex items-center gap-2">
                               {isCurrentVersion ? (

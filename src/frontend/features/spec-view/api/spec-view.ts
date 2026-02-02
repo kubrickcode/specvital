@@ -203,6 +203,7 @@ export const fetchCacheAvailability = async (
 // Repository-based API functions (cross-analysis version access)
 
 type FetchRepoSpecDocumentOptions = {
+  documentId?: string;
   language?: SpecLanguage;
   version?: number;
 };
@@ -213,6 +214,9 @@ export const fetchRepoSpecDocument = async (
   options?: FetchRepoSpecDocumentOptions
 ): Promise<RepoSpecDocumentResponse> => {
   const params = new URLSearchParams();
+  if (options?.documentId) {
+    params.set("documentId", options.documentId);
+  }
   if (options?.language) {
     params.set("language", options.language);
   }

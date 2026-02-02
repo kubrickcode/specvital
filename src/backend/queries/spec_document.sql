@@ -312,6 +312,25 @@ WHERE c.owner = @owner AND c.name = @repo
   AND sd.language = @language
   AND sd.version = @version;
 
+-- name: GetSpecDocumentByRepositoryAndDocumentId :one
+-- Returns specific spec document by document ID for a repository
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.user_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at,
+    a.commit_sha
+FROM spec_documents sd
+JOIN analyses a ON a.id = sd.analysis_id
+JOIN codebases c ON c.id = a.codebase_id
+WHERE c.owner = @owner AND c.name = @repo
+  AND sd.user_id = @user_id
+  AND sd.id = @document_id;
+
 -- name: GetVersionHistoryByRepository :many
 -- Returns spec versions for a repository (across analyses) with commit SHA
 -- Ordered by creation date descending to show most recent first

@@ -657,6 +657,43 @@ func (r *PostgresRepository) GetSpecDocumentByRepositoryAndVersion(ctx context.C
 	})
 }
 
+func (r *PostgresRepository) GetSpecDocumentByRepositoryAndDocumentId(ctx context.Context, userID, owner, name, documentID string) (*entity.RepoSpecDocument, error) {
+	uid, err := parseUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	docID, err := parseUUID(documentID)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := r.queries.GetSpecDocumentByRepositoryAndDocumentId(ctx, db.GetSpecDocumentByRepositoryAndDocumentIdParams{
+		Owner:      owner,
+		Repo:       name,
+		UserID:     uid,
+		DocumentID: docID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return r.buildRepoSpecDocument(ctx, db.GetSpecDocumentByRepositoryRow{
+		ID:               row.ID,
+		AnalysisID:       row.AnalysisID,
+		UserID:           row.UserID,
+		Language:         row.Language,
+		Version:          row.Version,
+		ExecutiveSummary: row.ExecutiveSummary,
+		ModelID:          row.ModelID,
+		CreatedAt:        row.CreatedAt,
+		CommitSha:        row.CommitSha,
+	})
+}
+
 func (r *PostgresRepository) buildRepoSpecDocument(ctx context.Context, row db.GetSpecDocumentByRepositoryRow) (*entity.RepoSpecDocument, error) {
 	domains, err := r.buildDomainHierarchy(ctx, row.ID)
 	if err != nil {

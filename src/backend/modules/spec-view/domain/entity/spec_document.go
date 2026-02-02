@@ -3,6 +3,8 @@ package entity
 import (
 	"regexp"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // DefaultLanguage is the default language for spec generation
@@ -53,6 +55,12 @@ var SupportedLanguages = map[string]bool{
 // IsValidLanguage checks if the given language is supported
 func IsValidLanguage(language string) bool {
 	return SupportedLanguages[language]
+}
+
+// IsValidDocumentID checks if the given document ID is a valid UUID format
+func IsValidDocumentID(documentID string) bool {
+	_, err := uuid.Parse(documentID)
+	return err == nil
 }
 
 type SpecDocument struct {

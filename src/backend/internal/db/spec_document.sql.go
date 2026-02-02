@@ -555,6 +555,67 @@ func (q *Queries) GetSpecDocumentByRepository(ctx context.Context, arg GetSpecDo
 	return i, err
 }
 
+const getSpecDocumentByRepositoryAndDocumentId = `-- name: GetSpecDocumentByRepositoryAndDocumentId :one
+SELECT
+    sd.id,
+    sd.analysis_id,
+    sd.user_id,
+    sd.language,
+    sd.version,
+    sd.executive_summary,
+    sd.model_id,
+    sd.created_at,
+    a.commit_sha
+FROM spec_documents sd
+JOIN analyses a ON a.id = sd.analysis_id
+JOIN codebases c ON c.id = a.codebase_id
+WHERE c.owner = $1 AND c.name = $2
+  AND sd.user_id = $3
+  AND sd.id = $4
+`
+
+type GetSpecDocumentByRepositoryAndDocumentIdParams struct {
+	Owner      string      `json:"owner"`
+	Repo       string      `json:"repo"`
+	UserID     pgtype.UUID `json:"user_id"`
+	DocumentID pgtype.UUID `json:"document_id"`
+}
+
+type GetSpecDocumentByRepositoryAndDocumentIdRow struct {
+	ID               pgtype.UUID        `json:"id"`
+	AnalysisID       pgtype.UUID        `json:"analysis_id"`
+	UserID           pgtype.UUID        `json:"user_id"`
+	Language         string             `json:"language"`
+	Version          int32              `json:"version"`
+	ExecutiveSummary pgtype.Text        `json:"executive_summary"`
+	ModelID          string             `json:"model_id"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	CommitSha        string             `json:"commit_sha"`
+}
+
+// Returns specific spec document by document ID for a repository
+func (q *Queries) GetSpecDocumentByRepositoryAndDocumentId(ctx context.Context, arg GetSpecDocumentByRepositoryAndDocumentIdParams) (GetSpecDocumentByRepositoryAndDocumentIdRow, error) {
+	row := q.db.QueryRow(ctx, getSpecDocumentByRepositoryAndDocumentId,
+		arg.Owner,
+		arg.Repo,
+		arg.UserID,
+		arg.DocumentID,
+	)
+	var i GetSpecDocumentByRepositoryAndDocumentIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.AnalysisID,
+		&i.UserID,
+		&i.Language,
+		&i.Version,
+		&i.ExecutiveSummary,
+		&i.ModelID,
+		&i.CreatedAt,
+		&i.CommitSha,
+	)
+	return i, err
+}
+
 const getSpecDocumentByRepositoryAndVersion = `-- name: GetSpecDocumentByRepositoryAndVersion :one
 SELECT
     sd.id,

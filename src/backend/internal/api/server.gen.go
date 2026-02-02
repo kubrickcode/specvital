@@ -1311,6 +1311,9 @@ type GetSpecDocumentByRepositoryParams struct {
 
 	// Version Specific version number to retrieve. If not specified, returns the latest version.
 	Version *int `form:"version,omitempty" json:"version,omitempty"`
+
+	// DocumentID Specific document ID (UUID) to retrieve. Takes precedence over version parameter.
+	DocumentID *openapi_types.UUID `form:"documentId,omitempty" json:"documentId,omitempty"`
 }
 
 // GetVersionHistoryByRepositoryParams defines parameters for GetVersionHistoryByRepository.
@@ -2584,6 +2587,14 @@ func (siw *ServerInterfaceWrapper) GetSpecDocumentByRepository(w http.ResponseWr
 	err = runtime.BindQueryParameter("form", true, false, "version", r.URL.Query(), &params.Version)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "version", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "documentId" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "documentId", r.URL.Query(), &params.DocumentID)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "documentId", Err: err})
 		return
 	}
 

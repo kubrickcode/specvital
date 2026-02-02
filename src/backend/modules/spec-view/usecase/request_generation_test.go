@@ -95,6 +95,9 @@ func (m *mockSpecViewRepository) GetSpecDocumentByRepository(_ context.Context, 
 func (m *mockSpecViewRepository) GetSpecDocumentByRepositoryAndVersion(_ context.Context, _, _, _, _ string, _ int) (*entity.RepoSpecDocument, error) {
 	return nil, nil
 }
+func (m *mockSpecViewRepository) GetSpecDocumentByRepositoryAndDocumentId(_ context.Context, _, _, _, _ string) (*entity.RepoSpecDocument, error) {
+	return nil, nil
+}
 func (m *mockSpecViewRepository) GetVersionHistoryByRepository(_ context.Context, _, _, _, _ string) ([]entity.RepoVersionInfo, error) {
 	return nil, nil
 }
