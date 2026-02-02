@@ -1,4 +1,4 @@
-name: Semantic Release
+name: Deploy and Release
 
 on:
   push:
@@ -9,9 +9,51 @@ permissions:
   contents: write
 
 jobs:
+  deploy:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        service: [web-backend]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Set service environment variables
+        run: |
+          railway variables --set "COOKIE_DOMAIN=${{ secrets.COOKIE_DOMAIN }}" --service web-backend
+          railway variables --set "CORS_ORIGINS=${{ secrets.CORS_ORIGINS }}" --service web-backend
+          railway variables --set "ENV=${{ secrets.ENV }}" --service web-backend
+          railway variables --set "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" --service web-backend
+          railway variables --set "GITHUB_APP_ID=${{ secrets.GH_APP_ID }}" --service web-backend
+          railway variables --set "GITHUB_APP_PRIVATE_KEY=${{ secrets.GH_APP_PRIVATE_KEY }}" --service web-backend
+          railway variables --set "GITHUB_APP_SLUG=${{ secrets.GH_APP_SLUG }}" --service web-backend
+          railway variables --set "GITHUB_APP_WEBHOOK_SECRET=${{ secrets.GH_APP_WEBHOOK_SECRET }}" --service web-backend
+          railway variables --set "GITHUB_OAUTH_CLIENT_ID=${{ secrets.GH_OAUTH_CLIENT_ID }}" --service web-backend
+          railway variables --set "GITHUB_OAUTH_CLIENT_SECRET=${{ secrets.GH_OAUTH_CLIENT_SECRET }}" --service web-backend
+          railway variables --set "GITHUB_OAUTH_REDIRECT_URL=${{ secrets.GH_OAUTH_REDIRECT_URL }}" --service web-backend
+          railway variables --set "JWT_SECRET=${{ secrets.JWT_SECRET }}" --service web-backend
+          railway variables --set "PROMO_DEFAULT_PLAN=${{ secrets.PROMO_DEFAULT_PLAN }}" --service web-backend
+          railway variables --set "SECURE_COOKIE=${{ secrets.SECURE_COOKIE }}" --service web-backend
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy ${{ matrix.service }}
+        run: |
+          cp infra/railway/${{ matrix.service }}.json railway.json
+          railway up --service ${{ matrix.service }} --detach
+          rm railway.json
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
   release:
     name: Release
     runs-on: ubuntu-latest
+    needs: deploy
 
     steps:
       - name: Checkout

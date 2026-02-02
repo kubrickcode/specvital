@@ -5,12 +5,12 @@ WORKDIR /app
 
 RUN apk add --no-cache ca-certificates
 
-COPY go.mod go.sum ./
+COPY src/backend/go.mod src/backend/go.sum ./
 
 RUN go mod download
 
 # Copy source code
-COPY . .
+COPY src/backend/ .
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -ldflags="-w -s" \
