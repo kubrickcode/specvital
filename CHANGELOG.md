@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/specvital/web/compare/v1.4.1...v1.5.0) (2026-02-02)
+
+### 🎯 Highlights
+
+#### ✨ Features
+
+- **spec-view:** group version history by commit SHA ([42b852b](https://github.com/specvital/web/commit/42b852b0662972ccd61459cc601e2d778aa0538d))
+
+#### 🐛 Bug Fixes
+
+- **spec-view:** fix multiple documents showing as "latest" in version history ([b217af4](https://github.com/specvital/web/commit/b217af4486ccf86224c0bcacc6293dd3d241f095))
+
 ## [1.4.1](https://github.com/specvital/web/compare/v1.4.0...v1.4.1) (2026-02-02)
 
 ### 🔧 Maintenance
