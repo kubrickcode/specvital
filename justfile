@@ -101,14 +101,18 @@ build target="all":
       all)
         go build -o ../bin/analyzer ./cmd/analyzer
         go build -o ../bin/spec-generator ./cmd/spec-generator
+        go build -o ../bin/retention-cleanup ./cmd/retention-cleanup
         go build -o ../bin/enqueue ./cmd/enqueue
-        echo "Built: bin/analyzer, bin/spec-generator, bin/enqueue"
+        echo "Built: bin/analyzer, bin/spec-generator, bin/retention-cleanup, bin/enqueue"
         ;;
       analyzer)
         go build -o ../bin/analyzer ./cmd/analyzer
         ;;
       spec-generator)
         go build -o ../bin/spec-generator ./cmd/spec-generator
+        ;;
+      retention-cleanup)
+        go build -o ../bin/retention-cleanup ./cmd/retention-cleanup
         ;;
       enqueue)
         go build -o ../bin/enqueue ./cmd/enqueue
@@ -117,7 +121,7 @@ build target="all":
         go build ./...
         ;;
       *)
-        echo "Unknown target: {{ target }}. Use: all, analyzer, spec-generator, enqueue, check"
+        echo "Unknown target: {{ target }}. Use: all, analyzer, spec-generator, retention-cleanup, enqueue, check"
         exit 1
         ;;
     esac
@@ -173,6 +177,23 @@ run-spec-generator mode="local":
         ;;
       integration)
         air -c .air.spec-generator.toml
+        ;;
+      *)
+        echo "Unknown mode: {{ mode }}. Use: local, integration"
+        exit 1
+        ;;
+    esac
+
+run-retention-cleanup mode="local":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd src
+    case "{{ mode }}" in
+      local)
+        DATABASE_URL="$LOCAL_DATABASE_URL" go run ./cmd/retention-cleanup
+        ;;
+      integration)
+        go run ./cmd/retention-cleanup
         ;;
       *)
         echo "Unknown mode: {{ mode }}. Use: local, integration"
