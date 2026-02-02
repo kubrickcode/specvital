@@ -227,13 +227,13 @@ func (uc *ListRepositoryCardsUseCase) buildCardsFromPaginated(ctx context.Contex
 	}
 
 	g.Go(func() error {
-		analysisIDs := make([]string, 0, len(repos))
+		codebaseIDs := make([]string, 0, len(repos))
 		for _, r := range repos {
-			if r.AnalysisID != "" {
-				analysisIDs = append(analysisIDs, r.AnalysisID)
+			if r.CodebaseID != "" {
+				codebaseIDs = append(codebaseIDs, r.CodebaseID)
 			}
 		}
-		summaries, err := uc.repository.GetAiSpecSummaries(gCtx, analysisIDs, userID)
+		summaries, err := uc.repository.GetAiSpecSummaries(gCtx, codebaseIDs, userID)
 		if err != nil {
 			// Intentional graceful degradation: AI Spec badge is non-critical
 			// Dashboard should load even if AI Spec query fails
@@ -248,7 +248,7 @@ func (uc *ListRepositoryCardsUseCase) buildCardsFromPaginated(ctx context.Contex
 	for i, r := range repos {
 		var aiSpec *entity.AiSpecSummary
 		if aiSpecSummaries != nil {
-			aiSpec = aiSpecSummaries[r.AnalysisID]
+			aiSpec = aiSpecSummaries[r.CodebaseID]
 		}
 		cards[i] = uc.buildCard(ctx, repoData{
 			ActiveCount:    r.ActiveCount,

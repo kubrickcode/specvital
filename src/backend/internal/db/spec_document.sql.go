@@ -61,47 +61,42 @@ func (q *Queries) CheckSpecDocumentExistsByLanguage(ctx context.Context, arg Che
 	return exists, err
 }
 
-const getAiSpecSummariesByAnalysisIDs = `-- name: GetAiSpecSummariesByAnalysisIDs :many
+const getAiSpecSummariesByCodebaseIDs = `-- name: GetAiSpecSummariesByCodebaseIDs :many
 SELECT
-    sd.analysis_id,
-    sd.user_id,
+    a.codebase_id,
     COUNT(DISTINCT sd.language) AS language_count,
     MAX(sd.created_at) AS latest_generated_at
 FROM spec_documents sd
-WHERE sd.analysis_id = ANY($1::uuid[])
+JOIN analyses a ON a.id = sd.analysis_id
+WHERE a.codebase_id = ANY($1::uuid[])
   AND sd.user_id = $2
-GROUP BY sd.analysis_id, sd.user_id
+GROUP BY a.codebase_id
 `
 
-type GetAiSpecSummariesByAnalysisIDsParams struct {
-	AnalysisIds []pgtype.UUID `json:"analysis_ids"`
+type GetAiSpecSummariesByCodebaseIDsParams struct {
+	CodebaseIds []pgtype.UUID `json:"codebase_ids"`
 	UserID      pgtype.UUID   `json:"user_id"`
 }
 
-type GetAiSpecSummariesByAnalysisIDsRow struct {
-	AnalysisID        pgtype.UUID `json:"analysis_id"`
-	UserID            pgtype.UUID `json:"user_id"`
+type GetAiSpecSummariesByCodebaseIDsRow struct {
+	CodebaseID        pgtype.UUID `json:"codebase_id"`
 	LanguageCount     int64       `json:"language_count"`
 	LatestGeneratedAt interface{} `json:"latest_generated_at"`
 }
 
-// Returns AI Spec summary aggregation for multiple analysis IDs
+// Returns AI Spec summary aggregation for multiple codebase IDs
 // Used for Dashboard RepositoryCard to show [AI Spec] badge
-func (q *Queries) GetAiSpecSummariesByAnalysisIDs(ctx context.Context, arg GetAiSpecSummariesByAnalysisIDsParams) ([]GetAiSpecSummariesByAnalysisIDsRow, error) {
-	rows, err := q.db.Query(ctx, getAiSpecSummariesByAnalysisIDs, arg.AnalysisIds, arg.UserID)
+// Shows badge if user has ANY spec for the codebase, regardless of which analysis
+func (q *Queries) GetAiSpecSummariesByCodebaseIDs(ctx context.Context, arg GetAiSpecSummariesByCodebaseIDsParams) ([]GetAiSpecSummariesByCodebaseIDsRow, error) {
+	rows, err := q.db.Query(ctx, getAiSpecSummariesByCodebaseIDs, arg.CodebaseIds, arg.UserID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAiSpecSummariesByAnalysisIDsRow
+	var items []GetAiSpecSummariesByCodebaseIDsRow
 	for rows.Next() {
-		var i GetAiSpecSummariesByAnalysisIDsRow
-		if err := rows.Scan(
-			&i.AnalysisID,
-			&i.UserID,
-			&i.LanguageCount,
-			&i.LatestGeneratedAt,
-		); err != nil {
+		var i GetAiSpecSummariesByCodebaseIDsRow
+		if err := rows.Scan(&i.CodebaseID, &i.LanguageCount, &i.LatestGeneratedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

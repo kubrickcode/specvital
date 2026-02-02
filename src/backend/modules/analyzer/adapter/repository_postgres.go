@@ -26,8 +26,8 @@ func NewPostgresRepository(queries *db.Queries) *PostgresRepository {
 	return &PostgresRepository{queries: queries}
 }
 
-func (r *PostgresRepository) GetAiSpecSummaries(ctx context.Context, analysisIDs []string, userID string) (map[string]*entity.AiSpecSummary, error) {
-	if len(analysisIDs) == 0 || userID == "" {
+func (r *PostgresRepository) GetAiSpecSummaries(ctx context.Context, codebaseIDs []string, userID string) (map[string]*entity.AiSpecSummary, error) {
+	if len(codebaseIDs) == 0 || userID == "" {
 		return make(map[string]*entity.AiSpecSummary), nil
 	}
 
@@ -36,17 +36,17 @@ func (r *PostgresRepository) GetAiSpecSummaries(ctx context.Context, analysisIDs
 		return nil, fmt.Errorf("parse user ID: %w", err)
 	}
 
-	analysisUUIDs := make([]pgtype.UUID, len(analysisIDs))
-	for i, id := range analysisIDs {
+	codebaseUUIDs := make([]pgtype.UUID, len(codebaseIDs))
+	for i, id := range codebaseIDs {
 		uuid, err := stringToUUID(id)
 		if err != nil {
-			return nil, fmt.Errorf("parse analysis ID %s: %w", id, err)
+			return nil, fmt.Errorf("parse codebase ID %s: %w", id, err)
 		}
-		analysisUUIDs[i] = uuid
+		codebaseUUIDs[i] = uuid
 	}
 
-	rows, err := r.queries.GetAiSpecSummariesByAnalysisIDs(ctx, db.GetAiSpecSummariesByAnalysisIDsParams{
-		AnalysisIds: analysisUUIDs,
+	rows, err := r.queries.GetAiSpecSummariesByCodebaseIDs(ctx, db.GetAiSpecSummariesByCodebaseIDsParams{
+		CodebaseIds: codebaseUUIDs,
 		UserID:      userUUID,
 	})
 	if err != nil {
@@ -55,7 +55,7 @@ func (r *PostgresRepository) GetAiSpecSummaries(ctx context.Context, analysisIDs
 
 	result := make(map[string]*entity.AiSpecSummary, len(rows))
 	for _, row := range rows {
-		analysisID := uuidToString(row.AnalysisID)
+		codebaseID := uuidToString(row.CodebaseID)
 		summary := &entity.AiSpecSummary{
 			HasSpec:       true,
 			LanguageCount: int(row.LanguageCount),
@@ -69,7 +69,7 @@ func (r *PostgresRepository) GetAiSpecSummaries(ctx context.Context, analysisIDs
 				summary.LatestGeneratedAt = &ts.Time
 			}
 		}
-		result[analysisID] = summary
+		result[codebaseID] = summary
 	}
 
 	return result, nil

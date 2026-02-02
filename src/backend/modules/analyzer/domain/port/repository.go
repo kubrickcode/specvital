@@ -9,7 +9,7 @@ import (
 
 type Repository interface {
 	FindActiveRiverJobByRepo(ctx context.Context, kind, owner, repo string) (*RiverJobInfo, error)
-	GetAiSpecSummaries(ctx context.Context, analysisIDs []string, userID string) (map[string]*entity.AiSpecSummary, error)
+	GetAiSpecSummaries(ctx context.Context, codebaseIDs []string, userID string) (map[string]*entity.AiSpecSummary, error)
 	GetBookmarkedCodebaseIDs(ctx context.Context, userID string) ([]string, error)
 	GetCodebaseID(ctx context.Context, owner, repo string) (string, error)
 	GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error)

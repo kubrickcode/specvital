@@ -235,18 +235,19 @@ SELECT
 FROM spec_documents sd
 WHERE sd.analysis_id = @analysis_id AND sd.user_id = @user_id AND sd.language = @language AND sd.version = @version;
 
--- name: GetAiSpecSummariesByAnalysisIDs :many
--- Returns AI Spec summary aggregation for multiple analysis IDs
+-- name: GetAiSpecSummariesByCodebaseIDs :many
+-- Returns AI Spec summary aggregation for multiple codebase IDs
 -- Used for Dashboard RepositoryCard to show [AI Spec] badge
+-- Shows badge if user has ANY spec for the codebase, regardless of which analysis
 SELECT
-    sd.analysis_id,
-    sd.user_id,
+    a.codebase_id,
     COUNT(DISTINCT sd.language) AS language_count,
     MAX(sd.created_at) AS latest_generated_at
 FROM spec_documents sd
-WHERE sd.analysis_id = ANY(@analysis_ids::uuid[])
+JOIN analyses a ON a.id = sd.analysis_id
+WHERE a.codebase_id = ANY(@codebase_ids::uuid[])
   AND sd.user_id = @user_id
-GROUP BY sd.analysis_id, sd.user_id;
+GROUP BY a.codebase_id;
 
 -- name: HasPreviousSpecByLanguage :one
 -- Checks if user has generated a spec document for the same codebase but different analysis
