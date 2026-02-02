@@ -7,10 +7,9 @@ import (
 
 const maxArgsByteSize = 64 * 1024 // 64KB - reasonable limit for job args
 
-// UserJobExtractor extracts user identity and tier information from River job args.
+// UserJobExtractor extracts user identity from River job args.
 type UserJobExtractor interface {
 	ExtractUserID(encodedArgs []byte) string
-	ExtractTier(encodedArgs []byte) PlanTier
 }
 
 // JSONArgsExtractor extracts user_id and tier from JSON-encoded job arguments.
@@ -54,6 +53,9 @@ func (e *JSONArgsExtractor) ExtractUserID(encodedArgs []byte) string {
 
 // ExtractTier parses the tier field from JSON-encoded args.
 // Defaults to TierFree if tier is missing, invalid, unknown, or args exceed size limit.
+//
+// Deprecated: Use TierResolver.ResolveTier instead for DB-based tier lookup.
+// This method is kept for backward compatibility and will be removed in a future version.
 func (e *JSONArgsExtractor) ExtractTier(encodedArgs []byte) PlanTier {
 	if len(encodedArgs) > maxArgsByteSize {
 		slog.Warn("job args exceed size limit, defaulting to free tier",

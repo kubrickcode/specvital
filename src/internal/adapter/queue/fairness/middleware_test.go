@@ -10,8 +10,44 @@ import (
 	"github.com/riverqueue/river/rivertype"
 )
 
+// mockTierResolver returns tier from job args for testing.
+// This allows tests to control tier via job args like before the refactor.
+type mockTierResolver struct{}
+
+func (m *mockTierResolver) ResolveTier(_ context.Context, userID string) PlanTier {
+	return TierFree
+}
+
+// argsBasedTierResolver extracts tier from job args for backward compatibility in tests.
+type argsBasedTierResolver struct {
+	tiers map[string]PlanTier
+}
+
+func newArgsBasedTierResolver() *argsBasedTierResolver {
+	return &argsBasedTierResolver{
+		tiers: make(map[string]PlanTier),
+	}
+}
+
+func (r *argsBasedTierResolver) SetTier(userID string, tier PlanTier) {
+	r.tiers[userID] = tier
+}
+
+func (r *argsBasedTierResolver) ResolveTier(_ context.Context, userID string) PlanTier {
+	if tier, ok := r.tiers[userID]; ok {
+		return tier
+	}
+	return TierFree
+}
+
 // setupMiddleware creates a FairnessMiddleware with default test configuration.
 func setupMiddleware(t *testing.T) (*FairnessMiddleware, *PerUserLimiter, *Config) {
+	t.Helper()
+	return setupMiddlewareWithResolver(t, &mockTierResolver{})
+}
+
+// setupMiddlewareWithResolver creates a FairnessMiddleware with a custom TierResolver.
+func setupMiddlewareWithResolver(t *testing.T, resolver TierResolver) (*FairnessMiddleware, *PerUserLimiter, *Config) {
 	t.Helper()
 	cfg := &Config{
 		FreeConcurrentLimit:       1,
@@ -25,7 +61,7 @@ func setupMiddleware(t *testing.T) (*FairnessMiddleware, *PerUserLimiter, *Confi
 		t.Fatalf("NewPerUserLimiter failed: %v", err)
 	}
 	extractor := NewJSONArgsExtractor()
-	middleware := NewFairnessMiddleware(limiter, extractor, cfg)
+	middleware := NewFairnessMiddleware(limiter, extractor, resolver, cfg)
 	return middleware, limiter, cfg
 }
 
@@ -160,7 +196,9 @@ func TestFairnessMiddleware_Work_ReleaseOnError(t *testing.T) {
 }
 
 func TestFairnessMiddleware_Work_ProTierLimit(t *testing.T) {
-	middleware, limiter, _ := setupMiddleware(t)
+	resolver := newArgsBasedTierResolver()
+	resolver.SetTier("user1", TierPro)
+	middleware, limiter, _ := setupMiddlewareWithResolver(t, resolver)
 
 	doInner := func(ctx context.Context) error {
 		return nil
@@ -170,7 +208,7 @@ func TestFairnessMiddleware_Work_ProTierLimit(t *testing.T) {
 	for i := 1; i <= 3; i++ {
 		job := &rivertype.JobRow{
 			ID:          int64(i),
-			EncodedArgs: []byte(`{"user_id":"user1","tier":"pro"}`),
+			EncodedArgs: []byte(`{"user_id":"user1"}`),
 		}
 		err := middleware.Work(context.Background(), job, doInner)
 		if err != nil {
@@ -191,7 +229,7 @@ func TestFairnessMiddleware_Work_ProTierLimit(t *testing.T) {
 
 	job4 := &rivertype.JobRow{
 		ID:          104,
-		EncodedArgs: []byte(`{"user_id":"user1","tier":"pro"}`),
+		EncodedArgs: []byte(`{"user_id":"user1"}`),
 	}
 
 	err := middleware.Work(context.Background(), job4, doInner)
@@ -204,7 +242,9 @@ func TestFairnessMiddleware_Work_ProTierLimit(t *testing.T) {
 }
 
 func TestFairnessMiddleware_Work_EnterpriseTierLimit(t *testing.T) {
-	middleware, limiter, _ := setupMiddleware(t)
+	resolver := newArgsBasedTierResolver()
+	resolver.SetTier("user1", TierEnterprise)
+	middleware, limiter, _ := setupMiddlewareWithResolver(t, resolver)
 
 	doInner := func(ctx context.Context) error {
 		return nil
@@ -220,7 +260,7 @@ func TestFairnessMiddleware_Work_EnterpriseTierLimit(t *testing.T) {
 	// 6th job should be snoozed
 	job6 := &rivertype.JobRow{
 		ID:          6,
-		EncodedArgs: []byte(`{"user_id":"user1","tier":"enterprise"}`),
+		EncodedArgs: []byte(`{"user_id":"user1"}`),
 	}
 
 	err := middleware.Work(context.Background(), job6, doInner)
@@ -232,18 +272,19 @@ func TestFairnessMiddleware_Work_EnterpriseTierLimit(t *testing.T) {
 	}
 }
 
-func TestFairnessMiddleware_Work_UnknownTierDefaultsToFree(t *testing.T) {
+func TestFairnessMiddleware_Work_UnknownUserDefaultsToFree(t *testing.T) {
+	// TierResolver returns TierFree for unknown users (default behavior)
 	middleware, limiter, _ := setupMiddleware(t)
 
-	// Acquire 1 slot with unknown tier (should default to Free tier limit=1)
-	if !limiter.TryAcquire("user1", "unknown_tier", 1) {
+	// Acquire 1 slot with free tier (limit=1)
+	if !limiter.TryAcquire("user1", TierFree, 1) {
 		t.Fatal("TryAcquire for slot 1 failed")
 	}
 
-	// 2nd job with unknown tier should be snoozed (Free tier limit=1)
+	// 2nd job should be snoozed (Free tier limit=1)
 	job2 := &rivertype.JobRow{
 		ID:          2,
-		EncodedArgs: []byte(`{"user_id":"user1","tier":"unknown_tier"}`),
+		EncodedArgs: []byte(`{"user_id":"user1"}`),
 	}
 
 	doInner := func(ctx context.Context) error {
@@ -252,7 +293,7 @@ func TestFairnessMiddleware_Work_UnknownTierDefaultsToFree(t *testing.T) {
 
 	err := middleware.Work(context.Background(), job2, doInner)
 	if err == nil {
-		t.Error("2nd job with unknown tier should be snoozed (Free tier limit)")
+		t.Error("2nd job should be snoozed (Free tier limit)")
 	}
 	if !strings.Contains(err.Error(), "snooze") && !strings.Contains(err.Error(), "Snooze") {
 		t.Errorf("Expected JobSnooze error, got: %v", err)

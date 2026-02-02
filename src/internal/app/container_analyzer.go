@@ -9,8 +9,10 @@ import (
 	"github.com/specvital/core/pkg/crypto"
 	"github.com/specvital/worker/internal/adapter/parser"
 	"github.com/specvital/worker/internal/adapter/queue/analyze"
+	"github.com/specvital/worker/internal/adapter/queue/fairness"
 	"github.com/specvital/worker/internal/adapter/repository/postgres"
 	"github.com/specvital/worker/internal/adapter/vcs"
+	"github.com/specvital/worker/internal/infra/db"
 	infraqueue "github.com/specvital/worker/internal/infra/queue"
 	analysisuc "github.com/specvital/worker/internal/usecase/analysis"
 )
@@ -56,7 +58,9 @@ func NewAnalyzerContainer(ctx context.Context, cfg ContainerConfig) (*AnalyzerCo
 	}
 
 	var middleware []rivertype.WorkerMiddleware
-	fm, err := NewFairnessMiddleware(cfg.Fairness)
+	queries := db.New(cfg.Pool)
+	tierResolver := fairness.NewDBTierResolver(queries)
+	fm, err := NewFairnessMiddleware(cfg.Fairness, tierResolver)
 	if err != nil {
 		return nil, fmt.Errorf("create fairness middleware: %w", err)
 	}

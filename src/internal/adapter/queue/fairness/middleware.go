@@ -14,17 +14,19 @@ import (
 // Jobs exceeding their tier's limit are snoozed with jitter to prevent thundering herd.
 type FairnessMiddleware struct {
 	river.MiddlewareDefaults
-	limiter   *PerUserLimiter
-	extractor UserJobExtractor
-	config    *Config
+	config       *Config
+	extractor    UserJobExtractor
+	limiter      *PerUserLimiter
+	tierResolver TierResolver
 }
 
-// NewFairnessMiddleware creates a new fairness middleware with the given limiter and extractor.
-func NewFairnessMiddleware(limiter *PerUserLimiter, extractor UserJobExtractor, config *Config) *FairnessMiddleware {
+// NewFairnessMiddleware creates a new fairness middleware with the given dependencies.
+func NewFairnessMiddleware(limiter *PerUserLimiter, extractor UserJobExtractor, tierResolver TierResolver, config *Config) *FairnessMiddleware {
 	return &FairnessMiddleware{
-		limiter:   limiter,
-		extractor: extractor,
-		config:    config,
+		config:       config,
+		extractor:    extractor,
+		limiter:      limiter,
+		tierResolver: tierResolver,
 	}
 }
 
@@ -40,7 +42,7 @@ func (m *FairnessMiddleware) Work(
 		return doInner(ctx)
 	}
 
-	tier := m.extractor.ExtractTier(job.EncodedArgs)
+	tier := m.tierResolver.ResolveTier(ctx, userID)
 
 	if !m.limiter.TryAcquire(userID, tier, job.ID) {
 		jitterNanos := rand.Int64N(int64(m.config.SnoozeJitter))

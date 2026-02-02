@@ -254,6 +254,14 @@ FROM user_subscriptions us
 JOIN subscription_plans sp ON us.plan_id = sp.id
 WHERE us.user_id = $1 AND us.status = 'active';
 
+-- name: GetUserTier :one
+-- Returns tier from user's active subscription plan.
+-- Returns no rows if user has no active subscription (caller should default to free).
+SELECT sp.tier
+FROM user_subscriptions us
+JOIN subscription_plans sp ON us.plan_id = sp.id
+WHERE us.user_id = $1 AND us.status = 'active';
+
 -- =============================================================================
 -- RETENTION CLEANUP
 -- =============================================================================

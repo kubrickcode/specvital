@@ -9,9 +9,11 @@ import (
 	"github.com/riverqueue/river/rivertype"
 	"github.com/specvital/worker/internal/adapter/ai/gemini"
 	"github.com/specvital/worker/internal/adapter/ai/mock"
+	"github.com/specvital/worker/internal/adapter/queue/fairness"
 	specviewqueue "github.com/specvital/worker/internal/adapter/queue/specview"
 	"github.com/specvital/worker/internal/adapter/repository/postgres"
 	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/specvital/worker/internal/infra/db"
 	infraqueue "github.com/specvital/worker/internal/infra/queue"
 	specviewuc "github.com/specvital/worker/internal/usecase/specview"
 )
@@ -74,7 +76,9 @@ func NewSpecGeneratorContainer(ctx context.Context, cfg ContainerConfig) (*SpecG
 	}
 
 	var middleware []rivertype.WorkerMiddleware
-	fm, err := NewFairnessMiddleware(cfg.Fairness)
+	queries := db.New(cfg.Pool)
+	tierResolver := fairness.NewDBTierResolver(queries)
+	fm, err := NewFairnessMiddleware(cfg.Fairness, tierResolver)
 	if err != nil {
 		return nil, fmt.Errorf("create fairness middleware: %w", err)
 	}

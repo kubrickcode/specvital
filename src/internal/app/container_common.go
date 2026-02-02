@@ -63,7 +63,7 @@ func (c ContainerConfig) ValidateSpecGenerator() error {
 //
 // Returns nil if fairness is disabled (FAIRNESS_ENABLED=false).
 // Returns error if configuration is invalid.
-func NewFairnessMiddleware(cfg config.FairnessConfig) (*fairness.FairnessMiddleware, error) {
+func NewFairnessMiddleware(cfg config.FairnessConfig, tierResolver fairness.TierResolver) (*fairness.FairnessMiddleware, error) {
 	if !cfg.Enabled {
 		return nil, nil
 	}
@@ -83,5 +83,5 @@ func NewFairnessMiddleware(cfg config.FairnessConfig) (*fairness.FairnessMiddlew
 
 	extractor := &fairness.JSONArgsExtractor{}
 
-	return fairness.NewFairnessMiddleware(limiter, extractor, fairnessConfig), nil
+	return fairness.NewFairnessMiddleware(limiter, extractor, tierResolver, fairnessConfig), nil
 }

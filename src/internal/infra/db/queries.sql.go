@@ -685,6 +685,22 @@ func (q *Queries) GetUserRetentionDays(ctx context.Context, userID pgtype.UUID) 
 	return retention_days, err
 }
 
+const getUserTier = `-- name: GetUserTier :one
+SELECT sp.tier
+FROM user_subscriptions us
+JOIN subscription_plans sp ON us.plan_id = sp.id
+WHERE us.user_id = $1 AND us.status = 'active'
+`
+
+// Returns tier from user's active subscription plan.
+// Returns no rows if user has no active subscription (caller should default to free).
+func (q *Queries) GetUserTier(ctx context.Context, userID pgtype.UUID) (PlanTier, error) {
+	row := q.db.QueryRow(ctx, getUserTier, userID)
+	var tier PlanTier
+	err := row.Scan(&tier)
+	return tier, err
+}
+
 const insertSpecDocument = `-- name: InsertSpecDocument :one
 INSERT INTO spec_documents (user_id, analysis_id, content_hash, language, executive_summary, model_id, version, retention_days_at_creation)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
