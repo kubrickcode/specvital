@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.1](https://github.com/specvital/worker/compare/v1.2.0...v1.2.1) (2026-02-02)
+
+### 🔧 Maintenance
+
+#### 🔧 Internal Fixes
+
+- **deploy:** remove railway link command for Project Token usage ([50e4ac1](https://github.com/specvital/worker/commit/50e4ac1be248860f5a08ea88f48f4f12ef50f4df))
+
+#### ♻️ Refactoring
+
+- **deploy:** reorder workflow to run release after successful deployment ([404b956](https://github.com/specvital/worker/commit/404b95676af528a62449b9712958a261304c732e))
+
+#### 🔨 Chore
+
+- add railway cli ([98bf945](https://github.com/specvital/worker/commit/98bf945d2aee5952d7e7da41554f805869b3820b))
+
 ## [1.2.0](https://github.com/specvital/worker/compare/v1.1.1...v1.2.0) (2026-02-02)
 
 ### 🎯 Highlights
