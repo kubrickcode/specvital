@@ -1,0 +1,14 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile",
+    "buildArgs": {
+      "SERVICE": "retention-cleanup"
+    }
+  },
+  "deploy": {
+    "cronSchedule": "0 3 * * *",
+    "restartPolicyType": "NEVER"
+  }
+}
