@@ -13,8 +13,9 @@ import (
 )
 
 type GetAnalysisInput struct {
-	Owner string
-	Repo  string
+	CommitSHA string
+	Owner     string
+	Repo      string
 }
 
 type GetAnalysisUseCase struct {
@@ -35,6 +36,11 @@ func NewGetAnalysisUseCase(
 func (uc *GetAnalysisUseCase) Execute(ctx context.Context, input GetAnalysisInput) (*AnalyzeResult, error) {
 	if input.Owner == "" || input.Repo == "" {
 		return nil, errors.New("owner and repo are required")
+	}
+
+	// Specific commit SHA requested - return only that analysis
+	if input.CommitSHA != "" {
+		return uc.executeByCommitSHA(ctx, input)
 	}
 
 	now := time.Now()
@@ -72,4 +78,24 @@ func (uc *GetAnalysisUseCase) Execute(ctx context.Context, input GetAnalysisInpu
 	}
 
 	return nil, domain.ErrNotFound
+}
+
+func (uc *GetAnalysisUseCase) executeByCommitSHA(ctx context.Context, input GetAnalysisInput) (*AnalyzeResult, error) {
+	completed, err := uc.repository.GetCompletedAnalysisByCommitSHA(ctx, input.Owner, input.Repo, input.CommitSHA)
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, fmt.Errorf("get analysis by commit SHA for %s/%s@%s: %w", input.Owner, input.Repo, input.CommitSHA, err)
+	}
+
+	analysis, buildErr := buildAnalysisFromCompleted(ctx, uc.repository, completed)
+	if buildErr != nil {
+		return nil, fmt.Errorf("build analysis for %s/%s@%s: %w", input.Owner, input.Repo, input.CommitSHA, buildErr)
+	}
+
+	// Non-critical: UpdateLastViewed failure doesn't affect main flow
+	_ = uc.repository.UpdateLastViewed(ctx, input.Owner, input.Repo)
+
+	return &AnalyzeResult{Analysis: analysis}, nil
 }

@@ -25,7 +25,7 @@ export interface paths {
         /**
          * Analyze repository test specifications
          * @description Triggers or retrieves analysis for a GitHub repository.
-         *     - Returns completed analysis if available
+         *     - Returns completed analysis if available (optionally for specific commit)
          *     - Queues new analysis if not found
          *     - Returns current status if analysis is in progress
          *
@@ -2087,7 +2087,13 @@ export type $defs = Record<string, never>;
 export interface operations {
     analyzeRepository: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Specific commit SHA to retrieve analysis for.
+                 *     If provided, returns analysis for that commit only.
+                 *     If not found, returns 404 instead of queueing new analysis.
+                 *      */
+                commit?: string;
+            };
             header?: never;
             path: {
                 /**
@@ -2124,6 +2130,7 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
             429: components["responses"]["TooManyRequests"];
             500: components["responses"]["InternalError"];
         };

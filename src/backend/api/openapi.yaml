@@ -18,9 +18,22 @@ paths:
       summary: Analyze repository test specifications
       description: |
         Triggers or retrieves analysis for a GitHub repository.
-        - Returns completed analysis if available
+        - Returns completed analysis if available (optionally for specific commit)
         - Queues new analysis if not found
         - Returns current status if analysis is in progress
+      parameters:
+        - name: commit
+          in: query
+          required: false
+          description: |
+            Specific commit SHA to retrieve analysis for.
+            If provided, returns analysis for that commit only.
+            If not found, returns 404 instead of queueing new analysis.
+          schema:
+            type: string
+            minLength: 7
+            maxLength: 40
+            pattern: "^[a-f0-9]+$"
       responses:
         "200":
           description: Analysis completed successfully
@@ -38,6 +51,8 @@ paths:
                   - $ref: "#/components/schemas/AnalyzingResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "500":

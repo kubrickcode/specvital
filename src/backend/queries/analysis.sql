@@ -135,6 +135,27 @@ WHERE c.host = $1 AND c.owner = $2 AND c.name = $3
 ORDER BY COALESCE(a.committed_at, a.completed_at) DESC
 LIMIT 50;
 
+-- name: GetCompletedAnalysisByCommitSHA :one
+SELECT
+    a.id,
+    a.commit_sha,
+    a.branch_name,
+    a.committed_at,
+    a.completed_at,
+    a.parser_version,
+    a.total_suites,
+    a.total_tests,
+    c.owner,
+    c.name as repo
+FROM analyses a
+JOIN codebases c ON c.id = a.codebase_id
+WHERE c.host = $1 AND c.owner = $2 AND c.name = $3
+  AND c.is_stale = false
+  AND starts_with(a.commit_sha, sqlc.arg(commit_sha_prefix)::text)
+  AND a.status = 'completed'
+ORDER BY COALESCE(a.committed_at, a.created_at) DESC
+LIMIT 1;
+
 -- name: GetPaginatedRepositoriesByRecent :many
 WITH user_context AS (
     SELECT username FROM users WHERE id = sqlc.arg(user_id)::uuid

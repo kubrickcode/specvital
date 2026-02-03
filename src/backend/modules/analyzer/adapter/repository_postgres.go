@@ -183,6 +183,48 @@ func (r *PostgresRepository) GetCodebaseID(ctx context.Context, owner, repo stri
 	return uuidToString(id), nil
 }
 
+func (r *PostgresRepository) GetCompletedAnalysisByCommitSHA(ctx context.Context, owner, repo, commitSHA string) (*port.CompletedAnalysis, error) {
+	row, err := r.queries.GetCompletedAnalysisByCommitSHA(ctx, db.GetCompletedAnalysisByCommitSHAParams{
+		Host:            HostGitHub,
+		Owner:           owner,
+		Name:            repo,
+		CommitShaPrefix: commitSHA,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.WrapNotFound(owner, repo)
+		}
+		return nil, fmt.Errorf("get completed analysis by commit SHA for %s/%s@%s: %w", owner, repo, commitSHA, err)
+	}
+
+	var branchName *string
+	if row.BranchName.Valid {
+		branchName = &row.BranchName.String
+	}
+	var committedAt *time.Time
+	if row.CommittedAt.Valid {
+		t := row.CommittedAt.Time
+		committedAt = &t
+	}
+	var parserVersion *string
+	if row.ParserVersion != "" {
+		parserVersion = &row.ParserVersion
+	}
+
+	return &port.CompletedAnalysis{
+		BranchName:    branchName,
+		CommitSHA:     row.CommitSha,
+		CommittedAt:   committedAt,
+		CompletedAt:   row.CompletedAt.Time,
+		ID:            uuidToString(row.ID),
+		Owner:         row.Owner,
+		ParserVersion: parserVersion,
+		Repo:          row.Repo,
+		TotalSuites:   int(row.TotalSuites),
+		TotalTests:    int(row.TotalTests),
+	}, nil
+}
+
 func (r *PostgresRepository) GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*port.CompletedAnalysis, error) {
 	row, err := r.queries.GetLatestCompletedAnalysis(ctx, db.GetLatestCompletedAnalysisParams{
 		Host:  HostGitHub,

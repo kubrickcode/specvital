@@ -70,6 +70,16 @@ func (m *mockRepository) GetCodebaseID(ctx context.Context, owner, repo string) 
 	return "test-codebase-id", nil
 }
 
+func (m *mockRepository) GetCompletedAnalysisByCommitSHA(ctx context.Context, owner, repo, commitSHA string) (*port.CompletedAnalysis, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	if m.completedAnalysis != nil && m.completedAnalysis.CommitSHA == commitSHA {
+		return m.completedAnalysis, nil
+	}
+	return nil, domain.ErrNotFound
+}
+
 func (m *mockRepository) GetRepositoryStats(ctx context.Context, userID string) (*entity.RepositoryStats, error) {
 	return &entity.RepositoryStats{}, nil
 }

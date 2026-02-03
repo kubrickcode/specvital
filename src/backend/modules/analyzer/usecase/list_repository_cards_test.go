@@ -34,6 +34,10 @@ func (m *mockRepository) GetCodebaseID(_ context.Context, _, _ string) (string, 
 	return "", nil
 }
 
+func (m *mockRepository) GetCompletedAnalysisByCommitSHA(_ context.Context, _, _, _ string) (*port.CompletedAnalysis, error) {
+	return nil, nil
+}
+
 func (m *mockRepository) GetLatestCompletedAnalysis(_ context.Context, _, _ string) (*port.CompletedAnalysis, error) {
 	return nil, nil
 }

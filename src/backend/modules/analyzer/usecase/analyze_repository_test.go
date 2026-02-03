@@ -67,6 +67,15 @@ func (m *mockRepositoryForAnalyze) GetBookmarkedCodebaseIDs(_ context.Context, _
 func (m *mockRepositoryForAnalyze) GetCodebaseID(_ context.Context, _, _ string) (string, error) {
 	return "test-codebase-id", nil
 }
+func (m *mockRepositoryForAnalyze) GetCompletedAnalysisByCommitSHA(_ context.Context, _, _, commitSHA string) (*port.CompletedAnalysis, error) {
+	if m.completedErr != nil {
+		return nil, m.completedErr
+	}
+	if m.completedAnalysis != nil && m.completedAnalysis.CommitSHA == commitSHA {
+		return m.completedAnalysis, nil
+	}
+	return nil, domain.ErrNotFound
+}
 func (m *mockRepositoryForAnalyze) GetLatestCompletedAnalysis(_ context.Context, _, _ string) (*port.CompletedAnalysis, error) {
 	if m.completedErr != nil {
 		return nil, m.completedErr

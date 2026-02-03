@@ -1304,6 +1304,14 @@ type TooManyRequests = ProblemDetail
 // Unauthorized defines model for Unauthorized.
 type Unauthorized = ProblemDetail
 
+// AnalyzeRepositoryParams defines parameters for AnalyzeRepository.
+type AnalyzeRepositoryParams struct {
+	// Commit Specific commit SHA to retrieve analysis for.
+	// If provided, returns analysis for that commit only.
+	// If not found, returns 404 instead of queueing new analysis.
+	Commit *string `form:"commit,omitempty" json:"commit,omitempty"`
+}
+
 // AuthCallbackParams defines parameters for AuthCallback.
 type AuthCallbackParams struct {
 	// Code OAuth authorization code from GitHub
@@ -1767,7 +1775,7 @@ func (t *SpecDocumentResponse) UnmarshalJSON(b []byte) error {
 type ServerInterface interface {
 	// Analyze repository test specifications
 	// (GET /api/analyze/{owner}/{repo})
-	AnalyzeRepository(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo)
+	AnalyzeRepository(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo, params AnalyzeRepositoryParams)
 	// Get analysis history for a repository
 	// (GET /api/analyze/{owner}/{repo}/history)
 	GetAnalysisHistory(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo)
@@ -1878,7 +1886,7 @@ type Unimplemented struct{}
 
 // Analyze repository test specifications
 // (GET /api/analyze/{owner}/{repo})
-func (_ Unimplemented) AnalyzeRepository(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo) {
+func (_ Unimplemented) AnalyzeRepository(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo, params AnalyzeRepositoryParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -2118,8 +2126,19 @@ func (siw *ServerInterfaceWrapper) AnalyzeRepository(w http.ResponseWriter, r *h
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AnalyzeRepositoryParams
+
+	// ------------- Optional query parameter "commit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "commit", r.URL.Query(), &params.Commit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "commit", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.AnalyzeRepository(w, r, owner, repo)
+		siw.Handler.AnalyzeRepository(w, r, owner, repo, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -3534,8 +3553,9 @@ type TooManyRequestsApplicationProblemPlusJSONResponse ProblemDetail
 type UnauthorizedApplicationProblemPlusJSONResponse ProblemDetail
 
 type AnalyzeRepositoryRequestObject struct {
-	Owner Owner `json:"owner"`
-	Repo  Repo  `json:"repo"`
+	Owner  Owner `json:"owner"`
+	Repo   Repo  `json:"repo"`
+	Params AnalyzeRepositoryParams
 }
 
 type AnalyzeRepositoryResponseObject interface {
@@ -3569,6 +3589,17 @@ type AnalyzeRepository400ApplicationProblemPlusJSONResponse struct {
 func (response AnalyzeRepository400ApplicationProblemPlusJSONResponse) VisitAnalyzeRepositoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type AnalyzeRepository404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response AnalyzeRepository404ApplicationProblemPlusJSONResponse) VisitAnalyzeRepositoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -5525,11 +5556,12 @@ type strictHandler struct {
 }
 
 // AnalyzeRepository operation middleware
-func (sh *strictHandler) AnalyzeRepository(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo) {
+func (sh *strictHandler) AnalyzeRepository(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo, params AnalyzeRepositoryParams) {
 	var request AnalyzeRepositoryRequestObject
 
 	request.Owner = owner
 	request.Repo = repo
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.AnalyzeRepository(ctx, request.(AnalyzeRepositoryRequestObject))

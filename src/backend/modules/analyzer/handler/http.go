@@ -80,6 +80,16 @@ func (h *Handler) AnalyzeRepository(ctx context.Context, request api.AnalyzeRepo
 
 	userID := middleware.GetUserID(ctx)
 
+	// Specific commit query - use getAnalysis usecase
+	if request.Params.Commit != nil {
+		if err := validateCommitSHA(*request.Params.Commit); err != nil {
+			return api.AnalyzeRepository400ApplicationProblemPlusJSONResponse{
+				BadRequestApplicationProblemPlusJSONResponse: api.NewBadRequest(err.Error()),
+			}, nil
+		}
+		return h.analyzeRepositoryByCommit(ctx, owner, repo, *request.Params.Commit, userID, log)
+	}
+
 	if userID == "" && h.anonymousRateLimiter != nil {
 		clientIP := middleware.GetClientIP(ctx)
 		if clientIP == "" {
@@ -157,6 +167,48 @@ func (h *Handler) AnalyzeRepository(ctx context.Context, request api.AnalyzeRepo
 		}, nil
 	}
 	return newAnalyze202Response(response)
+}
+
+func (h *Handler) analyzeRepositoryByCommit(ctx context.Context, owner, repo, commitSHA, userID string, log *logger.Logger) (api.AnalyzeRepositoryResponseObject, error) {
+	result, err := h.getAnalysis.Execute(ctx, usecase.GetAnalysisInput{
+		CommitSHA: commitSHA,
+		Owner:     owner,
+		Repo:      repo,
+	})
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return api.AnalyzeRepository404ApplicationProblemPlusJSONResponse{
+				NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("analysis not found for commit"),
+			}, nil
+		}
+		log.Error(ctx, "usecase error in AnalyzeRepository by commit", "error", err, "commit", commitSHA)
+		return api.AnalyzeRepository500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to get analysis"),
+		}, nil
+	}
+
+	if result.Analysis == nil {
+		return api.AnalyzeRepository404ApplicationProblemPlusJSONResponse{
+			NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("analysis not found for commit"),
+		}, nil
+	}
+
+	opts := h.buildHistoryOptions(ctx, userID, owner, repo)
+	response, mapErr := mapper.ToCompletedResponse(result.Analysis, opts)
+	if mapErr != nil {
+		log.Error(ctx, "failed to map completed response", "error", mapErr)
+		return api.AnalyzeRepository500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to process response"),
+		}, nil
+	}
+	completed, err := response.AsCompletedResponse()
+	if err != nil {
+		log.Error(ctx, "failed to unmarshal completed response", "error", err)
+		return api.AnalyzeRepository500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to process response"),
+		}, nil
+	}
+	return api.AnalyzeRepository200JSONResponse(completed), nil
 }
 
 func (h *Handler) GetAnalysisHistory(ctx context.Context, request api.GetAnalysisHistoryRequestObject) (api.GetAnalysisHistoryResponseObject, error) {
@@ -434,6 +486,18 @@ func validateOwnerRepo(owner, repo string) error {
 	}
 	if !validNamePattern.MatchString(repo) {
 		return errors.New("invalid repo format")
+	}
+	return nil
+}
+
+func validateCommitSHA(sha string) error {
+	if len(sha) < 7 || len(sha) > 40 {
+		return errors.New("commit SHA must be between 7 and 40 characters")
+	}
+	for _, c := range sha {
+		if !((c >= 'a' && c <= 'f') || (c >= '0' && c <= '9')) {
+			return errors.New("commit SHA must contain only lowercase hex characters")
+		}
 	}
 	return nil
 }

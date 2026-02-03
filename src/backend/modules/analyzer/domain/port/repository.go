@@ -14,6 +14,7 @@ type Repository interface {
 	GetAnalysisHistory(ctx context.Context, owner, repo string) ([]AnalysisHistoryItem, error)
 	GetBookmarkedCodebaseIDs(ctx context.Context, userID string) ([]string, error)
 	GetCodebaseID(ctx context.Context, owner, repo string) (string, error)
+	GetCompletedAnalysisByCommitSHA(ctx context.Context, owner, repo, commitSHA string) (*CompletedAnalysis, error)
 	GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error)
 	GetPaginatedRepositories(ctx context.Context, params PaginationParams) ([]PaginatedRepository, error)
 	GetPreviousAnalysis(ctx context.Context, codebaseID, currentAnalysisID string) (*PreviousAnalysis, error)
