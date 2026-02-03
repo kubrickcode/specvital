@@ -119,6 +119,22 @@ SELECT id
 FROM codebases
 WHERE host = $1 AND owner = $2 AND name = $3 AND is_stale = false;
 
+-- name: GetCompletedAnalysesByCodebase :many
+SELECT
+    a.id,
+    a.commit_sha,
+    a.branch_name,
+    a.committed_at,
+    a.completed_at,
+    a.total_tests
+FROM analyses a
+JOIN codebases c ON c.id = a.codebase_id
+WHERE c.host = $1 AND c.owner = $2 AND c.name = $3
+  AND c.is_stale = false
+  AND a.status = 'completed'
+ORDER BY COALESCE(a.committed_at, a.completed_at) DESC
+LIMIT 50;
+
 -- name: GetPaginatedRepositoriesByRecent :many
 WITH user_context AS (
     SELECT username FROM users WHERE id = sqlc.arg(user_id)::uuid

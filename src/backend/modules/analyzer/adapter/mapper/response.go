@@ -3,6 +3,7 @@ package mapper
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/specvital/web/src/backend/internal/api"
@@ -147,6 +148,36 @@ func ToStatusResponse(progress *entity.AnalysisProgress) (api.AnalysisResponse, 
 	}
 
 	return response, nil
+}
+
+func ToAnalysisHistoryResponse(items []AnalysisHistoryInput, headCommitSHA string) (api.AnalysisHistoryResponse, error) {
+	data := make([]api.AnalysisHistoryItem, len(items))
+	for i, item := range items {
+		id, err := uuid.Parse(item.ID)
+		if err != nil {
+			return api.AnalysisHistoryResponse{}, fmt.Errorf("invalid analysis ID %s: %w", item.ID, err)
+		}
+		isHead := item.CommitSHA == headCommitSHA
+		data[i] = api.AnalysisHistoryItem{
+			BranchName:  item.BranchName,
+			CommitSHA:   item.CommitSHA,
+			CommittedAt: item.CommittedAt,
+			CompletedAt: item.CompletedAt,
+			ID:          id,
+			IsHead:      &isHead,
+			TotalTests:  item.TotalTests,
+		}
+	}
+	return api.AnalysisHistoryResponse{Data: data}, nil
+}
+
+type AnalysisHistoryInput struct {
+	BranchName  *string
+	CommitSHA   string
+	CommittedAt *time.Time
+	CompletedAt time.Time
+	ID          string
+	TotalTests  int
 }
 
 func toAPITestStatus(status entity.TestStatus) api.TestStatus {

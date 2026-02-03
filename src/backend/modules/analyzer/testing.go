@@ -90,6 +90,10 @@ func (m *mockRepository) GetAiSpecSummaries(ctx context.Context, analysisIDs []s
 	return make(map[string]*entity.AiSpecSummary), nil
 }
 
+func (m *mockRepository) GetAnalysisHistory(ctx context.Context, owner, repo string) ([]port.AnalysisHistoryItem, error) {
+	return nil, nil
+}
+
 // mockSystemConfigReader is a test double for port.SystemConfigReader.
 type mockSystemConfigReader struct {
 	parserVersion string
@@ -211,6 +215,7 @@ func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gi
 
 	analyzeRepositoryUC := usecase.NewAnalyzeRepositoryUseCase(gitClient, queue, repo, systemConfig, tokenProvider, nil, nil)
 	getAnalysisUC := usecase.NewGetAnalysisUseCase(queue, repo)
+	getAnalysisHistoryUC := usecase.NewGetAnalysisHistoryUseCase(repo)
 	listRepositoryCardsUC := usecase.NewListRepositoryCardsUseCase(gitClient, repo, tokenProvider)
 	getUpdateStatusUC := usecase.NewGetUpdateStatusUseCase(gitClient, repo, systemConfig, tokenProvider)
 	getRepositoryStatsUC := usecase.NewGetRepositoryStatsUseCase(repo)
@@ -220,6 +225,7 @@ func setupTestHandlerWithMocks(repo *mockRepository, queue *mockQueueService, gi
 		log,
 		analyzeRepositoryUC,
 		getAnalysisUC,
+		getAnalysisHistoryUC,
 		listRepositoryCardsUC,
 		getUpdateStatusUC,
 		getRepositoryStatsUC,

@@ -9,6 +9,7 @@ import (
 
 var (
 	ErrInvalidCursor              = entity.ErrInvalidCursor
+	ErrInvalidInput               = errors.New("invalid input")
 	ErrNotFound                   = errors.New("analysis not found")
 	ErrParserVersionNotConfigured = errors.New("parser_version not configured in system_config")
 )

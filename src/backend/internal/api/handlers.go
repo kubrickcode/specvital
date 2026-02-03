@@ -7,6 +7,7 @@ import (
 
 type AnalyzerHandlers interface {
 	AnalyzeRepository(ctx context.Context, request AnalyzeRepositoryRequestObject) (AnalyzeRepositoryResponseObject, error)
+	GetAnalysisHistory(ctx context.Context, request GetAnalysisHistoryRequestObject) (GetAnalysisHistoryResponseObject, error)
 	GetAnalysisStatus(ctx context.Context, request GetAnalysisStatusRequestObject) (GetAnalysisStatusResponseObject, error)
 }
 
@@ -124,6 +125,10 @@ func NewAPIHandlers(
 
 func (h *APIHandlers) AnalyzeRepository(ctx context.Context, request AnalyzeRepositoryRequestObject) (AnalyzeRepositoryResponseObject, error) {
 	return h.analyzer.AnalyzeRepository(ctx, request)
+}
+
+func (h *APIHandlers) GetAnalysisHistory(ctx context.Context, request GetAnalysisHistoryRequestObject) (GetAnalysisHistoryResponseObject, error) {
+	return h.analyzer.GetAnalysisHistory(ctx, request)
 }
 
 func (h *APIHandlers) GetAnalysisStatus(ctx context.Context, request GetAnalysisStatusRequestObject) (GetAnalysisStatusResponseObject, error) {

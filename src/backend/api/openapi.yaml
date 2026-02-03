@@ -65,6 +65,31 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+  /api/analyze/{owner}/{repo}/history:
+    parameters:
+      - $ref: "#/components/parameters/Owner"
+      - $ref: "#/components/parameters/Repo"
+    get:
+      operationId: getAnalysisHistory
+      summary: Get analysis history for a repository
+      description: |
+        Returns list of completed analyses for a repository.
+        Ordered by commit date descending (newest first).
+        Limited to 50 most recent analyses.
+      responses:
+        "200":
+          description: Analysis history retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisHistoryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /api/auth/login:
     get:
       operationId: authLogin
@@ -1896,6 +1921,59 @@ components:
         isBookmarked:
           type: boolean
           description: Current bookmark status after the operation
+
+    # Analysis History
+    AnalysisHistoryResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalysisHistoryItem"
+          description: List of completed analyses for the repository
+
+    AnalysisHistoryItem:
+      type: object
+      required:
+        - id
+        - commitSha
+        - completedAt
+        - totalTests
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Analysis ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        commitSha:
+          type: string
+          description: Git commit SHA that was analyzed
+          example: "abc123def456"
+        branchName:
+          type: string
+          description: Branch name at the time of analysis
+          example: main
+        committedAt:
+          type: string
+          format: date-time
+          description: Timestamp of the commit (ISO 8601)
+          example: "2024-01-14T09:00:00Z"
+        completedAt:
+          type: string
+          format: date-time
+          description: Timestamp when analysis was completed (ISO 8601)
+          example: "2024-01-15T10:30:00Z"
+        totalTests:
+          type: integer
+          minimum: 0
+          description: Total number of tests found in this analysis
+          example: 312
+        isHead:
+          type: boolean
+          description: Whether this is the HEAD commit analysis
+          example: true
 
     # GitHub API Responses
     GitHubRepositoriesResponse:

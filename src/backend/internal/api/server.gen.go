@@ -189,6 +189,36 @@ type AiSpecSummary struct {
 	LatestGeneratedAt *time.Time `json:"latestGeneratedAt,omitempty"`
 }
 
+// AnalysisHistoryItem defines model for AnalysisHistoryItem.
+type AnalysisHistoryItem struct {
+	// BranchName Branch name at the time of analysis
+	BranchName *string `json:"branchName,omitempty"`
+
+	// CommitSHA Git commit SHA that was analyzed
+	CommitSHA string `json:"commitSha"`
+
+	// CommittedAt Timestamp of the commit (ISO 8601)
+	CommittedAt *time.Time `json:"committedAt,omitempty"`
+
+	// CompletedAt Timestamp when analysis was completed (ISO 8601)
+	CompletedAt time.Time `json:"completedAt"`
+
+	// ID Analysis ID
+	ID openapi_types.UUID `json:"id"`
+
+	// IsHead Whether this is the HEAD commit analysis
+	IsHead *bool `json:"isHead,omitempty"`
+
+	// TotalTests Total number of tests found in this analysis
+	TotalTests int `json:"totalTests"`
+}
+
+// AnalysisHistoryResponse defines model for AnalysisHistoryResponse.
+type AnalysisHistoryResponse struct {
+	// Data List of completed analyses for the repository
+	Data []AnalysisHistoryItem `json:"data"`
+}
+
 // AnalysisResponse defines model for AnalysisResponse.
 type AnalysisResponse struct {
 	union json.RawMessage
@@ -1738,6 +1768,9 @@ type ServerInterface interface {
 	// Analyze repository test specifications
 	// (GET /api/analyze/{owner}/{repo})
 	AnalyzeRepository(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo)
+	// Get analysis history for a repository
+	// (GET /api/analyze/{owner}/{repo}/history)
+	GetAnalysisHistory(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo)
 	// Get analysis status
 	// (GET /api/analyze/{owner}/{repo}/status)
 	GetAnalysisStatus(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo)
@@ -1846,6 +1879,12 @@ type Unimplemented struct{}
 // Analyze repository test specifications
 // (GET /api/analyze/{owner}/{repo})
 func (_ Unimplemented) AnalyzeRepository(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get analysis history for a repository
+// (GET /api/analyze/{owner}/{repo}/history)
+func (_ Unimplemented) GetAnalysisHistory(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -2081,6 +2120,40 @@ func (siw *ServerInterfaceWrapper) AnalyzeRepository(w http.ResponseWriter, r *h
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.AnalyzeRepository(w, r, owner, repo)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAnalysisHistory operation middleware
+func (siw *ServerInterfaceWrapper) GetAnalysisHistory(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "owner" -------------
+	var owner Owner
+
+	err = runtime.BindStyledParameterWithOptions("simple", "owner", chi.URLParam(r, "owner"), &owner, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "owner", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "repo" -------------
+	var repo Repo
+
+	err = runtime.BindStyledParameterWithOptions("simple", "repo", chi.URLParam(r, "repo"), &repo, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "repo", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAnalysisHistory(w, r, owner, repo)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -3343,6 +3416,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/api/analyze/{owner}/{repo}", wrapper.AnalyzeRepository)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/analyze/{owner}/{repo}/history", wrapper.GetAnalysisHistory)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/analyze/{owner}/{repo}/status", wrapper.GetAnalysisStatus)
 	})
 	r.Group(func(r chi.Router) {
@@ -3513,6 +3589,57 @@ type AnalyzeRepository500ApplicationProblemPlusJSONResponse struct {
 }
 
 func (response AnalyzeRepository500ApplicationProblemPlusJSONResponse) VisitAnalyzeRepositoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAnalysisHistoryRequestObject struct {
+	Owner Owner `json:"owner"`
+	Repo  Repo  `json:"repo"`
+}
+
+type GetAnalysisHistoryResponseObject interface {
+	VisitGetAnalysisHistoryResponse(w http.ResponseWriter) error
+}
+
+type GetAnalysisHistory200JSONResponse AnalysisHistoryResponse
+
+func (response GetAnalysisHistory200JSONResponse) VisitGetAnalysisHistoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAnalysisHistory400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response GetAnalysisHistory400ApplicationProblemPlusJSONResponse) VisitGetAnalysisHistoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAnalysisHistory404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response GetAnalysisHistory404ApplicationProblemPlusJSONResponse) VisitGetAnalysisHistoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAnalysisHistory500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response GetAnalysisHistory500ApplicationProblemPlusJSONResponse) VisitGetAnalysisHistoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(500)
 
@@ -5264,6 +5391,9 @@ type StrictServerInterface interface {
 	// Analyze repository test specifications
 	// (GET /api/analyze/{owner}/{repo})
 	AnalyzeRepository(ctx context.Context, request AnalyzeRepositoryRequestObject) (AnalyzeRepositoryResponseObject, error)
+	// Get analysis history for a repository
+	// (GET /api/analyze/{owner}/{repo}/history)
+	GetAnalysisHistory(ctx context.Context, request GetAnalysisHistoryRequestObject) (GetAnalysisHistoryResponseObject, error)
 	// Get analysis status
 	// (GET /api/analyze/{owner}/{repo}/status)
 	GetAnalysisStatus(ctx context.Context, request GetAnalysisStatusRequestObject) (GetAnalysisStatusResponseObject, error)
@@ -5414,6 +5544,33 @@ func (sh *strictHandler) AnalyzeRepository(w http.ResponseWriter, r *http.Reques
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(AnalyzeRepositoryResponseObject); ok {
 		if err := validResponse.VisitAnalyzeRepositoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAnalysisHistory operation middleware
+func (sh *strictHandler) GetAnalysisHistory(w http.ResponseWriter, r *http.Request, owner Owner, repo Repo) {
+	var request GetAnalysisHistoryRequestObject
+
+	request.Owner = owner
+	request.Repo = repo
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAnalysisHistory(ctx, request.(GetAnalysisHistoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAnalysisHistory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAnalysisHistoryResponseObject); ok {
+		if err := validResponse.VisitGetAnalysisHistoryResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

@@ -171,6 +171,7 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 
 	analyzeRepositoryUC := analyzerusecase.NewAnalyzeRepositoryUseCase(analyzerGitClient, analyzerQueue, analyzerRepo, systemConfig, tokenProvider, container.DB, reservationRepo)
 	getAnalysisUC := analyzerusecase.NewGetAnalysisUseCase(analyzerQueue, analyzerRepo)
+	getAnalysisHistoryUC := analyzerusecase.NewGetAnalysisHistoryUseCase(analyzerRepo)
 	listRepositoryCardsUC := analyzerusecase.NewListRepositoryCardsUseCase(analyzerGitClient, analyzerRepo, tokenProvider)
 	getUpdateStatusUC := analyzerusecase.NewGetUpdateStatusUseCase(analyzerGitClient, analyzerRepo, systemConfig, tokenProvider)
 	getRepositoryStatsUC := analyzerusecase.NewGetRepositoryStatsUseCase(analyzerRepo)
@@ -185,6 +186,7 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 		log,
 		analyzeRepositoryUC,
 		getAnalysisUC,
+		getAnalysisHistoryUC,
 		listRepositoryCardsUC,
 		getUpdateStatusUC,
 		getRepositoryStatsUC,

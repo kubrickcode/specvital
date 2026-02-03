@@ -119,6 +119,65 @@ func (q *Queries) GetCodebaseIDByOwnerRepo(ctx context.Context, arg GetCodebaseI
 	return id, err
 }
 
+const getCompletedAnalysesByCodebase = `-- name: GetCompletedAnalysesByCodebase :many
+SELECT
+    a.id,
+    a.commit_sha,
+    a.branch_name,
+    a.committed_at,
+    a.completed_at,
+    a.total_tests
+FROM analyses a
+JOIN codebases c ON c.id = a.codebase_id
+WHERE c.host = $1 AND c.owner = $2 AND c.name = $3
+  AND c.is_stale = false
+  AND a.status = 'completed'
+ORDER BY COALESCE(a.committed_at, a.completed_at) DESC
+LIMIT 50
+`
+
+type GetCompletedAnalysesByCodebaseParams struct {
+	Host  string `json:"host"`
+	Owner string `json:"owner"`
+	Name  string `json:"name"`
+}
+
+type GetCompletedAnalysesByCodebaseRow struct {
+	ID          pgtype.UUID        `json:"id"`
+	CommitSha   string             `json:"commit_sha"`
+	BranchName  pgtype.Text        `json:"branch_name"`
+	CommittedAt pgtype.Timestamptz `json:"committed_at"`
+	CompletedAt pgtype.Timestamptz `json:"completed_at"`
+	TotalTests  int32              `json:"total_tests"`
+}
+
+func (q *Queries) GetCompletedAnalysesByCodebase(ctx context.Context, arg GetCompletedAnalysesByCodebaseParams) ([]GetCompletedAnalysesByCodebaseRow, error) {
+	rows, err := q.db.Query(ctx, getCompletedAnalysesByCodebase, arg.Host, arg.Owner, arg.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCompletedAnalysesByCodebaseRow
+	for rows.Next() {
+		var i GetCompletedAnalysesByCodebaseRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CommitSha,
+			&i.BranchName,
+			&i.CommittedAt,
+			&i.CompletedAt,
+			&i.TotalTests,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getLatestCompletedAnalysis = `-- name: GetLatestCompletedAnalysis :one
 SELECT
     a.id,

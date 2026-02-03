@@ -94,6 +94,9 @@ func (m *mockRepositoryForAnalyze) UpdateLastViewed(_ context.Context, _, _ stri
 func (m *mockRepositoryForAnalyze) GetAiSpecSummaries(_ context.Context, _ []string, _ string) (map[string]*entity.AiSpecSummary, error) {
 	return make(map[string]*entity.AiSpecSummary), nil
 }
+func (m *mockRepositoryForAnalyze) GetAnalysisHistory(_ context.Context, _, _ string) ([]port.AnalysisHistoryItem, error) {
+	return nil, nil
+}
 
 // mockQueueServiceForAnalyze implements port.QueueService.
 type mockQueueServiceForAnalyze struct {

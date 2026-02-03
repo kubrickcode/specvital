@@ -70,6 +70,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/analyze/{owner}/{repo}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description GitHub repository owner (user or organization)
+                 * @example facebook
+                 */
+                owner: components["parameters"]["Owner"];
+                /**
+                 * @description GitHub repository name
+                 * @example react
+                 */
+                repo: components["parameters"]["Repo"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Get analysis history for a repository
+         * @description Returns list of completed analyses for a repository.
+         *     Ordered by commit date descending (newest first).
+         *     Limited to 50 most recent analyses.
+         *
+         */
+        get: operations["getAnalysisHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -1240,6 +1274,50 @@ export interface components {
             /** @description Current bookmark status after the operation */
             isBookmarked: boolean;
         };
+        AnalysisHistoryResponse: {
+            /** @description List of completed analyses for the repository */
+            data: components["schemas"]["AnalysisHistoryItem"][];
+        };
+        AnalysisHistoryItem: {
+            /**
+             * Format: uuid
+             * @description Analysis ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            id: string;
+            /**
+             * @description Git commit SHA that was analyzed
+             * @example abc123def456
+             */
+            commitSha: string;
+            /**
+             * @description Branch name at the time of analysis
+             * @example main
+             */
+            branchName?: string;
+            /**
+             * Format: date-time
+             * @description Timestamp of the commit (ISO 8601)
+             * @example 2024-01-14T09:00:00Z
+             */
+            committedAt?: string;
+            /**
+             * Format: date-time
+             * @description Timestamp when analysis was completed (ISO 8601)
+             * @example 2024-01-15T10:30:00Z
+             */
+            completedAt: string;
+            /**
+             * @description Total number of tests found in this analysis
+             * @example 312
+             */
+            totalTests: number;
+            /**
+             * @description Whether this is the HEAD commit analysis
+             * @example true
+             */
+            isHead?: boolean;
+        };
         GitHubRepositoriesResponse: {
             /** @description List of GitHub repositories */
             data: components["schemas"]["GitHubRepository"][];
@@ -2077,6 +2155,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalysisResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getAnalysisHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description GitHub repository owner (user or organization)
+                 * @example facebook
+                 */
+                owner: components["parameters"]["Owner"];
+                /**
+                 * @description GitHub repository name
+                 * @example react
+                 */
+                repo: components["parameters"]["Repo"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Analysis history retrieved */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisHistoryResponse"];
                 };
             };
             400: components["responses"]["BadRequest"];

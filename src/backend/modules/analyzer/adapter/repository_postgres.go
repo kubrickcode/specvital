@@ -111,6 +111,41 @@ func (r *PostgresRepository) FindActiveRiverJobByRepo(ctx context.Context, kind,
 	return info, nil
 }
 
+func (r *PostgresRepository) GetAnalysisHistory(ctx context.Context, owner, repo string) ([]port.AnalysisHistoryItem, error) {
+	rows, err := r.queries.GetCompletedAnalysesByCodebase(ctx, db.GetCompletedAnalysesByCodebaseParams{
+		Host:  HostGitHub,
+		Owner: owner,
+		Name:  repo,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get analysis history for %s/%s: %w", owner, repo, err)
+	}
+
+	items := make([]port.AnalysisHistoryItem, len(rows))
+	for i, row := range rows {
+		var branchName *string
+		if row.BranchName.Valid {
+			branchName = &row.BranchName.String
+		}
+		var committedAt *time.Time
+		if row.CommittedAt.Valid {
+			t := row.CommittedAt.Time
+			committedAt = &t
+		}
+
+		items[i] = port.AnalysisHistoryItem{
+			BranchName:  branchName,
+			CommitSHA:   row.CommitSha,
+			CommittedAt: committedAt,
+			CompletedAt: row.CompletedAt.Time,
+			ID:          uuidToString(row.ID),
+			TotalTests:  int(row.TotalTests),
+		}
+	}
+
+	return items, nil
+}
+
 func (r *PostgresRepository) GetBookmarkedCodebaseIDs(ctx context.Context, userID string) ([]string, error) {
 	if userID == "" {
 		return nil, nil

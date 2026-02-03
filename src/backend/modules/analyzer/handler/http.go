@@ -27,6 +27,7 @@ type Handler struct {
 	analyzeRepository    *usecase.AnalyzeRepositoryUseCase
 	anonymousRateLimiter *ratelimit.IPRateLimiter
 	getAnalysis          *usecase.GetAnalysisUseCase
+	getAnalysisHistory   *usecase.GetAnalysisHistoryUseCase
 	getRepositoryStats   *usecase.GetRepositoryStatsUseCase
 	getUpdateStatus      *usecase.GetUpdateStatusUseCase
 	historyChecker       port.HistoryChecker
@@ -43,6 +44,7 @@ func NewHandler(
 	logger *logger.Logger,
 	analyzeRepository *usecase.AnalyzeRepositoryUseCase,
 	getAnalysis *usecase.GetAnalysisUseCase,
+	getAnalysisHistory *usecase.GetAnalysisHistoryUseCase,
 	listRepositoryCards *usecase.ListRepositoryCardsUseCase,
 	getUpdateStatus *usecase.GetUpdateStatusUseCase,
 	getRepositoryStats *usecase.GetRepositoryStatsUseCase,
@@ -55,6 +57,7 @@ func NewHandler(
 		analyzeRepository:    analyzeRepository,
 		anonymousRateLimiter: anonymousRateLimiter,
 		getAnalysis:          getAnalysis,
+		getAnalysisHistory:   getAnalysisHistory,
 		getRepositoryStats:   getRepositoryStats,
 		getUpdateStatus:      getUpdateStatus,
 		historyChecker:       historyChecker,
@@ -154,6 +157,68 @@ func (h *Handler) AnalyzeRepository(ctx context.Context, request api.AnalyzeRepo
 		}, nil
 	}
 	return newAnalyze202Response(response)
+}
+
+func (h *Handler) GetAnalysisHistory(ctx context.Context, request api.GetAnalysisHistoryRequestObject) (api.GetAnalysisHistoryResponseObject, error) {
+	owner, repo := request.Owner, request.Repo
+	log := h.logger.With("owner", owner, "repo", repo)
+
+	if err := validateOwnerRepo(owner, repo); err != nil {
+		return api.GetAnalysisHistory400ApplicationProblemPlusJSONResponse{
+			BadRequestApplicationProblemPlusJSONResponse: api.NewBadRequest(err.Error()),
+		}, nil
+	}
+
+	result, err := h.getAnalysisHistory.Execute(ctx, usecase.GetAnalysisHistoryInput{
+		Owner: owner,
+		Repo:  repo,
+	})
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidInput) {
+			return api.GetAnalysisHistory400ApplicationProblemPlusJSONResponse{
+				BadRequestApplicationProblemPlusJSONResponse: api.NewBadRequest(err.Error()),
+			}, nil
+		}
+		if errors.Is(err, domain.ErrNotFound) {
+			return api.GetAnalysisHistory404ApplicationProblemPlusJSONResponse{
+				NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("repository not found"),
+			}, nil
+		}
+		log.Error(ctx, "usecase error in GetAnalysisHistory", "error", err)
+		return api.GetAnalysisHistory500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to get analysis history"),
+		}, nil
+	}
+
+	if len(result.Items) == 0 {
+		return api.GetAnalysisHistory404ApplicationProblemPlusJSONResponse{
+			NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("no completed analyses found"),
+		}, nil
+	}
+
+	items := make([]mapper.AnalysisHistoryInput, len(result.Items))
+	for i, item := range result.Items {
+		items[i] = mapper.AnalysisHistoryInput{
+			BranchName:  item.BranchName,
+			CommitSHA:   item.CommitSHA,
+			CommittedAt: item.CommittedAt,
+			CompletedAt: item.CompletedAt,
+			ID:          item.ID,
+			TotalTests:  item.TotalTests,
+		}
+	}
+
+	headCommitSHA := result.Items[0].CommitSHA
+
+	response, err := mapper.ToAnalysisHistoryResponse(items, headCommitSHA)
+	if err != nil {
+		log.Error(ctx, "mapper error in GetAnalysisHistory", "error", err)
+		return api.GetAnalysisHistory500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to build response"),
+		}, nil
+	}
+
+	return api.GetAnalysisHistory200JSONResponse(response), nil
 }
 
 func (h *Handler) GetAnalysisStatus(ctx context.Context, request api.GetAnalysisStatusRequestObject) (api.GetAnalysisStatusResponseObject, error) {

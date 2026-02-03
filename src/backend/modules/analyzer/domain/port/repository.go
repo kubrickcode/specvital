@@ -11,6 +11,7 @@ type Repository interface {
 	CheckAnalysisExistsByCommitSHA(ctx context.Context, owner, repo, commitSHA string) (bool, error)
 	FindActiveRiverJobByRepo(ctx context.Context, kind, owner, repo string) (*RiverJobInfo, error)
 	GetAiSpecSummaries(ctx context.Context, codebaseIDs []string, userID string) (map[string]*entity.AiSpecSummary, error)
+	GetAnalysisHistory(ctx context.Context, owner, repo string) ([]AnalysisHistoryItem, error)
 	GetBookmarkedCodebaseIDs(ctx context.Context, userID string) ([]string, error)
 	GetCodebaseID(ctx context.Context, owner, repo string) (string, error)
 	GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*CompletedAnalysis, error)
@@ -84,6 +85,15 @@ type PreviousAnalysis struct {
 	CommitSHA  string
 	ID         string
 	TotalTests int
+}
+
+type AnalysisHistoryItem struct {
+	BranchName  *string
+	CommitSHA   string
+	CommittedAt *time.Time
+	CompletedAt time.Time
+	ID          string
+	TotalTests  int
 }
 
 type HistoryChecker interface {

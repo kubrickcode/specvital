@@ -268,6 +268,10 @@ func (m *mockAnalyzerHandler) AnalyzeRepository(_ context.Context, _ api.Analyze
 	return nil, nil
 }
 
+func (m *mockAnalyzerHandler) GetAnalysisHistory(_ context.Context, _ api.GetAnalysisHistoryRequestObject) (api.GetAnalysisHistoryResponseObject, error) {
+	return nil, nil
+}
+
 func (m *mockAnalyzerHandler) GetAnalysisStatus(_ context.Context, _ api.GetAnalysisStatusRequestObject) (api.GetAnalysisStatusResponseObject, error) {
 	return nil, nil
 }
