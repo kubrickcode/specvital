@@ -6,7 +6,7 @@ import type { UpdateStatus } from "@/lib/api/types";
 
 import { checkUpdateStatus } from "../api";
 
-const STALE_TIME_MS = Infinity; // Only fetch once per mount
+const STALE_TIME_MS = 0; // Always fetch fresh data on mount
 
 export const updateStatusKeys = {
   all: ["updateStatus"] as const,
