@@ -1,5 +1,6 @@
 export {
   fetchCacheAvailability,
+  fetchCachePrediction,
   fetchGenerationStatus,
   fetchRepoSpecDocument,
   fetchRepoVersionHistory,

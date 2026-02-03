@@ -2,6 +2,7 @@ import { apiFetch } from "@/lib/api/client";
 
 import type {
   CacheAvailabilityResponse,
+  CachePredictionResponse,
   RepoSpecDocumentResponse,
   RepoVersionHistoryResponse,
   RequestSpecGenerationRequest,
@@ -42,6 +43,13 @@ export class ForbiddenError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "ForbiddenError";
+  }
+}
+
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NotFoundError";
   }
 }
 
@@ -192,6 +200,32 @@ export const fetchCacheAvailability = async (
 
     if (response.status === 401) {
       throw new UnauthorizedError(errorBody.detail || "Authentication required");
+    }
+
+    throw new Error(errorBody.detail || response.statusText);
+  }
+
+  return response.json();
+};
+
+export const fetchCachePrediction = async (
+  analysisId: string,
+  language: SpecLanguage
+): Promise<CachePredictionResponse> => {
+  const url = `/api/spec-view/${analysisId}/cache-prediction?language=${encodeURIComponent(language)}`;
+  const response = await apiFetch(url);
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+
+    if (response.status === 401) {
+      throw new UnauthorizedError(errorBody.detail || "Authentication required");
+    }
+    if (response.status === 403) {
+      throw new ForbiddenError(errorBody.detail || "Access denied");
+    }
+    if (response.status === 404) {
+      throw new NotFoundError(errorBody.detail || "Analysis not found");
     }
 
     throw new Error(errorBody.detail || response.statusText);

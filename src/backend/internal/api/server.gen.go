@@ -330,6 +330,21 @@ type CacheAvailabilityResponse struct {
 	Languages map[string]bool `json:"languages"`
 }
 
+// CachePredictionResponse defines model for CachePredictionResponse.
+type CachePredictionResponse struct {
+	// CacheableBehaviors Number of behaviors that can be reused from cache (matching test name + file path)
+	CacheableBehaviors int `json:"cacheableBehaviors"`
+
+	// EstimatedCost Estimated quota usage for generating the spec document (equals newBehaviors)
+	EstimatedCost int `json:"estimatedCost"`
+
+	// NewBehaviors Number of new behaviors that need AI generation (current tests - cacheable behaviors)
+	NewBehaviors int `json:"newBehaviors"`
+
+	// TotalBehaviors Total number of behaviors from the previous spec document
+	TotalBehaviors int `json:"totalBehaviors"`
+}
+
 // CheckQuotaRequest defines model for CheckQuotaRequest.
 type CheckQuotaRequest struct {
 	// Amount Number of operations to check quota for
@@ -1375,6 +1390,12 @@ type GetSpecDocumentParams struct {
 	Version *int `form:"version,omitempty" json:"version,omitempty"`
 }
 
+// GetSpecCachePredictionParams defines parameters for GetSpecCachePrediction.
+type GetSpecCachePredictionParams struct {
+	// Language Language to get cache prediction for
+	Language SpecLanguage `form:"language" json:"language"`
+}
+
 // GetSpecVersionsParams defines parameters for GetSpecVersions.
 type GetSpecVersionsParams struct {
 	// Language Language to get version history for
@@ -1839,6 +1860,9 @@ type ServerInterface interface {
 	// Get cache availability for all languages
 	// (GET /api/spec-view/{analysisId}/cache-availability)
 	GetSpecCacheAvailability(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID)
+	// Get cache prediction statistics for a language
+	// (GET /api/spec-view/{analysisId}/cache-prediction)
+	GetSpecCachePrediction(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID, params GetSpecCachePredictionParams)
 	// Get version history for a specific language
 	// (GET /api/spec-view/{analysisId}/versions)
 	GetSpecVersions(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID, params GetSpecVersionsParams)
@@ -2013,6 +2037,12 @@ func (_ Unimplemented) GetSpecDocument(w http.ResponseWriter, r *http.Request, a
 // Get cache availability for all languages
 // (GET /api/spec-view/{analysisId}/cache-availability)
 func (_ Unimplemented) GetSpecCacheAvailability(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get cache prediction statistics for a language
+// (GET /api/spec-view/{analysisId}/cache-prediction)
+func (_ Unimplemented) GetSpecCachePrediction(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID, params GetSpecCachePredictionParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -2882,6 +2912,55 @@ func (siw *ServerInterfaceWrapper) GetSpecCacheAvailability(w http.ResponseWrite
 	handler.ServeHTTP(w, r)
 }
 
+// GetSpecCachePrediction operation middleware
+func (siw *ServerInterfaceWrapper) GetSpecCachePrediction(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "analysisId" -------------
+	var analysisID openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "analysisId", chi.URLParam(r, "analysisId"), &analysisID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "analysisId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, CookieAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetSpecCachePredictionParams
+
+	// ------------- Required query parameter "language" -------------
+
+	if paramValue := r.URL.Query().Get("language"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "language"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "language", r.URL.Query(), &params.Language)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "language", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSpecCachePrediction(w, r, analysisID, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetSpecVersions operation middleware
 func (siw *ServerInterfaceWrapper) GetSpecVersions(w http.ResponseWriter, r *http.Request) {
 
@@ -3496,6 +3575,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/spec-view/{analysisId}/cache-availability", wrapper.GetSpecCacheAvailability)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/spec-view/{analysisId}/cache-prediction", wrapper.GetSpecCachePrediction)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/spec-view/{analysisId}/versions", wrapper.GetSpecVersions)
@@ -4749,6 +4831,68 @@ func (response GetSpecCacheAvailability500ApplicationProblemPlusJSONResponse) Vi
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetSpecCachePredictionRequestObject struct {
+	AnalysisID openapi_types.UUID `json:"analysisId"`
+	Params     GetSpecCachePredictionParams
+}
+
+type GetSpecCachePredictionResponseObject interface {
+	VisitGetSpecCachePredictionResponse(w http.ResponseWriter) error
+}
+
+type GetSpecCachePrediction200JSONResponse CachePredictionResponse
+
+func (response GetSpecCachePrediction200JSONResponse) VisitGetSpecCachePredictionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecCachePrediction400ApplicationProblemPlusJSONResponse struct {
+	BadRequestApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecCachePrediction400ApplicationProblemPlusJSONResponse) VisitGetSpecCachePredictionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecCachePrediction401ApplicationProblemPlusJSONResponse struct {
+	UnauthorizedApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecCachePrediction401ApplicationProblemPlusJSONResponse) VisitGetSpecCachePredictionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecCachePrediction404ApplicationProblemPlusJSONResponse struct {
+	NotFoundApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecCachePrediction404ApplicationProblemPlusJSONResponse) VisitGetSpecCachePredictionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetSpecCachePrediction500ApplicationProblemPlusJSONResponse struct {
+	InternalErrorApplicationProblemPlusJSONResponse
+}
+
+func (response GetSpecCachePrediction500ApplicationProblemPlusJSONResponse) VisitGetSpecCachePredictionResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetSpecVersionsRequestObject struct {
 	AnalysisID openapi_types.UUID `json:"analysisId"`
 	Params     GetSpecVersionsParams
@@ -5485,6 +5629,9 @@ type StrictServerInterface interface {
 	// Get cache availability for all languages
 	// (GET /api/spec-view/{analysisId}/cache-availability)
 	GetSpecCacheAvailability(ctx context.Context, request GetSpecCacheAvailabilityRequestObject) (GetSpecCacheAvailabilityResponseObject, error)
+	// Get cache prediction statistics for a language
+	// (GET /api/spec-view/{analysisId}/cache-prediction)
+	GetSpecCachePrediction(ctx context.Context, request GetSpecCachePredictionRequestObject) (GetSpecCachePredictionResponseObject, error)
 	// Get version history for a specific language
 	// (GET /api/spec-view/{analysisId}/versions)
 	GetSpecVersions(ctx context.Context, request GetSpecVersionsRequestObject) (GetSpecVersionsResponseObject, error)
@@ -6132,6 +6279,33 @@ func (sh *strictHandler) GetSpecCacheAvailability(w http.ResponseWriter, r *http
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetSpecCacheAvailabilityResponseObject); ok {
 		if err := validResponse.VisitGetSpecCacheAvailabilityResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetSpecCachePrediction operation middleware
+func (sh *strictHandler) GetSpecCachePrediction(w http.ResponseWriter, r *http.Request, analysisID openapi_types.UUID, params GetSpecCachePredictionParams) {
+	var request GetSpecCachePredictionRequestObject
+
+	request.AnalysisID = analysisID
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetSpecCachePrediction(ctx, request.(GetSpecCachePredictionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetSpecCachePrediction")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetSpecCachePredictionResponseObject); ok {
+		if err := validResponse.VisitGetSpecCachePredictionResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

@@ -104,6 +104,12 @@ func (m *mockSpecViewRepository) GetVersionHistoryByRepository(_ context.Context
 func (m *mockSpecViewRepository) GetAvailableLanguagesByRepository(_ context.Context, _, _, _ string) ([]entity.AvailableLanguageInfo, error) {
 	return nil, nil
 }
+func (m *mockSpecViewRepository) GetCachePredictionData(_ context.Context, _, _, _ string) (*entity.CachePredictionData, error) {
+	return nil, nil
+}
+func (m *mockSpecViewRepository) GetCurrentAnalysisTestCount(_ context.Context, _ string) (int, error) {
+	return 0, nil
+}
 
 type mockQueueService struct {
 	enqueueErr error

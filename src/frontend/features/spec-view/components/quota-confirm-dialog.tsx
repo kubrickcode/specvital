@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Globe, Infinity as InfinityIcon, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { Globe, Info, Infinity as InfinityIcon, RefreshCw, Sparkles, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-import { fetchCacheAvailability } from "../api";
+import { fetchCacheAvailability, fetchCachePrediction } from "../api";
 import { LanguageCombobox } from "./language-combobox";
 import { useQuotaConfirmDialog } from "../hooks/use-quota-confirm-dialog";
 import { formatQuotaNumber, getQuotaLevel, isQuotaExceeded, type QuotaLevel } from "../utils/quota";
@@ -66,6 +67,22 @@ export const QuotaConfirmDialog = () => {
     !isCacheAvailabilityError && (cacheAvailability?.languages?.[selectedLanguage] ?? false);
   const hasPreviousSpec = hasCacheFromCurrentAnalysis || hasCacheFromPreviousAnalysis;
 
+  // Fetch cache prediction when cache mode is available
+  const { data: cachePrediction } = useQuery({
+    enabled: isOpen && !!analysisId && hasPreviousSpec && !forceRegenerate,
+    placeholderData: (previousData) => previousData,
+    queryFn: () => fetchCachePrediction(analysisId!, selectedLanguage),
+    queryKey: ["cache-prediction", analysisId, selectedLanguage],
+    staleTime: 60000, // 1 minute
+  });
+
+  // Dynamic estimated cost based on cache mode
+  // When forceRegenerate is true or no cache prediction available, use the original estimatedCost (totalTests)
+  // When using cache mode, use the predicted estimatedCost from cache prediction
+  const dynamicEstimatedCost = forceRegenerate
+    ? estimatedCost
+    : (cachePrediction?.estimatedCost ?? estimatedCost);
+
   const tQuota = useTranslations("specView.quota");
   const specview = usage?.specview;
   const percentage = specview?.percentage ?? null;
@@ -76,9 +93,9 @@ export const QuotaConfirmDialog = () => {
   const config = LEVEL_CONFIG[level];
 
   // Calculate if generation would exceed limit (including reserved)
-  const afterUsage = specview ? specview.used + reserved + (estimatedCost ?? 0) : 0;
+  const afterUsage = specview ? specview.used + reserved + (dynamicEstimatedCost ?? 0) : 0;
   const wouldExceed =
-    !isUnlimited && specview?.limit && estimatedCost ? afterUsage > specview.limit : false;
+    !isUnlimited && specview?.limit && dynamicEstimatedCost ? afterUsage > specview.limit : false;
   const reservedPercentage = specview?.limit ? (reserved / specview.limit) * 100 : 0;
 
   return (
@@ -192,8 +209,18 @@ export const QuotaConfirmDialog = () => {
           <div className="mt-4 space-y-4">
             <div className="rounded-lg border bg-muted/30 p-4">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-medium">{t("specviewUsage")}</span>
-                {!isUnlimited && estimatedCost !== null && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium">{t("specviewUsage")}</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3.5 w-3.5 text-muted-foreground/70 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-[200px]">{t("estimatedCostNote")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                {!isUnlimited && dynamicEstimatedCost !== null && (
                   <span
                     className={cn(
                       "text-xs font-medium",
@@ -244,7 +271,7 @@ export const QuotaConfirmDialog = () => {
                         />
                       )}
                       {/* Predicted usage (striped pattern) */}
-                      {estimatedCost !== null && estimatedCost > 0 && (
+                      {dynamicEstimatedCost !== null && dynamicEstimatedCost > 0 && (
                         <div
                           className={cn(
                             "absolute top-0 h-full transition-all",
@@ -255,7 +282,7 @@ export const QuotaConfirmDialog = () => {
                               ? "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 4px)"
                               : "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.4) 2px, rgba(255,255,255,0.4) 4px)",
                             left: `${Math.min((percentage ?? 0) + reservedPercentage, 100)}%`,
-                            width: `${Math.min((estimatedCost / (specview.limit ?? 1)) * 100, 100 - (percentage ?? 0) - reservedPercentage)}%`,
+                            width: `${Math.min((dynamicEstimatedCost / (specview.limit ?? 1)) * 100, 100 - (percentage ?? 0) - reservedPercentage)}%`,
                           }}
                         />
                       )}
@@ -281,7 +308,7 @@ export const QuotaConfirmDialog = () => {
                           </span>
                         </span>
                       )}
-                      {estimatedCost !== null && estimatedCost > 0 && (
+                      {dynamicEstimatedCost !== null && dynamicEstimatedCost > 0 && (
                         <span className="flex items-center gap-1.5">
                           <span
                             className={cn(
@@ -298,7 +325,7 @@ export const QuotaConfirmDialog = () => {
                               wouldExceed ? "text-destructive" : "text-muted-foreground"
                             )}
                           >
-                            ~+{formatQuotaNumber(estimatedCost)}
+                            ~+{formatQuotaNumber(dynamicEstimatedCost)}
                           </span>
                         </span>
                       )}

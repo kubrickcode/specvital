@@ -864,6 +864,51 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+  /api/spec-view/{analysisId}/cache-prediction:
+    parameters:
+      - name: analysisId
+        in: path
+        required: true
+        description: Analysis ID (UUID) to get cache prediction for
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    get:
+      operationId: getSpecCachePrediction
+      summary: Get cache prediction statistics for a language
+      description: |
+        Returns detailed cache prediction statistics for spec generation.
+        Compares current analysis tests with previous spec behaviors to predict cache hits.
+        Matching is done by test case name + file path.
+        Useful for showing users the expected cost reduction from behavior caching.
+      tags:
+        - Spec View
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: language
+          in: query
+          required: true
+          description: Language to get cache prediction for
+          schema:
+            $ref: "#/components/schemas/SpecLanguage"
+      responses:
+        "200":
+          description: Cache prediction retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CachePredictionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   /api/spec-view/generate:
     post:
       operationId: requestSpecGeneration
@@ -2404,6 +2449,35 @@ components:
             Korean: true
             English: false
             Japanese: true
+
+    CachePredictionResponse:
+      type: object
+      required:
+        - totalBehaviors
+        - cacheableBehaviors
+        - newBehaviors
+        - estimatedCost
+      properties:
+        totalBehaviors:
+          type: integer
+          minimum: 0
+          description: Total number of behaviors from the previous spec document
+          example: 150
+        cacheableBehaviors:
+          type: integer
+          minimum: 0
+          description: Number of behaviors that can be reused from cache (matching test name + file path)
+          example: 120
+        newBehaviors:
+          type: integer
+          minimum: 0
+          description: Number of new behaviors that need AI generation (current tests - cacheable behaviors)
+          example: 30
+        estimatedCost:
+          type: integer
+          minimum: 0
+          description: Estimated quota usage for generating the spec document (equals newBehaviors)
+          example: 30
 
     AvailableLanguageInfo:
       type: object

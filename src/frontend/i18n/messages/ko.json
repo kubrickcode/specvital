@@ -399,6 +399,7 @@
       "estimatedCost": "이번 생성으로 약 {count} 테스트 사용 예정",
       "afterGeneration": "생성 후: 약 {after} / {limit} 테스트",
       "current": "현재",
+      "estimatedCostNote": "실제 사용량은 예상치와 다를 수 있습니다",
       "limit": "한도",
       "afterUsageShort": "생성 후 약 {after} / {limit}",
       "warningMessage": "월별 할당량이 거의 소진되었습니다. 더 많은 생성을 위해 플랜 업그레이드를 고려해주세요.",

@@ -103,6 +103,12 @@ func (m *mockStatusRepository) GetVersionHistoryByRepository(_ context.Context, 
 func (m *mockStatusRepository) GetAvailableLanguagesByRepository(_ context.Context, _, _, _ string) ([]entity.AvailableLanguageInfo, error) {
 	return nil, nil
 }
+func (m *mockStatusRepository) GetCachePredictionData(_ context.Context, _, _, _ string) (*entity.CachePredictionData, error) {
+	return nil, nil
+}
+func (m *mockStatusRepository) GetCurrentAnalysisTestCount(_ context.Context, _ string) (int, error) {
+	return 0, nil
+}
 
 func TestGetGenerationStatusUseCase_Execute(t *testing.T) {
 	t.Run("returns unauthorized error when userID is empty", func(t *testing.T) {

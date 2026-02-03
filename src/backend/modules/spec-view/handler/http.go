@@ -20,6 +20,7 @@ import (
 
 type Handler struct {
 	getCacheAvailability    *usecase.GetCacheAvailabilityUseCase
+	getCachePrediction      *usecase.GetCachePredictionUseCase
 	getGenerationStatus     *usecase.GetGenerationStatusUseCase
 	getSpecByRepository     *usecase.GetSpecByRepositoryUseCase
 	getSpecDocument         *usecase.GetSpecDocumentUseCase
@@ -34,6 +35,7 @@ var _ api.SpecViewHandlers = (*Handler)(nil)
 
 type HandlerConfig struct {
 	GetCacheAvailability    *usecase.GetCacheAvailabilityUseCase
+	GetCachePrediction      *usecase.GetCachePredictionUseCase
 	GetGenerationStatus     *usecase.GetGenerationStatusUseCase
 	GetSpecByRepository     *usecase.GetSpecByRepositoryUseCase
 	GetSpecDocument         *usecase.GetSpecDocumentUseCase
@@ -61,6 +63,9 @@ func NewHandler(cfg *HandlerConfig) (*Handler, error) {
 	if cfg.GetCacheAvailability == nil {
 		return nil, errors.New("GetCacheAvailability usecase is required")
 	}
+	if cfg.GetCachePrediction == nil {
+		return nil, errors.New("GetCachePrediction usecase is required")
+	}
 	if cfg.GetSpecByRepository == nil {
 		return nil, errors.New("GetSpecByRepository usecase is required")
 	}
@@ -73,6 +78,7 @@ func NewHandler(cfg *HandlerConfig) (*Handler, error) {
 
 	return &Handler{
 		getCacheAvailability:    cfg.GetCacheAvailability,
+		getCachePrediction:      cfg.GetCachePrediction,
 		getGenerationStatus:     cfg.GetGenerationStatus,
 		getSpecByRepository:     cfg.GetSpecByRepository,
 		getSpecDocument:         cfg.GetSpecDocument,
@@ -390,6 +396,46 @@ func (h *Handler) GetSpecCacheAvailability(ctx context.Context, request api.GetS
 
 	return api.GetSpecCacheAvailability200JSONResponse{
 		Languages: result.Languages,
+	}, nil
+}
+
+func (h *Handler) GetSpecCachePrediction(ctx context.Context, request api.GetSpecCachePredictionRequestObject) (api.GetSpecCachePredictionResponseObject, error) {
+	userID := middleware.GetUserID(ctx)
+	analysisID := request.AnalysisID.String()
+	language := string(request.Params.Language)
+
+	result, err := h.getCachePrediction.Execute(ctx, usecase.GetCachePredictionInput{
+		AnalysisID: analysisID,
+		Language:   language,
+		UserID:     userID,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrUnauthorized):
+			return api.GetSpecCachePrediction401ApplicationProblemPlusJSONResponse{
+				UnauthorizedApplicationProblemPlusJSONResponse: api.NewUnauthorized("authentication required"),
+			}, nil
+		case errors.Is(err, domain.ErrInvalidAnalysisID), errors.Is(err, domain.ErrAnalysisNotFound):
+			return api.GetSpecCachePrediction404ApplicationProblemPlusJSONResponse{
+				NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("analysis not found"),
+			}, nil
+		case errors.Is(err, domain.ErrInvalidLanguage):
+			return api.GetSpecCachePrediction400ApplicationProblemPlusJSONResponse{
+				BadRequestApplicationProblemPlusJSONResponse: api.NewBadRequest("invalid language"),
+			}, nil
+		}
+
+		h.logger.Error(ctx, "failed to get cache prediction", "error", err)
+		return api.GetSpecCachePrediction500ApplicationProblemPlusJSONResponse{
+			InternalErrorApplicationProblemPlusJSONResponse: api.NewInternalError("failed to get cache prediction"),
+		}, nil
+	}
+
+	return api.GetSpecCachePrediction200JSONResponse{
+		TotalBehaviors:     result.TotalBehaviors,
+		CacheableBehaviors: result.CacheableBehaviors,
+		NewBehaviors:       result.NewBehaviors,
+		EstimatedCost:      result.EstimatedCost,
 	}, nil
 }
 

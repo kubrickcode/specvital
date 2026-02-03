@@ -260,6 +260,92 @@ func (q *Queries) GetAvailableLanguagesByUserAndAnalysis(ctx context.Context, ar
 	return items, nil
 }
 
+const getCachePredictionData = `-- name: GetCachePredictionData :one
+WITH previous_spec AS (
+    -- Get the most recent spec document for this codebase (different analysis) in the specified language
+    SELECT spec_doc.id AS document_id, spec_doc.analysis_id
+    FROM spec_documents spec_doc
+    JOIN analyses a ON a.id = spec_doc.analysis_id
+    WHERE a.codebase_id = (SELECT a2.codebase_id FROM analyses a2 WHERE a2.id = $1)
+      AND spec_doc.user_id = $2
+      AND spec_doc.language = $3
+      AND spec_doc.analysis_id != $1
+    ORDER BY spec_doc.created_at DESC
+    LIMIT 1
+),
+previous_behaviors AS (
+    -- Get all behaviors from previous spec with their source test info
+    SELECT
+        sb.id AS behavior_id,
+        sb.original_name,
+        tf.file_path
+    FROM spec_behaviors sb
+    JOIN spec_features sf ON sf.id = sb.feature_id
+    JOIN spec_domains sdom ON sdom.id = sf.domain_id
+    JOIN previous_spec ps ON ps.document_id = sdom.document_id
+    LEFT JOIN test_cases tc ON tc.id = sb.source_test_case_id
+    LEFT JOIN test_suites ts ON ts.id = tc.suite_id
+    LEFT JOIN test_files tf ON tf.id = ts.file_id
+),
+current_tests AS (
+    -- Get all test cases from current analysis with their file paths
+    SELECT
+        tc.name,
+        tf.file_path
+    FROM test_cases tc
+    JOIN test_suites ts ON ts.id = tc.suite_id
+    JOIN test_files tf ON tf.id = ts.file_id
+    WHERE tf.analysis_id = $1
+),
+matched_behaviors AS (
+    -- Count behaviors that have matching tests in current analysis
+    SELECT COUNT(DISTINCT pb.behavior_id) AS count
+    FROM previous_behaviors pb
+    JOIN current_tests ct ON pb.original_name = ct.name AND pb.file_path = ct.file_path
+    WHERE pb.file_path IS NOT NULL
+)
+SELECT
+    COALESCE((SELECT COUNT(*) FROM previous_behaviors), 0)::int AS total_behaviors,
+    COALESCE((SELECT count FROM matched_behaviors), 0)::int AS cacheable_behaviors
+`
+
+type GetCachePredictionDataParams struct {
+	CurrentAnalysisID pgtype.UUID `json:"current_analysis_id"`
+	UserID            pgtype.UUID `json:"user_id"`
+	Language          string      `json:"language"`
+}
+
+type GetCachePredictionDataRow struct {
+	TotalBehaviors     int32 `json:"total_behaviors"`
+	CacheableBehaviors int32 `json:"cacheable_behaviors"`
+}
+
+// Returns cache prediction data by comparing current analysis test cases with previous spec behaviors
+// Matches by test_case.name + test_file.file_path
+// Returns total behaviors from previous spec and count of cacheable behaviors (those with matching tests)
+func (q *Queries) GetCachePredictionData(ctx context.Context, arg GetCachePredictionDataParams) (GetCachePredictionDataRow, error) {
+	row := q.db.QueryRow(ctx, getCachePredictionData, arg.CurrentAnalysisID, arg.UserID, arg.Language)
+	var i GetCachePredictionDataRow
+	err := row.Scan(&i.TotalBehaviors, &i.CacheableBehaviors)
+	return i, err
+}
+
+const getCurrentAnalysisTestCount = `-- name: GetCurrentAnalysisTestCount :one
+SELECT COUNT(*)::int AS total_tests
+FROM test_cases tc
+JOIN test_suites ts ON ts.id = tc.suite_id
+JOIN test_files tf ON tf.id = ts.file_id
+WHERE tf.analysis_id = $1
+`
+
+// Returns the total test count for the current analysis
+func (q *Queries) GetCurrentAnalysisTestCount(ctx context.Context, analysisID pgtype.UUID) (int32, error) {
+	row := q.db.QueryRow(ctx, getCurrentAnalysisTestCount, analysisID)
+	var total_tests int32
+	err := row.Scan(&total_tests)
+	return total_tests, err
+}
+
 const getLanguagesWithPreviousSpec = `-- name: GetLanguagesWithPreviousSpec :many
 SELECT DISTINCT sd.language
 FROM spec_documents sd

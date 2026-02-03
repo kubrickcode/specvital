@@ -114,6 +114,12 @@ func (m *repoMockRepository) GetVersionsByLanguage(_ context.Context, _, _ strin
 func (m *repoMockRepository) GetVersionsByUser(_ context.Context, _, _, _ string) ([]entity.VersionInfo, error) {
 	return nil, nil
 }
+func (m *repoMockRepository) GetCachePredictionData(_ context.Context, _, _, _ string) (*entity.CachePredictionData, error) {
+	return nil, nil
+}
+func (m *repoMockRepository) GetCurrentAnalysisTestCount(_ context.Context, _ string) (int, error) {
+	return 0, nil
+}
 
 func TestGetSpecByRepositoryUseCase_Execute(t *testing.T) {
 	t.Run("returns ErrUnauthorized when userID is empty", func(t *testing.T) {

@@ -253,11 +253,13 @@ func initHandlers(ctx context.Context, container *infra.Container) (*Handlers, [
 	getGenerationStatusUC := specviewusecase.NewGetGenerationStatusUseCase(specViewRepo)
 	getVersionsUC := specviewusecase.NewGetVersionsUseCase(specViewRepo)
 	getCacheAvailabilityUC := specviewusecase.NewGetCacheAvailabilityUseCase(specViewRepo)
+	getCachePredictionUC := specviewusecase.NewGetCachePredictionUseCase(specViewRepo)
 	getSpecByRepositoryUC := specviewusecase.NewGetSpecByRepositoryUseCase(specViewRepo)
 	getVersionHistoryByRepoUC := specviewusecase.NewGetVersionHistoryByRepositoryUseCase(specViewRepo)
 
 	specViewHandler, err := specviewhandler.NewHandler(&specviewhandler.HandlerConfig{
 		GetCacheAvailability:    getCacheAvailabilityUC,
+		GetCachePrediction:      getCachePredictionUC,
 		GetGenerationStatus:     getGenerationStatusUC,
 		GetSpecByRepository:     getSpecByRepositoryUC,
 		GetSpecDocument:         getSpecDocumentUC,

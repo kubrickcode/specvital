@@ -773,3 +773,48 @@ func (r *PostgresRepository) GetAvailableLanguagesByRepository(ctx context.Conte
 	}
 	return result, nil
 }
+
+func (r *PostgresRepository) GetCachePredictionData(ctx context.Context, userID, analysisID, language string) (*entity.CachePredictionData, error) {
+	uid, err := parseUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+	aid, err := parseUUID(analysisID)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := r.queries.GetCachePredictionData(ctx, db.GetCachePredictionDataParams{
+		CurrentAnalysisID: aid,
+		UserID:            uid,
+		Language:          language,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &entity.CachePredictionData{
+				TotalBehaviors:     0,
+				CacheableBehaviors: 0,
+			}, nil
+		}
+		return nil, err
+	}
+
+	return &entity.CachePredictionData{
+		TotalBehaviors:     int(row.TotalBehaviors),
+		CacheableBehaviors: int(row.CacheableBehaviors),
+	}, nil
+}
+
+func (r *PostgresRepository) GetCurrentAnalysisTestCount(ctx context.Context, analysisID string) (int, error) {
+	aid, err := parseUUID(analysisID)
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := r.queries.GetCurrentAnalysisTestCount(ctx, aid)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}

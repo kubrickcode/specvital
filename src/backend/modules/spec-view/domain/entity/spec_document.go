@@ -146,3 +146,12 @@ type RepoVersionInfo struct {
 	ModelID    string
 	Version    int
 }
+
+// CachePredictionData contains cache prediction statistics
+type CachePredictionData struct {
+	// TotalBehaviors is the total number of behaviors from the previous spec
+	TotalBehaviors int
+	// CacheableBehaviors is the number of behaviors that can be cached
+	// (matching test case name + file path exists in current analysis)
+	CacheableBehaviors int
+}

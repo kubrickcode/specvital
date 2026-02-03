@@ -34,6 +34,7 @@ export type { AccessErrorType, RepoAccessErrorType } from "./hooks";
 export { calculateDocumentStats, calculateDomainStats, isQuotaExceeded } from "./utils";
 
 export type {
+  CachePredictionResponse,
   RepoSpecDocument,
   RepoVersionInfo,
   SpecBehavior,

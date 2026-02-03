@@ -94,6 +94,12 @@ func (m *mockCacheAvailabilityRepository) GetVersionHistoryByRepository(_ contex
 func (m *mockCacheAvailabilityRepository) GetAvailableLanguagesByRepository(_ context.Context, _, _, _ string) ([]entity.AvailableLanguageInfo, error) {
 	return nil, nil
 }
+func (m *mockCacheAvailabilityRepository) GetCachePredictionData(_ context.Context, _, _, _ string) (*entity.CachePredictionData, error) {
+	return nil, nil
+}
+func (m *mockCacheAvailabilityRepository) GetCurrentAnalysisTestCount(_ context.Context, _ string) (int, error) {
+	return 0, nil
+}
 
 func TestGetCacheAvailabilityUseCase_Execute(t *testing.T) {
 	t.Run("returns ErrUnauthorized when userID is empty", func(t *testing.T) {

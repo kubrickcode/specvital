@@ -399,6 +399,7 @@
       "estimatedCost": "This generation will use ~{count} tests",
       "afterGeneration": "After: ~{after} / {limit} tests",
       "current": "Current",
+      "estimatedCostNote": "Actual usage may differ from the estimate",
       "limit": "Limit",
       "afterUsageShort": "After ~{after} / {limit}",
       "warningMessage": "You're running low on your monthly quota. Consider upgrading your plan for more generations.",

@@ -42,6 +42,7 @@ export type SpecGenerationStatusResponse = components["schemas"]["SpecGeneration
 export type RequestSpecGenerationRequest = components["schemas"]["RequestSpecGenerationRequest"];
 export type RequestSpecGenerationResponse = components["schemas"]["RequestSpecGenerationResponse"];
 export type SpecGenerationMode = components["schemas"]["SpecGenerationMode"];
+export type CachePredictionResponse = components["schemas"]["CachePredictionResponse"];
 
 // Type guards
 export const isDocumentCompleted = (

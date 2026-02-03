@@ -62,6 +62,13 @@ type SpecViewRepository interface {
 	GetVersionHistoryByRepository(ctx context.Context, userID, owner, name, language string) ([]entity.RepoVersionInfo, error)
 	// GetAvailableLanguagesByRepository returns all available languages for a repository.
 	GetAvailableLanguagesByRepository(ctx context.Context, userID, owner, name string) ([]entity.AvailableLanguageInfo, error)
+
+	// GetCachePredictionData returns cache prediction statistics by comparing
+	// current analysis test cases with previous spec behaviors.
+	// Matches by test_case.name + test_file.file_path to predict cache hits.
+	GetCachePredictionData(ctx context.Context, userID, analysisID, language string) (*entity.CachePredictionData, error)
+	// GetCurrentAnalysisTestCount returns the total test count for an analysis.
+	GetCurrentAnalysisTestCount(ctx context.Context, analysisID string) (int, error)
 }
 
 type TierLookup interface {

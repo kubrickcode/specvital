@@ -45,6 +45,15 @@ func (m *MockHandler) GetSpecCacheAvailability(_ context.Context, _ api.GetSpecC
 	}, nil
 }
 
+func (m *MockHandler) GetSpecCachePrediction(_ context.Context, _ api.GetSpecCachePredictionRequestObject) (api.GetSpecCachePredictionResponseObject, error) {
+	return api.GetSpecCachePrediction200JSONResponse{
+		TotalBehaviors:     0,
+		CacheableBehaviors: 0,
+		NewBehaviors:       0,
+		EstimatedCost:      0,
+	}, nil
+}
+
 func (m *MockHandler) GetSpecDocumentByRepository(_ context.Context, _ api.GetSpecDocumentByRepositoryRequestObject) (api.GetSpecDocumentByRepositoryResponseObject, error) {
 	return api.GetSpecDocumentByRepository404ApplicationProblemPlusJSONResponse{
 		NotFoundApplicationProblemPlusJSONResponse: api.NewNotFound("not found"),

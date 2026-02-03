@@ -639,6 +639,36 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/spec-view/{analysisId}/cache-prediction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Analysis ID (UUID) to get cache prediction for
+                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 */
+                analysisId: string;
+            };
+            cookie?: never;
+        };
+        /**
+         * Get cache prediction statistics for a language
+         * @description Returns detailed cache prediction statistics for spec generation.
+         *     Compares current analysis tests with previous spec behaviors to predict cache hits.
+         *     Matching is done by test case name + file path.
+         *     Useful for showing users the expected cost reduction from behavior caching.
+         *
+         */
+        get: operations["getSpecCachePrediction"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/spec-view/generate": {
         parameters: {
             query?: never;
@@ -1602,6 +1632,28 @@ export interface components {
             languages: {
                 [key: string]: boolean;
             };
+        };
+        CachePredictionResponse: {
+            /**
+             * @description Total number of behaviors from the previous spec document
+             * @example 150
+             */
+            totalBehaviors: number;
+            /**
+             * @description Number of behaviors that can be reused from cache (matching test name + file path)
+             * @example 120
+             */
+            cacheableBehaviors: number;
+            /**
+             * @description Number of new behaviors that need AI generation (current tests - cacheable behaviors)
+             * @example 30
+             */
+            newBehaviors: number;
+            /**
+             * @description Estimated quota usage for generating the spec document (equals newBehaviors)
+             * @example 30
+             */
+            estimatedCost: number;
         };
         AvailableLanguageInfo: {
             language: components["schemas"]["SpecLanguage"];
@@ -2897,6 +2949,39 @@ export interface operations {
                     "application/json": components["schemas"]["CacheAvailabilityResponse"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getSpecCachePrediction: {
+        parameters: {
+            query: {
+                /** @description Language to get cache prediction for */
+                language: components["schemas"]["SpecLanguage"];
+            };
+            header?: never;
+            path: {
+                /**
+                 * @description Analysis ID (UUID) to get cache prediction for
+                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 */
+                analysisId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cache prediction retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CachePredictionResponse"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
