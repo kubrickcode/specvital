@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.6.0](https://github.com/specvital/web/compare/v1.5.0...v1.6.0) (2026-02-03)
+
+### 🎯 Highlights
+
+#### ✨ Features
+
+- **analysis:** add analysis history API endpoint ([2dc0326](https://github.com/specvital/web/commit/2dc032673a1c84fdabaef639d85e843a271c45bd))
+- **analysis:** add commit history selection dropdown UI ([bb215fa](https://github.com/specvital/web/commit/bb215fafe1b9cc394ac8018712ac7d06329a1350))
+- **analysis:** add commit switching with URL state management ([b9170c9](https://github.com/specvital/web/commit/b9170c924548a04ae3d785d64470cec06d369de4))
+- **analysis:** add commit-specific analysis query API ([da00d30](https://github.com/specvital/web/commit/da00d304f103a06d7e7cdcb160bf327514166f77))
+- **spec-view:** add dynamic cost estimation based on cache prediction ([3645d52](https://github.com/specvital/web/commit/3645d52ac69724c3d7cf329e75f803adfbb245b9))
+
+#### 🐛 Bug Fixes
+
+- **analysis:** fix immediate completion toast on reanalysis ([354d49a](https://github.com/specvital/web/commit/354d49a209daaf117af6e6099c7d6a0e3ab8a2f3))
+- **analysis:** fix new commits banner not showing on analysis detail page ([27090f9](https://github.com/specvital/web/commit/27090f9edadf305ae7d4e8f0c22e683d684cb071))
+- **analysis:** fix toast appearing immediately on commit update ([3417432](https://github.com/specvital/web/commit/34174324dd8acdb5554b62f563545133055e5391))
+- **dashboard:** fix AI Spec badge disappearing when new commits exist ([79df048](https://github.com/specvital/web/commit/79df048eae03e3df81a517b4129421f97f7bb138))
+- **spec-view:** fix version switching not working when selecting same version from different commits ([052e6d0](https://github.com/specvital/web/commit/052e6d06d4ff2d7a5cc1b7c336537ae3ebe09d6e))
+
+### 🔧 Maintenance
+
+#### ♻️ Refactoring
+
+- **i18n:** move messages resources into i18n module ([d6c0f67](https://github.com/specvital/web/commit/d6c0f6756b2a8fe3cecf710ab81bf6026a2b2096))
+
 ## [1.5.0](https://github.com/specvital/web/compare/v1.4.1...v1.5.0) (2026-02-02)
 
 ### 🎯 Highlights
