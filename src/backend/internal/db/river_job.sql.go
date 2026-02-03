@@ -38,6 +38,9 @@ type FindActiveRiverJobByRepoRow struct {
 	AttemptedAt pgtype.Timestamptz `json:"attempted_at"`
 }
 
+// Find active (non-terminal) job for repository.
+// Terminal states (completed, cancelled, discarded) are excluded.
+// If job is cancelled, the usecase falls through to check completed analysis.
 func (q *Queries) FindActiveRiverJobByRepo(ctx context.Context, arg FindActiveRiverJobByRepoParams) (FindActiveRiverJobByRepoRow, error) {
 	row := q.db.QueryRow(ctx, findActiveRiverJobByRepo, arg.Kind, arg.Owner, arg.Repo)
 	var i FindActiveRiverJobByRepoRow

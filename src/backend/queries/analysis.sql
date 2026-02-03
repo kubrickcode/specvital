@@ -14,7 +14,7 @@ FROM analyses a
 JOIN codebases c ON c.id = a.codebase_id
 WHERE c.host = $1 AND c.owner = $2 AND c.name = $3
   AND a.status = 'completed'
-ORDER BY a.created_at DESC
+ORDER BY COALESCE(a.committed_at, a.created_at) DESC
 LIMIT 1;
 
 -- name: GetAnalysisStatus :one
@@ -29,6 +29,16 @@ JOIN codebases c ON c.id = a.codebase_id
 WHERE c.host = $1 AND c.owner = $2 AND c.name = $3
 ORDER BY a.created_at DESC
 LIMIT 1;
+
+-- name: CheckAnalysisExistsByCommitSHA :one
+SELECT EXISTS(
+    SELECT 1
+    FROM analyses a
+    JOIN codebases c ON c.id = a.codebase_id
+    WHERE c.host = $1 AND c.owner = $2 AND c.name = $3
+      AND a.commit_sha = $4
+      AND a.status = 'completed'
+) AS exists;
 
 -- name: UpsertCodebase :one
 INSERT INTO codebases (host, owner, name)

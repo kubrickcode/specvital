@@ -61,6 +61,9 @@ export const useReanalyze = (): UseReanalyzeReturn => {
       if (!data) return POLL_INTERVAL_MS;
       return isTerminalStatus(data.status) ? false : POLL_INTERVAL_MS;
     },
+    // Prevent returning cached "completed" status from previous polling sessions
+    gcTime: 0,
+    staleTime: 0,
   });
 
   // Clean up polling state on completion
@@ -123,6 +126,10 @@ export const useReanalyze = (): UseReanalyzeReturn => {
         status: "processing",
         type: "analysis",
       });
+
+      // Clear cached polling data before starting new polling session
+      // Prevents refetchInterval from seeing stale "completed" status
+      queryClient.removeQueries({ queryKey: ["reanalyzePolling", owner, repo] });
 
       setPollingTarget({ owner, repo });
     },

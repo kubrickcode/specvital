@@ -31,6 +31,13 @@ type mockRepository struct {
 
 var _ port.Repository = (*mockRepository)(nil)
 
+func (m *mockRepository) CheckAnalysisExistsByCommitSHA(ctx context.Context, owner, repo, commitSHA string) (bool, error) {
+	if m.completedAnalysis != nil && m.completedAnalysis.CommitSHA == commitSHA {
+		return true, nil
+	}
+	return false, nil
+}
+
 func (m *mockRepository) GetLatestCompletedAnalysis(ctx context.Context, owner, repo string) (*port.CompletedAnalysis, error) {
 	if m.err != nil {
 		return nil, m.err

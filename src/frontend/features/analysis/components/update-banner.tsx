@@ -53,6 +53,9 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
       if (!data) return POLL_INTERVAL_MS;
       return isTerminalStatus(data.status) ? false : POLL_INTERVAL_MS;
     },
+    // Prevent returning cached "completed" status from previous polling sessions
+    gcTime: 0,
+    staleTime: 0,
   });
 
   // Clean up polling state and dismiss banner on completion
@@ -99,6 +102,10 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
         status: "processing",
         type: "analysis",
       });
+
+      // Clear cached polling data before starting new polling session
+      // Prevents refetchInterval from seeing stale "completed" status
+      queryClient.removeQueries({ queryKey: ["updateBannerPolling", owner, repo] });
 
       // Start polling for completion
       setIsPolling(true);

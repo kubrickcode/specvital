@@ -18,6 +18,10 @@ type mockRepository struct {
 	previousAnalysis   *port.PreviousAnalysis
 }
 
+func (m *mockRepository) CheckAnalysisExistsByCommitSHA(_ context.Context, _, _, _ string) (bool, error) {
+	return false, nil
+}
+
 func (m *mockRepository) FindActiveRiverJobByRepo(_ context.Context, _, _, _ string) (*port.RiverJobInfo, error) {
 	return nil, nil
 }

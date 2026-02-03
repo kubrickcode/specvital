@@ -26,6 +26,19 @@ func NewPostgresRepository(queries *db.Queries) *PostgresRepository {
 	return &PostgresRepository{queries: queries}
 }
 
+func (r *PostgresRepository) CheckAnalysisExistsByCommitSHA(ctx context.Context, owner, repo, commitSHA string) (bool, error) {
+	exists, err := r.queries.CheckAnalysisExistsByCommitSHA(ctx, db.CheckAnalysisExistsByCommitSHAParams{
+		Host:      HostGitHub,
+		Owner:     owner,
+		Name:      repo,
+		CommitSha: commitSHA,
+	})
+	if err != nil {
+		return false, fmt.Errorf("check analysis exists by commit SHA: %w", err)
+	}
+	return exists, nil
+}
+
 func (r *PostgresRepository) GetAiSpecSummaries(ctx context.Context, codebaseIDs []string, userID string) (map[string]*entity.AiSpecSummary, error) {
 	if len(codebaseIDs) == 0 || userID == "" {
 		return make(map[string]*entity.AiSpecSummary), nil

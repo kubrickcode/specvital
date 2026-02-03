@@ -37,6 +37,10 @@ type mockRepository struct {
 	bookmarkedIDs  []string
 }
 
+func (m *mockRepository) CheckAnalysisExistsByCommitSHA(_ context.Context, _, _, _ string) (bool, error) {
+	return true, nil
+}
+
 func (m *mockRepository) GetPaginatedRepositories(_ context.Context, _ port.PaginationParams) ([]port.PaginatedRepository, error) {
 	return m.paginatedRepos, nil
 }

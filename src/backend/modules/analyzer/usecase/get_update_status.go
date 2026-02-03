@@ -41,6 +41,7 @@ func (uc *GetUpdateStatusUseCase) Execute(ctx context.Context, input GetUpdateSt
 		return nil, errors.New("owner and repo are required")
 	}
 
+	// Get latest completed analysis for parser version check and display
 	completed, err := uc.repository.GetLatestCompletedAnalysis(ctx, input.Owner, input.Repo)
 	if err != nil {
 		return nil, fmt.Errorf("get latest analysis: %w", err)
@@ -57,8 +58,16 @@ func (uc *GetUpdateStatusUseCase) Execute(ctx context.Context, input GetUpdateSt
 		}, nil
 	}
 
+	// Check if analysis exists for the GitHub latest commit (not just comparing with DB latest)
+	// This handles git reset scenarios where an old commit becomes the new HEAD
 	status := entity.UpdateStatusUpToDate
-	if latestSHA != completed.CommitSHA {
+	analysisExists, err := uc.repository.CheckAnalysisExistsByCommitSHA(ctx, input.Owner, input.Repo, latestSHA)
+	if err != nil {
+		// On error, fall back to comparing with completed analysis
+		if latestSHA != completed.CommitSHA {
+			status = entity.UpdateStatusNewCommits
+		}
+	} else if !analysisExists {
 		status = entity.UpdateStatusNewCommits
 	}
 

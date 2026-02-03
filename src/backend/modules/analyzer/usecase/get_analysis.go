@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/specvital/web/src/backend/modules/analyzer/domain"
@@ -38,6 +39,23 @@ func (uc *GetAnalysisUseCase) Execute(ctx context.Context, input GetAnalysisInpu
 
 	now := time.Now()
 
+	// Check for recent jobs FIRST - if there's a job in queue, return its progress
+	// This prevents returning old completed analysis while new analysis is pending
+	taskInfo, err := uc.queue.FindTaskByRepo(ctx, input.Owner, input.Repo)
+	if err != nil {
+		slog.DebugContext(ctx, "queue search failed, continuing with cache check", "owner", input.Owner, "repo", input.Repo, "error", err)
+	}
+	if taskInfo != nil {
+		progress := &entity.AnalysisProgress{
+			CommitSHA: taskInfo.CommitSHA,
+			CreatedAt: now,
+			StartedAt: taskInfo.AttemptedAt,
+			Status:    mapQueueStateToAnalysisStatus(taskInfo.State),
+		}
+		return &AnalyzeResult{Progress: progress}, nil
+	}
+
+	// No recent job - check for completed analysis
 	completed, err := uc.repository.GetLatestCompletedAnalysis(ctx, input.Owner, input.Repo)
 	if err == nil {
 		analysis, buildErr := buildAnalysisFromCompleted(ctx, uc.repository, completed)
@@ -51,19 +69,6 @@ func (uc *GetAnalysisUseCase) Execute(ctx context.Context, input GetAnalysisInpu
 
 	if !errors.Is(err, domain.ErrNotFound) {
 		return nil, fmt.Errorf("get analysis for %s/%s: %w", input.Owner, input.Repo, err)
-	}
-
-	taskInfo, err := uc.queue.FindTaskByRepo(ctx, input.Owner, input.Repo)
-	// Non-critical: queue search failure doesn't block returning not found
-	_ = err
-	if taskInfo != nil {
-		progress := &entity.AnalysisProgress{
-			CommitSHA: taskInfo.CommitSHA,
-			CreatedAt: now,
-			StartedAt: taskInfo.AttemptedAt,
-			Status:    mapQueueStateToAnalysisStatus(taskInfo.State),
-		}
-		return &AnalyzeResult{Progress: progress}, nil
 	}
 
 	return nil, domain.ErrNotFound

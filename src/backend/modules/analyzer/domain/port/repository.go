@@ -8,6 +8,7 @@ import (
 )
 
 type Repository interface {
+	CheckAnalysisExistsByCommitSHA(ctx context.Context, owner, repo, commitSHA string) (bool, error)
 	FindActiveRiverJobByRepo(ctx context.Context, kind, owner, repo string) (*RiverJobInfo, error)
 	GetAiSpecSummaries(ctx context.Context, codebaseIDs []string, userID string) (map[string]*entity.AiSpecSummary, error)
 	GetBookmarkedCodebaseIDs(ctx context.Context, userID string) ([]string, error)

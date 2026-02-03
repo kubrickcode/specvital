@@ -280,7 +280,17 @@ func (uc *ListRepositoryCardsUseCase) getUpdateStatus(ctx context.Context, owner
 		return entity.UpdateStatusUnknown
 	}
 
-	if latestSHA == analyzedSHA {
+	// Check if analysis exists for GitHub latest commit (handles git reset scenarios)
+	exists, err := uc.repository.CheckAnalysisExistsByCommitSHA(ctx, owner, repo, latestSHA)
+	if err != nil {
+		// Fallback to simple comparison on error
+		if latestSHA == analyzedSHA {
+			return entity.UpdateStatusUpToDate
+		}
+		return entity.UpdateStatusNewCommits
+	}
+
+	if exists {
 		return entity.UpdateStatusUpToDate
 	}
 	return entity.UpdateStatusNewCommits

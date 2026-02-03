@@ -52,6 +52,12 @@ type mockRepositoryForAnalyze struct {
 	suitesWithCases   []port.TestSuiteWithCases
 }
 
+func (m *mockRepositoryForAnalyze) CheckAnalysisExistsByCommitSHA(_ context.Context, _, _, commitSHA string) (bool, error) {
+	if m.completedAnalysis != nil && m.completedAnalysis.CommitSHA == commitSHA {
+		return true, nil
+	}
+	return false, nil
+}
 func (m *mockRepositoryForAnalyze) FindActiveRiverJobByRepo(_ context.Context, _, _, _ string) (*port.RiverJobInfo, error) {
 	return nil, nil
 }

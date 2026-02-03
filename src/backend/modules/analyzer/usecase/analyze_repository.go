@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -66,6 +67,21 @@ func (uc *AnalyzeRepositoryUseCase) Execute(ctx context.Context, input AnalyzeRe
 		return nil, fmt.Errorf("get latest commit for %s/%s: %w", input.Owner, input.Repo, err)
 	}
 
+	// Check for active jobs FIRST - prevents returning cached analysis while new analysis is in progress
+	taskInfo, err := uc.queue.FindTaskByRepo(ctx, input.Owner, input.Repo)
+	if err != nil {
+		slog.DebugContext(ctx, "queue search failed, continuing with cache check", "owner", input.Owner, "repo", input.Repo, "error", err)
+	}
+	if taskInfo != nil && taskInfo.CommitSHA == latestSHA {
+		progress := &entity.AnalysisProgress{
+			CommitSHA: taskInfo.CommitSHA,
+			CreatedAt: now,
+			StartedAt: taskInfo.AttemptedAt,
+			Status:    mapQueueStateToAnalysisStatus(taskInfo.State),
+		}
+		return &AnalyzeResult{Progress: progress}, nil
+	}
+
 	completed, err := uc.repository.GetLatestCompletedAnalysis(ctx, input.Owner, input.Repo)
 	if err == nil {
 		if uc.shouldReturnCachedAnalysis(completed) {
@@ -83,18 +99,7 @@ func (uc *AnalyzeRepositoryUseCase) Execute(ctx context.Context, input AnalyzeRe
 		return nil, fmt.Errorf("get analysis for %s/%s: %w", input.Owner, input.Repo, err)
 	}
 
-	taskInfo, err := uc.queue.FindTaskByRepo(ctx, input.Owner, input.Repo)
-	// Non-critical: queue search failure doesn't block new task creation
-	_ = err
-	if taskInfo != nil && taskInfo.CommitSHA == latestSHA {
-		progress := &entity.AnalysisProgress{
-			CommitSHA: taskInfo.CommitSHA,
-			CreatedAt: now,
-			StartedAt: taskInfo.AttemptedAt,
-			Status:    mapQueueStateToAnalysisStatus(taskInfo.State),
-		}
-		return &AnalyzeResult{Progress: progress}, nil
-	}
+	// No active job for latest commit - check if we need to enqueue
 
 	var userIDPtr *string
 	if input.UserID != "" {

@@ -1,4 +1,7 @@
 -- name: FindActiveRiverJobByRepo :one
+-- Find active (non-terminal) job for repository.
+-- Terminal states (completed, cancelled, discarded) are excluded.
+-- If job is cancelled, the usecase falls through to check completed analysis.
 SELECT
     (args->>'commit_sha')::text as commit_sha,
     state::text as state,

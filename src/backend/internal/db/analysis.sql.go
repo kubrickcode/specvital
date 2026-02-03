@@ -11,6 +11,36 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const checkAnalysisExistsByCommitSHA = `-- name: CheckAnalysisExistsByCommitSHA :one
+SELECT EXISTS(
+    SELECT 1
+    FROM analyses a
+    JOIN codebases c ON c.id = a.codebase_id
+    WHERE c.host = $1 AND c.owner = $2 AND c.name = $3
+      AND a.commit_sha = $4
+      AND a.status = 'completed'
+) AS exists
+`
+
+type CheckAnalysisExistsByCommitSHAParams struct {
+	Host      string `json:"host"`
+	Owner     string `json:"owner"`
+	Name      string `json:"name"`
+	CommitSha string `json:"commit_sha"`
+}
+
+func (q *Queries) CheckAnalysisExistsByCommitSHA(ctx context.Context, arg CheckAnalysisExistsByCommitSHAParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkAnalysisExistsByCommitSHA,
+		arg.Host,
+		arg.Owner,
+		arg.Name,
+		arg.CommitSha,
+	)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const createPendingAnalysis = `-- name: CreatePendingAnalysis :one
 INSERT INTO analyses (codebase_id, commit_sha, status)
 VALUES ($1, $2, 'pending')
@@ -105,7 +135,7 @@ FROM analyses a
 JOIN codebases c ON c.id = a.codebase_id
 WHERE c.host = $1 AND c.owner = $2 AND c.name = $3
   AND a.status = 'completed'
-ORDER BY a.created_at DESC
+ORDER BY COALESCE(a.committed_at, a.created_at) DESC
 LIMIT 1
 `
 
