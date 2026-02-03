@@ -1,5 +1,6 @@
 export { AnalysisContent } from "./analysis-content";
 export { AnalysisHeader } from "./analysis-header";
+export { CommitSelector } from "./commit-selector";
 export { AnalysisMonitor } from "./analysis-monitor";
 export { AnalysisSkeleton } from "./analysis-skeleton";
 export { AnalysisWaitingCard } from "./analysis-waiting-card";

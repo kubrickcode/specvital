@@ -12,6 +12,7 @@ import { useTruncateDetection } from "@/lib/hooks";
 import { fadeInUp } from "@/lib/motion";
 import { cn, formatAnalysisDate } from "@/lib/utils";
 
+import { CommitSelector } from "./commit-selector";
 import { ShareButton } from "./share-button";
 
 type AnalysisHeaderProps = {
@@ -19,6 +20,7 @@ type AnalysisHeaderProps = {
   branchName?: string;
   commitSha: string;
   committedAt?: string;
+  onCommitSelect?: (commitSha: string) => void;
   owner: string;
   parserVersion?: string;
   repo: string;
@@ -29,6 +31,7 @@ export const AnalysisHeader = ({
   branchName,
   commitSha,
   committedAt,
+  onCommitSelect,
   owner,
   parserVersion,
   repo,
@@ -96,8 +99,14 @@ export const AnalysisHeader = ({
                 {t("branch")}: <span className="font-medium">{branchName}</span>
               </div>
             )}
-            <div>
-              {t("commit")}: <span className="font-mono font-medium">{commitSha.slice(0, 8)}</span>
+            <div className="flex items-center gap-1">
+              <span>{t("commit")}:</span>
+              <CommitSelector
+                currentCommitSha={commitSha}
+                onCommitSelect={onCommitSelect}
+                owner={owner}
+                repo={repo}
+              />
             </div>
             {committedAt && (
               <div>{t("committedAt", { date: formatAnalysisDate(committedAt) })}</div>

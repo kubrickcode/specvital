@@ -170,6 +170,10 @@
       "reanalyzeFailed": "재분석을 시작할 수 없습니다",
       "reanalyzeQueued": "재분석이 시작되었습니다",
       "updateNow": "지금 업데이트"
+    },
+    "commitHistory": {
+      "title": "분석된 커밋",
+      "tests": "{count}개 테스트"
     }
   },
   "emptyState": {

@@ -170,6 +170,10 @@
       "reanalyzeFailed": "Failed to start reanalysis",
       "reanalyzeQueued": "Reanalysis started",
       "updateNow": "Update Now"
+    },
+    "commitHistory": {
+      "title": "Analyzed Commits",
+      "tests": "{count, plural, =1 {1 test} other {# tests}}"
     }
   },
   "emptyState": {
