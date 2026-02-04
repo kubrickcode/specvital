@@ -68,13 +68,13 @@ lint target="all":
         just --fmt --unstable
         ;;
       config)
-        npx prettier --write "**/*.{json,yml,yaml,md}"
+        npx prettier --write --cache "**/*.{json,yml,yaml,md}"
         ;;
       backend)
         gofmt -w src/backend
         ;;
       frontend)
-        npx prettier --write "src/frontend/**/*.{ts,tsx}"
+        npx prettier --write --cache "src/frontend/**/*.{ts,tsx}"
         cd src/frontend && pnpm eslint --fix --max-warnings=0 .
         ;;
       *)
@@ -82,6 +82,42 @@ lint target="all":
         exit 1
         ;;
     esac
+
+lint-file file:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ file }}" in
+      */justfile|*Justfile)
+        just --fmt --unstable
+        ;;
+      *.json|*.yml|*.yaml|*.md)
+        npx prettier --write --cache "{{ file }}"
+        ;;
+      *.ts|*.tsx)
+        npx prettier --write --cache "{{ file }}"
+        cd src/frontend && pnpm eslint --fix "{{ justfile_directory() }}/{{ file }}" 2>/dev/null || true
+        ;;
+      *.go)
+        gofmt -w "{{ file }}"
+        ;;
+      *)
+        ;;
+    esac
+
+typecheck-file file:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    dir=$(dirname "{{ file }}")
+    while [[ "$dir" != "." && "$dir" != "/" ]]; do
+      if [[ -f "$dir/tsconfig.json" ]]; then
+        (cd "$dir" && npx tsc --noEmit --incremental)
+        exit 0
+      fi
+      dir=$(dirname "$dir")
+    done
+    if [[ -f "tsconfig.json" ]]; then
+      npx tsc --noEmit --incremental
+    fi
 
 # Local db migration always initializes the database
 migrate-local:

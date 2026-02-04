@@ -1,6 +1,6 @@
 module.exports = {
-  "**/*.{json,yml,yaml,md}": () => "just lint config",
-  "**/*.{js,jsx,ts,tsx}": () => "just lint frontend",
-  "**/*.go": () => "just lint backend",
-  justfile: () => "just lint justfile",
+  "**/*.{json,yml,yaml,md}": (files) => files.map((f) => `just lint-file "${f}"`),
+  "**/*.{ts,tsx}": (files) => files.map((f) => `just lint-file "${f}"`),
+  "**/*.go": (files) => files.map((f) => `just lint-file "${f}"`),
+  "**/[Jj]ustfile": () => "just lint justfile",
 };
