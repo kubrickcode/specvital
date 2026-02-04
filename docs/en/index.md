@@ -52,6 +52,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [GitHub App Installation Schema](./adr/20-github-app-installation-schema.md)
 - [Quota Reservation for Concurrent Requests](./adr/21-quota-reservation.md)
 - [Scheduler Removal and Railway Cron Migration](./adr/22-scheduler-removal-railway-cron.md)
+- [Railway IaC Deployment](./adr/23-railway-iac-deployment.md)
 
 **[Core](./adr/core/)**
 

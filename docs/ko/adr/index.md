@@ -79,6 +79,7 @@ XX-brief-decision-title.md
 | 20  | [GitHub App 설치 스키마](./20-github-app-installation-schema.md)                 | Database       | 2026-01-19 |
 | 21  | [동시 요청 처리용 할당량 예약](./21-quota-reservation.md)                        | Billing        | 2026-02-01 |
 | 22  | [Scheduler 제거 및 Railway Cron 전환](./22-scheduler-removal-railway-cron.md)    | Infrastructure | 2026-02-02 |
+| 23  | [Railway IaC 배포](./23-railway-iac-deployment.md)                               | Infrastructure | 2026-02-02 |
 
 ### Core 리포지토리
 

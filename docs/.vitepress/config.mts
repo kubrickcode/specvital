@@ -179,6 +179,10 @@ export default withMermaid({
                   link: "/en/adr/22-scheduler-removal-railway-cron",
                 },
                 {
+                  text: "Railway IaC Deployment",
+                  link: "/en/adr/23-railway-iac-deployment",
+                },
+                {
                   text: "Core",
                   collapsed: true,
                   items: [
@@ -508,6 +512,10 @@ export default withMermaid({
                 {
                   text: "Scheduler 제거",
                   link: "/ko/adr/22-scheduler-removal-railway-cron",
+                },
+                {
+                  text: "Railway IaC 배포",
+                  link: "/ko/adr/23-railway-iac-deployment",
                 },
                 {
                   text: "Core",

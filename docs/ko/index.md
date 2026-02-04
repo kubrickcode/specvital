@@ -52,6 +52,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [GitHub App 설치 스키마](./adr/20-github-app-installation-schema.md)
 - [동시 요청 처리용 할당량 예약](./adr/21-quota-reservation.md)
 - [Scheduler 제거 및 Railway Cron 전환](./adr/22-scheduler-removal-railway-cron.md)
+- [Railway IaC 배포](./adr/23-railway-iac-deployment.md)
 
 **[Core](./adr/core/)**
 
