@@ -1,6 +1,8 @@
 ---
+name: commit
+description: Generate Conventional Commits-compliant messages (feat/fix/docs/chore) in Korean and English. Use when you need to create a well-structured commit message for staged changes.
 allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Read, Grep, Write
-description: Generate Conventional Commits-compliant messages (feat/fix/docs/chore) in Korean and English
+disable-model-invocation: true
 ---
 
 # Conventional Commits Message Generator
@@ -407,7 +409,7 @@ The command will provide:
 ### Output
 
 14. Generate both Korean and English versions
-15. Write to `/workspaces/ai-config-toolkit/commit_message.md`
+15. Write to `commit_message.md`
 16. Present suggested type with reasoning
 
 **Context-aware analysis**: Balance token cost with message quality:

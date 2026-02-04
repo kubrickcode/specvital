@@ -1,7 +1,9 @@
 ---
+name: prepare-pr
+description: Generate PR title and description from multiple commits (Korean and English). Use when preparing a pull request with multiple commits that need consolidated description.
 allowed-tools: Bash(git:*), Write
-description: Generate PR title and description from multiple commits (Korean and English)
 argument-hint: [BASE-BRANCH (default: auto-detect)]
+disable-model-invocation: true
 ---
 
 # Pull Request Content Generator
@@ -199,7 +201,7 @@ Extract issue numbers from:
    - English version second
 
 8. **Write to file**:
-   - Save to `/workspaces/ai-config-toolkit/pr_content.md`
+   - Save to `pr_content.md`
    - Overwrite if exists
 
 **Token optimization**:

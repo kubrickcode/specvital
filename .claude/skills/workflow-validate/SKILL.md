@@ -1,5 +1,7 @@
 ---
-description: Validate technical feasibility with prototypes or tests
+name: workflow-validate
+description: Validate technical feasibility with prototypes or tests. Use when uncertain about technical approach before committing to implementation.
+disable-model-invocation: true
 ---
 
 # Technical Validation Command

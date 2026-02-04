@@ -1,6 +1,8 @@
 ---
+name: code-review
+description: Review current git changes or latest commit using code-reviewer and architect-reviewer agents. Use after completing code changes to get comprehensive quality feedback.
 allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git show:*), Task
-description: Review current git changes or latest commit using code-reviewer and architect-reviewer agents
+disable-model-invocation: true
 ---
 
 # Code Review Command

@@ -1,5 +1,8 @@
 ---
-description: Implement UI E2E tests sequentially using Playwright MCP, stop on bug discovery
+name: e2e-ui-execute
+description: Implement UI E2E tests sequentially using Playwright MCP, stop on bug discovery. Use after e2e-ui-research to implement the planned test scenarios.
+context: fork
+agent: general-purpose
 ---
 
 # UI E2E Test Implementation Command

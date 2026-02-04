@@ -1,5 +1,6 @@
 ---
-description: Transform verbose natural language requests into structured bilingual documentation (Korean for review + English for AI prompts)
+name: blueprint
+description: Transform verbose natural language requests into structured bilingual documentation (Korean for review + English for AI prompts). Use when you need to clarify and structure a complex request before implementation.
 ---
 
 # Generate Request Blueprint Document

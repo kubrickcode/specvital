@@ -1,6 +1,8 @@
 ---
+name: dead-code-cleanup
+description: Identify and safely remove dead code, deprecated code, and unused exports from codebase. Use when you need to clean up unused or obsolete code.
 allowed-tools: Glob, Grep, Read, Edit, Bash(npm:*), Bash(pnpm:*), Bash(yarn:*), Bash(go:*), Bash(git status:*), Bash(tsc:*), Task
-description: Identify and safely remove dead code, deprecated code, and unused exports from codebase
+disable-model-invocation: true
 ---
 
 # Dead Code Cleanup Command

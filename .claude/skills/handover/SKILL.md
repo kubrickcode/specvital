@@ -1,5 +1,6 @@
 ---
-description: Generate a comprehensive markdown summary of our conversation for seamless handoff to another AI agent
+name: handover
+description: Generate a comprehensive markdown summary of our conversation for seamless handoff to another AI agent. Use when ending a session or transferring work.
 ---
 
 # Conversation Handoff Summary

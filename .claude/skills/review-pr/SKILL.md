@@ -1,7 +1,9 @@
 ---
-allowed-tools: Bash(gh:*), mcp__github__*
-description: Review GitHub Pull Request and analyze unresolved review comments
+name: review-pr
+description: Review GitHub Pull Request and analyze unresolved review comments. Use when you need to address PR feedback or review outstanding comments.
+allowed-tools: Bash(gh:*), mcp__github__*, Read, Edit, Write
 argument-hint: [PR-URL]
+disable-model-invocation: true
 ---
 
 # GitHub Pull Request Review Assistant

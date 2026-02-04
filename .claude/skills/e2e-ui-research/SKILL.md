@@ -1,5 +1,8 @@
 ---
-description: Research UI E2E test targets and generate test scenario documentation
+name: e2e-ui-research
+description: Research UI E2E test targets and generate test scenario documentation. Use to analyze a frontend app and create comprehensive E2E test plans.
+context: fork
+agent: general-purpose
 ---
 
 # UI E2E Test Research Command

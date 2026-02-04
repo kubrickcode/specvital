@@ -1,5 +1,8 @@
 ---
-description: Research UI/UX improvements with trend analysis and generate actionable recommendations
+name: ui-ux-improve
+description: Research UI/UX improvements with trend analysis and generate actionable recommendations. Use when you need comprehensive UI/UX analysis and improvement suggestions.
+context: fork
+agent: general-purpose
 ---
 
 # UI/UX Improvement Research Command

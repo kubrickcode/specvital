@@ -1,5 +1,7 @@
 ---
-description: Review comments and suggest cleanup (identify unnecessary comments, recommend improvements)
+name: comment-review
+description: Review comments and suggest cleanup (identify unnecessary comments, recommend improvements). Use to aggressively clean up comment debt in code.
+disable-model-invocation: true
 ---
 
 # Comment Review Command

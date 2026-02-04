@@ -1,5 +1,8 @@
 ---
-description: Fix bugs from e2e-ui:execute bug reports with Playwright MCP verification
+name: e2e-ui-fix
+description: Fix bugs from e2e-ui-execute bug reports with Playwright MCP verification. Use after discovering bugs during E2E test execution.
+context: fork
+agent: general-purpose
 ---
 
 # UI E2E Bug Fix Command

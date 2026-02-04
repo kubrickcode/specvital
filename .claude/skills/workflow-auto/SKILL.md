@@ -1,5 +1,7 @@
 ---
-description: Execute workflow-analyze → workflow-plan → workflow-execute → commit in sequence without intermediate approval (single commit)
+name: workflow-auto
+description: Execute workflow-analyze → workflow-plan → workflow-execute → commit in sequence without intermediate approval (single commit). Use for small tasks that can be completed in one commit.
+disable-model-invocation: true
 ---
 
 # Auto Workflow Command

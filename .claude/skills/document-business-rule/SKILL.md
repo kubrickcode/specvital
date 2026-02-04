@@ -1,6 +1,8 @@
 ---
+name: document-business-rule
+description: Generate business rule documentation from domain knowledge and requirements. Use when documenting complex business logic.
 allowed-tools: Write, Read, Glob, Grep
-description: Generate business rule documentation from domain knowledge and requirements
+disable-model-invocation: true
 ---
 
 # Business Rule Documentation Generator

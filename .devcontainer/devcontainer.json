@@ -1,10 +1,11 @@
 {
   "name": "specvital-infra",
   "dockerComposeFile": "docker-compose.yml",
-  "initializeCommand": "touch ${HOME}/.env.secrets",
+  "initializeCommand": "bash .devcontainer/init-host.sh",
   "service": "workspace",
   "workspaceFolder": "/workspaces/specvital-infra",
   "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/guiyomh/features/just:0": {},
     "./local-features/node": {},
     "./local-features/go": {}

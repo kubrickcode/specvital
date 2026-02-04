@@ -1,5 +1,7 @@
 ---
-description: Analyze issue and generate analysis.md with solution approaches
+name: workflow-analyze
+description: Analyze issue and generate analysis.md with solution approaches. Use when starting a new task or feature to thoroughly analyze the problem and compare solution options.
+disable-model-invocation: true
 ---
 
 # Issue Analysis Command
@@ -44,6 +46,15 @@ You **MUST** consider the user input before proceeding (if not empty).
 ---
 
 ## Key Rules
+
+### 🎭 Anti-Bias Rules (CRITICAL)
+
+**Core Principle**: "Be honest. Don't hide what exists, don't invent what doesn't."
+
+1. **Analyze first, conclude later**: Complete analysis of all approaches before making selection
+2. **Write what's true**: If A has 5 pros and B has 1, write exactly that
+3. **Acknowledge trade-offs**: When rejecting an approach, state what you're giving up
+4. **Use neutral language**: Avoid "obviously", "simply", "clearly" — use "may", "could", "might"
 
 ### 📝 Documentation Language
 
@@ -155,6 +166,11 @@ Files to create:
 
 - [Why it could be problematic]
 
+**Side Effects/Risks** (if any):
+
+- [What negative consequences may occur even when successful]
+- [Hidden costs, maintenance burden, technical debt introduced]
+
 ### Approach 2: [Name]
 
 **Method**:
@@ -179,9 +195,13 @@ Files to create:
 - [Why this approach is most suitable]
 - [Key benefits and trade-offs]
 
+**Trade-offs Accepted** (if any):
+
+- [Benefit from other approaches that won't be available]
+
 **Rejected Approaches**:
 
-- Approach X: [Rejection reason]
+- Approach X: [Rejection reason] — Would have provided: [lost benefit]
 
 ---
 
@@ -230,6 +250,14 @@ Files to create:
 **If Needed**:
 
 - [Items needing additional confirmation - maximum 3]
+
+---
+
+## 🔍 Objectivity Self-Check
+
+- [ ] Wrote what's true (no hiding, no inventing)
+- [ ] Rejected approaches' lost benefits acknowledged
+- [ ] Used neutral language ("may/could", not "will/obviously")
 ```
 
 ---

@@ -19,11 +19,26 @@ lint target="all":
         just --fmt --unstable
         ;;
       config)
-        npx prettier --write "**/*.{json,yml,yaml,md}"
+        npx prettier --cache --write "**/*.{json,yml,yaml,md}"
         ;;
       *)
         echo "Unknown target: {{ target }}"
         exit 1
+        ;;
+    esac
+
+lint-file file:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ file }}" in
+      */justfile|justfile)
+        just --fmt --unstable
+        ;;
+      *.json|*.yml|*.yaml|*.md)
+        npx prettier --cache --write "{{ file }}"
+        ;;
+      *)
+        echo "No lint rule for: {{ file }}"
         ;;
     esac
 

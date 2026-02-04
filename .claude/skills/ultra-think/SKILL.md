@@ -1,5 +1,6 @@
 ---
-description: Deep analysis and problem solving with multi-dimensional thinking
+name: ultra-think
+description: Deep analysis and problem solving with multi-dimensional thinking. Use when facing complex architectural decisions, strategic planning, or problems requiring thorough analysis from multiple perspectives.
 argument-hint: [problem or question to analyze]
 ---
 

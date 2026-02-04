@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ATLAS_VERSION="0.38.0"
 
@@ -14,15 +15,8 @@ fi
 curl -sSfL "https://release.ariga.io/atlas/atlas-linux-amd64-v${ATLAS_VERSION}" -o /usr/local/bin/atlas
 chmod +x /usr/local/bin/atlas
 
-npm install -g @anthropic-ai/claude-code
+[ -s /root/.claude.json ] || echo '{}' > /root/.claude.json
+
+command -v claude &>/dev/null || curl -fsSL https://claude.ai/install.sh | bash
+
 npm install -g baedal
-
-if [ ! -f ~/.claude/config.json ]; then
-    echo '{}' > ~/.claude/config.json
-fi
-
-if [ -f ~/.claude.json ] && [ ! -L ~/.claude.json ]; then
-    mv ~/.claude.json ~/.claude/config.json
-fi
-
-ln -sf ~/.claude/config.json ~/.claude.json
