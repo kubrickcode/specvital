@@ -1013,6 +1013,138 @@ func matchesAnyPattern(path, rootPath string, patterns []string) bool {
 	return false
 }
 
+// ScanStream performs streaming scan that returns results through a channel.
+// Each file is sent as FileResult immediately after parsing completes.
+//
+// This method enables memory-efficient processing of large repositories by allowing
+// consumers to process files incrementally rather than accumulating all results.
+//
+// Usage:
+//
+//	results, err := scanner.ScanStream(ctx, src)
+//	if err != nil {
+//	    return err
+//	}
+//	for result := range results {
+//	    if result.Err != nil {
+//	        log.Warn("parse error", "path", result.Path, "err", result.Err)
+//	        continue
+//	    }
+//	    // Process result.File
+//	}
+//
+// The channel is closed when:
+//   - All files have been processed
+//   - Context is cancelled
+//   - Context deadline exceeded
+//
+// Parse errors are included in FileResult.Err rather than aborting the scan.
+// The caller is responsible for calling src.Close() when done.
+func (s *Scanner) ScanStream(ctx context.Context, src source.Source) (<-chan *FileResult, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.options.Timeout)
+
+	// Config parsing first (projectScope required for detection)
+	// Config errors are not propagated in streaming mode.
+	// Use Scan() if config error reporting is required.
+	if s.projectScope == nil {
+		configFiles := s.discoverConfigFiles(ctx, src)
+		var configErrors []ScanError
+		s.projectScope = s.parseConfigFiles(ctx, src, configFiles, &configErrors)
+		s.detector.SetProjectScope(s.projectScope)
+	}
+
+	// Check for early cancellation
+	if err := ctx.Err(); err != nil {
+		cancel()
+		return nil, err
+	}
+
+	// Unbuffered channel for natural backpressure
+	out := make(chan *FileResult)
+
+	go func() {
+		defer close(out)
+		defer cancel()
+
+		workers := s.options.Workers
+		if workers <= 0 {
+			workers = runtime.GOMAXPROCS(0)
+		}
+		if workers > MaxWorkers {
+			workers = MaxWorkers
+		}
+
+		sem := semaphore.NewWeighted(int64(workers))
+		var wg sync.WaitGroup
+
+		for discoveryResult := range s.discoverTestFilesStream(ctx, src) {
+			if ctx.Err() != nil {
+				break
+			}
+
+			if discoveryResult.Err != nil {
+				select {
+				case out <- &FileResult{
+					Err:  discoveryResult.Err,
+					Path: "",
+				}:
+				case <-ctx.Done():
+					return
+				}
+				continue
+			}
+
+			path := discoveryResult.Path
+
+			if err := sem.Acquire(ctx, 1); err != nil {
+				break
+			}
+
+			wg.Add(1)
+			go func(filePath string) {
+				defer wg.Done()
+				defer sem.Release(1)
+
+				result := s.parseFileToResult(ctx, src, filePath)
+
+				select {
+				case out <- result:
+				case <-ctx.Done():
+				}
+			}(path)
+		}
+
+		wg.Wait()
+	}()
+
+	return out, nil
+}
+
+// parseFileToResult parses a single file and returns FileResult.
+// This is the streaming-oriented version that wraps parseFile.
+func (s *Scanner) parseFileToResult(ctx context.Context, src source.Source, path string) *FileResult {
+	testFile, scanErr, _ := s.parseFile(ctx, src, path)
+
+	if scanErr != nil {
+		return &FileResult{
+			Err:  scanErr.Err,
+			Path: path,
+		}
+	}
+
+	if testFile == nil {
+		// File was skipped (unknown framework, low confidence, etc.)
+		return &FileResult{
+			Path: path,
+		}
+	}
+
+	return &FileResult{
+		File: testFile,
+		Path: path,
+	}
+}
+
 func Scan(ctx context.Context, src source.Source, opts ...ScanOption) (*ScanResult, error) {
 	scanner := NewScanner(opts...)
 	return scanner.Scan(ctx, src)

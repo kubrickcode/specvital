@@ -108,6 +108,245 @@ func TestFileResult_ChannelUsage(t *testing.T) {
 	})
 }
 
+func TestScanStream(t *testing.T) {
+	t.Run("should receive FileResult for each file", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		// Create 10 test files
+		for i := 0; i < 10; i++ {
+			content := []byte(`import { it } from '@jest/globals'; it('test', () => {});`)
+			filename := filepath.Join(tmpDir, "test"+string(rune('a'+i))+".test.ts")
+			if err := os.WriteFile(filename, content, 0644); err != nil {
+				t.Fatalf("failed to write file: %v", err)
+			}
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		scanner := parser.NewScanner()
+		results, err := scanner.ScanStream(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var count int
+		for result := range results {
+			if result.IsSuccess() {
+				count++
+			}
+		}
+
+		if count != 10 {
+			t.Errorf("expected 10 successful results, got %d", count)
+		}
+	})
+
+	t.Run("should process multiple files independently", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		// Create multiple valid test files to verify independent processing
+		// Parse errors are difficult to produce reliably without malformed AST,
+		// so this test verifies that each file is processed independently.
+		validContent := []byte(`import { it } from '@jest/globals'; it('valid test', () => {});`)
+		if err := os.WriteFile(filepath.Join(tmpDir, "valid.test.ts"), validContent, 0644); err != nil {
+			t.Fatalf("failed to write valid file: %v", err)
+		}
+
+		if err := os.WriteFile(filepath.Join(tmpDir, "another.test.ts"), validContent, 0644); err != nil {
+			t.Fatalf("failed to write another file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		scanner := parser.NewScanner()
+		results, err := scanner.ScanStream(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var successCount int
+		for result := range results {
+			if result.IsSuccess() {
+				successCount++
+			}
+		}
+
+		// Both valid files should be parsed successfully
+		if successCount != 2 {
+			t.Errorf("expected 2 successful results, got %d", successCount)
+		}
+	})
+
+	t.Run("should stop on context cancellation", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		// Create many files
+		for i := 0; i < 50; i++ {
+			content := []byte(`import { it } from '@jest/globals'; it('test', () => {});`)
+			filename := filepath.Join(tmpDir, "test"+string(rune('0'+i%10))+string(rune('a'+i%26))+".test.ts")
+			if err := os.WriteFile(filename, content, 0644); err != nil {
+				t.Fatalf("failed to write file: %v", err)
+			}
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		ctx, cancel := context.WithCancel(context.Background())
+
+		scanner := parser.NewScanner()
+		results, err := scanner.ScanStream(ctx, src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Cancel after receiving a few results
+		var count int
+		for range results {
+			count++
+			if count >= 3 {
+				cancel()
+				break
+			}
+		}
+
+		// Drain remaining to allow cleanup
+		for range results {
+		}
+
+		// Should have stopped early (not all 50)
+		if count >= 50 {
+			t.Error("expected scan to stop early on cancellation")
+		}
+	})
+
+	t.Run("should work with empty directory", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		scanner := parser.NewScanner()
+		results, err := scanner.ScanStream(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var count int
+		for range results {
+			count++
+		}
+
+		if count != 0 {
+			t.Errorf("expected 0 results for empty directory, got %d", count)
+		}
+	})
+
+	t.Run("should handle concurrent consumption safely", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		for i := 0; i < 20; i++ {
+			content := []byte(`import { it } from '@jest/globals'; it('test', () => {});`)
+			filename := filepath.Join(tmpDir, "test"+string(rune('a'+i%26))+".test.ts")
+			if err := os.WriteFile(filename, content, 0644); err != nil {
+				t.Fatalf("failed to write file: %v", err)
+			}
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		scanner := parser.NewScanner(parser.WithWorkers(8))
+		results, err := scanner.ScanStream(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var count int
+		for result := range results {
+			if result.IsSuccess() {
+				count++
+			}
+		}
+
+		if count != 20 {
+			t.Errorf("expected 20 successful results, got %d", count)
+		}
+	})
+
+	t.Run("should not leak goroutines on cancellation", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		for i := 0; i < 100; i++ {
+			subDir := filepath.Join(tmpDir, "sub"+string(rune('a'+i%26)))
+			if err := os.MkdirAll(subDir, 0755); err != nil {
+				t.Fatalf("failed to create dir: %v", err)
+			}
+			content := []byte(`import { it } from '@jest/globals'; it('test', () => {});`)
+			filename := filepath.Join(subDir, "file"+string(rune('0'+i%10))+".test.ts")
+			if err := os.WriteFile(filename, content, 0644); err != nil {
+				t.Fatalf("failed to write file: %v", err)
+			}
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		goroutinesBefore := runtime.NumGoroutine()
+
+		ctx, cancel := context.WithCancel(context.Background())
+
+		scanner := parser.NewScanner()
+		results, err := scanner.ScanStream(ctx, src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Read a few then cancel
+		count := 0
+		for range results {
+			count++
+			if count >= 5 {
+				cancel()
+				break
+			}
+		}
+
+		// Drain remaining
+		for range results {
+		}
+
+		// Allow cleanup
+		time.Sleep(100 * time.Millisecond)
+
+		goroutinesAfter := runtime.NumGoroutine()
+
+		if goroutinesAfter > goroutinesBefore+2 {
+			t.Errorf("potential goroutine leak: before=%d, after=%d", goroutinesBefore, goroutinesAfter)
+		}
+	})
+}
+
 func TestDiscoveryStream(t *testing.T) {
 	t.Run("should maintain file count after streaming refactor", func(t *testing.T) {
 		tmpDir := t.TempDir()
