@@ -120,6 +120,7 @@ XX-brief-decision-title.md
 | 08  | [SpecView Worker 바이너리 분리](./worker/08-specview-worker-separation.md)          | Architecture | 2026-01-13 |
 | 09  | [Phase 1 V1 품질 개선 아키텍처](./worker/09-phase1-v1-quality-enhancement.md)       | AI/ML        | 2026-02-04 |
 | 10  | [사용자별 공정성 미들웨어](./worker/10-per-user-fairness-middleware.md)             | Concurrency  | 2026-02-02 |
+| 11  | [보존 기간 기반 데이터 정리 서비스](./worker/11-data-retention-cleanup.md)          | Scheduling   | 2026-02-02 |
 
 ### Web 리포지토리
 

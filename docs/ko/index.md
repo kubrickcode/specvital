@@ -89,6 +89,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [SpecView Worker 바이너리 분리](./adr/worker/08-specview-worker-separation.md)
 - [Phase 1 V1 품질 개선 아키텍처](./adr/worker/09-phase1-v1-quality-enhancement.md)
 - [사용자별 공정성 미들웨어](./adr/worker/10-per-user-fairness-middleware.md)
+- [보존 기간 기반 데이터 정리 서비스](./adr/worker/11-data-retention-cleanup.md)
 
 **[Web](./adr/web/)**
 

@@ -89,6 +89,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [SpecView Worker Binary Separation](./adr/worker/08-specview-worker-separation.md)
 - [Phase 1 V1 Quality Enhancement Architecture](./adr/worker/09-phase1-v1-quality-enhancement.md)
 - [Per-User Fairness Middleware](./adr/worker/10-per-user-fairness-middleware.md)
+- [Data Retention-Based Cleanup Service](./adr/worker/11-data-retention-cleanup.md)
 
 **[Web](./adr/web/)**
 

@@ -308,6 +308,10 @@ export default withMermaid({
                       text: "Per-User Fairness Middleware",
                       link: "/en/adr/worker/10-per-user-fairness-middleware",
                     },
+                    {
+                      text: "Data Retention Cleanup",
+                      link: "/en/adr/worker/11-data-retention-cleanup",
+                    },
                   ],
                 },
                 {
@@ -601,6 +605,10 @@ export default withMermaid({
                     {
                       text: "사용자별 공정성 미들웨어",
                       link: "/ko/adr/worker/10-per-user-fairness-middleware",
+                    },
+                    {
+                      text: "보존 기간 기반 데이터 정리",
+                      link: "/ko/adr/worker/11-data-retention-cleanup",
                     },
                   ],
                 },
