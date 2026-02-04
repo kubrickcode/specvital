@@ -56,7 +56,7 @@ func NewAnalyzeWorker(analyzeUC *uc.AnalyzeUseCase, quotaRepo quota.ReservationR
 }
 
 func (w *AnalyzeWorker) Timeout(job *river.Job[AnalyzeArgs]) time.Duration {
-	return 5 * time.Minute // Match NeonDB idle_in_transaction_session_timeout (default 5min)
+	return 20 * time.Minute // Large repos (e.g., grafana/grafana) need extended time for cloning and analysis
 }
 
 // Exponential backoff: 1st retry +1s, 2nd +4s, 3rd +9s
