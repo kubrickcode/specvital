@@ -121,6 +121,7 @@ XX-brief-decision-title.md
 | 09  | [Phase 1 V1 Quality Enhancement Architecture](./worker/09-phase1-v1-quality-enhancement.md)  | AI/ML        | 2026-02-04 |
 | 10  | [Per-User Fairness Middleware](./worker/10-per-user-fairness-middleware.md)                  | Concurrency  | 2026-02-02 |
 | 11  | [Data Retention-Based Cleanup Service](./worker/11-data-retention-cleanup.md)                | Scheduling   | 2026-02-02 |
+| 12  | [Phase 2 Behavior Cache](./worker/12-phase2-behavior-cache.md)                               | AI/ML        | 2026-01-24 |
 
 ### Web Repository
 

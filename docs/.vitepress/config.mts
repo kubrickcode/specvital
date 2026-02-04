@@ -312,6 +312,10 @@ export default withMermaid({
                       text: "Data Retention Cleanup",
                       link: "/en/adr/worker/11-data-retention-cleanup",
                     },
+                    {
+                      text: "Phase 2 Behavior Cache",
+                      link: "/en/adr/worker/12-phase2-behavior-cache",
+                    },
                   ],
                 },
                 {
@@ -613,6 +617,10 @@ export default withMermaid({
                     {
                       text: "보존 기간 기반 데이터 정리",
                       link: "/ko/adr/worker/11-data-retention-cleanup",
+                    },
+                    {
+                      text: "Phase 2 행동 캐시",
+                      link: "/ko/adr/worker/12-phase2-behavior-cache",
                     },
                   ],
                 },

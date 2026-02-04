@@ -90,6 +90,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [Phase 1 V1 Quality Enhancement Architecture](./adr/worker/09-phase1-v1-quality-enhancement.md)
 - [Per-User Fairness Middleware](./adr/worker/10-per-user-fairness-middleware.md)
 - [Data Retention-Based Cleanup Service](./adr/worker/11-data-retention-cleanup.md)
+- [Phase 2 Behavior Cache](./adr/worker/12-phase2-behavior-cache.md)
 
 **[Web](./adr/web/)**
 

@@ -24,6 +24,7 @@ description: 워커 서비스(백그라운드 분석 워커) 아키텍처 의사
 | 09  | [Phase 1 V1 품질 개선 아키텍처](./09-phase1-v1-quality-enhancement.md)       | 2026-02-04 |
 | 10  | [사용자별 공정성 미들웨어](./10-per-user-fairness-middleware.md)             | 2026-02-02 |
 | 11  | [보존 기간 기반 데이터 정리 서비스](./11-data-retention-cleanup.md)          | 2026-02-02 |
+| 12  | [Phase 2 행동 캐시](./12-phase2-behavior-cache.md)                           | 2026-01-24 |
 
 ## 관련 문서
 
