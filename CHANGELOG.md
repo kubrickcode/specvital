@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.1](https://github.com/specvital/web/compare/v1.6.0...v1.6.1) (2026-02-04)
+
+### 🎯 Highlights
+
+#### 🐛 Bug Fixes
+
+- **i18n:** apply missing i18n to toast messages ([9be4e2f](https://github.com/specvital/web/commit/9be4e2f88e203a3e80c25adbf9bc0b694e2f6590))
+- **ui:** fix loading spinner appearing below visual center ([516cf00](https://github.com/specvital/web/commit/516cf005070cf3ca92144d1d04b2923d49e965e7))
+
 ## [1.6.0](https://github.com/specvital/web/compare/v1.5.0...v1.6.0) (2026-02-03)
 
 ### 🎯 Highlights
