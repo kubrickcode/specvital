@@ -23,7 +23,6 @@ import (
 	"github.com/specvital/core/pkg/parser/strategies/shared/kotlinast"
 	"github.com/specvital/core/pkg/parser/strategies/shared/swiftast"
 	"github.com/specvital/core/pkg/source"
-	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -156,14 +155,11 @@ func (s *Scanner) SetProjectScope(scope *framework.AggregatedProjectScope) {
 //  4. Detect framework for each file
 //  5. Parse test files in parallel
 //
+// Internally uses streaming scan for unified implementation.
 // The caller is responsible for calling src.Close() when done.
 // For GitSource, failure to close will leak temporary directories.
 func (s *Scanner) Scan(ctx context.Context, src source.Source) (*ScanResult, error) {
 	startTime := time.Now()
-
-	// Set up timeout
-	ctx, cancel := context.WithTimeout(ctx, s.options.Timeout)
-	defer cancel()
 
 	rootPath := src.Root()
 
@@ -178,37 +174,64 @@ func (s *Scanner) Scan(ctx context.Context, src source.Source) (*ScanResult, err
 		},
 	}
 
-	if s.projectScope == nil {
-		configFiles := s.discoverConfigFiles(ctx, src)
-		s.projectScope = s.parseConfigFiles(ctx, src, configFiles, &result.Errors)
-		s.detector.SetProjectScope(s.projectScope)
+	// ScanStream handles timeout and config parsing internally
+	resultCh, err := s.ScanStream(ctx, src)
+	if err != nil {
+		result.Stats.Duration = time.Since(startTime)
+		if errors.Is(err, context.DeadlineExceeded) {
+			return result, ErrScanTimeout
+		}
+		if errors.Is(err, context.Canceled) {
+			return result, ErrScanCancelled
+		}
+		return result, err
+	}
+
+	// Retrieve config stats after ScanStream initialization
+	if s.projectScope != nil {
 		result.Stats.ConfigsFound = len(s.projectScope.Configs)
 	}
 
-	testFiles, errs := s.discoverTestFiles(ctx, src)
-	for _, err := range errs {
-		result.Errors = append(result.Errors, ScanError{
-			Err:   err,
-			Phase: "discovery",
-		})
-	}
-	result.Stats.FilesScanned = len(testFiles)
+	// Collect all streaming results
+	var files []domain.TestFile
+	for fileResult := range resultCh {
+		result.Stats.FilesScanned++
 
-	if len(testFiles) == 0 {
-		result.Stats.Duration = time.Since(startTime)
-		return result, nil
+		if fileResult.Confidence != "" {
+			result.Stats.ConfidenceDist[fileResult.Confidence]++
+		}
+
+		if fileResult.Err != nil {
+			phase := "parsing"
+			if fileResult.Path == "" {
+				phase = "discovery"
+			}
+			result.Errors = append(result.Errors, ScanError{
+				Err:   fileResult.Err,
+				Path:  fileResult.Path,
+				Phase: phase,
+			})
+			continue
+		}
+
+		if fileResult.File != nil {
+			files = append(files, *fileResult.File)
+		}
 	}
 
-	files, scanErrors := s.parseFilesParallel(ctx, src, testFiles, result)
+	// Sort by path for deterministic output order.
+	// Parallel goroutines complete in variable order based on file size and parsing complexity.
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Path < files[j].Path
+	})
+
 	result.Inventory.Files = files
-	result.Errors = append(result.Errors, scanErrors...)
-
 	result.Stats.FilesMatched = len(files)
-	result.Stats.FilesFailed = len(scanErrors)
+	result.Stats.FilesFailed = len(result.Errors)
 	result.Stats.FilesSkipped = result.Stats.FilesScanned - result.Stats.FilesMatched - result.Stats.FilesFailed
 	result.Stats.Duration = time.Since(startTime)
 
-	// Check for timeout or cancellation
+	// Check for timeout or cancellation after processing
 	if err := ctx.Err(); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return result, ErrScanTimeout
@@ -223,6 +246,7 @@ func (s *Scanner) Scan(ctx context.Context, src source.Source) (*ScanResult, err
 
 // ScanFiles scans specific files (for incremental/watch mode).
 // This bypasses file discovery and directly scans the provided file paths.
+// Internally uses streaming scan for unified implementation.
 //
 // The caller is responsible for calling src.Close() when done.
 func (s *Scanner) ScanFiles(ctx context.Context, src source.Source, files []string) (*ScanResult, error) {
@@ -248,12 +272,35 @@ func (s *Scanner) ScanFiles(ctx context.Context, src source.Source, files []stri
 		return result, nil
 	}
 
-	parsedFiles, scanErrors := s.parseFilesParallel(ctx, src, files, result)
-	result.Inventory.Files = parsedFiles
-	result.Errors = append(result.Errors, scanErrors...)
+	// Collect all streaming results
+	var parsedFiles []domain.TestFile
+	for fileResult := range s.scanFilesStream(ctx, src, files) {
+		if fileResult.Confidence != "" {
+			result.Stats.ConfidenceDist[fileResult.Confidence]++
+		}
 
+		if fileResult.Err != nil {
+			result.Errors = append(result.Errors, ScanError{
+				Err:   fileResult.Err,
+				Path:  fileResult.Path,
+				Phase: "parsing",
+			})
+			continue
+		}
+
+		if fileResult.File != nil {
+			parsedFiles = append(parsedFiles, *fileResult.File)
+		}
+	}
+
+	// Sort by path for deterministic output order
+	sort.Slice(parsedFiles, func(i, j int) bool {
+		return parsedFiles[i].Path < parsedFiles[j].Path
+	})
+
+	result.Inventory.Files = parsedFiles
 	result.Stats.FilesMatched = len(parsedFiles)
-	result.Stats.FilesFailed = len(scanErrors)
+	result.Stats.FilesFailed = len(result.Errors)
 	result.Stats.FilesSkipped = result.Stats.FilesScanned - result.Stats.FilesMatched - result.Stats.FilesFailed
 	result.Stats.Duration = time.Since(startTime)
 
@@ -521,82 +568,53 @@ func (s *Scanner) discoverTestFilesStream(ctx context.Context, src source.Source
 	return out
 }
 
-// discoverTestFiles walks the source root to find test file candidates.
-// Returns relative paths from the source root for consistent Source.Open() usage.
-// Internally uses discoverTestFilesStream for unified implementation.
-func (s *Scanner) discoverTestFiles(ctx context.Context, src source.Source) ([]string, []error) {
-	var files []string
-	var errs []error
+// scanFilesStream parses a list of files and streams results through a channel.
+// This is the internal implementation used by ScanFiles.
+// The caller is responsible for consuming all results from the channel.
+func (s *Scanner) scanFilesStream(ctx context.Context, src source.Source, files []string) <-chan *FileResult {
+	out := make(chan *FileResult)
 
-	for result := range s.discoverTestFilesStream(ctx, src) {
-		if result.Err != nil {
-			errs = append(errs, result.Err)
-			continue
+	go func() {
+		defer close(out)
+
+		workers := s.options.Workers
+		if workers <= 0 {
+			workers = runtime.GOMAXPROCS(0)
 		}
-		files = append(files, result.Path)
-	}
+		if workers > MaxWorkers {
+			workers = MaxWorkers
+		}
 
-	return files, errs
-}
+		sem := semaphore.NewWeighted(int64(workers))
+		var wg sync.WaitGroup
 
-func (s *Scanner) parseFilesParallel(ctx context.Context, src source.Source, files []string, result *ScanResult) ([]domain.TestFile, []ScanError) {
-	workers := s.options.Workers
-	if workers <= 0 {
-		workers = runtime.GOMAXPROCS(0)
-	}
-	if workers > MaxWorkers {
-		workers = MaxWorkers
-	}
-
-	sem := semaphore.NewWeighted(int64(workers))
-	g, gCtx := errgroup.WithContext(ctx)
-
-	var (
-		mu         sync.Mutex
-		testFiles  = make([]domain.TestFile, 0, len(files))
-		scanErrors = make([]ScanError, 0)
-	)
-
-	for _, file := range files {
-		file := file // Capture loop variable
-
-		g.Go(func() error {
-			if err := sem.Acquire(gCtx, 1); err != nil {
-				return nil
-			}
-			defer sem.Release(1)
-
-			testFile, scanErr, confidence := s.parseFile(gCtx, src, file)
-
-			mu.Lock()
-			defer mu.Unlock()
-
-			if confidence != "" {
-				result.Stats.ConfidenceDist[confidence]++
+		for _, file := range files {
+			if ctx.Err() != nil {
+				break
 			}
 
-			if scanErr != nil {
-				scanErrors = append(scanErrors, *scanErr)
-				return nil
+			if err := sem.Acquire(ctx, 1); err != nil {
+				break
 			}
 
-			if testFile != nil {
-				testFiles = append(testFiles, *testFile)
-			}
+			wg.Add(1)
+			go func(filePath string) {
+				defer wg.Done()
+				defer sem.Release(1)
 
-			return nil
-		})
-	}
+				result := s.parseFileToResult(ctx, src, filePath)
 
-	_ = g.Wait()
+				select {
+				case out <- result:
+				case <-ctx.Done():
+				}
+			}(file)
+		}
 
-	// Sort by path for deterministic output order.
-	// Parallel goroutines complete in variable order based on file size and parsing complexity.
-	sort.Slice(testFiles, func(i, j int) bool {
-		return testFiles[i].Path < testFiles[j].Path
-	})
+		wg.Wait()
+	}()
 
-	return testFiles, scanErrors
+	return out
 }
 
 func (s *Scanner) parseFile(ctx context.Context, src source.Source, path string) (*domain.TestFile, *ScanError, string) {
@@ -1123,25 +1141,28 @@ func (s *Scanner) ScanStream(ctx context.Context, src source.Source) (<-chan *Fi
 // parseFileToResult parses a single file and returns FileResult.
 // This is the streaming-oriented version that wraps parseFile.
 func (s *Scanner) parseFileToResult(ctx context.Context, src source.Source, path string) *FileResult {
-	testFile, scanErr, _ := s.parseFile(ctx, src, path)
+	testFile, scanErr, confidence := s.parseFile(ctx, src, path)
 
 	if scanErr != nil {
 		return &FileResult{
-			Err:  scanErr.Err,
-			Path: path,
+			Err:        scanErr.Err,
+			Path:       path,
+			Confidence: confidence,
 		}
 	}
 
 	if testFile == nil {
 		// File was skipped (unknown framework, low confidence, etc.)
 		return &FileResult{
-			Path: path,
+			Path:       path,
+			Confidence: confidence,
 		}
 	}
 
 	return &FileResult{
-		File: testFile,
-		Path: path,
+		File:       testFile,
+		Path:       path,
+		Confidence: confidence,
 	}
 }
 
