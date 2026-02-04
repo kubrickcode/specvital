@@ -86,6 +86,7 @@ Documentation of architectural decisions made during the development of Specvita
 - [Semaphore Clone Concurrency](./adr/worker/06-semaphore-clone-concurrency.md)
 - [Repository Pattern](./adr/worker/07-repository-pattern.md)
 - [SpecView Worker Binary Separation](./adr/worker/08-specview-worker-separation.md)
+- [Phase 1 V1 Quality Enhancement Architecture](./adr/worker/09-phase1-v1-quality-enhancement.md)
 
 **[Web](./adr/web/)**
 

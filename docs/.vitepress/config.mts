@@ -296,6 +296,10 @@ export default withMermaid({
                       text: "SpecView Worker Separation",
                       link: "/en/adr/worker/08-specview-worker-separation",
                     },
+                    {
+                      text: "Phase 1 V1 Quality Enhancement",
+                      link: "/en/adr/worker/09-phase1-v1-quality-enhancement",
+                    },
                   ],
                 },
                 {
@@ -577,6 +581,10 @@ export default withMermaid({
                     {
                       text: "SpecView Worker 분리",
                       link: "/ko/adr/worker/08-specview-worker-separation",
+                    },
+                    {
+                      text: "Phase 1 V1 품질 개선",
+                      link: "/ko/adr/worker/09-phase1-v1-quality-enhancement",
                     },
                   ],
                 },

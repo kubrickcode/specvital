@@ -117,6 +117,7 @@ XX-brief-decision-title.md
 | 06  | [Semaphore-Based Clone Concurrency Control](./worker/06-semaphore-clone-concurrency.md)      | Concurrency  | 2024-12-18 |
 | 07  | [Repository Pattern Data Access Abstraction](./worker/07-repository-pattern.md)              | Architecture | 2024-12-18 |
 | 08  | [SpecView Worker Binary Separation](./worker/08-specview-worker-separation.md)               | Architecture | 2026-01-13 |
+| 09  | [Phase 1 V1 Quality Enhancement Architecture](./worker/09-phase1-v1-quality-enhancement.md)  | AI/ML        | 2026-02-04 |
 
 ### Web Repository
 

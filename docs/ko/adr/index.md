@@ -117,6 +117,7 @@ XX-brief-decision-title.md
 | 06  | [Semaphore 기반 Clone 동시성 제어](./worker/06-semaphore-clone-concurrency.md)      | Concurrency  | 2024-12-18 |
 | 07  | [Repository 패턴 데이터 접근 추상화](./worker/07-repository-pattern.md)             | Architecture | 2024-12-18 |
 | 08  | [SpecView Worker 바이너리 분리](./worker/08-specview-worker-separation.md)          | Architecture | 2026-01-13 |
+| 09  | [Phase 1 V1 품질 개선 아키텍처](./worker/09-phase1-v1-quality-enhancement.md)       | AI/ML        | 2026-02-04 |
 
 ### Web 리포지토리
 

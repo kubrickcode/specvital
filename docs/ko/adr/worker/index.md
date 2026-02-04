@@ -21,6 +21,7 @@ description: 워커 서비스(백그라운드 분석 워커) 아키텍처 의사
 | 06  | [Semaphore 기반 Clone 동시성 제어](./06-semaphore-clone-concurrency.md)      | 2024-12-18 |
 | 07  | [Repository 패턴 데이터 접근 추상화](./07-repository-pattern.md)             | 2024-12-18 |
 | 08  | [SpecView Worker 바이너리 분리](./08-specview-worker-separation.md)          | 2026-01-13 |
+| 09  | [Phase 1 V1 품질 개선 아키텍처](./09-phase1-v1-quality-enhancement.md)       | 2026-02-04 |
 
 ## 관련 문서
 

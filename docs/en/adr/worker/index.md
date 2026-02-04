@@ -21,6 +21,7 @@ Architecture Decision Records for the [specvital/worker](https://github.com/spec
 | 06  | [Semaphore-Based Clone Concurrency Control](./06-semaphore-clone-concurrency.md)      | 2024-12-18 |
 | 07  | [Repository Pattern Data Access Abstraction](./07-repository-pattern.md)              | 2024-12-18 |
 | 08  | [SpecView Worker Binary Separation](./08-specview-worker-separation.md)               | 2026-01-13 |
+| 09  | [Phase 1 V1 Quality Enhancement Architecture](./09-phase1-v1-quality-enhancement.md)  | 2026-02-04 |
 
 ## Related
 
