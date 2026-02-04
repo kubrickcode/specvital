@@ -419,86 +419,121 @@ func (s *Scanner) parseConfigFiles(ctx context.Context, src source.Source, files
 	return scope
 }
 
+// DiscoveryResult contains a discovered file path or an error encountered during discovery.
+type DiscoveryResult struct {
+	// Path is the relative file path from source root (empty when Err is set).
+	Path string
+
+	// Err is the error encountered during discovery (nil on success).
+	Err error
+}
+
+// discoverTestFilesStream walks the source root to find test file candidates,
+// sending each discovered path through a channel for incremental processing.
+// The channel is closed when discovery completes or context is cancelled.
+// Callers must consume all values from the channel to avoid goroutine leaks.
+func (s *Scanner) discoverTestFilesStream(ctx context.Context, src source.Source) <-chan DiscoveryResult {
+	out := make(chan DiscoveryResult)
+
+	go func() {
+		defer close(out)
+
+		rootPath := src.Root()
+		skipSet := buildSkipSet(append(DefaultSkipPatterns, s.options.ExcludePatterns...))
+
+		err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, walkErr error) error {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+
+			if walkErr != nil {
+				select {
+				case out <- DiscoveryResult{Err: fmt.Errorf("access error at %s: %w", path, walkErr)}:
+				case <-ctx.Done():
+					return ctx.Err()
+				}
+				return nil
+			}
+
+			if d.IsDir() {
+				if shouldSkipDir(path, rootPath, skipSet) {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+
+			if d.Type()&os.ModeSymlink != 0 {
+				return nil
+			}
+
+			relPath, err := filepath.Rel(rootPath, path)
+			if err != nil {
+				select {
+				case out <- DiscoveryResult{Err: fmt.Errorf("compute relative path for %s: %w", path, err)}:
+				case <-ctx.Done():
+					return ctx.Err()
+				}
+				return nil
+			}
+
+			if !isTestFileCandidate(relPath) {
+				return nil
+			}
+
+			if len(s.options.Patterns) > 0 {
+				if !matchesAnyPattern(path, rootPath, s.options.Patterns) {
+					return nil
+				}
+			}
+
+			if s.options.MaxFileSize > 0 {
+				info, err := d.Info()
+				if err != nil {
+					select {
+					case out <- DiscoveryResult{Err: fmt.Errorf("failed to get file info for %s: %w", path, err)}:
+					case <-ctx.Done():
+						return ctx.Err()
+					}
+					return nil
+				}
+				if info.Size() > s.options.MaxFileSize {
+					return nil
+				}
+			}
+
+			select {
+			case out <- DiscoveryResult{Path: relPath}:
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+
+			return nil
+		})
+
+		if err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+			select {
+			case out <- DiscoveryResult{Err: fmt.Errorf("walk directory: %w", err)}:
+			case <-ctx.Done():
+			}
+		}
+	}()
+
+	return out
+}
+
 // discoverTestFiles walks the source root to find test file candidates.
 // Returns relative paths from the source root for consistent Source.Open() usage.
+// Internally uses discoverTestFilesStream for unified implementation.
 func (s *Scanner) discoverTestFiles(ctx context.Context, src source.Source) ([]string, []error) {
-	rootPath := src.Root()
-	skipSet := buildSkipSet(append(DefaultSkipPatterns, s.options.ExcludePatterns...))
+	var files []string
+	var errs []error
 
-	var (
-		files []string
-		errs  []error
-		mu    sync.Mutex
-	)
-
-	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, walkErr error) error {
-		if ctx.Err() != nil {
-			return ctx.Err()
+	for result := range s.discoverTestFilesStream(ctx, src) {
+		if result.Err != nil {
+			errs = append(errs, result.Err)
+			continue
 		}
-
-		if walkErr != nil {
-			mu.Lock()
-			errs = append(errs, fmt.Errorf("access error at %s: %w", path, walkErr))
-			mu.Unlock()
-			return nil
-		}
-
-		if d.IsDir() {
-			if shouldSkipDir(path, rootPath, skipSet) {
-				return filepath.SkipDir
-			}
-			return nil
-		}
-
-		if d.Type()&os.ModeSymlink != 0 {
-			return nil
-		}
-
-		// Compute relative path early for consistent path matching
-		relPath, err := filepath.Rel(rootPath, path)
-		if err != nil {
-			mu.Lock()
-			errs = append(errs, fmt.Errorf("compute relative path for %s: %w", path, err))
-			mu.Unlock()
-			return nil
-		}
-
-		// Use relative path for test file detection to avoid false positives
-		// from parent directory names (e.g., /tests/integration/testdata/cache/)
-		if !isTestFileCandidate(relPath) {
-			return nil
-		}
-
-		if len(s.options.Patterns) > 0 {
-			if !matchesAnyPattern(path, rootPath, s.options.Patterns) {
-				return nil
-			}
-		}
-
-		if s.options.MaxFileSize > 0 {
-			info, err := d.Info()
-			if err != nil {
-				mu.Lock()
-				errs = append(errs, fmt.Errorf("failed to get file info for %s: %w", path, err))
-				mu.Unlock()
-				return nil
-			}
-			if info.Size() > s.options.MaxFileSize {
-				return nil
-			}
-		}
-
-		mu.Lock()
-		files = append(files, relPath)
-		mu.Unlock()
-
-		return nil
-	})
-
-	if err != nil {
-		if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
-			errs = append(errs, err)
-		}
+		files = append(files, result.Path)
 	}
 
 	return files, errs
