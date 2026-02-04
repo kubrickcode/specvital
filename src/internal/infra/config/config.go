@@ -8,15 +8,18 @@ import (
 	"time"
 )
 
-// Default worker counts for queue allocation
+// Default worker counts for queue allocation.
+// These values should be high enough to allow Fairness Middleware to handle per-user limits.
+// River MaxWorkers is for system resource protection, not user-level fairness.
+// Formula: (expected concurrent users) × (max tier limit) + buffer
 const (
-	defaultAnalyzerPriorityWorkers  = 5
-	defaultAnalyzerDefaultWorkers   = 3
-	defaultAnalyzerScheduledWorkers = 2
+	defaultAnalyzerPriorityWorkers  = 30
+	defaultAnalyzerDefaultWorkers   = 30
+	defaultAnalyzerScheduledWorkers = 10
 
-	defaultSpecgenPriorityWorkers  = 3
-	defaultSpecgenDefaultWorkers   = 2
-	defaultSpecgenScheduledWorkers = 1
+	defaultSpecgenPriorityWorkers  = 20
+	defaultSpecgenDefaultWorkers   = 20
+	defaultSpecgenScheduledWorkers = 5
 )
 
 // QueueWorkers defines worker counts for each queue tier.
