@@ -1149,3 +1149,40 @@ func Scan(ctx context.Context, src source.Source, opts ...ScanOption) (*ScanResu
 	scanner := NewScanner(opts...)
 	return scanner.Scan(ctx, src)
 }
+
+// ScanStreaming performs streaming scan that returns results through a channel.
+// Each file is sent as FileResult immediately after parsing completes.
+//
+// This enables memory-efficient processing of large repositories by allowing
+// consumers to process files incrementally rather than accumulating all results.
+//
+// Usage:
+//
+//	results, err := parser.ScanStreaming(ctx, src)
+//	if err != nil {
+//	    return err
+//	}
+//	batch := make([]*domain.TestFile, 0, 100)
+//	for result := range results {
+//	    if result.Err != nil {
+//	        log.Warn("parse error", "path", result.Path, "err", result.Err)
+//	        continue
+//	    }
+//	    if result.File == nil {
+//	        continue // Skipped file (unknown framework)
+//	    }
+//	    batch = append(batch, result.File)
+//	    if len(batch) >= 100 {
+//	        processBatch(batch)
+//	        batch = batch[:0]
+//	    }
+//	}
+//	if len(batch) > 0 {
+//	    processBatch(batch)
+//	}
+//
+// The caller is responsible for calling src.Close() when done.
+func ScanStreaming(ctx context.Context, src source.Source, opts ...ScanOption) (<-chan *FileResult, error) {
+	scanner := NewScanner(opts...)
+	return scanner.ScanStream(ctx, src)
+}

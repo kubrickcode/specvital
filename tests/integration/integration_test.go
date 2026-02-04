@@ -126,6 +126,67 @@ func TestSingleFramework(t *testing.T) {
 	}
 }
 
+func TestScanStreaming(t *testing.T) {
+	repos, err := LoadRepos()
+	if err != nil {
+		t.Fatalf("load repos.yaml: %v", err)
+	}
+
+	// Use the first repository for streaming test
+	if len(repos.Repositories) == 0 {
+		t.Skip("no repositories configured")
+	}
+	repo := repos.Repositories[0]
+
+	cloneResult, err := CloneRepo(repo)
+	if err != nil {
+		t.Fatalf("clone %s: %v", repo.Name, err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), scanTimeout)
+	defer cancel()
+
+	src, err := source.NewLocalSource(cloneResult.Path)
+	if err != nil {
+		t.Fatalf("create source for %s: %v", repo.Name, err)
+	}
+	defer src.Close()
+
+	// Test streaming API
+	results, err := parser.ScanStreaming(ctx, src)
+	if err != nil {
+		t.Fatalf("ScanStreaming: %v", err)
+	}
+
+	var filesProcessed, filesMatched, parseErrors int
+	for result := range results {
+		filesProcessed++
+		if result.Err != nil {
+			parseErrors++
+			continue
+		}
+		if result.File != nil {
+			filesMatched++
+		}
+	}
+
+	t.Logf("streaming stats: processed=%d, matched=%d, errors=%d", filesProcessed, filesMatched, parseErrors)
+
+	if filesMatched == 0 {
+		t.Errorf("expected at least 1 matched file via streaming, got 0")
+	}
+
+	// Compare with batch Scan() to verify consistency
+	scanResult, err := parser.Scan(ctx, src)
+	if err != nil {
+		t.Fatalf("Scan: %v", err)
+	}
+
+	if filesMatched != scanResult.Stats.FilesMatched {
+		t.Errorf("streaming matched %d files, but Scan matched %d", filesMatched, scanResult.Stats.FilesMatched)
+	}
+}
+
 func countByFramework(result *parser.ScanResult) map[string]int {
 	counts := make(map[string]int)
 	for _, file := range result.Inventory.Files {

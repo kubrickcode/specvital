@@ -347,6 +347,114 @@ func TestScanStream(t *testing.T) {
 	})
 }
 
+func TestScanStreaming(t *testing.T) {
+	t.Run("should work as convenience wrapper", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		for i := 0; i < 5; i++ {
+			content := []byte(`import { it } from '@jest/globals'; it('test', () => {});`)
+			filename := filepath.Join(tmpDir, "test"+string(rune('a'+i))+".test.ts")
+			if err := os.WriteFile(filename, content, 0644); err != nil {
+				t.Fatalf("failed to write file: %v", err)
+			}
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		results, err := parser.ScanStreaming(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var count int
+		for result := range results {
+			if result.IsSuccess() {
+				count++
+			}
+		}
+
+		if count != 5 {
+			t.Errorf("expected 5 successful results, got %d", count)
+		}
+	})
+
+	t.Run("should accept options", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		content := []byte(`import { it } from '@jest/globals'; it('test', () => {});`)
+		if err := os.WriteFile(filepath.Join(tmpDir, "test.test.ts"), content, 0644); err != nil {
+			t.Fatalf("failed to write file: %v", err)
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		results, err := parser.ScanStreaming(context.Background(), src, parser.WithWorkers(2))
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var count int
+		for result := range results {
+			if result.IsSuccess() {
+				count++
+			}
+		}
+
+		if count != 1 {
+			t.Errorf("expected 1 successful result, got %d", count)
+		}
+	})
+
+	t.Run("should produce consistent results with Scan", func(t *testing.T) {
+		tmpDir := t.TempDir()
+
+		for i := 0; i < 10; i++ {
+			content := []byte(`import { it } from '@jest/globals'; it('test', () => {});`)
+			filename := filepath.Join(tmpDir, "test"+string(rune('a'+i))+".test.ts")
+			if err := os.WriteFile(filename, content, 0644); err != nil {
+				t.Fatalf("failed to write file: %v", err)
+			}
+		}
+
+		src, err := source.NewLocalSource(tmpDir)
+		if err != nil {
+			t.Fatalf("failed to create source: %v", err)
+		}
+		defer src.Close()
+
+		// Streaming scan
+		results, err := parser.ScanStreaming(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var streamCount int
+		for result := range results {
+			if result.IsSuccess() {
+				streamCount++
+			}
+		}
+
+		// Batch scan
+		scanResult, err := parser.Scan(context.Background(), src)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if streamCount != scanResult.Stats.FilesMatched {
+			t.Errorf("ScanStreaming matched %d files, but Scan matched %d", streamCount, scanResult.Stats.FilesMatched)
+		}
+	})
+}
+
 func TestDiscoveryStream(t *testing.T) {
 	t.Run("should maintain file count after streaming refactor", func(t *testing.T) {
 		tmpDir := t.TempDir()
