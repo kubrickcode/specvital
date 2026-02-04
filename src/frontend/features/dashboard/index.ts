@@ -17,6 +17,7 @@ export {
 export {
   myRepositoriesKeys,
   paginatedRepositoriesKeys,
+  repositoryStatsKeys,
   useAddBookmark,
   useMyRepositories,
   usePaginatedRepositories,

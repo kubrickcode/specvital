@@ -12,6 +12,7 @@ import { validateRepositoryIdentifiers } from "@/lib/validations/github";
 import { fetchAnalysisStatus } from "../../analysis/api";
 import { triggerReanalyze } from "../api";
 import { paginatedRepositoriesKeys } from "./use-paginated-repositories";
+import { repositoryStatsKeys } from "./use-repository-stats";
 import type { DisplayUpdateStatus } from "../components/update-status-badge";
 
 const POLL_INTERVAL_MS = 1000;
@@ -72,6 +73,7 @@ export const useReanalyze = (): UseReanalyzeReturn => {
     if (!isTerminalStatus(pollingQuery.data.status)) return;
 
     queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
+    queryClient.invalidateQueries({ queryKey: repositoryStatsKeys.all });
     // Refresh active tasks list from server
     queryClient.invalidateQueries({ queryKey: userActiveTasksKeys.all });
     setPollingTarget(null);

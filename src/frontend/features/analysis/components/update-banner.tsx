@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { paginatedRepositoriesKeys } from "@/features/dashboard";
+import { paginatedRepositoriesKeys, repositoryStatsKeys } from "@/features/dashboard";
 import { userActiveTasksKeys } from "@/lib/background-tasks";
 
 import { fetchAnalysisStatus, triggerReanalyze } from "../api";
@@ -73,6 +73,7 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
     queryClient.invalidateQueries({ queryKey: analysisKeys.detail(owner, repo) });
     queryClient.invalidateQueries({ queryKey: updateStatusKeys.detail(owner, repo) });
     queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
+    queryClient.invalidateQueries({ queryKey: repositoryStatsKeys.all });
     // Refresh active tasks list from server
     queryClient.invalidateQueries({ queryKey: userActiveTasksKeys.all });
 

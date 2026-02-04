@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/features/auth";
-import { paginatedRepositoriesKeys } from "@/features/dashboard";
+import { paginatedRepositoriesKeys, repositoryStatsKeys } from "@/features/dashboard";
 import { useUserActiveTasks, userActiveTasksKeys } from "@/lib/background-tasks";
 
 import { fetchAnalysisStatus } from "../api";
@@ -89,6 +89,7 @@ export const AnalysisMonitor = () => {
           // Invalidate queries to refresh data
           queryClient.invalidateQueries({ queryKey: analysisKeys.detail(task.owner, task.repo) });
           queryClient.invalidateQueries({ queryKey: paginatedRepositoriesKeys.all });
+          queryClient.invalidateQueries({ queryKey: repositoryStatsKeys.all });
           queryClient.invalidateQueries({
             queryKey: updateStatusKeys.detail(task.owner, task.repo),
           });

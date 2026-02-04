@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
-import { paginatedRepositoriesKeys } from "@/features/dashboard";
+import { paginatedRepositoriesKeys, repositoryStatsKeys } from "@/features/dashboard";
 import { getTask, updateTask } from "@/lib/background-tasks";
 
 import { fetchGenerationStatus, ForbiddenError, UnauthorizedError } from "../api";
@@ -150,6 +150,9 @@ export const useSpecGenerationStatus = (
       // Reset to initial state: shows skeleton on mounted dashboard + fresh fetch on navigation
       queryClient.resetQueries({
         queryKey: paginatedRepositoriesKeys.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: repositoryStatsKeys.all,
       });
       // Invalidate usage for fresh quota display in re-analyze modal
       queryClient.invalidateQueries({
