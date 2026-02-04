@@ -22,6 +22,7 @@ Architecture Decision Records for the [specvital/worker](https://github.com/spec
 | 07  | [Repository Pattern Data Access Abstraction](./07-repository-pattern.md)              | 2024-12-18 |
 | 08  | [SpecView Worker Binary Separation](./08-specview-worker-separation.md)               | 2026-01-13 |
 | 09  | [Phase 1 V1 Quality Enhancement Architecture](./09-phase1-v1-quality-enhancement.md)  | 2026-02-04 |
+| 10  | [Per-User Fairness Middleware](./10-per-user-fairness-middleware.md)                  | 2026-02-02 |
 
 ## Related
 

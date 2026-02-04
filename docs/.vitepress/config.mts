@@ -304,6 +304,10 @@ export default withMermaid({
                       text: "Phase 1 V1 Quality Enhancement",
                       link: "/en/adr/worker/09-phase1-v1-quality-enhancement",
                     },
+                    {
+                      text: "Per-User Fairness Middleware",
+                      link: "/en/adr/worker/10-per-user-fairness-middleware",
+                    },
                   ],
                 },
                 {
@@ -593,6 +597,10 @@ export default withMermaid({
                     {
                       text: "Phase 1 V1 품질 개선",
                       link: "/ko/adr/worker/09-phase1-v1-quality-enhancement",
+                    },
+                    {
+                      text: "사용자별 공정성 미들웨어",
+                      link: "/ko/adr/worker/10-per-user-fairness-middleware",
                     },
                   ],
                 },

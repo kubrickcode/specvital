@@ -22,6 +22,7 @@ description: 워커 서비스(백그라운드 분석 워커) 아키텍처 의사
 | 07  | [Repository 패턴 데이터 접근 추상화](./07-repository-pattern.md)             | 2024-12-18 |
 | 08  | [SpecView Worker 바이너리 분리](./08-specview-worker-separation.md)          | 2026-01-13 |
 | 09  | [Phase 1 V1 품질 개선 아키텍처](./09-phase1-v1-quality-enhancement.md)       | 2026-02-04 |
+| 10  | [사용자별 공정성 미들웨어](./10-per-user-fairness-middleware.md)             | 2026-02-02 |
 
 ## 관련 문서
 

@@ -119,6 +119,7 @@ XX-brief-decision-title.md
 | 07  | [Repository Pattern Data Access Abstraction](./worker/07-repository-pattern.md)              | Architecture | 2024-12-18 |
 | 08  | [SpecView Worker Binary Separation](./worker/08-specview-worker-separation.md)               | Architecture | 2026-01-13 |
 | 09  | [Phase 1 V1 Quality Enhancement Architecture](./worker/09-phase1-v1-quality-enhancement.md)  | AI/ML        | 2026-02-04 |
+| 10  | [Per-User Fairness Middleware](./worker/10-per-user-fairness-middleware.md)                  | Concurrency  | 2026-02-02 |
 
 ### Web Repository
 
