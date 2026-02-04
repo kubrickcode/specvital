@@ -11,6 +11,12 @@ description: ADR on separating Worker and Scheduler into independent processes
 | ---------- | ------------ | ------ |
 | 2024-12-18 | @KubrickCode | worker |
 
+## Status
+
+> ⚠️ **Partially Superseded** by [ADR-22: Scheduler Removal and Railway Cron Migration](/en/adr/22-scheduler-removal-railway-cron.md)
+>
+> The Scheduler service described in this ADR has been removed. However, the **binary separation pattern** remains valid and is now applied to all worker binaries (analyzer, spec-generator, retention-cleanup). See ADR-22 for details.
+
 ## Context
 
 ### Asymmetric Scaling Requirements

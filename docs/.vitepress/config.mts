@@ -175,6 +175,10 @@ export default withMermaid({
                   link: "/en/adr/21-quota-reservation",
                 },
                 {
+                  text: "Scheduler Removal",
+                  link: "/en/adr/22-scheduler-removal-railway-cron",
+                },
+                {
                   text: "Core",
                   collapsed: true,
                   items: [
@@ -480,6 +484,10 @@ export default withMermaid({
                 {
                   text: "할당량 예약",
                   link: "/ko/adr/21-quota-reservation",
+                },
+                {
+                  text: "Scheduler 제거",
+                  link: "/ko/adr/22-scheduler-removal-railway-cron",
                 },
                 {
                   text: "Core",

@@ -11,6 +11,12 @@ description: 독립적 스케일링을 위한 Worker와 Scheduler 프로세스 �
 | ---------- | ------------ | ---------- |
 | 2024-12-18 | @KubrickCode | worker     |
 
+## 상태
+
+> ⚠️ **부분 대체됨** - [ADR-22: Scheduler 제거 및 Railway Cron 전환](/ko/adr/22-scheduler-removal-railway-cron.md)
+>
+> 본 ADR에 설명된 Scheduler 서비스 제거됨. 단, **바이너리 분리 패턴**은 여전히 유효하며 모든 worker 바이너리(analyzer, spec-generator, retention-cleanup)에 적용 중. 자세한 내용은 ADR-22 참조.
+
 ## 배경
 
 ### 비대칭적 스케일링 요구사항

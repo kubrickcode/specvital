@@ -51,6 +51,7 @@ Specvital 개발 중 내린 아키텍처 결정에 대한 문서.
 - [계층적 스펙 문서 스키마](./adr/19-hierarchical-spec-document-schema.md)
 - [GitHub App 설치 스키마](./adr/20-github-app-installation-schema.md)
 - [동시 요청 처리용 할당량 예약](./adr/21-quota-reservation.md)
+- [Scheduler 제거 및 Railway Cron 전환](./adr/22-scheduler-removal-railway-cron.md)
 
 **[Core](./adr/core/)**
 

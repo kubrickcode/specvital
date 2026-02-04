@@ -11,6 +11,12 @@ description: 적응형 감쇠 로직을 갖춘 스케줄러 기반 자동 재분
 | ---------- | ------------ | ---------- |
 | 2024-12-18 | @KubrickCode | worker     |
 
+## 상태
+
+> ⚠️ **대체됨** - [ADR-22: Scheduler 제거 및 Railway Cron 전환](/ko/adr/22-scheduler-removal-railway-cron.md)
+>
+> 본 ADR에 설명된 Scheduler 서비스 및 auto-refresh 기능 제거됨. 히스토리 보존 목적으로만 유지. 현재 아키텍처(Railway Cron + 개별 바이너리)는 ADR-22 참조.
+
 ## 배경
 
 ### 응답 시간 문제

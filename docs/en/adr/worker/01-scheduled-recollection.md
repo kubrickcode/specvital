@@ -11,6 +11,12 @@ description: ADR on scheduler-based re-collection with adaptive decay for data f
 | ---------- | ------------ | ------ |
 | 2024-12-18 | @KubrickCode | worker |
 
+## Status
+
+> ⚠️ **Superseded** by [ADR-22: Scheduler Removal and Railway Cron Migration](/en/adr/22-scheduler-removal-railway-cron.md)
+>
+> The Scheduler service and auto-refresh functionality described in this ADR have been removed. This document is preserved for historical context only. See ADR-22 for the current architecture using Railway Cron + individual binaries.
+
 ## Context
 
 ### The Response Time Problem

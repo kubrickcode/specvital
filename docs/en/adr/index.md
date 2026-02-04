@@ -78,6 +78,7 @@ XX-brief-decision-title.md
 | 19  | [Hierarchical Spec Document Schema](./19-hierarchical-spec-document-schema.md)         | Database       | 2026-01-12 |
 | 20  | [GitHub App Installation Schema](./20-github-app-installation-schema.md)               | Database       | 2026-01-19 |
 | 21  | [Quota Reservation for Concurrent Requests](./21-quota-reservation.md)                 | Billing        | 2026-02-01 |
+| 22  | [Scheduler Removal and Railway Cron Migration](./22-scheduler-removal-railway-cron.md) | Infrastructure | 2026-02-02 |
 
 ### Core Repository
 
