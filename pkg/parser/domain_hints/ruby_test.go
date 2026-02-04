@@ -24,11 +24,11 @@ require_relative '../spec_helper'
 	}
 
 	expectedImports := map[string]bool{
-		"tmpdir":           true,
-		"json":             true,
-		"rspec/core":       true,
-		"./helpers":        true,
-		"../spec_helper":   true,
+		"tmpdir":         true,
+		"json":           true,
+		"rspec/core":     true,
+		"./helpers":      true,
+		"../spec_helper": true,
 	}
 
 	importSet := make(map[string]bool)
@@ -64,9 +64,9 @@ end
 	}
 
 	expectedCalls := map[string]bool{
-		"user_service.create":           true,
+		"user_service.create":             true,
 		"payment_gateway.process_payment": true,
-		"NotificationService.send_email": true,
+		"NotificationService.send_email":  true,
 	}
 
 	callSet := make(map[string]bool)

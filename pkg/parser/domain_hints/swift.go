@@ -115,8 +115,9 @@ func (e *SwiftExtractor) extractCalls(root *sitter.Node, source []byte) []string
 
 // extractSwiftImportPath extracts the module name from an import_declaration node.
 // Handles: import Foundation
-//          @testable import MyApp
-//          import UIKit.UIView
+//
+//	@testable import MyApp
+//	import UIKit.UIView
 func extractSwiftImportPath(node *sitter.Node, source []byte) string {
 	text := getNodeText(node, source)
 	if text == "" {
@@ -140,32 +141,32 @@ func extractSwiftImportPath(node *sitter.Node, source []byte) string {
 // that should be excluded from domain hints.
 var swiftTestFrameworkCalls = map[string]struct{}{
 	// XCTest
-	"XCTAssert":              {},
-	"XCTAssertTrue":          {},
-	"XCTAssertFalse":         {},
-	"XCTAssertEqual":         {},
-	"XCTAssertNotEqual":      {},
-	"XCTAssertNil":           {},
-	"XCTAssertNotNil":        {},
-	"XCTAssertThrowsError":   {},
-	"XCTAssertNoThrow":       {},
-	"XCTFail":                {},
-	"XCTSkip":                {},
-	"XCTUnwrap":              {},
-	"XCTExpectFailure":       {},
+	"XCTAssert":            {},
+	"XCTAssertTrue":        {},
+	"XCTAssertFalse":       {},
+	"XCTAssertEqual":       {},
+	"XCTAssertNotEqual":    {},
+	"XCTAssertNil":         {},
+	"XCTAssertNotNil":      {},
+	"XCTAssertThrowsError": {},
+	"XCTAssertNoThrow":     {},
+	"XCTFail":              {},
+	"XCTSkip":              {},
+	"XCTUnwrap":            {},
+	"XCTExpectFailure":     {},
 	// Swift Testing
-	"expect":                 {},
-	"require":                {},
-	"Issue":                  {},
-	"confirmation":           {},
+	"expect":       {},
+	"require":      {},
+	"Issue":        {},
+	"confirmation": {},
 	// Common utilities
-	"print":                  {},
-	"debugPrint":             {},
-	"dump":                   {},
-	"fatalError":             {},
-	"precondition":           {},
-	"preconditionFailure":    {},
-	"assertionFailure":       {},
+	"print":               {},
+	"debugPrint":          {},
+	"dump":                {},
+	"fatalError":          {},
+	"precondition":        {},
+	"preconditionFailure": {},
+	"assertionFailure":    {},
 }
 
 func isSwiftTestFrameworkCall(call string) bool {

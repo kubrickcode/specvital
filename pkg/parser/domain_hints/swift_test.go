@@ -87,7 +87,7 @@ import Foundation.NSObject
 	}
 
 	expectedImports := map[string]bool{
-		"UIKit.UIView":       true,
+		"UIKit.UIView":        true,
 		"Foundation.NSObject": true,
 	}
 
@@ -124,8 +124,8 @@ class TestService {
 	}
 
 	expectedCalls := map[string]bool{
-		"userService.create":          true,
-		"PaymentGateway.process":      true,
+		"userService.create":            true,
+		"PaymentGateway.process":        true,
 		"notificationService.sendEmail": true,
 	}
 

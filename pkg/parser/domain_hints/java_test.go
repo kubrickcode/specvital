@@ -29,11 +29,11 @@ class CalculatorTests {
 	}
 
 	expectedImports := map[string]bool{
-		"org.junit.jupiter.api.Test":                true,
-		"org.junit.jupiter.api.DisplayName":         true,
-		"org.junit.jupiter.params.ParameterizedTest": true,
+		"org.junit.jupiter.api.Test":                    true,
+		"org.junit.jupiter.api.DisplayName":             true,
+		"org.junit.jupiter.params.ParameterizedTest":    true,
 		"org.junit.jupiter.api.Assertions.assertEquals": true,
-		"com.example.service.*":                     true,
+		"com.example.service.*":                         true,
 	}
 
 	importSet := make(map[string]bool)
@@ -73,8 +73,8 @@ class CalculatorTests {
 	}
 
 	expectedCalls := map[string]bool{
-		"calculator.add":       true,
-		"userService.findById": true,
+		"calculator.add":         true,
+		"userService.findById":   true,
 		"paymentGateway.process": true,
 	}
 

@@ -239,7 +239,7 @@ it('standalone it', () => {
 			want: true,
 		},
 		{
-			name: "empty file",
+			name:    "empty file",
 			content: ``,
 			want:    false,
 		},

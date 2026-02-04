@@ -141,16 +141,16 @@ var goStdlibImports = map[string]struct{}{
 	"reflect": {},
 	"runtime": {},
 	// Encoding (common utility)
-	"encoding":       {},
-	"encoding/json":  {},
-	"encoding/xml":   {},
-	"encoding/csv":   {},
+	"encoding":        {},
+	"encoding/json":   {},
+	"encoding/xml":    {},
+	"encoding/csv":    {},
 	"encoding/base64": {},
 	// Path manipulation
 	"path":          {},
 	"path/filepath": {},
 	// Sync primitives
-	"sync":       {},
+	"sync":        {},
 	"sync/atomic": {},
 	// Error handling
 	"errors": {},

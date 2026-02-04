@@ -546,13 +546,13 @@ func ExampleInvalid(t *testing.T) {}
 
 func TestGoTestingParser_DynamicSubtests(t *testing.T) {
 	tests := []struct {
-		name              string
-		source            string
-		expectedSuites    int
-		expectedTests     int
-		expectedSubtests  int
-		subtestName       string
-		description       string
+		name             string
+		source           string
+		expectedSuites   int
+		expectedTests    int
+		expectedSubtests int
+		subtestName      string
+		description      string
 	}{
 		{
 			name: "table-driven test with struct field",

@@ -130,7 +130,6 @@ func TestGetExtractor(t *testing.T) {
 	}
 }
 
-
 func TestGoExtractor_Extract_StdlibFiltering(t *testing.T) {
 	source := []byte(`package test
 

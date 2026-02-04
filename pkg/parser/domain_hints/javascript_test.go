@@ -455,10 +455,10 @@ describe('user service', () => {
 
 func TestExtractCalls_NoiseFiltering(t *testing.T) {
 	tests := []struct {
-		name          string
-		source        string
-		wantExcluded  []string
-		wantIncluded  []string
+		name         string
+		source       string
+		wantExcluded []string
+		wantIncluded []string
 	}{
 		{
 			name: "should filter spread array pattern",

@@ -138,9 +138,10 @@ func (e *RustExtractor) extractCalls(root *sitter.Node, source []byte) []string 
 
 // extractRustUsePaths extracts paths from a use_declaration node.
 // Handles: use std::collections::HashMap;
-//          use crate::models::{User, Order};
-//          use super::helpers;
-//          use {anyhow::Context, bstr::ByteVec}; (multiline use list)
+//
+//	use crate::models::{User, Order};
+//	use super::helpers;
+//	use {anyhow::Context, bstr::ByteVec}; (multiline use list)
 func extractRustUsePaths(node *sitter.Node, source []byte) []string {
 	// Get the full use declaration text and extract the path
 	text := getNodeText(node, source)
@@ -262,33 +263,33 @@ func splitRustUseItems(text string) []string {
 // that should be excluded from domain hints.
 var rustTestFrameworkCalls = map[string]struct{}{
 	// Standard test macros
-	"assert":         {},
-	"assert_eq":      {},
-	"assert_ne":      {},
-	"debug_assert":   {},
-	"panic":          {},
-	"unreachable":    {},
-	"todo":           {},
-	"unimplemented":  {},
+	"assert":        {},
+	"assert_eq":     {},
+	"assert_ne":     {},
+	"debug_assert":  {},
+	"panic":         {},
+	"unreachable":   {},
+	"todo":          {},
+	"unimplemented": {},
 	// Common test utilities
-	"println":        {},
-	"print":          {},
-	"eprintln":       {},
-	"eprint":         {},
-	"dbg":            {},
-	"format":         {},
-	"vec":            {},
+	"println":  {},
+	"print":    {},
+	"eprintln": {},
+	"eprint":   {},
+	"dbg":      {},
+	"format":   {},
+	"vec":      {},
 	// tokio-test
-	"tokio.test":     {},
+	"tokio.test": {},
 	// proptest
 	"proptest":       {},
 	"prop_assert":    {},
 	"prop_assert_eq": {},
 	// Rust stdlib enums (domain noise in test files)
-	"Ok":    {},
-	"Err":   {},
-	"Some":  {},
-	"None":  {},
+	"Ok":   {},
+	"Err":  {},
+	"Some": {},
+	"None": {},
 }
 
 func isRustTestFrameworkCall(call string) bool {

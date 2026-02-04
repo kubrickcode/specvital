@@ -87,8 +87,8 @@ use crate::models::*;
 	}
 
 	expectedImports := map[string]bool{
-		"std/prelude":   true,
-		"crate/models":  true,
+		"std/prelude":  true,
+		"crate/models": true,
 	}
 
 	importSet := make(map[string]bool)
@@ -184,8 +184,8 @@ fn test_service() {
 	}
 
 	expectedCalls := map[string]bool{
-		"user_service.create":          true,
-		"PaymentGateway.process":       true,
+		"user_service.create":             true,
+		"PaymentGateway.process":          true,
 		"notification_service.send_email": true,
 	}
 
@@ -559,9 +559,9 @@ use {
 	}
 
 	expectedImports := map[string]bool{
-		"anyhow/Context":               true,
-		"bstr/ByteVec":                 true,
-		"grep_matcher/LineTerminator":  true,
+		"anyhow/Context":                true,
+		"bstr/ByteVec":                  true,
+		"grep_matcher/LineTerminator":   true,
 		"grep_searcher/SearcherBuilder": true,
 	}
 

@@ -86,8 +86,8 @@ namespace MyApp.Tests
 	}
 
 	expectedCalls := map[string]bool{
-		"calculator.Add":       true,
-		"userService.FindById": true,
+		"calculator.Add":         true,
+		"userService.FindById":   true,
 		"paymentGateway.Process": true,
 	}
 

@@ -25,7 +25,7 @@ use App\Models\User as UserModel;
 	}
 
 	expectedImports := map[string]bool{
-		"PHPUnit\\Framework\\TestCase": true,
+		"PHPUnit\\Framework\\TestCase":  true,
 		"App\\Services\\PaymentService": true,
 		"Stripe\\PaymentIntent":         true,
 		"App\\Models\\User":             true,

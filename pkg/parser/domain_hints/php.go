@@ -248,22 +248,22 @@ func trimPHPQuotes(s string) string {
 // that should be excluded from domain hints.
 var phpTestFrameworkCalls = map[string]struct{}{
 	// PHPUnit assertions
-	"this":        {},
-	"self":        {},
-	"Assert":      {},
-	"assertSame":  {},
+	"this":         {},
+	"self":         {},
+	"Assert":       {},
+	"assertSame":   {},
 	"assertEquals": {},
-	"assertTrue":  {},
-	"assertFalse": {},
+	"assertTrue":   {},
+	"assertFalse":  {},
 	// PHPUnit setup/teardown
-	"setUp":          {},
-	"tearDown":       {},
-	"setUpBeforeClass": {},
+	"setUp":              {},
+	"tearDown":           {},
+	"setUpBeforeClass":   {},
 	"tearDownAfterClass": {},
 	// Mockery
-	"Mockery":   {},
-	"mock":      {},
-	"spy":       {},
+	"Mockery":       {},
+	"mock":          {},
+	"spy":           {},
 	"shouldReceive": {},
 	// Prophecy
 	"prophesize": {},

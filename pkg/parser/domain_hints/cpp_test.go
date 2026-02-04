@@ -155,8 +155,8 @@ void testFunction() {
 	}
 
 	expectedCalls := map[string]bool{
-		"userService.create":          true,
-		"PaymentGateway.process":      true,
+		"userService.create":            true,
+		"PaymentGateway.process":        true,
 		"notificationService.sendEmail": true,
 	}
 
