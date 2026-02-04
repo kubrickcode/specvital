@@ -1,5 +1,84 @@
 # Changelog
 
+## [1.6.0](https://github.com/specvital/core/compare/v1.5.0...v1.6.0) (2026-02-04)
+
+### 🎯 Highlights
+
+#### ✨ Features
+
+- **domain-hints:** add DomainHints quality validation command ([cd95f41](https://github.com/specvital/core/commit/cd95f419722e1d5b6d773c96b765a9b3e2296ad0))
+- **domain-hints:** add noise filter for string literal methods, function args, and URL patterns ([def841a](https://github.com/specvital/core/commit/def841a868f4c437a24b3694d91608f11224c2ca))
+- **domain-hints:** add noise filtering for domain hints extraction ([3349196](https://github.com/specvital/core/commit/3349196122187db45393d52cc4354e558c1bf34d))
+- **domain-hints:** apply noise filter to JavaScript/TypeScript extractor ([dce6467](https://github.com/specvital/core/commit/dce64679ee9ea4d7271145bb7597e1211bfe8e1e))
+- **domain-hints:** apply noise filter to remaining 7 language extractors ([deacdda](https://github.com/specvital/core/commit/deacdda09e17635bf0bff20de06d38ef941d8800))
+- **domain-hints:** apply noise filter to Rust/Kotlin extractor ([a8646e2](https://github.com/specvital/core/commit/a8646e295e0de253c70b8e79c50f4276f26a1c26))
+- **domain-hints:** implement DomainHints extraction for C# test files ([80590f2](https://github.com/specvital/core/commit/80590f29c6aa21ce025ea8f352afacc222a47a2c))
+- **domain-hints:** implement DomainHints extraction for Java/Kotlin test files ([4dfb02a](https://github.com/specvital/core/commit/4dfb02ae9a2e47ae8e6aed89b8026ff6e764c020))
+- **domain-hints:** implement DomainHints extraction for Python test files ([7007f0d](https://github.com/specvital/core/commit/7007f0d6062bac2a9ac9a05fdbe9a4be784bb2fd))
+- **domain-hints:** implement DomainHints extraction for Ruby/PHP test files ([2374cbf](https://github.com/specvital/core/commit/2374cbf0b068a1e990d7843245c29b63b5c1e624))
+- **domain-hints:** implement DomainHints extraction for Rust/Swift/C++ test files ([ae87dbf](https://github.com/specvital/core/commit/ae87dbf52158153cf2b585ea073571da16e9926b))
+- **domain-hints:** implement Go test file domain hints extraction ([fd3cb93](https://github.com/specvital/core/commit/fd3cb930cc7980a6b577bf953d4b2bdcccd608c8))
+- **domain-hints:** implement JS/TS test file domain hints extraction ([00e034a](https://github.com/specvital/core/commit/00e034a812509fccbbec244796daec68bf8a302e))
+- **domain:** add DomainHints type for AI-based domain classification ([7efd5a5](https://github.com/specvital/core/commit/7efd5a51b7046aef93a1901799dc8be18401664d))
+- **parser:** add FileResult type for streaming API ([753049b](https://github.com/specvital/core/commit/753049bec6ed965d98eee09aa756897623ba3066))
+- **parser:** add ScanStreaming public API with documentation ([f8011b3](https://github.com/specvital/core/commit/f8011b3b985a724c3d550c964cd914c239e09866))
+- **parser:** implement ScanStream method for streaming parsing ([a45e1ad](https://github.com/specvital/core/commit/a45e1ad9a29726acdb5683f4bbfd93928686fa70))
+
+#### 🐛 Bug Fixes
+
+- **detection:** support vitest globals mode test file detection ([1049be5](https://github.com/specvital/core/commit/1049be5e01ed68bc88aa669a0148ed41ed0b0887))
+- **domain-hints:** add import noise and Java Object method filtering ([38ba020](https://github.com/specvital/core/commit/38ba020335d29982dcf649a9fde0b61e6a1be6f3))
+- **domain-hints:** filter all single-character calls as noise ([53ee28f](https://github.com/specvital/core/commit/53ee28fd5f39cbab8f814068e32685eea028b55e))
+- **domain-hints:** filter C# stdlib imports and nameof as noise ([72df4fa](https://github.com/specvital/core/commit/72df4fa938ba6d7d1e40fbaa753aedf63936e82a))
+- **domain-hints:** filter C++ dot-prefix noise patterns and stdlib imports ([db8338d](https://github.com/specvital/core/commit/db8338d9297e3518db419923d1f44b52d7c05a3b))
+- **domain-hints:** filter Go builtin functions as noise ([223c2c9](https://github.com/specvital/core/commit/223c2c95f99fb77def4e5c7c9b4d8617e9d52a11))
+- **domain-hints:** filter Go stdlib imports as noise ([74aa9ce](https://github.com/specvital/core/commit/74aa9ceb525ccee6c126dc723ee2167ca1a474f3))
+- **domain-hints:** filter inline comments and short (≤2 char) standalone calls as noise ([6cebcb2](https://github.com/specvital/core/commit/6cebcb25858a5fc5056b188cd2f60ee2ac6aaff5))
+- **domain-hints:** filter Kotlin stdlib collection functions as noise ([9d664bc](https://github.com/specvital/core/commit/9d664bc0fd7c932c4bba62ca7dbb023ed6601084))
+- **domain-hints:** filter multiline generic imports and Object base methods in C# ([1d5399f](https://github.com/specvital/core/commit/1d5399faca7aee9ef2e473af9f8174978429e9d9))
+- **domain-hints:** filter out generic callback variable name fn as noise ([d2a13f0](https://github.com/specvital/core/commit/d2a13f0adcd501db0bf3cd340d0604c2605519ce))
+- **domain-hints:** filter unbalanced parentheses patterns as noise ([33ebdd8](https://github.com/specvital/core/commit/33ebdd86328f66c0fc421261c971db251c566a8e))
+- **domain-hints:** fix Rust multiline use statement parsing bug ([a97e31e](https://github.com/specvital/core/commit/a97e31e0f33c529fa9d3e05acaffa531ae307d0a))
+- **domain-hints:** improve DomainHints extraction data quality ([e4b9f2d](https://github.com/specvital/core/commit/e4b9f2d82a58c0b24bce090910cfa68e3a10f56d))
+- **parser:** detect dynamic subtests in Go test parser ([0fca289](https://github.com/specvital/core/commit/0fca289bc58037ebce1ee6ac435ae0ecbd649513))
+- **pytest:** support unittest.TestCase style class detection ([d126e03](https://github.com/specvital/core/commit/d126e03d8219eaafa0fb8d96b4828f9fdf15e7ed))
+- **scanner:** add test/, tests/ directory patterns to JS test file discovery ([4de8e36](https://github.com/specvital/core/commit/4de8e36d0439f957c6ca49f699c2fc07b78bfe77))
+
+### 🔧 Maintenance
+
+#### 📚 Documentation
+
+- add specvital-specialist agent ([527833f](https://github.com/specvital/core/commit/527833fc4fd2b11d1f57b7e8f79585c2ca41922e))
+- **domain-hints:** document DomainHints option and data structure ([c726d23](https://github.com/specvital/core/commit/c726d23051d5c7cf3efbe907aaf4df4bbcb8bc99))
+
+#### ♻️ Refactoring
+
+- **domain-hints:** extract noise filter to common module ([7fec069](https://github.com/specvital/core/commit/7fec069074be2f443585f5633b021c576c0dd2c0))
+- **domain-hints:** remove Variables field from DomainHints ([8b83b95](https://github.com/specvital/core/commit/8b83b95520e0c828a63a72de262fcde7df622395))
+- **parser:** refactor file discovery to channel-based streaming ([dc6536f](https://github.com/specvital/core/commit/dc6536fef465d0a7cf5adceb577fa8c4acda0d12))
+- **parser:** unify Scan API implementation to streaming-based ([bd5f311](https://github.com/specvital/core/commit/bd5f311db014b91078f707e154db1537bff3067c))
+
+#### ✅ Tests
+
+- **domain-hints:** add integration tests for DomainHints extraction using grafana repository ([21ad5f1](https://github.com/specvital/core/commit/21ad5f18c53194182e19983c2691816ee6e4fb50))
+- **domain-hints:** add tRPC v10.45.2 noise pattern validation ([898e6a8](https://github.com/specvital/core/commit/898e6a8dbb81ef3039838d48fe0d68172a7bb11f))
+- **integration:** add chi and httpx repositories to integration tests ([b9d12af](https://github.com/specvital/core/commit/b9d12aff3144845152f229bf1f9b0d654a6edeb0))
+- **integration:** add chi repository to integration tests ([c98eaf6](https://github.com/specvital/core/commit/c98eaf6a29aa9ca6981cb34aec9877f629ad338e))
+- **integration:** add echo repository to integration tests ([4180d3d](https://github.com/specvital/core/commit/4180d3dd3e0a3fa986c81b9a5a3550b77b686ef5))
+- **integration:** add gson repository ([32f5e2e](https://github.com/specvital/core/commit/32f5e2e133747b64153a09414f25efb13c54d4ca))
+- **integration:** add jackson-core repository ([bb3357e](https://github.com/specvital/core/commit/bb3357ebcbbff28dd0efc1348063713efbf9c145))
+- **integration:** add pydantic repository ([93bf2db](https://github.com/specvital/core/commit/93bf2dbd9187496f801d6f858a3f2d6f62a66434))
+- **integration:** add zod repository to integration tests ([423e6e4](https://github.com/specvital/core/commit/423e6e48b712f8520cf1089a4900428d38ba4ebc))
+
+#### 🔨 Chore
+
+- change license from MIT to Apache 2.0 ([2743e6d](https://github.com/specvital/core/commit/2743e6db12adc6419b573c318ea8b69fd2a16ecb))
+- remove commit file ([535243c](https://github.com/specvital/core/commit/535243c753a2500b7cc90a00d1212b4c2f6a6aa6))
+- snapshot update ([5e006a8](https://github.com/specvital/core/commit/5e006a83e8788a0e80d3ebe841aa6453109ceeb8))
+- snapshot-update ([e415f16](https://github.com/specvital/core/commit/e415f16bd7189ed1f9b1f65120d1ca34c98bf169))
+- sync ai-config-toolkit ([cc69e74](https://github.com/specvital/core/commit/cc69e745c353c623798fca0c4bd33ac66cea54f5))
+- sync-docs ([2587358](https://github.com/specvital/core/commit/2587358377a5d6b907bd7b93210a472f391551ba))
+
 ## [1.5.0](https://github.com/specvital/core/compare/v1.4.0...v1.5.0) (2026-01-04)
 
 ### 🎯 Highlights
