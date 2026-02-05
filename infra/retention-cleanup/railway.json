@@ -5,6 +5,7 @@
     "dockerfilePath": "infra/retention-cleanup/Dockerfile"
   },
   "deploy": {
+    "region": "us-east4",
     "cronSchedule": "0 3 * * *",
     "restartPolicyType": "NEVER"
   }
