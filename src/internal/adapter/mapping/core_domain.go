@@ -2,6 +2,7 @@ package mapping
 
 import (
 	"github.com/specvital/core/pkg/domain"
+	coreparser "github.com/specvital/core/pkg/parser"
 	"github.com/specvital/worker/internal/domain/analysis"
 )
 
@@ -97,4 +98,22 @@ func convertCoreTestStatus(coreStatus domain.TestStatus) analysis.TestStatus {
 	default:
 		return analysis.TestStatusActive
 	}
+}
+
+// ConvertCoreFileResult converts a core FileResult to domain FileResult for streaming.
+func ConvertCoreFileResult(coreResult *coreparser.FileResult) analysis.FileResult {
+	if coreResult == nil {
+		return analysis.FileResult{Err: nil, File: nil}
+	}
+
+	if coreResult.Err != nil {
+		return analysis.FileResult{Err: coreResult.Err, File: nil}
+	}
+
+	if coreResult.File == nil {
+		return analysis.FileResult{Err: nil, File: nil}
+	}
+
+	converted := convertCoreTestFile(*coreResult.File)
+	return analysis.FileResult{Err: nil, File: &converted}
 }

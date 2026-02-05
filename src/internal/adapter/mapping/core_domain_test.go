@@ -1,9 +1,11 @@
 package mapping
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/specvital/core/pkg/domain"
+	coreparser "github.com/specvital/core/pkg/parser"
 	"github.com/specvital/worker/internal/domain/analysis"
 )
 
@@ -227,4 +229,87 @@ func TestConvertCoreTestSuite(t *testing.T) {
 	if result.Tests[0].Status != analysis.TestStatusSkipped {
 		t.Errorf("expected status skipped, got %v", result.Tests[0].Status)
 	}
+}
+
+func TestConvertCoreFileResult(t *testing.T) {
+	t.Run("nil input", func(t *testing.T) {
+		result := ConvertCoreFileResult(nil)
+		if result.Err != nil {
+			t.Errorf("expected nil error, got %v", result.Err)
+		}
+		if result.File != nil {
+			t.Errorf("expected nil file, got %v", result.File)
+		}
+	})
+
+	t.Run("error result", func(t *testing.T) {
+		parseErr := errors.New("parse failed")
+		coreResult := &coreparser.FileResult{
+			Err:  parseErr,
+			Path: "broken.ts",
+		}
+
+		result := ConvertCoreFileResult(coreResult)
+
+		if result.Err != parseErr {
+			t.Errorf("expected error %v, got %v", parseErr, result.Err)
+		}
+		if result.File != nil {
+			t.Errorf("expected nil file on error, got %v", result.File)
+		}
+	})
+
+	t.Run("nil file (skipped)", func(t *testing.T) {
+		coreResult := &coreparser.FileResult{
+			Err:  nil,
+			File: nil,
+			Path: "unknown.xyz",
+		}
+
+		result := ConvertCoreFileResult(coreResult)
+
+		if result.Err != nil {
+			t.Errorf("expected nil error, got %v", result.Err)
+		}
+		if result.File != nil {
+			t.Errorf("expected nil file, got %v", result.File)
+		}
+	})
+
+	t.Run("success result", func(t *testing.T) {
+		coreResult := &coreparser.FileResult{
+			Err: nil,
+			File: &domain.TestFile{
+				Path:      "app.test.ts",
+				Framework: "jest",
+				Language:  domain.LanguageTypeScript,
+				Tests: []domain.Test{
+					{
+						Name:   "should work",
+						Status: domain.TestStatusActive,
+					},
+				},
+			},
+			Path:       "app.test.ts",
+			Confidence: "scope",
+		}
+
+		result := ConvertCoreFileResult(coreResult)
+
+		if result.Err != nil {
+			t.Errorf("expected nil error, got %v", result.Err)
+		}
+		if result.File == nil {
+			t.Fatal("expected non-nil file")
+		}
+		if result.File.Path != "app.test.ts" {
+			t.Errorf("expected path 'app.test.ts', got %s", result.File.Path)
+		}
+		if result.File.Framework != "jest" {
+			t.Errorf("expected framework 'jest', got %s", result.File.Framework)
+		}
+		if len(result.File.Tests) != 1 {
+			t.Errorf("expected 1 test, got %d", len(result.File.Tests))
+		}
+	})
 }

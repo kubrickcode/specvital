@@ -17,12 +17,27 @@ func TestNewCoreParser(t *testing.T) {
 }
 
 func TestCoreParser_Scan_InvalidSourceType(t *testing.T) {
-	parser := NewCoreParser()
+	p := NewCoreParser()
 
 	// mockSource doesn't implement coreSourceProvider
 	mockSrc := &mockInvalidSource{}
 
-	_, err := parser.Scan(context.Background(), mockSrc)
+	_, err := p.Scan(context.Background(), mockSrc)
+	if err == nil {
+		t.Fatal("expected error for source not implementing coreSourceProvider")
+	}
+	if !strings.Contains(err.Error(), "does not implement coreSourceProvider interface") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestCoreParser_ScanStream_InvalidSourceType(t *testing.T) {
+	p := NewCoreParser()
+
+	// mockSource doesn't implement coreSourceProvider
+	mockSrc := &mockInvalidSource{}
+
+	_, err := p.ScanStream(context.Background(), mockSrc)
 	if err == nil {
 		t.Fatal("expected error for source not implementing coreSourceProvider")
 	}
