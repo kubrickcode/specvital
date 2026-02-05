@@ -26,6 +26,7 @@ func main() {
 		EncryptionKey: cfg.EncryptionKey,
 		Fairness:      cfg.Fairness,
 		QueueWorkers:  cfg.Queue.Analyzer,
+		Streaming:     cfg.Streaming,
 	}); err != nil {
 		slog.Error("analyzer failed", "error", err)
 		os.Exit(1)

@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	DefaultAnalysisBatchSize   = 100
 	DefaultMaxConcurrentClones = 2
 	DefaultAnalysisTimeout     = 15 * time.Minute
 	// DefaultOAuthProvider is the OAuth provider for VCS authentication.
@@ -24,20 +25,24 @@ const (
 
 // AnalyzeUseCase orchestrates repository analysis workflow.
 type AnalyzeUseCase struct {
-	cloneSem      *semaphore.Weighted
-	codebaseRepo  analysis.CodebaseRepository
-	parser        analysis.Parser
-	parserVersion string
-	repository    analysis.Repository
-	timeout       time.Duration
-	tokenLookup   analysis.TokenLookup
-	vcs           analysis.VCS
-	vcsAPIClient  analysis.VCSAPIClient
+	batchSize       int
+	cloneSem        *semaphore.Weighted
+	codebaseRepo    analysis.CodebaseRepository
+	parser          analysis.Parser
+	parserVersion   string
+	repository      analysis.Repository
+	streamingParser analysis.StreamingParser
+	streamingRepo   analysis.StreamingRepository
+	timeout         time.Duration
+	tokenLookup     analysis.TokenLookup
+	vcs             analysis.VCS
+	vcsAPIClient    analysis.VCSAPIClient
 }
 
 // Config holds configuration for AnalyzeUseCase.
 type Config struct {
 	AnalysisTimeout     time.Duration
+	BatchSize           int
 	MaxConcurrentClones int64
 	ParserVersion       string
 }
@@ -73,6 +78,16 @@ func WithParserVersion(v string) Option {
 	}
 }
 
+// WithBatchSize sets the batch size for streaming analysis.
+// Zero or negative values are ignored and the default value is used.
+func WithBatchSize(size int) Option {
+	return func(cfg *Config) {
+		if size > 0 {
+			cfg.BatchSize = size
+		}
+	}
+}
+
 // NewAnalyzeUseCase creates a new AnalyzeUseCase with given dependencies.
 // tokenLookup is optional - if nil, all clones use public access (token=nil).
 func NewAnalyzeUseCase(
@@ -86,6 +101,7 @@ func NewAnalyzeUseCase(
 ) *AnalyzeUseCase {
 	cfg := Config{
 		AnalysisTimeout:     DefaultAnalysisTimeout,
+		BatchSize:           DefaultAnalysisBatchSize,
 		MaxConcurrentClones: DefaultMaxConcurrentClones,
 	}
 
@@ -93,7 +109,8 @@ func NewAnalyzeUseCase(
 		opt(&cfg)
 	}
 
-	return &AnalyzeUseCase{
+	uc := &AnalyzeUseCase{
+		batchSize:     cfg.BatchSize,
 		cloneSem:      semaphore.NewWeighted(cfg.MaxConcurrentClones),
 		codebaseRepo:  codebaseRepo,
 		parser:        parser,
@@ -104,6 +121,15 @@ func NewAnalyzeUseCase(
 		vcs:           vcs,
 		vcsAPIClient:  vcsAPIClient,
 	}
+
+	if streamingParser, ok := parser.(analysis.StreamingParser); ok {
+		uc.streamingParser = streamingParser
+	}
+	if streamingRepo, ok := repository.(analysis.StreamingRepository); ok {
+		uc.streamingRepo = streamingRepo
+	}
+
+	return uc
 }
 
 func (uc *AnalyzeUseCase) Execute(ctx context.Context, req analysis.AnalyzeRequest) (err error) {
@@ -167,10 +193,23 @@ func (uc *AnalyzeUseCase) Execute(ctx context.Context, req analysis.AnalyzeReque
 		}
 	}()
 
-	inventory, err := uc.parser.Scan(timeoutCtx, src)
+	if uc.canUseStreaming() {
+		return uc.executeStreaming(timeoutCtx, src, analysisID, req.UserID)
+	}
+
+	return uc.executeBatch(timeoutCtx, src, analysisID, req)
+}
+
+// executeBatch performs traditional batch analysis (full memory loading).
+func (uc *AnalyzeUseCase) executeBatch(
+	ctx context.Context,
+	src analysis.Source,
+	analysisID analysis.UUID,
+	req analysis.AnalyzeRequest,
+) error {
+	inventory, err := uc.parser.Scan(ctx, src)
 	if err != nil {
-		err = fmt.Errorf("%w: %w", ErrScanFailed, err)
-		return err
+		return fmt.Errorf("%w: %w", ErrScanFailed, err)
 	}
 
 	if inventory == nil {
@@ -189,13 +228,11 @@ func (uc *AnalyzeUseCase) Execute(ctx context.Context, req analysis.AnalyzeReque
 		UserID:      req.UserID,
 	}
 	if err = saveParams.Validate(); err != nil {
-		err = fmt.Errorf("%w: %w", ErrSaveFailed, err)
-		return err
+		return fmt.Errorf("%w: %w", ErrSaveFailed, err)
 	}
 
-	if err = uc.repository.SaveAnalysisInventory(timeoutCtx, saveParams); err != nil {
-		err = fmt.Errorf("%w: %w", ErrSaveFailed, err)
-		return err
+	if err = uc.repository.SaveAnalysisInventory(ctx, saveParams); err != nil {
+		return fmt.Errorf("%w: %w", ErrSaveFailed, err)
 	}
 
 	return nil
@@ -421,4 +458,92 @@ func (uc *AnalyzeUseCase) closeSource(src analysis.Source, owner, repo string) {
 			"repo", repo,
 		)
 	}
+}
+
+// canUseStreaming checks if streaming mode can be used.
+// Streaming is used when both parser and repository support streaming interfaces.
+func (uc *AnalyzeUseCase) canUseStreaming() bool {
+	return uc.streamingParser != nil && uc.streamingRepo != nil
+}
+
+// executeStreaming performs streaming analysis with batch buffering.
+// Files are processed incrementally to minimize memory footprint.
+func (uc *AnalyzeUseCase) executeStreaming(
+	ctx context.Context,
+	src analysis.Source,
+	analysisID analysis.UUID,
+	userID *string,
+) error {
+	ch, err := uc.streamingParser.ScanStream(ctx, src)
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrScanFailed, err)
+	}
+
+	batch := make([]analysis.TestFile, 0, uc.batchSize)
+	var totalSuites, totalTests int
+
+	for result := range ch {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+
+		if result.Err != nil {
+			return fmt.Errorf("%w: %w", ErrScanFailed, result.Err)
+		}
+
+		if result.File == nil {
+			continue
+		}
+
+		batch = append(batch, *result.File)
+
+		if len(batch) >= uc.batchSize {
+			batchParams := analysis.SaveAnalysisBatchParams{
+				AnalysisID: analysisID,
+				Files:      batch,
+			}
+			if err := batchParams.Validate(); err != nil {
+				return fmt.Errorf("%w: %w", ErrSaveFailed, err)
+			}
+			stats, saveErr := uc.streamingRepo.SaveAnalysisBatch(ctx, batchParams)
+			if saveErr != nil {
+				return fmt.Errorf("%w: %w", ErrSaveFailed, saveErr)
+			}
+			totalSuites += stats.SuitesProcessed
+			totalTests += stats.TestsProcessed
+			batch = batch[:0]
+		}
+	}
+
+	if len(batch) > 0 {
+		batchParams := analysis.SaveAnalysisBatchParams{
+			AnalysisID: analysisID,
+			Files:      batch,
+		}
+		if err := batchParams.Validate(); err != nil {
+			return fmt.Errorf("%w: %w", ErrSaveFailed, err)
+		}
+		stats, saveErr := uc.streamingRepo.SaveAnalysisBatch(ctx, batchParams)
+		if saveErr != nil {
+			return fmt.Errorf("%w: %w", ErrSaveFailed, saveErr)
+		}
+		totalSuites += stats.SuitesProcessed
+		totalTests += stats.TestsProcessed
+	}
+
+	finalizeParams := analysis.FinalizeAnalysisParams{
+		AnalysisID:  analysisID,
+		CommittedAt: src.CommittedAt(),
+		TotalSuites: totalSuites,
+		TotalTests:  totalTests,
+		UserID:      userID,
+	}
+	if err := finalizeParams.Validate(); err != nil {
+		return fmt.Errorf("%w: %w", ErrSaveFailed, err)
+	}
+	if err := uc.streamingRepo.FinalizeAnalysis(ctx, finalizeParams); err != nil {
+		return fmt.Errorf("%w: %w", ErrSaveFailed, err)
+	}
+
+	return nil
 }

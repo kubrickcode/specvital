@@ -45,6 +45,11 @@ type FairnessConfig struct {
 	SnoozeJitter              time.Duration
 }
 
+// StreamingConfig holds configuration for streaming analysis pipeline.
+type StreamingConfig struct {
+	BatchSize int
+}
+
 type Config struct {
 	DatabaseURL       string
 	EncryptionKey     string
@@ -54,6 +59,7 @@ type Config struct {
 	GeminiPhase2Model string
 	MockMode          bool
 	Queue             QueueConfig
+	Streaming         StreamingConfig
 }
 
 func Load() (*Config, error) {
@@ -76,6 +82,7 @@ func Load() (*Config, error) {
 		GeminiPhase2Model: os.Getenv("GEMINI_PHASE2_MODEL"),
 		MockMode:          os.Getenv("MOCK_MODE") == "true",
 		Queue:             loadQueueConfig(),
+		Streaming:         loadStreamingConfig(),
 	}, nil
 }
 
@@ -164,4 +171,11 @@ func getEnvInt(key string, defaultValue int) int {
 		return defaultValue
 	}
 	return parsed
+}
+
+// loadStreamingConfig loads streaming analysis pipeline settings.
+func loadStreamingConfig() StreamingConfig {
+	return StreamingConfig{
+		BatchSize: getEnvInt("ANALYSIS_BATCH_SIZE", 100),
+	}
 }

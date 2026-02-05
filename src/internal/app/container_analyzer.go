@@ -46,6 +46,7 @@ func NewAnalyzerContainer(ctx context.Context, cfg ContainerConfig) (*AnalyzerCo
 	analyzeUC := analysisuc.NewAnalyzeUseCase(
 		analysisRepo, codebaseRepo, gitVCS, githubAPIClient, coreParser, userRepo,
 		analysisuc.WithParserVersion(cfg.ParserVersion),
+		analysisuc.WithBatchSize(cfg.Streaming.BatchSize),
 	)
 	analyzeWorker := analyze.NewAnalyzeWorker(analyzeUC, quotaRepo)
 

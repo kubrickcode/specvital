@@ -18,6 +18,7 @@ type ContainerConfig struct {
 	MockMode          bool   // enable mock AI provider for development/testing
 	ParserVersion     string
 	Pool              *pgxpool.Pool
+	Streaming         config.StreamingConfig
 }
 
 // Validate checks that required common configuration fields are set.

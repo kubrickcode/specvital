@@ -82,6 +82,20 @@ func (m *mockParser) Scan(ctx context.Context, src analysis.Source) (*analysis.I
 	return nil, nil
 }
 
+type mockStreamingParser struct {
+	mockParser
+	scanStreamFn func(ctx context.Context, src analysis.Source) (<-chan analysis.FileResult, error)
+}
+
+func (m *mockStreamingParser) ScanStream(ctx context.Context, src analysis.Source) (<-chan analysis.FileResult, error) {
+	if m.scanStreamFn != nil {
+		return m.scanStreamFn(ctx, src)
+	}
+	ch := make(chan analysis.FileResult)
+	close(ch)
+	return ch, nil
+}
+
 type mockRepository struct {
 	createAnalysisRecordFn  func(ctx context.Context, params analysis.CreateAnalysisRecordParams) (analysis.UUID, error)
 	recordFailureFn         func(ctx context.Context, analysisID analysis.UUID, errMessage string) error
@@ -107,6 +121,26 @@ func (m *mockRepository) SaveAnalysisInventory(ctx context.Context, params analy
 		return m.saveAnalysisInventoryFn(ctx, params)
 	}
 	return nil
+}
+
+type mockStreamingRepository struct {
+	mockRepository
+	finalizeAnalysisFn  func(ctx context.Context, params analysis.FinalizeAnalysisParams) error
+	saveAnalysisBatchFn func(ctx context.Context, params analysis.SaveAnalysisBatchParams) (*analysis.BatchStats, error)
+}
+
+func (m *mockStreamingRepository) FinalizeAnalysis(ctx context.Context, params analysis.FinalizeAnalysisParams) error {
+	if m.finalizeAnalysisFn != nil {
+		return m.finalizeAnalysisFn(ctx, params)
+	}
+	return nil
+}
+
+func (m *mockStreamingRepository) SaveAnalysisBatch(ctx context.Context, params analysis.SaveAnalysisBatchParams) (*analysis.BatchStats, error) {
+	if m.saveAnalysisBatchFn != nil {
+		return m.saveAnalysisBatchFn(ctx, params)
+	}
+	return &analysis.BatchStats{}, nil
 }
 
 type mockCodebaseRepository struct {
@@ -1392,6 +1426,392 @@ func TestResolveCodebase(t *testing.T) {
 
 		if errors.Is(err, ErrRaceConditionDetected) {
 			t.Error("case change only should not trigger race condition")
+		}
+	})
+}
+
+func TestAnalyzeUseCase_Streaming(t *testing.T) {
+	t.Run("streaming interfaces supported - uses streaming mode", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		codebaseRepo := newSuccessfulCodebaseRepository()
+		vcsAPI := newSuccessfulVCSAPIClient()
+
+		var batchCalls int
+		finalizeCalled := false
+		streamingRepo := &mockStreamingRepository{
+			mockRepository: mockRepository{
+				createAnalysisRecordFn: func(ctx context.Context, params analysis.CreateAnalysisRecordParams) (analysis.UUID, error) {
+					return analysis.NewUUID(), nil
+				},
+			},
+			saveAnalysisBatchFn: func(ctx context.Context, params analysis.SaveAnalysisBatchParams) (*analysis.BatchStats, error) {
+				batchCalls++
+				return &analysis.BatchStats{
+					FilesProcessed:  len(params.Files),
+					SuitesProcessed: 1,
+					TestsProcessed:  2,
+				}, nil
+			},
+			finalizeAnalysisFn: func(ctx context.Context, params analysis.FinalizeAnalysisParams) error {
+				finalizeCalled = true
+				return nil
+			},
+		}
+
+		streamingParser := &mockStreamingParser{
+			scanStreamFn: func(ctx context.Context, src analysis.Source) (<-chan analysis.FileResult, error) {
+				ch := make(chan analysis.FileResult, 3)
+				ch <- analysis.FileResult{File: &analysis.TestFile{Path: "test1.go"}}
+				ch <- analysis.FileResult{File: &analysis.TestFile{Path: "test2.go"}}
+				ch <- analysis.FileResult{File: &analysis.TestFile{Path: "test3.go"}}
+				close(ch)
+				return ch, nil
+			},
+		}
+
+		uc := NewAnalyzeUseCase(
+			streamingRepo, codebaseRepo, vcs, vcsAPI, streamingParser, nil,
+			WithParserVersion(testParserVersion),
+			WithBatchSize(2),
+		)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if batchCalls != 2 {
+			t.Errorf("expected 2 batch calls (2 files + 1 file), got %d", batchCalls)
+		}
+		if !finalizeCalled {
+			t.Error("FinalizeAnalysis should be called")
+		}
+	})
+
+	t.Run("streaming parser error - RecordFailure called", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		codebaseRepo := newSuccessfulCodebaseRepository()
+		vcsAPI := newSuccessfulVCSAPIClient()
+
+		recordFailureCalled := false
+		streamingRepo := &mockStreamingRepository{
+			mockRepository: mockRepository{
+				createAnalysisRecordFn: func(ctx context.Context, params analysis.CreateAnalysisRecordParams) (analysis.UUID, error) {
+					return analysis.NewUUID(), nil
+				},
+				recordFailureFn: func(ctx context.Context, analysisID analysis.UUID, errMessage string) error {
+					recordFailureCalled = true
+					return nil
+				},
+			},
+		}
+
+		streamingParser := &mockStreamingParser{
+			scanStreamFn: func(ctx context.Context, src analysis.Source) (<-chan analysis.FileResult, error) {
+				return nil, errors.New("streaming init failed")
+			},
+		}
+
+		uc := NewAnalyzeUseCase(
+			streamingRepo, codebaseRepo, vcs, vcsAPI, streamingParser, nil,
+			WithParserVersion(testParserVersion),
+		)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if !errors.Is(err, ErrScanFailed) {
+			t.Errorf("expected ErrScanFailed, got %v", err)
+		}
+		if !recordFailureCalled {
+			t.Error("RecordFailure should be called on streaming error")
+		}
+	})
+
+	t.Run("streaming file error - propagates error", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		codebaseRepo := newSuccessfulCodebaseRepository()
+		vcsAPI := newSuccessfulVCSAPIClient()
+
+		streamingRepo := &mockStreamingRepository{
+			mockRepository: mockRepository{
+				createAnalysisRecordFn: func(ctx context.Context, params analysis.CreateAnalysisRecordParams) (analysis.UUID, error) {
+					return analysis.NewUUID(), nil
+				},
+				recordFailureFn: func(ctx context.Context, analysisID analysis.UUID, errMessage string) error {
+					return nil
+				},
+			},
+		}
+
+		streamingParser := &mockStreamingParser{
+			scanStreamFn: func(ctx context.Context, src analysis.Source) (<-chan analysis.FileResult, error) {
+				ch := make(chan analysis.FileResult, 2)
+				ch <- analysis.FileResult{File: &analysis.TestFile{Path: "test1.go"}}
+				ch <- analysis.FileResult{Err: errors.New("parse error on file2")}
+				close(ch)
+				return ch, nil
+			},
+		}
+
+		uc := NewAnalyzeUseCase(
+			streamingRepo, codebaseRepo, vcs, vcsAPI, streamingParser, nil,
+			WithParserVersion(testParserVersion),
+			WithBatchSize(100),
+		)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if !errors.Is(err, ErrScanFailed) {
+			t.Errorf("expected ErrScanFailed, got %v", err)
+		}
+	})
+
+	t.Run("batch buffering boundary - batchSize-1, batchSize, batchSize+1", func(t *testing.T) {
+		tests := []struct {
+			name          string
+			fileCount     int
+			batchSize     int
+			expectedCalls int
+		}{
+			{"batchSize-1", 2, 3, 1},
+			{"batchSize", 3, 3, 1},
+			{"batchSize+1", 4, 3, 2},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				src := newSuccessfulSource()
+				vcs := newSuccessfulVCS(src)
+				codebaseRepo := newSuccessfulCodebaseRepository()
+				vcsAPI := newSuccessfulVCSAPIClient()
+
+				var batchCalls int
+				streamingRepo := &mockStreamingRepository{
+					mockRepository: mockRepository{
+						createAnalysisRecordFn: func(ctx context.Context, params analysis.CreateAnalysisRecordParams) (analysis.UUID, error) {
+							return analysis.NewUUID(), nil
+						},
+					},
+					saveAnalysisBatchFn: func(ctx context.Context, params analysis.SaveAnalysisBatchParams) (*analysis.BatchStats, error) {
+						batchCalls++
+						return &analysis.BatchStats{FilesProcessed: len(params.Files)}, nil
+					},
+					finalizeAnalysisFn: func(ctx context.Context, params analysis.FinalizeAnalysisParams) error {
+						return nil
+					},
+				}
+
+				streamingParser := &mockStreamingParser{
+					scanStreamFn: func(ctx context.Context, src analysis.Source) (<-chan analysis.FileResult, error) {
+						ch := make(chan analysis.FileResult, tt.fileCount)
+						for i := 0; i < tt.fileCount; i++ {
+							ch <- analysis.FileResult{File: &analysis.TestFile{Path: "test.go"}}
+						}
+						close(ch)
+						return ch, nil
+					},
+				}
+
+				uc := NewAnalyzeUseCase(
+					streamingRepo, codebaseRepo, vcs, vcsAPI, streamingParser, nil,
+					WithParserVersion(testParserVersion),
+					WithBatchSize(tt.batchSize),
+				)
+				err := uc.Execute(context.Background(), newValidRequest())
+
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				if batchCalls != tt.expectedCalls {
+					t.Errorf("expected %d batch calls, got %d", tt.expectedCalls, batchCalls)
+				}
+			})
+		}
+	})
+
+	t.Run("non-streaming repository falls back to batch mode", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		codebaseRepo := newSuccessfulCodebaseRepository()
+		vcsAPI := newSuccessfulVCSAPIClient()
+
+		batchSaveCalled := false
+		repo := &mockRepository{
+			createAnalysisRecordFn: func(ctx context.Context, params analysis.CreateAnalysisRecordParams) (analysis.UUID, error) {
+				return analysis.NewUUID(), nil
+			},
+			saveAnalysisInventoryFn: func(ctx context.Context, params analysis.SaveAnalysisInventoryParams) error {
+				batchSaveCalled = true
+				return nil
+			},
+		}
+
+		streamingParser := &mockStreamingParser{
+			mockParser: mockParser{
+				scanFn: func(ctx context.Context, src analysis.Source) (*analysis.Inventory, error) {
+					return &analysis.Inventory{Files: []analysis.TestFile{}}, nil
+				},
+			},
+		}
+
+		uc := NewAnalyzeUseCase(
+			repo, codebaseRepo, vcs, vcsAPI, streamingParser, nil,
+			WithParserVersion(testParserVersion),
+		)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if !batchSaveCalled {
+			t.Error("should fall back to batch mode when repository does not support streaming")
+		}
+	})
+
+	t.Run("totals accumulated across batches", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		codebaseRepo := newSuccessfulCodebaseRepository()
+		vcsAPI := newSuccessfulVCSAPIClient()
+
+		var capturedTotals analysis.FinalizeAnalysisParams
+		streamingRepo := &mockStreamingRepository{
+			mockRepository: mockRepository{
+				createAnalysisRecordFn: func(ctx context.Context, params analysis.CreateAnalysisRecordParams) (analysis.UUID, error) {
+					return analysis.NewUUID(), nil
+				},
+			},
+			saveAnalysisBatchFn: func(ctx context.Context, params analysis.SaveAnalysisBatchParams) (*analysis.BatchStats, error) {
+				return &analysis.BatchStats{
+					FilesProcessed:  len(params.Files),
+					SuitesProcessed: 5,
+					TestsProcessed:  10,
+				}, nil
+			},
+			finalizeAnalysisFn: func(ctx context.Context, params analysis.FinalizeAnalysisParams) error {
+				capturedTotals = params
+				return nil
+			},
+		}
+
+		streamingParser := &mockStreamingParser{
+			scanStreamFn: func(ctx context.Context, src analysis.Source) (<-chan analysis.FileResult, error) {
+				ch := make(chan analysis.FileResult, 4)
+				for i := 0; i < 4; i++ {
+					ch <- analysis.FileResult{File: &analysis.TestFile{Path: "test.go"}}
+				}
+				close(ch)
+				return ch, nil
+			},
+		}
+
+		uc := NewAnalyzeUseCase(
+			streamingRepo, codebaseRepo, vcs, vcsAPI, streamingParser, nil,
+			WithParserVersion(testParserVersion),
+			WithBatchSize(2),
+		)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if capturedTotals.TotalSuites != 10 {
+			t.Errorf("expected TotalSuites 10 (5*2 batches), got %d", capturedTotals.TotalSuites)
+		}
+		if capturedTotals.TotalTests != 20 {
+			t.Errorf("expected TotalTests 20 (10*2 batches), got %d", capturedTotals.TotalTests)
+		}
+	})
+
+	t.Run("non-streaming parser falls back to batch mode", func(t *testing.T) {
+		src := newSuccessfulSource()
+		vcs := newSuccessfulVCS(src)
+		codebaseRepo := newSuccessfulCodebaseRepository()
+		vcsAPI := newSuccessfulVCSAPIClient()
+
+		batchSaveCalled := false
+		streamingRepo := &mockStreamingRepository{
+			mockRepository: mockRepository{
+				createAnalysisRecordFn: func(ctx context.Context, params analysis.CreateAnalysisRecordParams) (analysis.UUID, error) {
+					return analysis.NewUUID(), nil
+				},
+				saveAnalysisInventoryFn: func(ctx context.Context, params analysis.SaveAnalysisInventoryParams) error {
+					batchSaveCalled = true
+					return nil
+				},
+			},
+		}
+
+		parser := &mockParser{
+			scanFn: func(ctx context.Context, src analysis.Source) (*analysis.Inventory, error) {
+				return &analysis.Inventory{Files: []analysis.TestFile{}}, nil
+			},
+		}
+
+		uc := NewAnalyzeUseCase(
+			streamingRepo, codebaseRepo, vcs, vcsAPI, parser, nil,
+			WithParserVersion(testParserVersion),
+		)
+		err := uc.Execute(context.Background(), newValidRequest())
+
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if !batchSaveCalled {
+			t.Error("should fall back to batch mode when parser does not support streaming")
+		}
+	})
+}
+
+func TestAnalyzeUseCase_StreamingOptions(t *testing.T) {
+	t.Run("WithBatchSize - zero value ignored", func(t *testing.T) {
+		repo := &mockRepository{}
+		codebaseRepo := newSuccessfulCodebaseRepository()
+		vcs := &mockVCS{}
+		vcsAPI := newSuccessfulVCSAPIClient()
+		parser := &mockParser{}
+
+		uc := NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil,
+			WithParserVersion(testParserVersion),
+			WithBatchSize(0),
+		)
+
+		if uc.batchSize != DefaultAnalysisBatchSize {
+			t.Errorf("expected batchSize %d, got %d", DefaultAnalysisBatchSize, uc.batchSize)
+		}
+	})
+
+	t.Run("WithBatchSize - negative value ignored", func(t *testing.T) {
+		repo := &mockRepository{}
+		codebaseRepo := newSuccessfulCodebaseRepository()
+		vcs := &mockVCS{}
+		vcsAPI := newSuccessfulVCSAPIClient()
+		parser := &mockParser{}
+
+		uc := NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil,
+			WithParserVersion(testParserVersion),
+			WithBatchSize(-10),
+		)
+
+		if uc.batchSize != DefaultAnalysisBatchSize {
+			t.Errorf("expected batchSize %d, got %d", DefaultAnalysisBatchSize, uc.batchSize)
+		}
+	})
+
+	t.Run("WithBatchSize - positive value applied", func(t *testing.T) {
+		repo := &mockRepository{}
+		codebaseRepo := newSuccessfulCodebaseRepository()
+		vcs := &mockVCS{}
+		vcsAPI := newSuccessfulVCSAPIClient()
+		parser := &mockParser{}
+
+		uc := NewAnalyzeUseCase(repo, codebaseRepo, vcs, vcsAPI, parser, nil,
+			WithParserVersion(testParserVersion),
+			WithBatchSize(50),
+		)
+
+		if uc.batchSize != 50 {
+			t.Errorf("expected batchSize 50, got %d", uc.batchSize)
 		}
 	})
 }

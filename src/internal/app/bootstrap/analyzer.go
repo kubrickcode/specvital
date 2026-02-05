@@ -26,6 +26,7 @@ type AnalyzerConfig struct {
 	QueueWorkers    config.QueueWorkers
 	ServiceName     string
 	ShutdownTimeout time.Duration
+	Streaming       config.StreamingConfig
 }
 
 // Validate checks that required analyzer configuration fields are set.
@@ -81,6 +82,7 @@ func StartAnalyzer(cfg AnalyzerConfig) error {
 		Fairness:      cfg.Fairness,
 		ParserVersion: parserVersion,
 		Pool:          pool,
+		Streaming:     cfg.Streaming,
 	})
 	if err != nil {
 		return fmt.Errorf("container: %w", err)
