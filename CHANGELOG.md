@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.3.0](https://github.com/specvital/worker/compare/v1.2.4...v1.3.0) (2026-02-05)
+
+### 🎯 Highlights
+
+#### ✨ Features
+
+- **analysis:** add batch storage infrastructure for streaming pipeline ([5cf4008](https://github.com/specvital/worker/commit/5cf40082de45d66d301d32a8991fbd33a85acc54))
+- **analysis:** add logging for streaming analysis processing ([72ad88e](https://github.com/specvital/worker/commit/72ad88eaf16c7a783d4cfa2b79eec3b5a492177a))
+- **analysis:** integrate streaming parsing mode ([bce6b44](https://github.com/specvital/worker/commit/bce6b44a351cdfaf988b89b91c79a7f9ffb3e8cc))
+- **parser:** implement streaming parser for memory-efficient large repo analysis ([d25fdb0](https://github.com/specvital/worker/commit/d25fdb0801705114b8c0d935a338adb2c2ce247d))
+
+#### 🐛 Bug Fixes
+
+- **fairness:** per-user concurrency limit was applied globally ([9f2a693](https://github.com/specvital/worker/commit/9f2a693d84e33de5bce034fb8d58c682b7097885))
+
+#### ⚡ Performance
+
+- **analysis:** optimize timeout and connection settings for large repositories ([05338c3](https://github.com/specvital/worker/commit/05338c3c315b468bb59c7a2b61730541366bf613))
+- **analysis:** reduce N roundtrips to 1 by batching TestFile inserts ([4a3a3bb](https://github.com/specvital/worker/commit/4a3a3bb236ff43d8b2841adc402b85588ba7da68))
+
+### 🔧 Maintenance
+
+#### ♻️ Refactoring
+
+- **specview:** remove Phase 1 V2/V3 architecture dead code ([406c778](https://github.com/specvital/worker/commit/406c7781c3a387d4c6e6b9f6203bb70da49d6cf6))
+
+#### 🔨 Chore
+
+- claude code execution command modified to always run in a new terminal ([beec3c0](https://github.com/specvital/worker/commit/beec3c0da0cdc689070fffd4dafc438595928a26))
+- sync ai & container config from kubrickcode/ai-config-toolkit ([06bd1ab](https://github.com/specvital/worker/commit/06bd1ab30c17d327846a82fe770a9e51f13fd9b1))
+- update-core ([1c2210b](https://github.com/specvital/worker/commit/1c2210b0ad66a7cd4dfc995d586021d9f0efade8))
+
 ## [1.2.4](https://github.com/specvital/worker/compare/v1.2.3...v1.2.4) (2026-02-02)
 
 ### 🎯 Highlights
