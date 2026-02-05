@@ -8,7 +8,7 @@ require (
 	github.com/riverqueue/river v0.26.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.26.0
 	github.com/riverqueue/river/rivertype v0.28.0
-	github.com/specvital/core v1.5.1-0.20260112122808-d2a13f0adcd5
+	github.com/specvital/core v1.6.1-0.20260204153714-3680094ca501
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.35.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.35.0
