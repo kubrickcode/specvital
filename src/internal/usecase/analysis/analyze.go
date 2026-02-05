@@ -474,13 +474,15 @@ func (uc *AnalyzeUseCase) executeStreaming(
 	analysisID analysis.UUID,
 	userID *string,
 ) error {
+	streamingStart := time.Now()
+
 	ch, err := uc.streamingParser.ScanStream(ctx, src)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrScanFailed, err)
 	}
 
 	batch := make([]analysis.TestFile, 0, uc.batchSize)
-	var totalSuites, totalTests int
+	var totalFiles, totalSuites, totalTests, chunkIndex int
 
 	for result := range ch {
 		if err := ctx.Err(); err != nil {
@@ -498,6 +500,7 @@ func (uc *AnalyzeUseCase) executeStreaming(
 		batch = append(batch, *result.File)
 
 		if len(batch) >= uc.batchSize {
+			chunkStart := time.Now()
 			batchParams := analysis.SaveAnalysisBatchParams{
 				AnalysisID: analysisID,
 				Files:      batch,
@@ -509,13 +512,24 @@ func (uc *AnalyzeUseCase) executeStreaming(
 			if saveErr != nil {
 				return fmt.Errorf("%w: %w", ErrSaveFailed, saveErr)
 			}
+			totalFiles += len(batch)
 			totalSuites += stats.SuitesProcessed
 			totalTests += stats.TestsProcessed
+			chunkIndex++
+			slog.InfoContext(ctx, "streaming chunk saved",
+				"analysis_id", analysisID,
+				"chunk_index", chunkIndex,
+				"files_in_chunk", len(batch),
+				"suites_in_chunk", stats.SuitesProcessed,
+				"tests_in_chunk", stats.TestsProcessed,
+				"chunk_duration_ms", time.Since(chunkStart).Milliseconds(),
+			)
 			batch = batch[:0]
 		}
 	}
 
 	if len(batch) > 0 {
+		chunkStart := time.Now()
 		batchParams := analysis.SaveAnalysisBatchParams{
 			AnalysisID: analysisID,
 			Files:      batch,
@@ -527,8 +541,18 @@ func (uc *AnalyzeUseCase) executeStreaming(
 		if saveErr != nil {
 			return fmt.Errorf("%w: %w", ErrSaveFailed, saveErr)
 		}
+		totalFiles += len(batch)
 		totalSuites += stats.SuitesProcessed
 		totalTests += stats.TestsProcessed
+		chunkIndex++
+		slog.InfoContext(ctx, "streaming chunk saved",
+			"analysis_id", analysisID,
+			"chunk_index", chunkIndex,
+			"files_in_chunk", len(batch),
+			"suites_in_chunk", stats.SuitesProcessed,
+			"tests_in_chunk", stats.TestsProcessed,
+			"chunk_duration_ms", time.Since(chunkStart).Milliseconds(),
+		)
 	}
 
 	finalizeParams := analysis.FinalizeAnalysisParams{
@@ -544,6 +568,15 @@ func (uc *AnalyzeUseCase) executeStreaming(
 	if err := uc.streamingRepo.FinalizeAnalysis(ctx, finalizeParams); err != nil {
 		return fmt.Errorf("%w: %w", ErrSaveFailed, err)
 	}
+
+	slog.InfoContext(ctx, "streaming analysis completed",
+		"analysis_id", analysisID,
+		"total_chunks", chunkIndex,
+		"total_files", totalFiles,
+		"total_suites", totalSuites,
+		"total_tests", totalTests,
+		"total_duration_ms", time.Since(streamingStart).Milliseconds(),
+	)
 
 	return nil
 }
