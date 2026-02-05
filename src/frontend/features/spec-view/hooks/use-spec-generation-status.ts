@@ -99,7 +99,6 @@ export const useSpecGenerationStatus = (
       return POLLING_INTERVAL_MS;
     },
     retry: 2,
-    staleTime: 0,
   });
 
   const status = query.data?.status ?? null;

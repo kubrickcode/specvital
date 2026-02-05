@@ -56,7 +56,6 @@ export const QuotaConfirmDialog = () => {
     enabled: isOpen && !!analysisId,
     queryFn: () => fetchCacheAvailability(analysisId!),
     queryKey: ["cache-availability", analysisId],
-    staleTime: 60000, // 1 minute
   });
 
   // Check if previous spec exists for selected language.
@@ -73,7 +72,6 @@ export const QuotaConfirmDialog = () => {
     placeholderData: (previousData) => previousData,
     queryFn: () => fetchCachePrediction(analysisId!, selectedLanguage),
     queryKey: ["cache-prediction", analysisId, selectedLanguage],
-    staleTime: 60000, // 1 minute
   });
 
   // Dynamic estimated cost based on cache mode

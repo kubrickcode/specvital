@@ -19,6 +19,5 @@ export const useCurrentPlan = (enabled = true) => {
     enabled,
     queryFn: fetchCurrentPlan,
     queryKey: ["user", "currentPlan"],
-    staleTime: 60 * 1000,
   });
 };

@@ -9,6 +9,5 @@ export const useUsage = (enabled = true) => {
     enabled,
     queryFn: fetchCurrentUsage,
     queryKey: ["user", "usage"],
-    staleTime: 30 * 1000,
   });
 };

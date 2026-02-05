@@ -21,9 +21,8 @@ export const isUnauthorizedError = (error: unknown): boolean => {
 };
 
 export const handleUnauthorizedError = (queryClient: QueryClient): void => {
+  if (typeof document !== "undefined") {
+    document.cookie = "has_session=; path=/; max-age=0";
+  }
   queryClient.setQueryData(authKeys.user(), null);
-};
-
-export const isAuthQuery = (queryKey: readonly unknown[]): boolean => {
-  return queryKey[0] === AUTH_QUERY_KEY;
 };

@@ -32,7 +32,6 @@ export const useOrganizationRepos = ({
     enabled: Boolean(org),
     queryFn: () => fetchOrganizationRepositories(org),
     queryKey: organizationReposKeys.byOrg(org),
-    staleTime: 5 * 60 * 1000,
   });
 
   const refresh = async () => {

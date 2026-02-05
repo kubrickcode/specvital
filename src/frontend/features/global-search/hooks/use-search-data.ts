@@ -12,9 +12,6 @@ import {
 } from "../api";
 import type { RepositorySearchItem } from "../lib/fuse-config";
 
-const SEARCH_DATA_STALE_TIME = 30 * 1000;
-const SEARCH_DATA_GC_TIME = 5 * 60 * 1000;
-
 type UseSearchDataReturn = {
   allItems: RepositorySearchItem[];
   hasError: boolean;
@@ -36,25 +33,19 @@ export const useSearchData = (): UseSearchDataReturn => {
 
   const userReposQuery = useQuery({
     enabled: isAuthenticated,
-    gcTime: SEARCH_DATA_GC_TIME,
     queryFn: fetchUserAnalyzedRepositories,
     queryKey: ["global-search", "user-repos"],
-    staleTime: SEARCH_DATA_STALE_TIME,
   });
 
   const bookmarksQuery = useQuery({
     enabled: isAuthenticated,
-    gcTime: SEARCH_DATA_GC_TIME,
     queryFn: fetchUserBookmarks,
     queryKey: ["global-search", "bookmarks"],
-    staleTime: SEARCH_DATA_STALE_TIME,
   });
 
   const communityQuery = useQuery({
-    gcTime: SEARCH_DATA_GC_TIME,
     queryFn: fetchCommunityRepositories,
     queryKey: ["global-search", "community"],
-    staleTime: SEARCH_DATA_STALE_TIME,
   });
 
   const isLoading =

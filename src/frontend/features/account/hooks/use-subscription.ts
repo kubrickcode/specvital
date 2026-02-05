@@ -9,6 +9,5 @@ export const useSubscription = (enabled = true) => {
     enabled,
     queryFn: fetchSubscription,
     queryKey: ["user", "subscription"],
-    staleTime: 60 * 1000,
   });
 };

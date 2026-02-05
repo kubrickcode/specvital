@@ -42,7 +42,6 @@ export const useAllOrgRepos = ({
       enabled: Boolean(org.login),
       queryFn: () => fetchOrganizationRepositories(org.login),
       queryKey: organizationReposKeys.byOrg(org.login),
-      staleTime: 5 * 60 * 1000,
     })),
   });
 

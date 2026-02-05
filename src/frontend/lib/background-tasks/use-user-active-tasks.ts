@@ -45,8 +45,6 @@ export const useUserActiveTasks = (
     // Always poll - stopping causes race conditions when tasks complete
     // Server returns empty array when no active tasks (minimal overhead)
     refetchInterval: POLL_INTERVAL_MS,
-    // Prevent stale data from previous sessions
-    staleTime: 0,
   });
 
   const tasks = query.data?.tasks ?? [];

@@ -55,7 +55,6 @@ export const UpdateBanner = ({ owner, repo }: UpdateBannerProps) => {
     },
     // Prevent returning cached "completed" status from previous polling sessions
     gcTime: 0,
-    staleTime: 0,
   });
 
   // Clean up polling state and dismiss banner on completion

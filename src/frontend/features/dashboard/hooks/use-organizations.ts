@@ -28,7 +28,6 @@ export const useOrganizations = (): UseOrganizationsReturn => {
   const query = useQuery({
     queryFn: () => fetchUserGitHubOrganizations(),
     queryKey: organizationsKeys.list(),
-    staleTime: 5 * 60 * 1000,
   });
 
   const refresh = async () => {

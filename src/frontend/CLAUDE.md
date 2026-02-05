@@ -126,6 +126,24 @@ export function SpecialComponent() {
 }
 ```
 
+## React Query Caching Policy
+
+**Default: No caching (`staleTime: 0`)**
+
+- Always provide fresh data on mount/refetch
+- **NEVER** set `staleTime` unless data is truly static (e.g., pricing info)
+- If `staleTime` must be set, `gcTime` MUST equal or exceed `staleTime`
+
+**Rationale**: Arbitrary caching causes hard-to-debug issues. The cost of an extra API call is far less than debugging cache-related bugs.
+
+**Prohibited Patterns**:
+
+- `isFetching` for conditional rendering that causes mount/unmount (use `isPending`)
+- `staleTime` without matching `gcTime`
+- Setting `staleTime` without explicit justification
+
+**Exception**: `gcTime: 0` for polling queries to prevent cached terminal states.
+
 ## Key Patterns
 
 ### Feature Barrel Export

@@ -99,7 +99,6 @@ export const useAnalysis = (
       return interval;
     },
     retry: false,
-    staleTime: 0,
   });
 
   const response = query.data;

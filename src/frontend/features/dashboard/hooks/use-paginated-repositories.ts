@@ -47,7 +47,6 @@ export const usePaginatedRepositories = (
         view,
       }),
     queryKey: paginatedRepositoriesKeys.list({ limit, ownership, sortBy, sortOrder, view }),
-    staleTime: 30 * 1000,
   });
 
   const data = query.data?.pages.flatMap((page) => page.data) ?? [];

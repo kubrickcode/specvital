@@ -34,7 +34,6 @@ export const useAnalysisHistory = (
       return response.data;
     },
     queryKey: analysisHistoryKeys.detail(owner, repo),
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   return {

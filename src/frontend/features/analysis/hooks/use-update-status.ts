@@ -6,8 +6,6 @@ import type { UpdateStatus } from "@/lib/api/types";
 
 import { checkUpdateStatus } from "../api";
 
-const STALE_TIME_MS = 0; // Always fetch fresh data on mount
-
 export const updateStatusKeys = {
   all: ["updateStatus"] as const,
   detail: (owner: string, repo: string) => [...updateStatusKeys.all, owner, repo] as const,
@@ -30,7 +28,6 @@ export const useUpdateStatus = (
     enabled,
     queryFn: () => checkUpdateStatus(owner, repo),
     queryKey: updateStatusKeys.detail(owner, repo),
-    staleTime: STALE_TIME_MS,
   });
 
   return {

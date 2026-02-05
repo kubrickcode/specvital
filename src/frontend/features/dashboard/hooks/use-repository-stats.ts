@@ -27,7 +27,6 @@ export const useRepositoryStats = (): UseRepositoryStatsReturn => {
     enabled: isEnabled,
     queryFn: fetchRepositoryStats,
     queryKey: repositoryStatsKeys.all,
-    staleTime: 60 * 1000,
   });
 
   return {

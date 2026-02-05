@@ -28,7 +28,6 @@ export const useMyRepositories = (): UseMyRepositoriesReturn => {
   const query = useQuery({
     queryFn: () => fetchUserGitHubRepositories(),
     queryKey: myRepositoriesKeys.list(),
-    staleTime: 5 * 60 * 1000,
   });
 
   const refresh = async () => {

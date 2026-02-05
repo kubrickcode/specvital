@@ -64,7 +64,6 @@ export const useReanalyze = (): UseReanalyzeReturn => {
     },
     // Prevent returning cached "completed" status from previous polling sessions
     gcTime: 0,
-    staleTime: 0,
   });
 
   // Clean up polling state on completion

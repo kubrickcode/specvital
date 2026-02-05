@@ -68,7 +68,6 @@ export const useSpecView = (
     queryFn: () => fetchSpecDocument(analysisId, { language, version }),
     queryKey: specViewKeys.document(analysisId, language, version),
     retry: false,
-    staleTime: 30000,
   });
 
   const generateMutation = useMutation({

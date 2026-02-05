@@ -39,18 +39,52 @@ export const useAuth = (): UseAuthReturn => {
   // Re-check on pathname change to detect cookie changes during SPA navigation
   const [hasSession, setHasSession] = useState(false);
   const [isSessionChecked, setIsSessionChecked] = useState(false);
+  // Track if initial session verification completed (prevents flicker on expired sessions)
+  const [isSessionVerified, setIsSessionVerified] = useState(false);
+
   useEffect(() => {
-    setHasSession(checkSessionCookie());
+    const newHasSession = checkSessionCookie();
+
+    // Clear cache when cookie is missing to prevent stale auth state
+    if (!newHasSession) {
+      queryClient.setQueryData(authKeys.user(), null);
+    }
+
+    setHasSession(newHasSession);
     setIsSessionChecked(true);
-  }, [nextPathname]);
+  }, [nextPathname, queryClient]);
+
+  // Reset verification state when session state changes (e.g., logout → login)
+  useEffect(() => {
+    setIsSessionVerified(false);
+  }, [hasSession]);
 
   const userQuery = useQuery({
     enabled: hasSession,
     queryFn: fetchCurrentUser,
     queryKey: authKeys.user(),
     retry: false,
-    staleTime: 5 * 60 * 1000,
   });
+
+  // Mark session as verified when initial fetch completes (success or error)
+  // This runs only once per session, preventing infinite loops on subsequent refetches
+  useEffect(() => {
+    if (!hasSession) return;
+
+    if (!userQuery.isPending && !userQuery.isFetching) {
+      setIsSessionVerified(true);
+    }
+  }, [hasSession, userQuery.isPending, userQuery.isFetching]);
+
+  // Re-check cookie when query errors (handles 401 cookie deletion by error-handler)
+  useEffect(() => {
+    if (userQuery.error) {
+      const newHasSession = checkSessionCookie();
+      if (!newHasSession && hasSession) {
+        setHasSession(false);
+      }
+    }
+  }, [userQuery.error, hasSession]);
 
   const loginMutation = useMutation({
     mutationFn: fetchLogin,
@@ -73,7 +107,10 @@ export const useAuth = (): UseAuthReturn => {
     },
   });
 
-  const isLoading = !isSessionChecked || userQuery.isFetching;
+  // Wait for initial session verification before showing authenticated content
+  // - No cookie: immediately not loading (unauthenticated)
+  // - Has cookie: wait for first fetch to complete (prevents flicker on expired sessions)
+  const isLoading = !isSessionChecked || (hasSession && !isSessionVerified);
 
   return {
     isAuthenticated: !!userQuery.data,
