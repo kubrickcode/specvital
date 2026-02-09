@@ -1,0 +1,1360 @@
+{
+  "maintenance": {
+    "title": "서비스 점검 중입니다",
+    "description": "더 나은 서비스를 위해 시스템을 업데이트하고 있습니다. 잠시 후 다시 방문해 주세요."
+  },
+  "common": {
+    "appName": "SpecVital",
+    "loading": "로딩 중...",
+    "refreshing": "콘텐츠 새로고침 중...",
+    "error": "오류",
+    "tryAgain": "다시 시도",
+    "goHome": "홈으로"
+  },
+  "header": {
+    "account": "계정",
+    "analyze": "분석",
+    "analyzeAnother": "다른 분석",
+    "dashboard": "대시보드",
+    "goToHomepage": "홈페이지로 이동",
+    "language": "언어",
+    "mobileNavigation": "모바일 내비게이션",
+    "more": "더보기",
+    "selectLanguage": "언어 선택",
+    "skipToContent": "본문으로 바로가기",
+    "theme": "테마",
+    "toggleTheme": "테마 전환"
+  },
+  "analyzeDialog": {
+    "title": "리포지토리 분석",
+    "description": "테스트 스펙을 분석할 GitHub 리포지토리 URL을 입력하세요.",
+    "trigger": "새 분석",
+    "ctaTrigger": "리포지토리 분석하기"
+  },
+  "auth": {
+    "account": "계정",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "openUserMenu": "사용자 메뉴 열기",
+    "toast": {
+      "authFailed": "인증에 실패했습니다",
+      "invalidCode": "잘못된 인증 코드입니다",
+      "invalidState": "세션이 만료되었습니다. 다시 시도해주세요.",
+      "loginFailed": "로그인을 시작할 수 없습니다",
+      "missingOAuthParams": "OAuth 파라미터가 누락되었습니다",
+      "networkError": "인증 중 네트워크 오류가 발생했습니다",
+      "unknownError": "인증 오류: {error}"
+    }
+  },
+  "loginModal": {
+    "continueWithGitHub": "GitHub으로 계속하기",
+    "description": "로그인하여 저장소를 저장하고 분석 기록을 관리하세요.",
+    "terms": "로그인 시 서비스 이용약관에 동의하게 됩니다.",
+    "title": "SpecVital에 로그인"
+  },
+  "home": {
+    "headline": "테스트 현황, 즉시 파악",
+    "subheadline": "GitHub URL만 입력하세요. 설정 없이 바로 분석합니다.",
+    "inputPlaceholder": "https://github.com/facebook/react",
+    "inputPlaceholderShort": "owner/repo",
+    "analyzeButton": "분석 시작",
+    "helperText": "",
+    "inputLabel": "GitHub 저장소 URL",
+    "demoLink": "예시 보기",
+    "supportedFormats": {
+      "label": "지원 형식 보기",
+      "title": "지원 형식",
+      "note": "branch/file 경로도 자동 추출됩니다"
+    },
+    "trustBadges": {
+      "accurate": "AST 기반",
+      "free": "무료로 시작",
+      "instant": "즉시 분석",
+      "multiFramework": "20+ 프레임워크"
+    },
+    "frameworks": {
+      "title": "지원 프레임워크",
+      "description": "지원하는 테스트 프레임워크와 파일 패턴 목록",
+      "javascript": "JavaScript / TypeScript",
+      "python": "Python",
+      "go": "Go",
+      "java": "Java",
+      "kotlin": "Kotlin",
+      "csharp": "C#",
+      "ruby": "Ruby",
+      "php": "PHP",
+      "rust": "Rust",
+      "cpp": "C++",
+      "swift": "Swift"
+    }
+  },
+  "analyze": {
+    "generateSpec": {
+      "generate": "AI 스펙 생성",
+      "generating": "생성 중...",
+      "aiSpecDocument": "AI 스펙 문서",
+      "ariaLabel": "AI로 테스트 스펙 문서 생성"
+    },
+    "viewOnGitHub": "GitHub에서 보기",
+    "details": "상세 정보",
+    "analyzedAt": "분석 시각: {date}",
+    "parserVersion": "파서 버전: {version}",
+    "branch": "브랜치",
+    "commit": "커밋",
+    "commitDetails": "커밋 상세",
+    "committedAt": "커밋 시각: {date}",
+    "testSuites": "테스트 스위트",
+    "noTestSuites": "이 저장소에서 테스트 스위트를 찾을 수 없습니다.",
+    "noTestsInSuite": "이 스위트에 테스트가 없습니다.",
+    "testCount": "{count}개 테스트",
+    "retry": "다시 시도",
+    "quotaExceeded": {
+      "title": "분석 할당량 초과",
+      "description": "이번 기간의 분석 할당량을 모두 사용했습니다. 할당량은 {resetDate}에 초기화됩니다.",
+      "currentUsage": "현재 사용량: {used} / {limit}",
+      "viewAccount": "계정 확인"
+    },
+    "waiting": {
+      "queued": {
+        "0": "분석 대기 중",
+        "1": "작업자를 기다리는 중...",
+        "2": "대기열에 추가되었습니다",
+        "3": "곧 분석이 시작됩니다",
+        "4": "잠시만 기다려주세요"
+      },
+      "analyzing": {
+        "0": "GitHub에서 저장소 복제 중",
+        "1": "테스트 파일 검색 중",
+        "2": "테스트 스펙 파싱 중",
+        "3": "테스트 구조 분석 중",
+        "4": "거의 완료되었습니다..."
+      },
+      "elapsed": "경과 시간",
+      "longWait": "이 페이지를 떠나도 괜찮습니다 - 백그라운드에서 분석이 계속됩니다"
+    },
+    "filter": {
+      "clearSearch": "검색 지우기",
+      "frameworkFilter": "프레임워크",
+      "noResults": "일치하는 테스트가 없습니다",
+      "noResultsDescription": "필터 조건을 조정해보세요",
+      "resetFilters": "필터 초기화",
+      "searchLabel": "검색",
+      "searchPlaceholder": "테스트 또는 파일 검색...",
+      "statusActive": "활성",
+      "statusFilter": "상태",
+      "statusFocused": "집중",
+      "statusSkipped": "건너뜀",
+      "statusTodo": "할 일",
+      "statusXfail": "예상 실패",
+      "matchCount": "{count}개 일치",
+      "resultSummary": "{total}개 중 {filtered}개 테스트",
+      "searchBehaviorsPlaceholder": "동작 검색...",
+      "resultSummaryWithType": "{total}개 중 {filtered}개 {type}"
+    },
+    "viewMode": {
+      "list": "목록 보기",
+      "tree": "트리 보기",
+      "document": "문서 보기",
+      "documentUnavailable": "문서 생성이 필요합니다"
+    },
+    "tabs": {
+      "tests": "테스트",
+      "spec": "AI 스펙"
+    },
+    "status": {
+      "queued": "대기열에서 대기 중...",
+      "queuedTitle": "대기 중",
+      "queuedDescription": "곧 분석이 시작됩니다",
+      "analyzing": "저장소 분석 중...",
+      "analyzingTitle": "분석 중",
+      "analyzingDescription": "테스트 파일을 스캔하고 있습니다",
+      "error": "분석 실패",
+      "failed": "분석을 완료할 수 없습니다. 다시 시도해 주세요."
+    },
+    "updateBanner": {
+      "analyzing": "저장소 분석 중...",
+      "dismissLabel": "닫기",
+      "newCommitsDetected": "새 커밋이 감지되었습니다. 최신 분석 결과를 확인하려면 업데이트하세요.",
+      "parserUpdated": "파서가 업데이트되었습니다. 더 정확한 결과를 위해 재분석하세요.",
+      "reanalyzeFailed": "재분석을 시작할 수 없습니다",
+      "reanalyzeQueued": "재분석이 시작되었습니다",
+      "updateNow": "지금 업데이트"
+    },
+    "commitHistory": {
+      "title": "분석된 커밋",
+      "tests": "{count}개 테스트"
+    }
+  },
+  "emptyState": {
+    "title": "테스트를 찾을 수 없습니다",
+    "description": "이 저장소에서 테스트 파일을 찾을 수 없습니다.",
+    "supportedFrameworks": "지원하는 프레임워크:",
+    "analyzeAnother": "다른 저장소 분석하기"
+  },
+  "stats": {
+    "label": "테스트 통계",
+    "total": "전체",
+    "active": "활성",
+    "focused": "집중",
+    "skipped": "건너뜀",
+    "xfail": "예상 실패",
+    "todo": "할 일",
+    "byFramework": "프레임워크별",
+    "framework": "프레임워크",
+    "frameworkProgress": "{framework} 테스트 분포",
+    "frameworkProgressDetail": "{framework}: 전체 테스트의 {percentage}% ({total}개 테스트 - 활성 {active}개, 건너뜀 {skipped}개, 할 일 {todo}개)",
+    "tests": "개"
+  },
+  "errors": {
+    "somethingWentWrong": "문제가 발생했습니다",
+    "unexpectedError": "예기치 않은 오류가 발생했습니다",
+    "invalidRequest": "잘못된 요청",
+    "accessDenied": "접근 거부",
+    "notFound": "저장소를 찾을 수 없음",
+    "rateLimitExceeded": "요청 한도 초과",
+    "networkError": "네트워크 오류",
+    "serverError": "서버 오류",
+    "validationError": "검증 오류",
+    "parseError": "파싱 오류",
+    "errorCode": "오류 코드: {code}",
+    "technicalDetails": "기술 세부정보"
+  },
+  "metadata": {
+    "defaultTitle": "SpecVital - 테스트 스펙 분석기",
+    "defaultDescription": "GitHub 저장소의 테스트 사양 분석",
+    "analyzeTitle": "{owner}/{repo} - 테스트 분석 | SpecVital",
+    "analyzeDescription": "{owner}/{repo} 저장소의 테스트 사양 분석"
+  },
+  "share": {
+    "ariaLabel": "분석 링크 공유",
+    "button": "공유",
+    "copyFailed": "링크 복사 실패",
+    "copyFailedDescription": "주소창에서 URL을 직접 복사해주세요",
+    "linkCopied": "링크 복사됨!",
+    "linkCopiedDescription": "팀원들과 이 분석을 공유하세요"
+  },
+  "export": {
+    "ariaLabel": "분석 결과 내보내기",
+    "button": "내보내기",
+    "copyMarkdown": "마크다운 복사",
+    "downloadMarkdown": "마크다운 다운로드",
+    "success": "완료!"
+  },
+  "explore": {
+    "title": "탐색",
+    "searchPlaceholder": "저장소 검색...",
+    "sort": {
+      "label": "정렬",
+      "name": "이름순",
+      "recent": "최신순",
+      "tests": "테스트순"
+    },
+    "tabs": {
+      "community": "커뮤니티",
+      "myRepos": "내 저장소",
+      "organizations": "조직"
+    },
+    "community": {
+      "visibilityDisclosure": "공개 저장소만 표시됩니다. 분석 시점의 공개 여부 기준입니다."
+    },
+    "loginRequired": {
+      "myReposTitle": "내 저장소를 보려면 로그인하세요",
+      "myReposDescription": "GitHub 계정을 연결하여 개인 저장소를 확인하고 분석하세요.",
+      "organizationsTitle": "조직을 보려면 로그인하세요",
+      "organizationsDescription": "GitHub 계정을 연결하여 조직 저장소에 접근하세요.",
+      "signIn": "로그인하여 계속하기"
+    },
+    "myRepos": {
+      "title": "내 저장소",
+      "description": "내 GitHub 저장소 목록",
+      "analyze": "분석",
+      "view": "보기",
+      "lastPush": "마지막 푸시",
+      "noRepos": "저장소가 없습니다",
+      "noReposDescription": "아직 GitHub에 저장소가 없습니다.",
+      "noSearchResults": "검색 결과가 없습니다",
+      "refresh": "GitHub에서 새로고침",
+      "searchPlaceholder": "저장소 검색...",
+      "analyzed": "분석됨",
+      "notAnalyzed": "미분석"
+    },
+    "organizations": {
+      "title": "조직 저장소",
+      "description": "GitHub 조직의 저장소 목록",
+      "selectOrg": "조직 선택",
+      "noOrgs": "조직 없음",
+      "noOrgsDescription": "GitHub 조직에 가입되어 있지 않거나 접근 권한이 필요합니다.",
+      "connectRequired": "연결 필요",
+      "connectDescription": "이 조직의 저장소에 접근하려면 SpecVital GitHub 앱을 설치하세요.",
+      "connect": "연결",
+      "refresh": "새로고침"
+    }
+  },
+  "navigation": {
+    "ariaLabel": "메인 네비게이션",
+    "dashboard": "대시보드",
+    "explore": "탐색",
+    "pricing": "요금제",
+    "docs": "문서"
+  },
+  "specView": {
+    "toc": {
+      "title": "목차",
+      "openToc": "목차 열기",
+      "description": "스펙 문서를 탐색합니다",
+      "filterMatchCount": "{matched}/{total}개 동작"
+    },
+    "executiveSummary": {
+      "title": "요약",
+      "modelTooltip": "생성에 사용된 AI 모델",
+      "dateTooltip": "문서 생성 시각",
+      "languageTooltip": "문서 언어",
+      "switchLanguageTooltip": "다른 언어로 전환",
+      "currentLanguage": "현재",
+      "regenerateTooltip": "현재 언어로 문서 재생성",
+      "regenerateAriaLabel": "AI 스펙 문서 재생성",
+      "noSummary": "요약이 없습니다. 재생성 버튼을 클릭하여 새 문서를 생성하세요.",
+      "availableLanguages": "이용 가능한 언어",
+      "generateNew": "새로 생성",
+      "versionLabel": "v{version}",
+      "versionLatest": "v{version} (최신)",
+      "versionUnknown": "버전",
+      "versionHistory": "버전 기록",
+      "switchVersionTooltip": "이전 버전 보기",
+      "latestLabel": "최신"
+    },
+    "export": {
+      "ariaLabel": "스펙 문서 내보내기",
+      "button": "내보내기",
+      "copyMarkdown": "마크다운 복사",
+      "downloadMarkdown": "마크다운 다운로드",
+      "success": "완료!",
+      "tooltip": "마크다운 형식으로 문서 내보내기"
+    },
+    "versionBanner": {
+      "outdatedCommit": "이 스펙은 이전 커밋 기준으로 생성되었습니다. 재생성하여 업데이트하세요.",
+      "regenerate": "재생성",
+      "viewingOldVersion": "버전 {current}을(를) 보고 있습니다. 최신 버전은 {latest}입니다.",
+      "viewLatest": "최신 보기"
+    },
+    "stats": {
+      "domains": "도메인 {count}개",
+      "features": "기능 {count}개",
+      "behaviors": "동작 {count}개"
+    },
+    "search": {
+      "placeholder": "동작 검색...",
+      "dialogTitle": "문서 검색",
+      "dialogDescription": "스펙 문서의 모든 동작을 검색합니다",
+      "noResults": "일치하는 동작이 없습니다",
+      "resultsHeading": "{count}개 결과"
+    },
+    "filter": {
+      "clearFilters": "필터 초기화",
+      "resultSummary": "{total}개 중 {filtered}개 동작"
+    },
+    "behavior": {
+      "original": "원본 테스트명"
+    },
+    "statusLegend": {
+      "title": "상태 범례",
+      "active": "활성",
+      "activeDescription": "테스트가 활성화되어 정상 실행됨",
+      "skipped": "건너뜀",
+      "skippedDescription": "테스트가 일시적으로 비활성화됨",
+      "todo": "할 일",
+      "todoDescription": "테스트가 계획되었으나 아직 구현되지 않음",
+      "focused": "집중",
+      "focusedDescription": "이 테스트만 실행됨 (디버깅 모드)",
+      "xfail": "예상 실패",
+      "xfailDescription": "테스트가 실패할 것으로 예상됨 (알려진 문제)"
+    },
+    "domain": {
+      "summary": "기능 {featureCount}개, 동작 {behaviorCount}개",
+      "aiConfidence": "AI 분류 신뢰도"
+    },
+    "statsBadge": {
+      "full": "도메인 {domainCount}개 / 기능 {featureCount}개 / 동작 {behaviorCount}개",
+      "domainOnly": "기능 {featureCount}개 / 동작 {behaviorCount}개"
+    },
+    "emptyDocument": {
+      "title": "스펙 문서 없음",
+      "description": "테스트 케이스를 기반으로 AI 스펙 문서를 생성하세요. 테스트가 도메인, 기능, 동작으로 정리됩니다.",
+      "generateButton": "문서 생성",
+      "generating": "생성 중..."
+    },
+    "quota": {
+      "thisMonth": "이번 달",
+      "unlimited": "(무제한)",
+      "warning": "거의 소진됨",
+      "almostFull": "한도 임박",
+      "viewAccount": "계정 보기",
+      "processing": "처리 중"
+    },
+    "quotaConfirm": {
+      "title": "스펙 문서 생성",
+      "description": "AI 스펙 문서 생성 할당량이 사용됩니다. 진행하기 전에 현재 사용량을 확인해주세요.",
+      "regenerateTitle": "스펙 문서 재생성",
+      "regenerateDescription": "새 버전의 스펙 문서가 생성됩니다. 이전 버전도 조회할 수 있습니다.",
+      "outputLanguage": "출력 언어",
+      "selectLanguage": "언어 선택",
+      "searchLanguage": "언어 검색...",
+      "noLanguageFound": "언어를 찾을 수 없습니다.",
+      "specviewUsage": "이번 달 사용량",
+      "used": "사용",
+      "unlimited": "무제한",
+      "thisMonth": "테스트 (이번 달)",
+      "unit": "테스트",
+      "estimatedCost": "이번 생성으로 약 {count} 테스트 사용 예정",
+      "afterGeneration": "생성 후: 약 {after} / {limit} 테스트",
+      "current": "현재",
+      "estimatedCostNote": "실제 사용량은 예상치와 다를 수 있습니다",
+      "limit": "한도",
+      "afterUsageShort": "생성 후 약 {after} / {limit}",
+      "warningMessage": "월별 할당량이 거의 소진되었습니다. 더 많은 생성을 위해 플랜 업그레이드를 고려해주세요.",
+      "dangerMessage": "월별 한도에 거의 도달했습니다. 이 생성으로 남은 할당량의 대부분이 사용됩니다.",
+      "exceededMessage": "월별 할당량 한도에 도달했습니다. 플랜을 업그레이드하거나 다음 달까지 기다려주세요.",
+      "wouldExceedMessage": "이번 생성이 월별 할당량 한도를 초과합니다.",
+      "viewAccount": "계정 보기 →",
+      "cancel": "취소",
+      "generate": "문서 생성",
+      "regenerate": "문서 재생성"
+    },
+    "toast": {
+      "noSubscription": {
+        "title": "구독 필요",
+        "description": "스펙 문서를 생성하려면 활성 구독이 필요합니다.",
+        "viewPlans": "요금제 보기"
+      },
+      "quotaExceeded": {
+        "title": "할당량 초과",
+        "description": "이번 달 {used} / {limit} 테스트 사용",
+        "viewAccount": "계정 보기"
+      },
+      "generateFailed": {
+        "title": "스펙 생성 실패"
+      },
+      "generationInProgress": {
+        "title": "스펙 문서 생성 중",
+        "description": "준비되면 알려드리겠습니다.",
+        "viewProgress": "진행 상황 보기"
+      },
+      "generationComplete": {
+        "title": "스펙 문서 준비 완료",
+        "description": "AI 스펙 문서를 확인할 수 있습니다.",
+        "viewDocument": "문서 보기"
+      }
+    },
+    "generationProgress": {
+      "continueBrowsing": "계속 둘러보기",
+      "viewDocument": "문서 보기",
+      "retryButton": "다시 시도",
+      "tip": "완료되면 알려드립니다.",
+      "elapsed": "경과 시간",
+      "status": {
+        "pending": "대기 중",
+        "pendingDescription": "순서를 기다리고 있습니다...",
+        "running": "생성 중",
+        "runningDescription": "AI가 스펙 문서를 작성하고 있습니다..."
+      },
+      "completed": {
+        "title": "생성 완료",
+        "description": "스펙 문서가 성공적으로 생성되었습니다."
+      },
+      "failed": {
+        "title": "생성 실패",
+        "description": "스펙 문서 생성 중 오류가 발생했습니다."
+      },
+      "pipeline": {
+        "step1": "대기 중",
+        "step2": "생성 중",
+        "step3": "완료",
+        "pending": {
+          "0": "AI 작업자를 기다리는 중...",
+          "1": "대기열에 추가되었습니다",
+          "2": "곧 생성이 시작됩니다"
+        },
+        "running": {
+          "0": "AI가 테스트 구조를 분석하고 있습니다",
+          "1": "도메인과 기능을 분류하고 있습니다",
+          "2": "동작 설명을 작성하고 있습니다",
+          "3": "거의 완료되었습니다..."
+        }
+      }
+    },
+    "generate": {
+      "analysisMode": "분석 모드",
+      "withCache": "캐시 사용",
+      "withCacheBenefit": "이전 분석 결과를 재사용하여 할당량을 절약합니다",
+      "fresh": "새로 분석",
+      "freshWarning": "모든 테스트에 할당량이 소모됩니다",
+      "recommended": "권장",
+      "cacheCheckFailed": "캐시 가용성을 확인할 수 없습니다. 새로 분석이 사용됩니다.",
+      "sameCommitCacheDisabled": "동일 커밋에서는 캐시를 사용할 수 없습니다"
+    },
+    "cacheStats": {
+      "summary": "{total}개 테스트 중 {cached}개 캐시 사용 ({rate}%)",
+      "allFromCache": "모든 테스트가 캐시에서 로드됨",
+      "costSaved": "AI 호출 {saved}회 절감",
+      "generatedCount": "AI가 새로 생성한 테스트 {count}개",
+      "badgeLabel": "캐시 {rate}%"
+    },
+    "accessError": {
+      "unauthorized": {
+        "title": "로그인 필요",
+        "description": "AI 스펙 문서를 보려면 로그인하세요.",
+        "loginButton": "GitHub으로 계속하기"
+      },
+      "forbidden": {
+        "title": "접근 거부",
+        "description": "이 AI 스펙 문서에 대한 접근 권한이 없습니다. 생성자만 접근할 수 있습니다.",
+        "dashboardButton": "대시보드로 이동"
+      }
+    }
+  },
+  "dashboard": {
+    "title": "대시보드",
+    "summary": {
+      "activeRepos": "활성 저장소",
+      "loading": "통계 불러오는 중...",
+      "totalTests": "총 테스트 수"
+    },
+    "card": {
+      "addBookmark": "즐겨찾기 추가",
+      "addToDashboard": "대시보드에 추가",
+      "adding": "추가 중...",
+      "analyzeLatest": "최신 커밋 분석",
+      "bookmarked": "즐겨찾기됨",
+      "inDashboard": "대시보드에 있음",
+      "loginToAdd": "로그인하여 추가",
+      "loginToBookmark": "로그인하여 북마크 저장",
+      "noAnalysis": "분석 기록 없음",
+      "reanalyze": "리포지토리 재분석",
+      "removeBookmark": "즐겨찾기 제거",
+      "tests": "개 테스트",
+      "update": "업데이트"
+    },
+    "delta": {
+      "decreased": "테스트 {count}개 감소",
+      "increased": "테스트 {count}개 증가",
+      "unchanged": "테스트 변화 없음"
+    },
+    "emptyStateVariant": {
+      "noRepos": {
+        "title": "아직 리포지토리가 없습니다",
+        "description": "GitHub 리포지토리를 분석하면 여기에 표시됩니다. 분석 기록은 자동으로 저장됩니다."
+      },
+      "noSearchResults": {
+        "title": "검색 결과가 없습니다",
+        "description": "검색어나 필터를 조정해보세요",
+        "descriptionWithQuery": "\"{query}\"에 대한 검색 결과가 없습니다. 검색어나 필터를 조정해보세요."
+      },
+      "noBookmarks": {
+        "title": "북마크한 리포지토리가 없습니다",
+        "description": "자주 사용하는 리포지토리를 북마크하면 여기에 표시됩니다"
+      },
+      "error": {
+        "title": "리포지토리를 불러올 수 없습니다",
+        "description": "문제가 발생했습니다. 나중에 다시 시도해주세요."
+      }
+    },
+    "searchPlaceholder": "리포지토리 검색...",
+    "sort": {
+      "label": "정렬",
+      "name": "이름순",
+      "recent": "최신순",
+      "tests": "테스트순"
+    },
+    "view": {
+      "label": "보기",
+      "all": "전체",
+      "mine": "내 분석",
+      "bookmarked": "북마크"
+    },
+    "filter": {
+      "apply": "적용",
+      "filterButton": "필터",
+      "label": "필터",
+      "ownership": {
+        "all": "전체",
+        "label": "소유자별 필터",
+        "mine": "내 분석",
+        "organization": "조직",
+        "others": "다른 사용자"
+      },
+      "bookmarked": "북마크",
+      "bookmarkedLabel": "북마크만 보기"
+    },
+    "exploreCta": "다른 저장소 둘러보기",
+    "status": {
+      "analyzing": "분석 중...",
+      "newCommits": "새 커밋",
+      "unknown": "상태 알 수 없음",
+      "upToDate": "최신 상태"
+    },
+    "aiSpec": {
+      "badge": "AI 스펙",
+      "languageCount": "{count}개 언어로 생성됨",
+      "lastGenerated": "마지막 생성: {time}",
+      "viewDetails": "상세보기 →"
+    },
+    "pagination": {
+      "allLoaded": "모든 저장소 로드 완료",
+      "loadError": "추가 저장소를 불러오지 못했습니다",
+      "loadMore": "더 보기",
+      "loading": "로딩 중...",
+      "retry": "다시 시도",
+      "showingAll": "전체 {count}개 저장소 표시 중",
+      "showingWithMore": "{count}개 저장소 표시 중"
+    },
+    "toast": {
+      "addFailed": "대시보드 추가 실패",
+      "addSuccess": "대시보드에 추가됨",
+      "bookmarkAddFailed": "북마크 추가에 실패했습니다",
+      "bookmarkAdded": "북마크가 추가되었습니다",
+      "bookmarkRemoveFailed": "북마크 제거에 실패했습니다",
+      "bookmarkRemoved": "북마크가 제거되었습니다",
+      "goToDashboard": "대시보드로 이동",
+      "refreshFailed": "새로고침에 실패했습니다",
+      "refreshOrgFailed": "{org} 새로고침에 실패했습니다",
+      "refreshed": "GitHub에서 새로고침됨",
+      "refreshedOrg": "GitHub에서 {org} 새로고침됨"
+    },
+    "discovery": {
+      "title": "새 저장소 발견",
+      "description": "아직 분석하지 않은 저장소를 찾아 테스트 상태를 추적하세요.",
+      "myRepos": "내 저장소",
+      "orgRepos": "조직 저장소",
+      "loading": "로딩 중...",
+      "reposFound": "분석 가능한 저장소 {count}개",
+      "noRepos": "저장소를 찾을 수 없습니다",
+      "noOrganizations": "조직을 찾을 수 없습니다",
+      "refresh": "GitHub에서 새로고침",
+      "analyze": "분석",
+      "lastPush": "마지막 푸시",
+      "searchPlaceholder": "저장소 검색...",
+      "sheetDescription": "분석 가능한 저장소 {count}개",
+      "noSearchResults": "검색 결과가 없습니다",
+      "selectOrganization": "조직 선택",
+      "selectOrganizationDescription": "사용 가능한 조직 {count}개",
+      "errorTitle": "저장소 탐색 로드 실패",
+      "errorDescription": "GitHub 저장소를 불러오지 못했습니다. 다시 시도해주세요.",
+      "retry": "다시 시도",
+      "refreshSuccess": "GitHub에서 새로고침 완료",
+      "refreshError": "새로고침 실패",
+      "refreshOrgSuccess": "{org} GitHub에서 새로고침 완료",
+      "refreshOrgError": "{org} 새로고침 실패"
+    },
+    "githubApp": {
+      "restrictedTitle": "연결 필요",
+      "restrictedDescription": "이 조직의 저장소에 접근하려면 SpecVital GitHub 앱을 설치해야 합니다.",
+      "pendingTitle": "연결 일시 중단",
+      "pendingDescription": "이 조직의 GitHub 앱 설치가 일시 중단되었습니다. 저장소 접근을 계속하려면 다시 설치해 주세요.",
+      "connectButton": "{org} 연결",
+      "connect": "연결",
+      "connectToAccess": "저장소 접근을 위해 연결하세요",
+      "statusRestricted": "미연결",
+      "statusPending": "일시 중단",
+      "installDialogTitle": "{org} 연결",
+      "installDialogDescription": "조직 저장소에 접근하려면 SpecVital GitHub 앱을 설치하세요.",
+      "installDialogBenefits": "연결 시 혜택:",
+      "installDialogBenefit1": "비공개 저장소 접근",
+      "installDialogBenefit2": "모든 조직 프로젝트 분석",
+      "installDialogBenefit3": "읽기 전용 접근 (쓰기 권한 없음)",
+      "installButton": "GitHub 앱 설치",
+      "installError": "설치 URL을 가져오지 못했습니다",
+      "cancel": "취소"
+    }
+  },
+  "specLoginRequired": {
+    "title": "로그인하고 스펙 문서 생성하기",
+    "description": "AI가 테스트 케이스를 체계적인 스펙 문서로 정리해드립니다.",
+    "whySignIn": "로그인 혜택:",
+    "benefit1": "AI 스펙 문서 생성",
+    "benefit1Description": "테스트를 도메인, 기능, 동작 단위로 자동 정리",
+    "benefit2": "무제한 문서 생성",
+    "benefit2Description": "필요한 만큼 스펙 문서를 생성하세요",
+    "benefit3": "내보내기 및 공유",
+    "benefit3Description": "마크다운으로 다운로드하거나 팀과 공유",
+    "continueWithGitHub": "GitHub으로 계속하기",
+    "freeNote": "테스트 분석은 모두에게 무료입니다"
+  },
+  "backgroundTasks": {
+    "badge": {
+      "ariaLabel": "{count, plural, =1 {진행 중인 작업 1개} other {진행 중인 작업 #개}}"
+    },
+    "dropdown": {
+      "title": "작업",
+      "viewPage": "보기",
+      "viewAll": "+{count}개 더 - 전체 보기"
+    },
+    "status": {
+      "processing": "처리 중 {time}",
+      "queued": "대기 중"
+    },
+    "taskType": {
+      "analysis": "분석",
+      "spec-generation": "스펙 생성"
+    },
+    "activeTasks": {
+      "title": "진행 중인 작업",
+      "viewTask": "보기"
+    },
+    "toast": {
+      "analysisComplete": "{repo} 분석이 완료되었습니다",
+      "analysisFailed": "{repo} 분석에 실패했습니다",
+      "specGenerationComplete": "{repo} 스펙 문서가 생성되었습니다",
+      "specGenerationFailed": "{repo} 스펙 생성에 실패했습니다"
+    }
+  },
+  "globalSearch": {
+    "title": "검색",
+    "description": "페이지, 리포지토리, 명령을 검색합니다.",
+    "placeholder": "검색...",
+    "noResults": "''{query}''에 대한 검색 결과가 없습니다",
+    "noResultsDefault": "검색 결과가 없습니다",
+    "categories": {
+      "navigation": "페이지 이동",
+      "commands": "명령",
+      "recent": "최근 항목",
+      "repositories": "내 리포지토리",
+      "bookmarks": "북마크",
+      "community": "커뮤니티"
+    },
+    "hints": {
+      "navigate": "이동",
+      "select": "선택",
+      "close": "닫기"
+    },
+    "actions": {
+      "goToDashboard": "대시보드로 이동",
+      "goToExplore": "탐색으로 이동",
+      "goToAccount": "계정으로 이동",
+      "goToPricing": "요금제로 이동",
+      "goToHome": "홈으로 이동",
+      "newAnalysis": "새 분석 시작",
+      "switchToLight": "라이트 모드로 전환",
+      "switchToDark": "다크 모드로 전환"
+    },
+    "loginPrompt": "로그인하여 내 리포지토리를 검색하세요",
+    "loading": "검색 중...",
+    "error": "검색 중 오류가 발생했습니다",
+    "aria": {
+      "resultsFound": "{count, plural, =0 {결과 없음} =1 {1개 결과 발견} other {#개 결과 발견}}",
+      "searchInput": "리포지토리, 페이지, 명령 검색"
+    }
+  },
+  "account": {
+    "title": "계정",
+    "plan": {
+      "title": "현재 플랜",
+      "tier": {
+        "free": "무료",
+        "pro": "Pro",
+        "pro_plus": "Pro+",
+        "enterprise": "Enterprise"
+      },
+      "specviewLimit": "AI 스펙 문서",
+      "analysisLimit": "분석",
+      "retention": "데이터 보관",
+      "month": "월",
+      "days": "{days}일",
+      "unlimited": "무제한",
+      "unavailable": "플랜 정보를 불러올 수 없습니다",
+      "upgrade": "플랜 업그레이드",
+      "contactUs": "문의하기"
+    },
+    "usage": {
+      "title": "이번 기간 사용량",
+      "specview": "AI 스펙 문서",
+      "analysis": "분석 실행",
+      "resetIn": "{days}일 후 초기화 ({date})",
+      "unavailable": "사용량 정보를 불러올 수 없습니다"
+    }
+  },
+  "pricing": {
+    "header": {
+      "title": "심플하고 투명한 가격 정책",
+      "subtitle": "필요에 맞는 플랜을 선택하세요"
+    },
+    "promotion": {
+      "title": "얼리 액세스: Pro 기능 무료!",
+      "description": "지금 가입하고 런칭 기간 동안 Pro 기능을 무료로 사용하세요"
+    },
+    "mostPopular": "인기",
+    "comingSoon": "출시 예정",
+    "customPricing": "맞춤형",
+    "month": "월",
+    "days": "일",
+    "unlimited": "무제한",
+    "tiers": {
+      "free": {
+        "name": "무료",
+        "description": "무료로 시작하기"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "더 많이, 더 오래"
+      },
+      "pro_plus": {
+        "name": "Pro+",
+        "description": "파워 유저를 위해"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "description": "조직 맞춤 지원"
+      }
+    },
+    "features": {
+      "specview": {
+        "label": "AI 스펙 문서",
+        "unit": "테스트"
+      },
+      "analysis": {
+        "label": "분석",
+        "unit": "회"
+      },
+      "retention": {
+        "label": "보관 기간"
+      }
+    },
+    "cta": {
+      "getStartedFree": "시작하기",
+      "currentPlan": "현재 플랜",
+      "upgrade": "업그레이드",
+      "upgradeComingSoon": "업그레이드 옵션 준비 중",
+      "contactUs": "문의하기"
+    },
+    "faq": {
+      "title": "자주 묻는 질문",
+      "items": {
+        "specview": {
+          "question": "AI 스펙 문서란 무엇인가요?",
+          "answer": "AI 스펙 문서는 테스트 케이스를 도메인, 기능, 동작으로 자동 정리한 문서입니다. 테스트 현황을 한눈에 파악할 수 있습니다."
+        },
+        "analysis": {
+          "question": "분석(Analysis)이란 무엇인가요?",
+          "answer": "분석은 저장소의 테스트 파일을 파싱하여 테스트 케이스, 프레임워크, 통계를 추출합니다. 테스트 스위트 이해의 기반이 됩니다."
+        },
+        "paymentLive": {
+          "question": "결제 기능은 언제 출시되나요?",
+          "answer": "현재 얼리 액세스 단계입니다. 유료 플랜은 올해 상반기에 도입될 예정입니다. 초기 사용자에게는 특별 혜택과 사전 알림을 제공합니다."
+        },
+        "retention": {
+          "question": "데이터 보관이란 무엇인가요?",
+          "answer": "보관 기간은 대시보드 히스토리와 생성된 AI 스펙 문서를 얼마나 오래 열람할 수 있는지를 의미합니다. 저장소 분석 결과는 플랜과 관계없이 유지됩니다."
+        }
+      }
+    }
+  },
+  "docs": {
+    "landing": {
+      "title": "문서",
+      "description": "SpecVital 작동 방식을 이해하고 테스트 분석을 최대한 활용하세요.",
+      "howItWorksTitle": "작동 원리"
+    },
+    "sidebar": {
+      "title": "문서",
+      "ariaLabel": "문서 네비게이션",
+      "openMenu": "네비게이션 메뉴 열기",
+      "description": "문서 주제를 탐색합니다"
+    },
+    "topics": {
+      "testDetection": {
+        "title": "테스트 감지",
+        "description": "SpecVital이 저장소에서 테스트를 찾고 세는 방법을 알아보세요.",
+        "slug": "test-detection"
+      },
+      "usageBilling": {
+        "title": "사용량 및 요금",
+        "description": "사용량 추적, 할당량, 결제 주기에 대해 알아보세요.",
+        "slug": "usage-billing"
+      },
+      "specviewGeneration": {
+        "title": "AI 스펙 생성",
+        "description": "AI가 테스트를 구조화된 스펙 문서로 변환하는 방법을 알아보세요.",
+        "slug": "specview-generation"
+      },
+      "writingGuide": {
+        "title": "테스트 작성 가이드",
+        "description": "최적의 분석 결과를 위한 테스트 작성법과 프로젝트 구성 방법을 알아보세요.",
+        "slug": "writing-guide"
+      }
+    },
+    "usageBilling": {
+      "meta": {
+        "title": "사용량 및 요금 | SpecVital 문서",
+        "description": "SpecVital의 사용량 추적, 할당량, 캐시 동작, 결제 주기에 대해 알아보세요."
+      },
+      "title": "사용량 및 요금",
+      "subtitle": "사용량 추적 방식과 할당량 초기화 시점을 알아보세요.",
+      "sections": {
+        "whatCounts": {
+          "title": "무엇이 사용량으로 집계되나요?",
+          "description": "SpecVital은 두 가지 주요 기능의 사용량을 추적합니다: 분석 실행과 AI 스펙 문서 생성. 모든 작업이 할당량에 포함되는 것은 아닙니다.",
+          "keyPoint": {
+            "title": "캐시된 결과는 무료",
+            "description": "캐시된 분석 결과를 보는 것은 사용량에 포함되지 않습니다. 새로운 작업이 수행될 때만 차감됩니다."
+          },
+          "table": {
+            "event": "작업",
+            "description": "설명",
+            "countsUsage": "집계?",
+            "yes": "예",
+            "no": "아니오"
+          },
+          "events": {
+            "analysisRun": {
+              "name": "분석 실행",
+              "description": "저장소의 테스트 파일 파싱"
+            },
+            "specDocGeneration": {
+              "name": "AI 스펙 문서 생성",
+              "description": "AI가 스펙 문서 생성 (테스트 수 기준)"
+            },
+            "cacheHit": {
+              "name": "캐시 결과 조회",
+              "description": "이전에 분석한 결과 보기"
+            },
+            "viewResults": {
+              "name": "분석 결과 보기",
+              "description": "테스트 목록 탐색, 검색, 필터링"
+            },
+            "exportDownload": {
+              "name": "내보내기 / 다운로드",
+              "description": "마크다운 다운로드 또는 링크 공유"
+            }
+          }
+        },
+        "usageTypes": {
+          "title": "두 가지 사용량 유형",
+          "description": "SpecVital은 기능별로 별도의 할당량을 두고 각각 독립적으로 추적합니다.",
+          "analysis": {
+            "title": "분석 실행",
+            "description": "저장소를 분석할 때마다 1회로 집계됩니다. 테스트 수와 관계없이 저장소당 1회입니다.",
+            "item1": "새 저장소의 첫 분석",
+            "item2": "새 커밋 또는 파서 업데이트 후 재분석"
+          },
+          "specview": {
+            "title": "AI 스펙 문서",
+            "description": "생성된 문서의 테스트 수에 따라 집계됩니다. 테스트가 많을수록 사용량도 증가합니다.",
+            "item1": "100개 테스트 = 100 사용량 단위",
+            "item2": "재생성 시 새로운 테스트 수로 집계"
+          }
+        },
+        "cache": {
+          "title": "캐시 동작",
+          "description": "SpecVital은 분석 결과를 캐시하여 할당량을 절약하고 빠른 접근을 제공합니다. 캐시 사용 시점을 이해하면 사용량을 최적화할 수 있습니다.",
+          "table": {
+            "scenario": "시나리오",
+            "cached": "캐시?",
+            "usageDeducted": "사용량 차감?",
+            "yes": "예",
+            "no": "아니오"
+          },
+          "scenarios": {
+            "sameCommit": {
+              "name": "동일 커밋, 동일 파서",
+              "description": "이미 분석한 저장소 조회"
+            },
+            "newCommit": {
+              "name": "새 커밋 존재",
+              "description": "캐시된 결과가 그대로 표시됩니다. 배너에서 선택적으로 업데이트할 수 있습니다."
+            },
+            "parserUpdate": {
+              "name": "파서 업데이트",
+              "description": "캐시된 결과가 그대로 표시됩니다. 배너에서 선택적으로 재분석할 수 있습니다."
+            },
+            "manualReanalysis": {
+              "name": "수동 재분석",
+              "description": "'지금 업데이트' 또는 '재분석' 클릭으로 새 분석 실행"
+            }
+          },
+          "tip": {
+            "title": "효율적인 사용",
+            "description": "캐시된 결과는 즉시 제공되며 할당량에 포함되지 않습니다. 최신 분석이 필요할 때만 업데이트하세요."
+          },
+          "specDocCache": {
+            "title": "AI 스펙 문서 재생성 캐시",
+            "description": "AI 스펙 문서를 재생성할 때 이전 결과를 재사용할 수 있습니다. 새로운 테스트나 변경된 테스트만 AI가 재생성하여 할당량을 절약합니다."
+          }
+        },
+        "cycle": {
+          "title": "결제 주기",
+          "description": "사용량 할당량은 매월 초기화됩니다. 초기화 날짜는 처음 가입한 날짜를 기준으로 합니다.",
+          "howItWorks": {
+            "title": "월간 초기화 방식",
+            "step1Title": "시작일",
+            "step1Desc": "결제 주기는 계정을 생성한 날부터 시작됩니다.",
+            "step2Title": "월간 주기",
+            "step2Desc": "시작일로부터 1개월 동안 사용량이 누적됩니다.",
+            "step3Title": "자동 초기화",
+            "step3Desc": "월간 주기가 끝나면 사용량 카운터가 자동으로 0으로 초기화됩니다."
+          }
+        },
+        "limits": {
+          "title": "플랜별 한도",
+          "description": "각 플랜은 분석과 AI 스펙 생성에 대해 서로 다른 월간 한도를 제공합니다. 유료 플랜은 우선 처리 대기열을 통해 더 빠른 분석을 지원합니다.",
+          "viewPricing": "요금제 보기 →"
+        },
+        "warnings": {
+          "title": "할당량 경고",
+          "description": "SpecVital은 할당량이 소진되기 전에 경고하여 미리 대비할 수 있도록 합니다.",
+          "approaching": {
+            "title": "한도 접근 중 (70%)",
+            "description": "할당량의 70%에 도달하면 UI에 경고 표시가 나타납니다. 업그레이드를 고려하거나 초기화를 기다리세요."
+          },
+          "exceeded": {
+            "title": "할당량 초과 (100%)",
+            "description": "한도에 도달하면 초기화될 때까지 새로운 분석이나 스펙 문서 생성이 불가능합니다. 기존 결과는 계속 열람할 수 있습니다."
+          }
+        },
+        "faq": {
+          "title": "자주 묻는 질문",
+          "q1": {
+            "question": "캐시된 결과를 보면 할당량이 차감되나요?",
+            "answer": "아니요. 이전에 분석한 결과를 보는 것은 항상 무료입니다. 새로운 분석이나 생성 작업이 수행될 때만 사용량이 집계됩니다."
+          },
+          "q2": {
+            "question": "할당량을 초과하면 어떻게 되나요?",
+            "answer": "할당량이 초기화될 때까지 새로운 분석이나 스펙 문서 생성이 불가능합니다. 기존 결과는 모두 열람할 수 있으며, 탐색, 검색, 내보내기도 가능합니다."
+          },
+          "q3": {
+            "question": "스펙 문서를 재생성하면 사용량이 차감되나요?",
+            "answer": "모드에 따라 다릅니다. '캐시 사용' 모드에서는 새로운 테스트나 변경된 테스트만 할당량이 차감되며, 이전 결과는 재사용됩니다. '새로 분석' 모드에서는 모든 테스트가 재생성되어 전체 테스트 수가 차감됩니다."
+          },
+          "q4": {
+            "question": "주기 중간에 추가 할당량을 구매할 수 있나요?",
+            "answer": "현재는 할당량을 별도로 구매할 수 없습니다. 더 높은 한도를 위해 플랜을 업그레이드할 수 있습니다. 향후 사용량 기반 옵션을 고려하고 있습니다."
+          }
+        }
+      }
+    },
+    "testDetection": {
+      "meta": {
+        "title": "테스트 감지 | SpecVital 문서",
+        "description": "SpecVital이 AST 기반 정적 분석으로 저장소의 테스트를 감지하고 세는 방법을 알아보세요."
+      },
+      "title": "테스트 감지",
+      "subtitle": "SpecVital이 저장소에서 테스트를 찾고 세는 방법을 알아보세요.",
+      "sections": {
+        "what": {
+          "title": "테스트 감지란?",
+          "description": "SpecVital은 AST(추상 구문 트리) 기반 정적 분석으로 코드베이스의 테스트를 감지합니다. 테스트를 실행하는 CLI 도구와 달리, SpecVital은 소스 코드를 직접 파싱하여 테스트 함수, 스위트, 상태를 식별합니다.",
+          "keyPoint": {
+            "title": "정적 분석",
+            "description": "테스트 실행 없이 분석합니다. 몇 시간이 아닌 몇 초 만에 결과를 얻을 수 있으며, CI/CD 설정이 필요 없습니다."
+          }
+        },
+        "how": {
+          "title": "작동 방식",
+          "description": "SpecVital은 Tree-sitter 기반 AST 파싱으로 10개 이상의 프로그래밍 언어와 20개 이상의 테스트 프레임워크를 분석합니다. Import 문, 설정 범위, 콘텐츠 패턴을 사용하여 테스트를 감지합니다."
+        },
+        "status": {
+          "title": "테스트 상태 감지",
+          "description": "SpecVital은 프레임워크별 수정자와 어트리뷰트를 기반으로 테스트 상태를 감지합니다:",
+          "active": {
+            "label": "활성",
+            "description": "정상적으로 실행되는 테스트"
+          },
+          "skipped": {
+            "label": "건너뜀",
+            "description": "건너뛰도록 표시됨 (.skip, @Disabled, @pytest.mark.skip)"
+          },
+          "todo": {
+            "label": "할 일",
+            "description": "아직 구현되지 않은 플레이스홀더 (.todo)"
+          },
+          "focused": {
+            "label": "집중",
+            "description": "단독으로 실행되도록 표시됨 (.only)"
+          },
+          "xfail": {
+            "label": "예상 실패",
+            "description": "실패가 예상됨 (@pytest.mark.xfail)"
+          }
+        },
+        "limitations": {
+          "title": "알려진 제한사항",
+          "staticAnalysis": {
+            "title": "정적 분석의 한계",
+            "description": "정적 분석 도구로서 SpecVital은 코드를 실행하지 않고 소스 파일을 독립적으로 파싱합니다. 매개변수화된 테스트 수, 동적 import, 파일 간 참조는 완전히 해석되지 않을 수 있습니다. 정확한 테스트 수가 필요하면 프레임워크의 네이티브 CLI를 사용하세요."
+          }
+        },
+        "accuracy": {
+          "title": "정확도 기대치",
+          "description": "표준 테스트 패턴을 사용하는 프로젝트에서 SpecVital은 높은 정확도를 달성합니다. 매개변수화가 많거나 커스텀 테스트 인프라를 사용하는 프로젝트는 정확도가 낮을 수 있습니다.",
+          "typical": {
+            "title": "95-99% 정확도",
+            "description": "표준 패턴을 사용하는 대부분의 프로젝트는 매우 정확한 테스트 수를 확인할 수 있습니다. 정확한 수치가 필요하면 프레임워크의 네이티브 CLI(jest --listTests, pytest --collect-only)를 사용하세요."
+          }
+        },
+        "faq": {
+          "title": "자주 묻는 질문",
+          "q1": {
+            "question": "파서는 얼마나 자주 업데이트되나요?",
+            "answer": "파서는 새로운 프레임워크 버전과 패턴을 지원하기 위해 정기적으로 업데이트됩니다. 업데이트가 결과에 영향을 미치면 재분석을 권장하는 배너가 표시됩니다."
+          }
+        }
+      }
+    },
+    "specviewGeneration": {
+      "meta": {
+        "title": "AI 스펙 생성 | SpecVital 문서",
+        "description": "AI가 테스트를 구조화된 스펙 문서로 변환하는 방법을 알아보세요."
+      },
+      "title": "AI 스펙 생성",
+      "subtitle": "AI가 테스트를 분석하고 스펙 문서를 생성하는 방법을 이해합니다.",
+      "sections": {
+        "overview": {
+          "title": "AI 스펙 생성이란?",
+          "description": "AI 스펙 생성은 테스트 스위트를 구조화된 스펙 문서로 자동 변환합니다. 수백 개의 테스트 파일을 직접 읽는 대신, 프로젝트가 무엇을 하는지 비즈니스 영역별로 정리된 명확한 개요를 받아볼 수 있습니다.",
+          "keyPoint": {
+            "title": "살아있는 문서로서의 테스트",
+            "description": "테스트 스위트는 이미 시스템의 동작을 설명하고 있습니다. AI 스펙 생성은 이 지식을 읽기 쉽고 공유 가능한 형태로 만들어 개발자, QA, 이해관계자 모두가 활용할 수 있게 합니다."
+          }
+        },
+        "output": {
+          "title": "결과물",
+          "description": "생성된 스펙 문서에는 다음이 포함됩니다:",
+          "features": {
+            "domains": {
+              "title": "도메인별 구성",
+              "description": "테스트가 비즈니스 도메인과 기능별로 그룹화되어, 프로젝트의 각 부분이 무엇을 다루는지 빠르게 파악할 수 있습니다."
+            },
+            "descriptions": {
+              "title": "읽기 쉬운 설명",
+              "description": "'should_return_404_when_not_found' 같은 기술적 테스트 이름이 '리소스를 찾을 수 없을 때 404 반환' 같은 명확한 행동 설명으로 변환됩니다."
+            },
+            "summary": {
+              "title": "프로젝트 요약",
+              "description": "테스트 커버리지를 기반으로 프로젝트가 무엇을 하는지 설명하는 자동 생성 개요 — 온보딩과 문서화에 유용합니다."
+            },
+            "caching": {
+              "title": "스마트 캐싱",
+              "description": "결과가 자동으로 캐시됩니다. 재생성 시 변경된 테스트만 다시 처리되어 시간과 할당량이 절약됩니다."
+            }
+          }
+        },
+        "limitations": {
+          "title": "참고 사항",
+          "items": {
+            "namesBased": {
+              "title": "테스트 메타데이터 기반",
+              "description": "AI는 테스트 이름, 파일 경로, import를 활용하며 — 실제 테스트 구현 코드는 보지 않습니다. 출력 품질은 테스트 이름이 얼마나 설명적인지에 달려 있습니다."
+            },
+            "nameQuality": {
+              "title": "불분명한 이름, 낮은 품질",
+              "description": "모호하거나 축약된 테스트 이름(예: 'test1', 'checkA')은 덜 유용한 설명을 생성합니다. 이름이 구체적일수록 결과가 좋아집니다."
+            },
+            "languageSupport": {
+              "title": "다국어 지원",
+              "description": "스펙 문서는 24개 언어로 생성할 수 있습니다. 영어, 한국어, 일본어, 중국어, 스페인어에서 가장 좋은 결과를 보여줍니다."
+            }
+          }
+        },
+        "relatedGuide": {
+          "title": "더 좋은 결과를 원하시나요?",
+          "description": "테스트 작성 가이드에서 더 높은 품질의 스펙 문서를 위한 테스트 작성법과 구성 방법을 알아보세요."
+        },
+        "faq": {
+          "title": "FAQ",
+          "q1": {
+            "question": "사용량은 어떻게 계산되나요?",
+            "answer": "새로 생성된 설명만 할당량에 포함됩니다. 이전에 처리된 테스트는 캐시된 결과가 무료로 재사용됩니다. 변경되지 않은 저장소를 재생성하면 할당량이 소비되지 않습니다."
+          },
+          "q2": {
+            "question": "생성된 문서를 편집할 수 있나요?",
+            "answer": "SpecVital에서 문서는 읽기 전용이지만, Markdown으로 내보내어 모든 텍스트 편집기나 문서화 시스템에서 편집할 수 있습니다."
+          },
+          "q3": {
+            "question": "언제 재생성해야 하나요?",
+            "answer": "테스트 스위트에 큰 변경이 있을 때 재생성하세요 — 새 기능 추가나 대규모 리팩토링 후가 좋습니다. 활발한 프로젝트에서는 스프린트나 마일스톤 완료 후가 적절한 주기입니다."
+          }
+        }
+      }
+    },
+    "writingGuide": {
+      "meta": {
+        "title": "테스트 작성 가이드 | SpecVital 문서",
+        "description": "최적의 분석 결과를 위한 테스트 작성법과 프로젝트 구성 방법을 알아보세요."
+      },
+      "title": "테스트 작성 가이드",
+      "subtitle": "정확한 분석과 고품질 스펙 문서를 위해 테스트를 구조화하세요.",
+      "sections": {
+        "pipeline": {
+          "title": "SpecVital 작동 방식",
+          "description": "SpecVital은 AST 기반 정적 분석으로 테스트 코드베이스를 이해합니다. 파이프라인 작동 방식을 알면 더 정확한 분석 결과를 얻을 수 있습니다.",
+          "steps": {
+            "detect": {
+              "title": "테스트 감지",
+              "description": "파일명 패턴과 디렉토리 규칙을 사용하여 저장소에서 테스트 파일을 스캔합니다."
+            },
+            "parse": {
+              "title": "AST 파싱",
+              "description": "tree-sitter로 테스트 파일을 정적 분석하여 테스트 구조, Suite 계층, 상태를 추출합니다."
+            },
+            "analyze": {
+              "title": "분석",
+              "description": "프레임워크 감지, 상태 분류, 구조적 인사이트를 포함한 종합적인 테스트 인벤토리를 생성합니다."
+            },
+            "specDocument": {
+              "title": "스펙 문서",
+              "description": "선택적으로, AI가 분석 결과를 도메인별로 조직화된 스펙 문서로 생성합니다."
+            }
+          },
+          "keyPoint": {
+            "title": "잘 구조화된 코드, 더 나은 결과",
+            "description": "잘 구조화된 테스트 코드는 더 정확한 분석 결과로 이어집니다. 스펙 문서 생성을 함께 사용하면 분석 품질이 문서 품질에 직접 영향을 미칩니다."
+          }
+        },
+        "testNaming": {
+          "title": "테스트 명명",
+          "description": "테스트명은 분석 품질에 가장 큰 영향을 미치는 단일 요소입니다. 서술적인 이름은 분석 결과와 스펙 문서 생성 모두를 향상시킵니다.",
+          "contextNote": {
+            "title": "도메인 컨텍스트가 결과를 향상시킵니다",
+            "description": "SpecVital은 테스트명과 함께 도메인 정보(Suite 경로, 파일 경로, import)를 활용합니다. 간략한 테스트명이라도 풍부한 도메인 컨텍스트가 있으면 합리적인 설명을 생성할 수 있습니다."
+          },
+          "table": {
+            "testName": "테스트명",
+            "context": "Suite 컨텍스트",
+            "result": "예상 생성 설명",
+            "confidence": "정확도"
+          },
+          "confidence": {
+            "high": "높음",
+            "medium": "보통",
+            "low": "낮음"
+          },
+          "tips": {
+            "pattern": {
+              "title": "should/when 패턴 사용",
+              "description": "'should [동작] when [조건]' 또는 '[동작] when [조건]' 형태의 이름이 가장 명확한 분석 결과를 생성합니다."
+            },
+            "specific": {
+              "title": "구체적으로 작성",
+              "description": "테스트명에 구체적인 조건, 기대값, 엣지 케이스를 포함하세요. 'works'나 'handles' 같은 일반적인 동사는 피하세요."
+            }
+          }
+        },
+        "testStructure": {
+          "title": "테스트 구조화",
+          "description": "Suite 계층은 SpecVital이 추출하는 핵심 구조 정보입니다. 테스트를 의미 있는 그룹으로 중첩하면 분석과 스펙 생성 모두에 풍부한 컨텍스트를 제공합니다.",
+          "bad": {
+            "title": "평면 구조",
+            "description": "Suite 계층 없이는 분석에서 그룹핑 컨텍스트가 부족합니다."
+          },
+          "good": {
+            "title": "중첩 구조",
+            "description": "중첩된 테스트 그룹이 분석을 위한 명확한 구조적 컨텍스트를 제공합니다."
+          },
+          "tip": {
+            "title": "Suite 경로 = 구조적 컨텍스트",
+            "description": "전체 Suite 경로(예: 'AuthService > Login')는 SpecVital이 테스트 간의 관계와 애플리케이션 아키텍처와의 연관성을 이해하는 데 필요한 컨텍스트를 제공합니다."
+          }
+        },
+        "fileOrganization": {
+          "title": "테스트 파일 구성",
+          "description": "파일 경로는 프로젝트 구조를 이해하는 강력한 신호입니다. 잘 정리된 테스트 파일은 분석과 스펙 문서 모두에서 정확한 그룹핑으로 이어집니다.",
+          "bad": {
+            "title": "피해야 할 방식",
+            "description": "모든 테스트를 하나의 디렉토리에 넣으면 경로 기반 구조 신호를 잃습니다."
+          },
+          "good": {
+            "title": "권장 방식",
+            "description": "도메인에 맞춘 디렉토리 구조가 강력한 구조적 신호를 제공합니다."
+          },
+          "tips": {
+            "naming": {
+              "title": "프레임워크 규칙 따르기",
+              "description": "프레임워크가 기대하는 표준 명명 패턴을 사용하세요: *.test.ts, *.spec.ts, *_test.go, *Test.java, test_*.py 등."
+            },
+            "colocation": {
+              "title": "소스와 함께 배치",
+              "description": "테스트를 소스 코드 근처에 두면 (예: 같은 디렉토리의 __tests__/) 명확한 경로 기반 구조 신호를 제공합니다."
+            },
+            "separation": {
+              "title": "도메인별 분리",
+              "description": "테스트 디렉토리를 테스트 유형(unit/, integration/)이 아닌 비즈니스 도메인(auth/, payment/, user/)별로 구성하세요."
+            }
+          }
+        },
+        "architecture": {
+          "title": "프로젝트 아키텍처",
+          "description": "테스트 내의 import 문과 함수 호출은 분석 시 도메인 힌트로 추출됩니다. 이 신호들은 SpecVital이 각 테스트가 애플리케이션의 어떤 부분을 다루는지 이해하는 데 도움을 줍니다.",
+          "signalStrength": {
+            "title": "분석 신호 강도",
+            "strongest": "Import 및 함수 호출 (가장 강함)",
+            "strong": "파일 경로 (강함)",
+            "moderate": "테스트명 (보통)",
+            "weak": "테스트 콘텐츠 패턴 (약함)"
+          },
+          "bad": {
+            "title": "약한 신호",
+            "description": "일반적인 유틸리티 import는 도메인 컨텍스트를 제공하지 않습니다."
+          },
+          "good": {
+            "title": "강한 신호",
+            "description": "도메인별 import가 비즈니스 영역을 명확하게 나타냅니다."
+          },
+          "tip": {
+            "title": "도메인별 Import가 가장 중요",
+            "description": "테스트가 도메인별 모듈(예: @/services/auth, @/api/payment)을 import하면 SpecVital이 애플리케이션의 어떤 부분을 테스트하는지 정확하게 파악합니다. 일반적인 유틸리티 import는 유용한 신호를 제공하지 않습니다."
+          }
+        },
+        "roadmap": {
+          "title": "출시 예정: AI 가이드 도구",
+          "description": "SpecVital의 분석 기능을 IDE에 직접 가져오는 MCP(Model Context Protocol) 통합을 개발하고 있습니다. 분석 결과를 기반으로 테스트 코드 개선을 도와줄 예정입니다.",
+          "comingSoon": "출시 예정",
+          "features": {
+            "naming": {
+              "title": "테스트명 개선",
+              "description": "알기 어려운 테스트명을 감지하고 더 나은 분석 결과를 위한 서술적인 대안을 제안합니다."
+            },
+            "structure": {
+              "title": "구조 리팩토링",
+              "description": "평면적인 테스트 파일을 잘 조직된 Suite 계층으로 변환하는 것을 제안합니다."
+            },
+            "preview": {
+              "title": "분석 미리보기",
+              "description": "변경 사항을 커밋하기 전에 테스트가 어떻게 분석되고 그룹핑될지 미리 확인합니다."
+            },
+            "architecture": {
+              "title": "아키텍처 진단",
+              "description": "프로젝트의 테스트 파일 구성과 import 패턴을 분석하여 개선 제안을 제공합니다."
+            }
+          }
+        },
+        "aiToolConfig": {
+          "title": "AI 도구 설정",
+          "description": "요즘 대부분의 테스트는 AI 코딩 도구로 작성됩니다. AI 도구에 SpecVital 맞춤 규칙을 추가하면 생성되는 테스트가 최적의 분석 결과를 만듭니다.",
+          "principles": {
+            "suiteHierarchy": {
+              "title": "Suite 계층 필수화",
+              "description": "AI가 항상 도메인과 기능을 명명하는 중첩된 Suite 그룹으로 테스트를 감싸도록 지시하세요. Suite 경로는 가장 강력한 구조적 신호입니다."
+            },
+            "behaviorNames": {
+              "title": "행동 서술형 이름 강제",
+              "description": "테스트명이 구현이 아닌 행동을 서술하도록 하세요. \"만료된 토큰 거부\" 같은 이름은 스펙 설명으로 직접 변환됩니다."
+            },
+            "domainPaths": {
+              "title": "도메인 반영 경로",
+              "description": "테스트 파일을 일반적인 디렉토리가 아닌 비즈니스 도메인을 반영하는 디렉토리(예: tests/auth/, tests/order/)에 배치하도록 지시하세요."
+            },
+            "domainImports": {
+              "title": "실제 모듈 Import",
+              "description": "테스트 대상인 실제 도메인 서비스와 모듈을 import하도록 요구하세요. Import 문은 도메인 분류를 위한 가장 강력한 신호입니다."
+            }
+          },
+          "viewTemplate": "추천 프롬프트 템플릿 보기",
+          "dialog": {
+            "title": "추천 프롬프트 템플릿",
+            "description": "AI 도구의 규칙 또는 설정 파일(예: CLAUDE.md, .cursorrules, copilot-instructions.md)에 복사하세요.",
+            "copy": "클립보드에 복사",
+            "copied": "복사됨!"
+          }
+        }
+      }
+    }
+  }
+}

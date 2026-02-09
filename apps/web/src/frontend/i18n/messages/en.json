@@ -1,0 +1,1360 @@
+{
+  "maintenance": {
+    "title": "Under Maintenance",
+    "description": "We're updating our systems to serve you better. Please check back shortly."
+  },
+  "common": {
+    "appName": "SpecVital",
+    "loading": "Loading...",
+    "refreshing": "Refreshing content...",
+    "error": "Error",
+    "tryAgain": "Try again",
+    "goHome": "Go home"
+  },
+  "header": {
+    "account": "Account",
+    "analyze": "Analyze",
+    "analyzeAnother": "Analyze Another",
+    "dashboard": "Dashboard",
+    "goToHomepage": "Go to homepage",
+    "language": "Language",
+    "mobileNavigation": "Mobile navigation",
+    "more": "More",
+    "selectLanguage": "Select language",
+    "skipToContent": "Skip to content",
+    "theme": "Theme",
+    "toggleTheme": "Toggle theme"
+  },
+  "analyzeDialog": {
+    "title": "Analyze Repository",
+    "description": "Enter a GitHub repository URL to analyze test specifications.",
+    "trigger": "New Analysis",
+    "ctaTrigger": "Analyze a repository"
+  },
+  "auth": {
+    "account": "Account",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "openUserMenu": "Open user menu",
+    "toast": {
+      "authFailed": "Authentication failed",
+      "invalidCode": "Invalid authorization code",
+      "invalidState": "Session expired. Please try again.",
+      "loginFailed": "Failed to start login process",
+      "missingOAuthParams": "Missing OAuth parameters",
+      "networkError": "Network error during authentication",
+      "unknownError": "Authentication error: {error}"
+    }
+  },
+  "loginModal": {
+    "continueWithGitHub": "Continue with GitHub",
+    "description": "Sign in to save repositories and manage your analysis history.",
+    "terms": "By signing in, you agree to our Terms of Service.",
+    "title": "Sign in to SpecVital"
+  },
+  "home": {
+    "headline": "Test suite, instantly",
+    "subheadline": "Paste a GitHub URL. Get full test analysis. No setup required.",
+    "inputPlaceholder": "https://github.com/facebook/react",
+    "inputPlaceholderShort": "owner/repo",
+    "analyzeButton": "Analyze",
+    "helperText": "",
+    "inputLabel": "GitHub Repository URL",
+    "demoLink": "See example",
+    "supportedFormats": {
+      "label": "View supported formats",
+      "title": "Supported formats",
+      "note": "Branch/file paths are automatically extracted"
+    },
+    "trustBadges": {
+      "accurate": "AST-powered",
+      "free": "Free to start",
+      "instant": "Instant analysis",
+      "multiFramework": "20+ frameworks"
+    },
+    "frameworks": {
+      "title": "Supported Frameworks",
+      "description": "List of supported testing frameworks and their file patterns",
+      "javascript": "JavaScript / TypeScript",
+      "python": "Python",
+      "go": "Go",
+      "java": "Java",
+      "kotlin": "Kotlin",
+      "csharp": "C#",
+      "ruby": "Ruby",
+      "php": "PHP",
+      "rust": "Rust",
+      "cpp": "C++",
+      "swift": "Swift"
+    }
+  },
+  "analyze": {
+    "generateSpec": {
+      "generate": "Generate AI Spec",
+      "generating": "Generating...",
+      "aiSpecDocument": "AI Spec Document",
+      "ariaLabel": "Generate test specification document with AI"
+    },
+    "viewOnGitHub": "View on GitHub",
+    "details": "Details",
+    "analyzedAt": "Analyzed: {date}",
+    "parserVersion": "Parser: {version}",
+    "branch": "Branch",
+    "commit": "Commit",
+    "commitDetails": "Commit Details",
+    "committedAt": "Committed: {date}",
+    "testSuites": "Test Suites",
+    "noTestSuites": "No test suites found in this repository.",
+    "noTestsInSuite": "No tests in this suite.",
+    "testCount": "{count} {count, plural, =1 {test} other {tests}}",
+    "retry": "Try Again",
+    "quotaExceeded": {
+      "title": "Analysis Quota Exceeded",
+      "description": "You've used all your analysis quota for this period. Your quota will reset on {resetDate}.",
+      "currentUsage": "Current usage: {used} / {limit}",
+      "viewAccount": "View Account"
+    },
+    "waiting": {
+      "queued": {
+        "0": "Queued for analysis",
+        "1": "Waiting for an available worker...",
+        "2": "Your request is in the queue",
+        "3": "Analysis will start shortly",
+        "4": "Thanks for your patience"
+      },
+      "analyzing": {
+        "0": "Cloning repository from GitHub",
+        "1": "Scanning for test files",
+        "2": "Parsing test specifications",
+        "3": "Analyzing test structure",
+        "4": "Almost done..."
+      },
+      "elapsed": "Elapsed time",
+      "longWait": "You can leave this page - analysis continues in the background"
+    },
+    "filter": {
+      "clearSearch": "Clear search",
+      "frameworkFilter": "Framework",
+      "noResults": "No matching tests found",
+      "noResultsDescription": "Try adjusting your filters",
+      "resetFilters": "Reset Filters",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search tests or files...",
+      "statusActive": "Active",
+      "statusFilter": "Status",
+      "statusFocused": "Focused",
+      "statusSkipped": "Skipped",
+      "statusTodo": "Todo",
+      "statusXfail": "Expected Fail",
+      "matchCount": "{count} matches",
+      "resultSummary": "{filtered} of {total} tests",
+      "searchBehaviorsPlaceholder": "Search behaviors...",
+      "resultSummaryWithType": "{filtered} of {total} {type}"
+    },
+    "viewMode": {
+      "list": "List view",
+      "tree": "Tree view",
+      "document": "Document view",
+      "documentUnavailable": "Generate document first"
+    },
+    "tabs": {
+      "tests": "Tests",
+      "spec": "AI Spec"
+    },
+    "status": {
+      "queued": "Waiting in queue...",
+      "queuedTitle": "Queued",
+      "queuedDescription": "Analysis will start shortly",
+      "analyzing": "Analyzing repository...",
+      "analyzingTitle": "Analyzing",
+      "analyzingDescription": "Scanning test files and patterns",
+      "error": "Analysis Failed",
+      "failed": "Analysis could not be completed. Please try again."
+    },
+    "updateBanner": {
+      "analyzing": "Analyzing repository...",
+      "dismissLabel": "Dismiss",
+      "newCommitsDetected": "New commits detected. Update to see the latest analysis.",
+      "parserUpdated": "Parser has been updated. Reanalyze to get more accurate results.",
+      "reanalyzeFailed": "Failed to start reanalysis",
+      "reanalyzeQueued": "Reanalysis started",
+      "updateNow": "Update Now"
+    },
+    "commitHistory": {
+      "title": "Analyzed Commits",
+      "tests": "{count, plural, =1 {1 test} other {# tests}}"
+    }
+  },
+  "emptyState": {
+    "title": "No tests found",
+    "description": "We couldn't find any test files in this repository.",
+    "supportedFrameworks": "Supported frameworks:",
+    "analyzeAnother": "Analyze Another Repository"
+  },
+  "stats": {
+    "label": "Test Statistics",
+    "total": "Total",
+    "active": "Active",
+    "focused": "Focused",
+    "skipped": "Skipped",
+    "xfail": "Xfail",
+    "todo": "Todo",
+    "byFramework": "By Framework",
+    "framework": "Framework",
+    "frameworkProgress": "{framework} test distribution",
+    "frameworkProgressDetail": "{framework}: {percentage}% of total tests ({total} tests - {active} active, {skipped} skipped, {todo} todo)",
+    "tests": "tests"
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred",
+    "invalidRequest": "Invalid Request",
+    "accessDenied": "Access Denied",
+    "notFound": "Repository Not Found",
+    "rateLimitExceeded": "Rate Limit Exceeded",
+    "networkError": "Network Error",
+    "serverError": "Server Error",
+    "validationError": "Validation Error",
+    "parseError": "Parse Error",
+    "errorCode": "Error code: {code}",
+    "technicalDetails": "Technical details"
+  },
+  "metadata": {
+    "defaultTitle": "SpecVital - Test Spec Analyzer",
+    "defaultDescription": "Analyze test specifications from GitHub repositories",
+    "analyzeTitle": "{owner}/{repo} - Test Analysis | SpecVital",
+    "analyzeDescription": "Test specification analysis for {owner}/{repo} repository"
+  },
+  "share": {
+    "ariaLabel": "Share analysis link",
+    "button": "Share",
+    "copyFailed": "Failed to copy link",
+    "copyFailedDescription": "Please copy the URL manually from the address bar",
+    "linkCopied": "Link copied!",
+    "linkCopiedDescription": "Share this analysis with your team"
+  },
+  "export": {
+    "ariaLabel": "Export analysis results",
+    "button": "Export",
+    "copyMarkdown": "Copy Markdown",
+    "downloadMarkdown": "Download Markdown",
+    "success": "Done!"
+  },
+  "explore": {
+    "title": "Explore",
+    "searchPlaceholder": "Search repositories...",
+    "sort": {
+      "label": "Sort",
+      "name": "Name",
+      "recent": "Recent",
+      "tests": "Tests"
+    },
+    "tabs": {
+      "community": "Community",
+      "myRepos": "My Repos",
+      "organizations": "Organizations"
+    },
+    "community": {
+      "visibilityDisclosure": "Showing public repositories. Visibility determined at analysis time."
+    },
+    "loginRequired": {
+      "myReposTitle": "Sign in to view your repositories",
+      "myReposDescription": "Connect your GitHub account to see and analyze your personal repositories.",
+      "organizationsTitle": "Sign in to view organizations",
+      "organizationsDescription": "Connect your GitHub account to access your organization repositories.",
+      "signIn": "Sign in to continue"
+    },
+    "myRepos": {
+      "title": "My Repositories",
+      "description": "Your personal GitHub repositories",
+      "analyze": "Analyze",
+      "view": "View",
+      "lastPush": "Last push",
+      "noRepos": "No repositories found",
+      "noReposDescription": "You don't have any repositories on GitHub yet.",
+      "noSearchResults": "No repositories match your search",
+      "refresh": "Refresh from GitHub",
+      "searchPlaceholder": "Search repositories...",
+      "analyzed": "Analyzed",
+      "notAnalyzed": "Not analyzed"
+    },
+    "organizations": {
+      "title": "Organization Repositories",
+      "description": "Repositories from your GitHub organizations",
+      "selectOrg": "Select organization",
+      "noOrgs": "No organizations",
+      "noOrgsDescription": "You're not a member of any GitHub organizations, or you need to grant access.",
+      "connectRequired": "Connection required",
+      "connectDescription": "Install SpecVital GitHub App to access this organization's repositories.",
+      "connect": "Connect",
+      "refresh": "Refresh"
+    }
+  },
+  "navigation": {
+    "ariaLabel": "Main navigation",
+    "dashboard": "Dashboard",
+    "explore": "Explore",
+    "pricing": "Pricing",
+    "docs": "Docs"
+  },
+  "specView": {
+    "toc": {
+      "title": "Table of Contents",
+      "openToc": "Open table of contents",
+      "description": "Navigate through the specification document",
+      "filterMatchCount": "{matched}/{total} behaviors"
+    },
+    "executiveSummary": {
+      "title": "Executive Summary",
+      "modelTooltip": "AI model used for generation",
+      "dateTooltip": "Document generated at",
+      "languageTooltip": "Document language",
+      "switchLanguageTooltip": "Switch to a different language",
+      "currentLanguage": "Current",
+      "regenerateTooltip": "Regenerate document in current language",
+      "regenerateAriaLabel": "Regenerate AI specification document",
+      "noSummary": "No summary available. Click regenerate to generate a new document.",
+      "availableLanguages": "Available Languages",
+      "generateNew": "Generate New",
+      "versionLabel": "v{version}",
+      "versionLatest": "v{version} (latest)",
+      "versionUnknown": "Version",
+      "versionHistory": "Version History",
+      "switchVersionTooltip": "View previous versions",
+      "latestLabel": "latest"
+    },
+    "export": {
+      "ariaLabel": "Export specification document",
+      "button": "Export",
+      "copyMarkdown": "Copy Markdown",
+      "downloadMarkdown": "Download Markdown",
+      "success": "Done!",
+      "tooltip": "Export document as Markdown"
+    },
+    "versionBanner": {
+      "outdatedCommit": "This spec was generated from a previous commit. Regenerate to update.",
+      "regenerate": "Regenerate",
+      "viewingOldVersion": "You are viewing version {current}. The latest version is {latest}.",
+      "viewLatest": "View Latest"
+    },
+    "stats": {
+      "domains": "{count, plural, =1 {1 domain} other {# domains}}",
+      "features": "{count, plural, =1 {1 feature} other {# features}}",
+      "behaviors": "{count, plural, =1 {1 behavior} other {# behaviors}}"
+    },
+    "search": {
+      "placeholder": "Search behaviors...",
+      "dialogTitle": "Search Document",
+      "dialogDescription": "Search through all behaviors in this specification document",
+      "noResults": "No matching behaviors found",
+      "resultsHeading": "{count, plural, =1 {1 result} other {# results}}"
+    },
+    "filter": {
+      "clearFilters": "Clear filters",
+      "resultSummary": "{filtered} of {total} behaviors"
+    },
+    "behavior": {
+      "original": "Original Test Name"
+    },
+    "statusLegend": {
+      "title": "Status Legend",
+      "active": "Active",
+      "activeDescription": "Test is enabled and running normally",
+      "skipped": "Skipped",
+      "skippedDescription": "Test is temporarily disabled",
+      "todo": "Todo",
+      "todoDescription": "Test is planned but not implemented yet",
+      "focused": "Focused",
+      "focusedDescription": "Only this test runs (debugging mode)",
+      "xfail": "Expected Fail",
+      "xfailDescription": "Test is expected to fail (known issue)"
+    },
+    "domain": {
+      "summary": "{featureCount} {featureCount, plural, =1 {feature} other {features}}, {behaviorCount} {behaviorCount, plural, =1 {behavior} other {behaviors}}",
+      "aiConfidence": "AI classification confidence"
+    },
+    "statsBadge": {
+      "full": "{domainCount} {domainCount, plural, =1 {domain} other {domains}} / {featureCount} {featureCount, plural, =1 {feature} other {features}} / {behaviorCount} {behaviorCount, plural, =1 {behavior} other {behaviors}}",
+      "domainOnly": "{featureCount} {featureCount, plural, =1 {feature} other {features}} / {behaviorCount} {behaviorCount, plural, =1 {behavior} other {behaviors}}"
+    },
+    "emptyDocument": {
+      "title": "No Specification Document",
+      "description": "Generate an AI-powered specification document from your test cases. The document will organize your tests into domains, features, and behaviors.",
+      "generateButton": "Generate Document",
+      "generating": "Generating..."
+    },
+    "quota": {
+      "thisMonth": "this month",
+      "unlimited": "(No limit)",
+      "warning": "Running low",
+      "almostFull": "Almost at limit",
+      "viewAccount": "View Account",
+      "processing": "processing"
+    },
+    "quotaConfirm": {
+      "title": "Generate Specification",
+      "description": "This will use your AI Spec Doc generation quota. Please review your current usage before proceeding.",
+      "regenerateTitle": "Regenerate Specification",
+      "regenerateDescription": "A new version of the spec document will be generated. You can still view previous versions.",
+      "outputLanguage": "Output Language",
+      "selectLanguage": "Select language",
+      "searchLanguage": "Search languages...",
+      "noLanguageFound": "No language found.",
+      "specviewUsage": "Usage This Month",
+      "used": "used",
+      "unlimited": "Unlimited",
+      "thisMonth": "tests (this month)",
+      "unit": "tests",
+      "estimatedCost": "This generation will use ~{count} tests",
+      "afterGeneration": "After: ~{after} / {limit} tests",
+      "current": "Current",
+      "estimatedCostNote": "Actual usage may differ from the estimate",
+      "limit": "Limit",
+      "afterUsageShort": "After ~{after} / {limit}",
+      "warningMessage": "You're running low on your monthly quota. Consider upgrading your plan for more generations.",
+      "dangerMessage": "You're almost at your monthly limit. This generation will use most of your remaining quota.",
+      "exceededMessage": "You've reached your monthly quota limit. Please upgrade your plan or wait until next month.",
+      "wouldExceedMessage": "This generation would exceed your monthly quota limit.",
+      "viewAccount": "View Account →",
+      "cancel": "Cancel",
+      "generate": "Generate Document",
+      "regenerate": "Regenerate Document"
+    },
+    "toast": {
+      "noSubscription": {
+        "title": "Subscription Required",
+        "description": "An active subscription is required to generate spec documents.",
+        "viewPlans": "View Plans"
+      },
+      "quotaExceeded": {
+        "title": "Quota Exceeded",
+        "description": "You've used {used} of {limit} tests this month.",
+        "viewAccount": "View Account"
+      },
+      "generateFailed": {
+        "title": "Failed to generate spec"
+      },
+      "generationInProgress": {
+        "title": "Generating Spec Document",
+        "description": "We'll notify you when it's ready.",
+        "viewProgress": "View Progress"
+      },
+      "generationComplete": {
+        "title": "Spec Document Ready",
+        "description": "Your AI specification document is ready to view.",
+        "viewDocument": "View Document"
+      }
+    },
+    "generationProgress": {
+      "continueBrowsing": "Continue Browsing",
+      "viewDocument": "View Document",
+      "retryButton": "Try Again",
+      "tip": "We'll notify you when it's ready.",
+      "elapsed": "Elapsed time",
+      "status": {
+        "pending": "Waiting",
+        "pendingDescription": "Waiting in queue...",
+        "running": "Generating",
+        "runningDescription": "AI is writing specification documentation..."
+      },
+      "completed": {
+        "title": "Generation Complete",
+        "description": "Your specification document has been successfully generated."
+      },
+      "failed": {
+        "title": "Generation Failed",
+        "description": "An error occurred while generating the specification document."
+      },
+      "pipeline": {
+        "step1": "Queued",
+        "step2": "Generating",
+        "step3": "Complete",
+        "pending": {
+          "0": "Waiting for available AI worker...",
+          "1": "Your request is in the queue",
+          "2": "Generation will start shortly"
+        },
+        "running": {
+          "0": "AI is analyzing test structure",
+          "1": "Classifying domains and features",
+          "2": "Writing behavior descriptions",
+          "3": "Almost done..."
+        }
+      }
+    },
+    "generate": {
+      "analysisMode": "Analysis Mode",
+      "withCache": "Use cache",
+      "withCacheBenefit": "Reuses previous analysis to save quota",
+      "fresh": "Fresh analysis",
+      "freshWarning": "Quota will be consumed for all tests",
+      "recommended": "Recommended",
+      "cacheCheckFailed": "Could not check cache availability. Fresh analysis will be used.",
+      "sameCommitCacheDisabled": "Cache is unavailable for the same commit"
+    },
+    "cacheStats": {
+      "summary": "{cached} of {total} tests from cache ({rate}%)",
+      "allFromCache": "All tests loaded from cache",
+      "costSaved": "{saved} AI calls saved",
+      "generatedCount": "{count} new tests generated by AI",
+      "badgeLabel": "{rate}% cache"
+    },
+    "accessError": {
+      "unauthorized": {
+        "title": "Login Required",
+        "description": "Please sign in to view AI Spec documents.",
+        "loginButton": "Continue with GitHub"
+      },
+      "forbidden": {
+        "title": "Access Denied",
+        "description": "You don't have permission to view this AI Spec document. Only the creator can access it.",
+        "dashboardButton": "Go to Dashboard"
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "summary": {
+      "activeRepos": "Active Repositories",
+      "loading": "Loading statistics...",
+      "totalTests": "Total Tests"
+    },
+    "card": {
+      "addBookmark": "Add bookmark",
+      "addToDashboard": "Add to Dashboard",
+      "adding": "Adding...",
+      "analyzeLatest": "Analyze latest commits",
+      "bookmarked": "Bookmarked",
+      "inDashboard": "In Dashboard",
+      "loginToAdd": "Sign in to add",
+      "loginToBookmark": "Sign in to bookmark",
+      "noAnalysis": "No analysis yet",
+      "reanalyze": "Reanalyze repository",
+      "removeBookmark": "Remove bookmark",
+      "tests": "tests",
+      "update": "Update"
+    },
+    "delta": {
+      "decreased": "Tests decreased by {count}",
+      "increased": "Tests increased by {count}",
+      "unchanged": "Tests unchanged"
+    },
+    "emptyStateVariant": {
+      "noRepos": {
+        "title": "No repositories yet",
+        "description": "Analyze a GitHub repository to see it here. Your analysis history will be saved automatically."
+      },
+      "noSearchResults": {
+        "title": "No matching repositories",
+        "description": "Try adjusting your search query or filters",
+        "descriptionWithQuery": "No results found for \"{query}\". Try adjusting your search or filters."
+      },
+      "noBookmarks": {
+        "title": "No bookmarked repositories",
+        "description": "Bookmark repositories to see them here"
+      },
+      "error": {
+        "title": "Unable to load repositories",
+        "description": "Something went wrong. Please try again later."
+      }
+    },
+    "searchPlaceholder": "Search repositories...",
+    "sort": {
+      "label": "Sort",
+      "name": "Name",
+      "recent": "Recent",
+      "tests": "Tests"
+    },
+    "view": {
+      "label": "View",
+      "all": "All",
+      "mine": "Mine",
+      "bookmarked": "Bookmarked"
+    },
+    "filter": {
+      "apply": "Apply",
+      "filterButton": "Filter",
+      "label": "Filters",
+      "ownership": {
+        "all": "All",
+        "label": "Filter by ownership",
+        "mine": "Mine",
+        "organization": "Organization",
+        "others": "Others"
+      },
+      "bookmarked": "Bookmarked",
+      "bookmarkedLabel": "Show bookmarked only"
+    },
+    "exploreCta": "Browse other repositories",
+    "status": {
+      "analyzing": "Analyzing...",
+      "newCommits": "New commits",
+      "unknown": "Status unknown",
+      "upToDate": "Up to date"
+    },
+    "aiSpec": {
+      "badge": "AI Spec",
+      "languageCount": "Generated in {count, plural, =1 {1 language} other {# languages}}",
+      "lastGenerated": "Last generated: {time}",
+      "viewDetails": "View details →"
+    },
+    "pagination": {
+      "allLoaded": "All repositories loaded",
+      "loadError": "Failed to load more repositories",
+      "loadMore": "Load More",
+      "loading": "Loading...",
+      "retry": "Retry",
+      "showingAll": "{count, plural, =0 {No repositories} =1 {Showing 1 repository} other {Showing all # repositories}}",
+      "showingWithMore": "{count, plural, =1 {Showing 1 repository} other {Showing # repositories}}"
+    },
+    "toast": {
+      "addFailed": "Failed to add to dashboard",
+      "addSuccess": "Added to dashboard",
+      "bookmarkAddFailed": "Failed to add bookmark",
+      "bookmarkAdded": "Bookmark added",
+      "bookmarkRemoveFailed": "Failed to remove bookmark",
+      "bookmarkRemoved": "Bookmark removed",
+      "goToDashboard": "Go to Dashboard",
+      "refreshFailed": "Failed to refresh",
+      "refreshOrgFailed": "Failed to refresh {org}",
+      "refreshed": "Refreshed from GitHub",
+      "refreshedOrg": "Refreshed {org} from GitHub"
+    },
+    "discovery": {
+      "title": "Discover New Repos",
+      "description": "Find repositories you haven't analyzed yet and start tracking their test health.",
+      "myRepos": "My Repositories",
+      "orgRepos": "Organization Repos",
+      "loading": "Loading...",
+      "reposFound": "{count, plural, =0 {No repos} =1 {1 repo} other {# repos}} to analyze",
+      "noRepos": "No repositories found",
+      "noOrganizations": "No organizations found",
+      "refresh": "Refresh from GitHub",
+      "analyze": "Analyze",
+      "lastPush": "Last push",
+      "searchPlaceholder": "Search repositories...",
+      "sheetDescription": "{count, plural, =0 {No repositories} =1 {1 repository} other {# repositories}} available to analyze",
+      "noSearchResults": "No repositories match your search",
+      "selectOrganization": "Select Organization",
+      "selectOrganizationDescription": "{count, plural, =0 {No organizations} =1 {1 organization} other {# organizations}} available",
+      "errorTitle": "Failed to load discovery",
+      "errorDescription": "We couldn't load your GitHub repositories. Please try again.",
+      "retry": "Retry",
+      "refreshSuccess": "Refreshed from GitHub",
+      "refreshError": "Failed to refresh",
+      "refreshOrgSuccess": "Refreshed {org} from GitHub",
+      "refreshOrgError": "Failed to refresh {org}"
+    },
+    "githubApp": {
+      "restrictedTitle": "Connection Required",
+      "restrictedDescription": "To access repositories in this organization, you need to install the SpecVital GitHub App.",
+      "pendingTitle": "Connection Suspended",
+      "pendingDescription": "The GitHub App installation for this organization has been suspended. Please reinstall to continue accessing repositories.",
+      "connectButton": "Connect {org}",
+      "connect": "Connect",
+      "connectToAccess": "Connect to access repositories",
+      "statusRestricted": "Not Connected",
+      "statusPending": "Suspended",
+      "installDialogTitle": "Connect {org}",
+      "installDialogDescription": "Install the SpecVital GitHub App to access organization repositories.",
+      "installDialogBenefits": "Benefits of connecting:",
+      "installDialogBenefit1": "Access private repositories",
+      "installDialogBenefit2": "Analyze all organization projects",
+      "installDialogBenefit3": "Read-only access (no write permissions)",
+      "installButton": "Install GitHub App",
+      "installError": "Failed to get install URL",
+      "cancel": "Cancel"
+    }
+  },
+  "specLoginRequired": {
+    "title": "Sign in to Generate Specs",
+    "description": "Transform your test cases into organized specification documents with AI.",
+    "whySignIn": "What you get:",
+    "benefit1": "AI-powered spec documents",
+    "benefit1Description": "Automatically organize tests into domains, features, and behaviors",
+    "benefit2": "Unlimited generations",
+    "benefit2Description": "Generate as many spec documents as you need",
+    "benefit3": "Export & share",
+    "benefit3Description": "Download specs in Markdown or share with your team",
+    "continueWithGitHub": "Continue with GitHub",
+    "freeNote": "Test analysis stays free for everyone"
+  },
+  "backgroundTasks": {
+    "badge": {
+      "ariaLabel": "{count, plural, =1 {1 task in progress} other {# tasks in progress}}"
+    },
+    "dropdown": {
+      "title": "Tasks",
+      "viewPage": "View",
+      "viewAll": "+{count} more - View all"
+    },
+    "status": {
+      "processing": "Processing {time}",
+      "queued": "Queued"
+    },
+    "taskType": {
+      "analysis": "Analysis",
+      "spec-generation": "Spec Generation"
+    },
+    "activeTasks": {
+      "title": "Active Tasks",
+      "viewTask": "View"
+    },
+    "toast": {
+      "analysisComplete": "{repo} analysis completed",
+      "analysisFailed": "{repo} analysis failed",
+      "specGenerationComplete": "{repo} spec document generated",
+      "specGenerationFailed": "{repo} spec generation failed"
+    }
+  },
+  "globalSearch": {
+    "title": "Search",
+    "description": "Search pages, repositories, and commands.",
+    "placeholder": "Search...",
+    "noResults": "No results for ''{query}''",
+    "noResultsDefault": "No results found",
+    "categories": {
+      "navigation": "Navigation",
+      "commands": "Commands",
+      "recent": "Recent",
+      "repositories": "My Repositories",
+      "bookmarks": "Bookmarks",
+      "community": "Community"
+    },
+    "hints": {
+      "navigate": "Navigate",
+      "select": "Select",
+      "close": "Close"
+    },
+    "actions": {
+      "goToDashboard": "Go to Dashboard",
+      "goToExplore": "Go to Explore",
+      "goToAccount": "Go to Account",
+      "goToPricing": "Go to Pricing",
+      "goToHome": "Go to Home",
+      "newAnalysis": "Start New Analysis",
+      "switchToLight": "Switch to Light Mode",
+      "switchToDark": "Switch to Dark Mode"
+    },
+    "loginPrompt": "Sign in to search your repositories",
+    "loading": "Searching...",
+    "error": "An error occurred while searching",
+    "aria": {
+      "resultsFound": "{count, plural, =0 {No results found} =1 {1 result found} other {# results found}}",
+      "searchInput": "Search repositories, pages, and commands"
+    }
+  },
+  "account": {
+    "title": "Account",
+    "plan": {
+      "title": "Current Plan",
+      "tier": {
+        "free": "Free",
+        "pro": "Pro",
+        "pro_plus": "Pro+",
+        "enterprise": "Enterprise"
+      },
+      "specviewLimit": "AI Spec Docs",
+      "analysisLimit": "Analysis",
+      "retention": "Data Retention",
+      "month": "month",
+      "days": "{days} days",
+      "unlimited": "Unlimited",
+      "unavailable": "Plan information unavailable",
+      "upgrade": "Upgrade Plan",
+      "contactUs": "Contact Us"
+    },
+    "usage": {
+      "title": "Usage This Period",
+      "specview": "AI Spec Docs",
+      "analysis": "Analysis Runs",
+      "resetIn": "Resets in {days} days ({date})",
+      "unavailable": "Usage information unavailable"
+    }
+  },
+  "pricing": {
+    "header": {
+      "title": "Simple, transparent pricing",
+      "subtitle": "Choose the plan that fits your needs"
+    },
+    "promotion": {
+      "title": "Early Access: Pro features FREE!",
+      "description": "Sign up now and enjoy Pro features at no cost during our launch period"
+    },
+    "mostPopular": "Most Popular",
+    "comingSoon": "Coming Soon",
+    "customPricing": "Custom",
+    "month": "mo",
+    "days": "days",
+    "unlimited": "Unlimited",
+    "tiers": {
+      "free": {
+        "name": "Free",
+        "description": "Get started free"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "More power, longer retention"
+      },
+      "pro_plus": {
+        "name": "Pro+",
+        "description": "For power users"
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "description": "Custom for your organization"
+      }
+    },
+    "features": {
+      "specview": {
+        "label": "AI Spec Docs",
+        "unit": "tests"
+      },
+      "analysis": {
+        "label": "Analysis",
+        "unit": "runs"
+      },
+      "retention": {
+        "label": "Retention"
+      }
+    },
+    "cta": {
+      "getStartedFree": "Get Started",
+      "currentPlan": "Current Plan",
+      "upgrade": "Upgrade",
+      "upgradeComingSoon": "Upgrade options coming soon",
+      "contactUs": "Contact Us"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "items": {
+        "specview": {
+          "question": "What is an AI Spec Document?",
+          "answer": "An AI Spec Document automatically organizes your test cases into domains, features, and behaviors. It helps you understand your test status at a glance."
+        },
+        "analysis": {
+          "question": "What is Analysis?",
+          "answer": "Analysis parses your repository's test files and extracts test cases, frameworks, and statistics. It's the foundation for understanding your test suite."
+        },
+        "paymentLive": {
+          "question": "When will payments go live?",
+          "answer": "We're currently in early access. Paid plans will be introduced in the first half of this year. Early users will receive special benefits and advance notice."
+        },
+        "retention": {
+          "question": "What is data retention?",
+          "answer": "Retention period determines how long you can access your dashboard history and generated AI spec documents. Repository analysis results are kept regardless of your plan."
+        }
+      }
+    }
+  },
+  "docs": {
+    "landing": {
+      "title": "Documentation",
+      "description": "Learn how SpecVital works and get the most out of your test analysis.",
+      "howItWorksTitle": "How It Works"
+    },
+    "sidebar": {
+      "title": "Docs",
+      "ariaLabel": "Documentation navigation",
+      "openMenu": "Open navigation menu",
+      "description": "Navigate through documentation topics"
+    },
+    "topics": {
+      "testDetection": {
+        "title": "Test Detection",
+        "description": "Understanding how SpecVital finds and counts tests in your repository.",
+        "slug": "test-detection"
+      },
+      "usageBilling": {
+        "title": "Usage & Billing",
+        "description": "Learn about usage tracking, quotas, and billing cycles.",
+        "slug": "usage-billing"
+      },
+      "specviewGeneration": {
+        "title": "AI Spec Generation",
+        "description": "How AI transforms your tests into structured specification documents.",
+        "slug": "specview-generation"
+      },
+      "writingGuide": {
+        "title": "Test Writing Guide",
+        "description": "Learn how to write tests and organize your project for optimal analysis results.",
+        "slug": "writing-guide"
+      }
+    },
+    "usageBilling": {
+      "meta": {
+        "title": "Usage & Billing | SpecVital Docs",
+        "description": "Learn about usage tracking, quotas, cache behavior, and billing cycles in SpecVital."
+      },
+      "title": "Usage & Billing",
+      "subtitle": "Understanding how usage is tracked and when quotas reset.",
+      "sections": {
+        "whatCounts": {
+          "title": "What Counts as Usage?",
+          "description": "SpecVital tracks usage for two main features: Analysis runs and AI Spec Document generation. Not all actions count toward your quota.",
+          "keyPoint": {
+            "title": "Cached Results Are Free",
+            "description": "Viewing cached analysis results never counts as usage. You're only charged when new work is performed."
+          },
+          "table": {
+            "event": "Action",
+            "description": "Description",
+            "countsUsage": "Counts?",
+            "yes": "Yes",
+            "no": "No"
+          },
+          "events": {
+            "analysisRun": {
+              "name": "Analysis Run",
+              "description": "Parsing test files from a repository"
+            },
+            "specDocGeneration": {
+              "name": "AI Spec Doc Generation",
+              "description": "AI generates specification document (counted by test count)"
+            },
+            "cacheHit": {
+              "name": "View Cached Results",
+              "description": "Viewing previously analyzed results"
+            },
+            "viewResults": {
+              "name": "View Analysis",
+              "description": "Browsing test lists, searching, filtering"
+            },
+            "exportDownload": {
+              "name": "Export / Download",
+              "description": "Downloading markdown or sharing links"
+            }
+          }
+        },
+        "usageTypes": {
+          "title": "Two Types of Usage",
+          "description": "SpecVital has separate quotas for different features, each tracked independently.",
+          "analysis": {
+            "title": "Analysis Runs",
+            "description": "Counted each time you analyze a repository. One run per repository, regardless of test count.",
+            "item1": "Initial analysis of a new repository",
+            "item2": "Reanalysis after new commits or parser updates"
+          },
+          "specview": {
+            "title": "AI Spec Docs",
+            "description": "Counted by the number of tests in the generated document. More tests = more usage.",
+            "item1": "100 tests = 100 usage units",
+            "item2": "Regenerating uses the new test count"
+          }
+        },
+        "cache": {
+          "title": "Cache Behavior",
+          "description": "SpecVital caches analysis results to save your quota and speed up access. Understanding when cache is used helps optimize your usage.",
+          "table": {
+            "scenario": "Scenario",
+            "cached": "Cached?",
+            "usageDeducted": "Usage Deducted?",
+            "yes": "Yes",
+            "no": "No"
+          },
+          "scenarios": {
+            "sameCommit": {
+              "name": "Same commit, same parser",
+              "description": "Viewing a repository you already analyzed"
+            },
+            "newCommit": {
+              "name": "New commits available",
+              "description": "Cached results are shown. You can choose to update via the banner."
+            },
+            "parserUpdate": {
+              "name": "Parser updated",
+              "description": "Cached results are shown. You can choose to reanalyze via the banner."
+            },
+            "manualReanalysis": {
+              "name": "Manual reanalysis",
+              "description": "Clicking 'Update Now' or 'Reanalyze' runs a fresh analysis"
+            }
+          },
+          "tip": {
+            "title": "Efficient Usage",
+            "description": "Cached results are served instantly and never count toward your quota. Only update when you need the latest analysis."
+          },
+          "specDocCache": {
+            "title": "AI Spec Doc Regeneration Cache",
+            "description": "When regenerating AI spec documents, you can choose to reuse previous results. Only new or changed tests are regenerated by AI, saving your quota."
+          }
+        },
+        "cycle": {
+          "title": "Billing Cycle",
+          "description": "Your usage quota resets monthly. The reset date is based on when you first signed up.",
+          "howItWorks": {
+            "title": "How Monthly Reset Works",
+            "step1Title": "Start Date",
+            "step1Desc": "Your billing cycle starts on the day you create your account.",
+            "step2Title": "Monthly Cycle",
+            "step2Desc": "Usage accumulates for one calendar month from your start date.",
+            "step3Title": "Automatic Reset",
+            "step3Desc": "When your monthly cycle ends, your usage counters reset to zero automatically."
+          }
+        },
+        "limits": {
+          "title": "Plan Limits",
+          "description": "Each plan has different monthly limits for analysis and AI spec generation. Paid plans also benefit from a priority processing queue for faster analysis.",
+          "viewPricing": "View Pricing Plans →"
+        },
+        "warnings": {
+          "title": "Quota Warnings",
+          "description": "SpecVital warns you before you run out of quota so you can plan accordingly.",
+          "approaching": {
+            "title": "Approaching Limit (70%)",
+            "description": "When you reach 70% of your quota, you'll see a warning indicator in the UI. Consider upgrading or waiting for reset."
+          },
+          "exceeded": {
+            "title": "Quota Exceeded (100%)",
+            "description": "When you hit your limit, you won't be able to perform new analyses or generate spec docs until reset. Existing results remain accessible."
+          }
+        },
+        "faq": {
+          "title": "FAQ",
+          "q1": {
+            "question": "Does viewing cached results use my quota?",
+            "answer": "No. Viewing previously analyzed results is always free. Usage is only counted when new analysis or generation work is performed."
+          },
+          "q2": {
+            "question": "What happens when I exceed my quota?",
+            "answer": "You won't be able to start new analyses or generate new spec documents until your quota resets. All existing results remain accessible, and you can still browse, search, and export."
+          },
+          "q3": {
+            "question": "Does regenerating a spec doc count as usage?",
+            "answer": "It depends on the mode. With 'Use cache', only new or changed tests consume quota — previous results are reused. With 'Fresh analysis', all tests are regenerated and the full test count is consumed."
+          },
+          "q4": {
+            "question": "Can I buy more quota mid-cycle?",
+            "answer": "Currently, quota cannot be purchased separately. You can upgrade your plan for higher limits. We're considering usage-based options for the future."
+          }
+        }
+      }
+    },
+    "testDetection": {
+      "meta": {
+        "title": "Test Detection | SpecVital Docs",
+        "description": "Learn how SpecVital detects and counts tests in your repository using AST-based static analysis."
+      },
+      "title": "Test Detection",
+      "subtitle": "Understanding how SpecVital finds and counts tests in your repository.",
+      "sections": {
+        "what": {
+          "title": "What is Test Detection?",
+          "description": "SpecVital uses AST (Abstract Syntax Tree) based static analysis to detect tests in your codebase. Unlike CLI tools that execute tests, SpecVital parses source code directly to identify test functions, suites, and their status.",
+          "keyPoint": {
+            "title": "Static Analysis",
+            "description": "Tests are analyzed without execution. This means results are available in seconds, not hours - no CI/CD setup required."
+          }
+        },
+        "how": {
+          "title": "How It Works",
+          "description": "SpecVital uses Tree-sitter based AST parsing to analyze source code across 10+ programming languages and 20+ testing frameworks. Tests are detected using import statements, config scope, and content patterns."
+        },
+        "status": {
+          "title": "Test Status Detection",
+          "description": "SpecVital detects test status based on framework-specific modifiers and attributes:",
+          "active": {
+            "label": "Active",
+            "description": "Normal test that will run"
+          },
+          "skipped": {
+            "label": "Skipped",
+            "description": "Marked to be skipped (.skip, @Disabled, @pytest.mark.skip)"
+          },
+          "todo": {
+            "label": "Todo",
+            "description": "Placeholder not yet implemented (.todo)"
+          },
+          "focused": {
+            "label": "Focused",
+            "description": "Marked to run exclusively (.only)"
+          },
+          "xfail": {
+            "label": "Expected Fail",
+            "description": "Expected to fail (@pytest.mark.xfail)"
+          }
+        },
+        "limitations": {
+          "title": "Known Limitations",
+          "staticAnalysis": {
+            "title": "Static Analysis Limitations",
+            "description": "As a static analysis tool, SpecVital parses source files independently without executing code. This means parameterized test counts, dynamic imports, and cross-file references may not be fully resolved. For exact test counts, use your framework's native CLI."
+          }
+        },
+        "accuracy": {
+          "title": "Accuracy Expectations",
+          "description": "For projects using standard testing patterns, SpecVital achieves high accuracy. Projects with heavy parameterization or custom test infrastructure may see lower accuracy.",
+          "typical": {
+            "title": "95-99% Accuracy",
+            "description": "Most projects using standard patterns will see highly accurate test counts. For exact counts, use your framework's native CLI (jest --listTests, pytest --collect-only)."
+          }
+        },
+        "faq": {
+          "title": "FAQ",
+          "q1": {
+            "question": "How often is the parser updated?",
+            "answer": "The parser is updated regularly to support new framework versions and patterns. When an update affects your results, you'll see a banner suggesting reanalysis."
+          }
+        }
+      }
+    },
+    "specviewGeneration": {
+      "meta": {
+        "title": "AI Spec Generation | SpecVital Docs",
+        "description": "Learn how AI transforms your tests into structured specification documents."
+      },
+      "title": "AI Spec Generation",
+      "subtitle": "Understanding how AI analyzes tests and generates specification documents.",
+      "sections": {
+        "overview": {
+          "title": "What is AI Spec Generation?",
+          "description": "AI Spec Generation automatically turns your test suite into a structured specification document. Instead of reading through hundreds of test files, you get a clear overview of what your project does — organized by business area and written in plain language.",
+          "keyPoint": {
+            "title": "Tests as Living Documentation",
+            "description": "Your test suite already describes how your system behaves. AI Spec Generation makes this knowledge readable and shareable with your entire team — developers, QA, and stakeholders alike."
+          }
+        },
+        "output": {
+          "title": "What You Get",
+          "description": "The generated spec document includes:",
+          "features": {
+            "domains": {
+              "title": "Organized by Domain",
+              "description": "Tests are grouped into business domains and features, so you can quickly see what each part of your project covers."
+            },
+            "descriptions": {
+              "title": "Readable Descriptions",
+              "description": "Technical test names like 'should_return_404_when_not_found' become clear behavior descriptions like 'Returns 404 when the resource is not found'."
+            },
+            "summary": {
+              "title": "Project Summary",
+              "description": "An auto-generated overview that describes what your project does based on its test coverage — great for onboarding and documentation."
+            },
+            "caching": {
+              "title": "Smart Caching",
+              "description": "Results are cached automatically. When you regenerate, only changed tests are reprocessed — saving time and quota."
+            }
+          }
+        },
+        "limitations": {
+          "title": "Things to Keep in Mind",
+          "items": {
+            "namesBased": {
+              "title": "Based on Test Metadata",
+              "description": "The AI works with test names, file paths, and imports — not the actual test implementation. The quality of the output depends on how descriptive your test names are."
+            },
+            "nameQuality": {
+              "title": "Cryptic Names, Lower Quality",
+              "description": "Tests with vague or abbreviated names (e.g., 'test1', 'checkA') will produce less useful descriptions. The more descriptive the name, the better the result."
+            },
+            "languageSupport": {
+              "title": "Multi-language Support",
+              "description": "Spec documents can be generated in 24 languages. English, Korean, Japanese, Chinese, and Spanish produce the best results."
+            }
+          }
+        },
+        "relatedGuide": {
+          "title": "Want better results?",
+          "description": "Learn how to write and organize tests for higher-quality spec documents in the Test Writing Guide."
+        },
+        "faq": {
+          "title": "FAQ",
+          "q1": {
+            "question": "How is usage counted?",
+            "answer": "Only newly generated descriptions count toward your quota. If a test was already processed before, the cached result is reused for free. Regenerating an unchanged repository costs nothing."
+          },
+          "q2": {
+            "question": "Can I edit the generated document?",
+            "answer": "Documents are read-only in SpecVital, but you can export them as Markdown and edit them in any text editor or documentation system."
+          },
+          "q3": {
+            "question": "When should I regenerate?",
+            "answer": "Regenerate after significant changes to your test suite — such as adding new features or major refactoring. For active projects, after each sprint or milestone is a good cadence."
+          }
+        }
+      }
+    },
+    "writingGuide": {
+      "meta": {
+        "title": "Test Writing Guide | SpecVital Docs",
+        "description": "Learn how to write tests and organize your project for optimal analysis results."
+      },
+      "title": "Test Writing Guide",
+      "subtitle": "Structure your tests for accurate analysis and high-quality spec documents.",
+      "sections": {
+        "pipeline": {
+          "title": "How SpecVital Works",
+          "description": "SpecVital uses AST-based static analysis to understand your test codebase. Knowing how this pipeline works helps you get the most accurate results.",
+          "steps": {
+            "detect": {
+              "title": "Test Detection",
+              "description": "Scans your repository for test files using naming patterns and directory conventions."
+            },
+            "parse": {
+              "title": "AST Parsing",
+              "description": "Statically analyzes test files with tree-sitter to extract test structure, suite hierarchy, and status."
+            },
+            "analyze": {
+              "title": "Analysis",
+              "description": "Generates a comprehensive test inventory with framework detection, status breakdown, and structural insights."
+            },
+            "specDocument": {
+              "title": "Spec Document",
+              "description": "Optionally, AI organizes analysis results into domain-grouped specification documents."
+            }
+          },
+          "keyPoint": {
+            "title": "Well-Structured Code, Better Results",
+            "description": "Well-structured test code leads to more accurate analysis. If you also use spec document generation, analysis quality directly impacts document quality."
+          }
+        },
+        "testNaming": {
+          "title": "Naming Tests",
+          "description": "Test names are the single most impactful factor for analysis quality. Descriptive names improve both the analysis breakdown and spec document generation.",
+          "contextNote": {
+            "title": "Domain Context Enhances Results",
+            "description": "SpecVital uses domain information (suite path, file path, imports) alongside test names. Even brief test names can produce reasonable descriptions when rich domain context is available."
+          },
+          "table": {
+            "testName": "Test Name",
+            "context": "Suite Context",
+            "result": "Expected Description",
+            "confidence": "Confidence"
+          },
+          "confidence": {
+            "high": "High",
+            "medium": "Medium",
+            "low": "Low"
+          },
+          "tips": {
+            "pattern": {
+              "title": "Use should/when Pattern",
+              "description": "Names like 'should [action] when [condition]' or '[action] when [condition]' produce the clearest analysis results."
+            },
+            "specific": {
+              "title": "Be Specific",
+              "description": "Include specific conditions, expected values, and edge cases in the test name. Avoid generic verbs like 'works' or 'handles'."
+            }
+          }
+        },
+        "testStructure": {
+          "title": "Structuring Tests",
+          "description": "Suite hierarchy is key structural information that SpecVital extracts. Nesting tests into meaningful groups provides rich context for both analysis and spec generation.",
+          "bad": {
+            "title": "Flat Structure",
+            "description": "Without suite hierarchy, analysis lacks grouping context."
+          },
+          "good": {
+            "title": "Nested Structure",
+            "description": "Nested test groups provide clear structural context for analysis."
+          },
+          "tip": {
+            "title": "Suite Path = Structural Context",
+            "description": "The full suite path (e.g., 'AuthService > Login') gives SpecVital the context needed to understand how tests relate to each other and to your application's architecture."
+          }
+        },
+        "fileOrganization": {
+          "title": "Organizing Test Files",
+          "description": "File paths are a strong signal for understanding your project structure. Well-organized test files lead to accurate grouping in both analysis and spec documents.",
+          "bad": {
+            "title": "Avoid",
+            "description": "All tests in a single directory lose path-based structural signals."
+          },
+          "good": {
+            "title": "Recommended",
+            "description": "Domain-aligned directories provide strong structural signals."
+          },
+          "tips": {
+            "naming": {
+              "title": "Follow Framework Conventions",
+              "description": "Use standard naming patterns your framework expects: *.test.ts, *.spec.ts, *_test.go, *Test.java, test_*.py, and so on."
+            },
+            "colocation": {
+              "title": "Co-locate Tests with Source",
+              "description": "Keeping tests near source code (e.g., __tests__/ in the same directory) provides clear path-based structural signals."
+            },
+            "separation": {
+              "title": "Separate by Domain",
+              "description": "Organize test directories by business domain (auth/, payment/, user/) rather than by test type (unit/, integration/)."
+            }
+          }
+        },
+        "architecture": {
+          "title": "Project Architecture",
+          "description": "Import statements and function calls within tests are extracted as domain hints during analysis. These signals help SpecVital understand which parts of your application each test covers.",
+          "signalStrength": {
+            "title": "Analysis Signal Strength",
+            "strongest": "Imports and function calls (strongest)",
+            "strong": "File path (strong)",
+            "moderate": "Test names (moderate)",
+            "weak": "Test content patterns (weak)"
+          },
+          "bad": {
+            "title": "Weak Signals",
+            "description": "Generic utility imports provide no domain context."
+          },
+          "good": {
+            "title": "Strong Signals",
+            "description": "Domain-specific imports clearly indicate business area."
+          },
+          "tip": {
+            "title": "Domain-Specific Imports Matter Most",
+            "description": "When your tests import from domain-specific modules (e.g., @/services/auth, @/api/payment), SpecVital can accurately identify which part of your application is being tested. Generic utility imports provide no useful signal."
+          }
+        },
+        "roadmap": {
+          "title": "Coming Soon: AI-Guided Tools",
+          "description": "We're building MCP (Model Context Protocol) integration that brings SpecVital's analysis capabilities directly into your IDE. These tools will help you improve your test code based on analysis results.",
+          "comingSoon": "Coming Soon",
+          "features": {
+            "naming": {
+              "title": "Test Name Improvement",
+              "description": "Detect cryptic test names and suggest descriptive alternatives for better analysis results."
+            },
+            "structure": {
+              "title": "Structure Refactoring",
+              "description": "Suggest converting flat test files into well-organized suite hierarchies."
+            },
+            "preview": {
+              "title": "Analysis Preview",
+              "description": "Preview how your tests will be analyzed and grouped before committing changes."
+            },
+            "architecture": {
+              "title": "Architecture Diagnostics",
+              "description": "Analyze your project's test file organization and import patterns, with suggestions for improvement."
+            }
+          }
+        },
+        "aiToolConfig": {
+          "title": "AI Tool Configuration",
+          "description": "Most tests today are written with AI coding assistants. Add SpecVital-aware rules to your AI tool so generated tests produce optimal analysis results.",
+          "principles": {
+            "suiteHierarchy": {
+              "title": "Require Suite Hierarchy",
+              "description": "Instruct your AI to always wrap tests in nested suite groups that name the domain and feature. The suite path is the strongest structural signal."
+            },
+            "behaviorNames": {
+              "title": "Enforce Behavior Names",
+              "description": "Test names should describe behavior, not implementation. Names like \"rejects expired token\" are converted directly into spec descriptions."
+            },
+            "domainPaths": {
+              "title": "Mirror Domain in Paths",
+              "description": "Tell your AI to place test files in directories that reflect business domains (e.g., tests/auth/, tests/order/) instead of generic directories."
+            },
+            "domainImports": {
+              "title": "Import Real Modules",
+              "description": "Require importing actual domain services and modules under test. Import statements are the strongest signal for domain classification."
+            }
+          },
+          "viewTemplate": "View Recommended Prompt Template",
+          "dialog": {
+            "title": "Recommended Prompt Template",
+            "description": "Copy this into your AI tool's rule or configuration file (e.g., CLAUDE.md, .cursorrules, copilot-instructions.md).",
+            "copy": "Copy to Clipboard",
+            "copied": "Copied!"
+          }
+        }
+      }
+    }
+  }
+}

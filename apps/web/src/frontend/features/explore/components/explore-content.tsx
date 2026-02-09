@@ -1,0 +1,168 @@
+"use client";
+
+import { Building2, Globe, Lock, User } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/features/auth";
+import {
+  EmptyStateVariant,
+  InfiniteScrollLoader,
+  RepositoryList,
+  useReanalyze,
+  type SortOption,
+} from "@/features/dashboard";
+
+import { useExploreRepositories } from "../hooks";
+import { LoginRequiredState } from "./login-required-state";
+import { MyReposTab } from "./my-repos-tab";
+import { OrgReposTab } from "./org-repos-tab";
+import { SearchSortControls } from "./search-sort-controls";
+
+type ExploreTab = "community" | "my-repos" | "organizations";
+
+export const ExploreContent = () => {
+  const t = useTranslations("explore");
+  const { isAuthenticated } = useAuth();
+
+  const { reanalyze } = useReanalyze();
+
+  const [activeTab, setActiveTab] = useState<ExploreTab>("community");
+  const [sortBy, setSortBy] = useState<SortOption>("recent");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const {
+    data: communityRepositories,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    isFetchingNextPage,
+    isLoading,
+    refetch,
+  } = useExploreRepositories({
+    sortBy,
+    sortOrder: "desc",
+  });
+
+  const filteredRepositories = (() => {
+    if (!searchQuery.trim()) {
+      return communityRepositories;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return communityRepositories.filter(
+      (repo) =>
+        repo.owner.toLowerCase().includes(query) ||
+        repo.name.toLowerCase().includes(query) ||
+        `${repo.owner}/${repo.name}`.toLowerCase().includes(query)
+    );
+  })();
+
+  const handleReanalyze = (owner: string, repo: string) => {
+    reanalyze(owner, repo);
+  };
+
+  const handleLoadMore = () => {
+    fetchNextPage();
+  };
+
+  const handleRetry = () => {
+    refetch();
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as ExploreTab);
+    setSearchQuery("");
+  };
+
+  const hasNoRepositories = !isLoading && communityRepositories.length === 0 && !isError;
+  const hasNoSearchResults =
+    searchQuery.trim() !== "" &&
+    filteredRepositories.length === 0 &&
+    communityRepositories.length > 0;
+
+  return (
+    <Tabs defaultValue="community" onValueChange={handleTabChange} value={activeTab}>
+      <TabsList className="mb-6">
+        <TabsTrigger className="gap-2" value="community">
+          <Globe className="size-4" />
+          {t("tabs.community")}
+        </TabsTrigger>
+        <TabsTrigger className="gap-2" value="my-repos">
+          {isAuthenticated ? <User className="size-4" /> : <Lock className="size-4" />}
+          {t("tabs.myRepos")}
+        </TabsTrigger>
+        <TabsTrigger className="gap-2" value="organizations">
+          {isAuthenticated ? <Building2 className="size-4" /> : <Lock className="size-4" />}
+          {t("tabs.organizations")}
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="community">
+        <div className="space-y-8">
+          <p className="text-sm text-muted-foreground">{t("community.visibilityDisclosure")}</p>
+          <SearchSortControls
+            hasNextPage={hasNextPage}
+            isLoading={isLoading}
+            onSearchChange={setSearchQuery}
+            onSortChange={setSortBy}
+            searchQuery={searchQuery}
+            sortBy={sortBy}
+            totalLoaded={communityRepositories.length}
+          />
+
+          {isLoading ? (
+            <RepositoryList
+              isLoading
+              onReanalyze={handleReanalyze}
+              repositories={[]}
+              variant="explore"
+            />
+          ) : hasNoRepositories ? (
+            <EmptyStateVariant variant="no-repos" />
+          ) : hasNoSearchResults ? (
+            <EmptyStateVariant searchQuery={searchQuery} variant="no-search-results" />
+          ) : (
+            <>
+              <RepositoryList
+                onReanalyze={handleReanalyze}
+                repositories={filteredRepositories}
+                variant="explore"
+              />
+
+              {!searchQuery.trim() && (
+                <InfiniteScrollLoader
+                  hasError={isError}
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  onLoadMore={handleLoadMore}
+                  onRetry={handleRetry}
+                />
+              )}
+            </>
+          )}
+        </div>
+      </TabsContent>
+
+      <TabsContent value="my-repos">
+        {isAuthenticated ? (
+          <MyReposTab />
+        ) : (
+          <LoginRequiredState descriptionKey="myReposDescription" titleKey="myReposTitle" />
+        )}
+      </TabsContent>
+
+      <TabsContent value="organizations">
+        {isAuthenticated ? (
+          <OrgReposTab />
+        ) : (
+          <LoginRequiredState
+            descriptionKey="organizationsDescription"
+            titleKey="organizationsTitle"
+          />
+        )}
+      </TabsContent>
+    </Tabs>
+  );
+};

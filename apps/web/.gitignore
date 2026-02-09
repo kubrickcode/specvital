@@ -1,0 +1,18 @@
+.env
+.pnpm-store
+node_modules
+.next
+next-env.d.ts
+docs/work
+docs/e2e-ui
+.claude/settings.local.json
+.claude-sessions/
+.claude-session-config.json
+src/backend/tmp
+*.tsbuildinfo
+
+# E2E Test
+test-results/
+playwright-report/
+e2e/.auth/user.json
+blob-report/

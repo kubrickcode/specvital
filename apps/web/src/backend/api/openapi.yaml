@@ -1,0 +1,3213 @@
+openapi: 3.1.0
+info:
+  title: Specvital API
+  description: Test specification analysis service for GitHub repositories
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /api/analyze/{owner}/{repo}:
+    parameters:
+      - $ref: "#/components/parameters/Owner"
+      - $ref: "#/components/parameters/Repo"
+    get:
+      operationId: analyzeRepository
+      summary: Analyze repository test specifications
+      description: |
+        Triggers or retrieves analysis for a GitHub repository.
+        - Returns completed analysis if available (optionally for specific commit)
+        - Queues new analysis if not found
+        - Returns current status if analysis is in progress
+      parameters:
+        - name: commit
+          in: query
+          required: false
+          description: |
+            Specific commit SHA to retrieve analysis for.
+            If provided, returns analysis for that commit only.
+            If not found, returns 404 instead of queueing new analysis.
+          schema:
+            type: string
+            minLength: 7
+            maxLength: 40
+            pattern: "^[a-f0-9]+$"
+      responses:
+        "200":
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompletedResponse"
+        "202":
+          description: Analysis accepted and processing
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/QueuedResponse"
+                  - $ref: "#/components/schemas/AnalyzingResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/analyze/{owner}/{repo}/status:
+    parameters:
+      - $ref: "#/components/parameters/Owner"
+      - $ref: "#/components/parameters/Repo"
+    get:
+      operationId: getAnalysisStatus
+      summary: Get analysis status
+      description: Check the current status of repository analysis
+      responses:
+        "200":
+          description: Analysis status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/analyze/{owner}/{repo}/history:
+    parameters:
+      - $ref: "#/components/parameters/Owner"
+      - $ref: "#/components/parameters/Repo"
+    get:
+      operationId: getAnalysisHistory
+      summary: Get analysis history for a repository
+      description: |
+        Returns list of completed analyses for a repository.
+        Ordered by commit date descending (newest first).
+        Limited to 50 most recent analyses.
+      responses:
+        "200":
+          description: Analysis history retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisHistoryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/login:
+    get:
+      operationId: authLogin
+      summary: Initiate GitHub OAuth login
+      description: Redirects to GitHub OAuth authorization page
+      responses:
+        "200":
+          description: OAuth authorization URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/callback:
+    get:
+      operationId: authCallback
+      summary: GitHub OAuth callback
+      description: Handles OAuth callback from GitHub and sets authentication cookie
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: OAuth authorization code from GitHub
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: OAuth state for CSRF protection
+      responses:
+        "302":
+          description: Redirect to frontend after successful authentication
+          headers:
+            Location:
+              schema:
+                type: string
+              description: Frontend URL to redirect to
+            Set-Cookie:
+              schema:
+                type: string
+              description: HTTP-only authentication cookie
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/logout:
+    post:
+      operationId: authLogout
+      summary: Logout and clear authentication
+      description: Clears authentication cookies and revokes refresh token in database
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/refresh:
+    post:
+      operationId: authRefresh
+      summary: Refresh authentication tokens
+      description: |
+        Exchanges a valid refresh token for a new access/refresh token pair.
+        The old refresh token is invalidated (rotation).
+        If a revoked token is used, the entire token family is invalidated (reuse detection).
+      responses:
+        "200":
+          description: Tokens refreshed successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: New access and refresh tokens as HTTP-only cookies
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/me:
+    get:
+      operationId: authMe
+      summary: Get current user info
+      description: Returns the currently authenticated user's information
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: User information retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInfo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/dev-login:
+    post:
+      operationId: authDevLogin
+      summary: Development-only test login
+      description: |
+        Creates or retrieves a test user and issues authentication tokens.
+        Only available when ENV != "production".
+        WARNING: This endpoint is for development and E2E testing only.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DevLoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Authentication cookies (auth_token, refresh_token)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DevLoginResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/user/bookmarks:
+    get:
+      operationId: getUserBookmarks
+      summary: Get user's bookmarked repositories
+      description: Returns list of repositories bookmarked by the authenticated user
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Bookmarked repositories retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookmarkedRepositoriesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/user/analyzed-repositories:
+    get:
+      operationId: getUserAnalyzedRepositories
+      summary: Get user's analyzed repositories
+      description: Returns paginated list of repositories analyzed by the authenticated user with ownership filtering
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          description: Pagination cursor for next page (opaque string from previous response)
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Maximum number of repositories to return per page
+        - name: ownership
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, mine, organization]
+            default: all
+          description: |
+            Filter repositories by ownership:
+            - all: All analyzed repositories (personal and organization)
+            - mine: Only repositories owned by the user
+            - organization: Only repositories owned by organizations
+      responses:
+        "200":
+          description: Analyzed repositories retrieved with pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAnalyzedRepositoriesResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    post:
+      operationId: addUserAnalyzedRepository
+      summary: Add repository to user's analysis history
+      description: |
+        Adds a repository to the user's analysis history (dashboard).
+        Useful when viewing analysis results from other users.
+        UPSERT behavior - updates timestamp if already exists.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddAnalyzedRepositoryRequest"
+      responses:
+        "200":
+          description: Repository added to history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddAnalyzedRepositoryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/repositories/recent:
+    get:
+      operationId: getRecentRepositories
+      summary: Get recently analyzed repositories
+      description: |
+        Returns paginated list of analyzed repositories.
+        Supports cursor-based pagination, sorting, and view filtering.
+        - Default behavior (no params): Returns first 20 items sorted by recent analysis
+        - Backward compatible: Existing clients work without changes
+        - Authentication: Optional for view=community/all with ownership=all. Required for view=my or ownership=mine/organization.
+      security:
+        - cookieAuth: []
+        - {}
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          description: Pagination cursor for next page (opaque string from previous response)
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Maximum number of repositories to return per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/SortByParam"
+          description: Field to sort by (default is recent)
+        - name: sortOrder
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/SortOrderParam"
+          description: Sort direction (default depends on sortBy - desc for recent/tests, asc for name)
+        - name: view
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/ViewFilterParam"
+          description: Filter repositories by analyzer (who analyzed the repository)
+        - name: ownership
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/OwnershipFilterParam"
+          description: Filter repositories by ownership type
+      responses:
+        "200":
+          description: Repositories retrieved with pagination info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedRepositoriesResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/repositories/stats:
+    get:
+      operationId: getRepositoryStats
+      summary: Get repository statistics
+      description: Returns aggregate statistics for user's repositories
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepositoryStatsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/repositories/{owner}/{repo}/bookmark:
+    parameters:
+      - $ref: "#/components/parameters/Owner"
+      - $ref: "#/components/parameters/Repo"
+    post:
+      operationId: addBookmark
+      summary: Bookmark a repository
+      description: Add repository to user's bookmarks
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Bookmark added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookmarkResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    delete:
+      operationId: removeBookmark
+      summary: Remove bookmark
+      description: Remove repository from user's bookmarks
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Bookmark removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookmarkResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/repositories/{owner}/{repo}/update-status:
+    parameters:
+      - $ref: "#/components/parameters/Owner"
+      - $ref: "#/components/parameters/Repo"
+    get:
+      operationId: getUpdateStatus
+      summary: Check repository update status
+      description: |
+        Checks if repository has new commits since last analysis.
+        Uses git ls-remote to check latest commit SHA.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Update status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateStatusResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/repositories/{owner}/{repo}/reanalyze:
+    parameters:
+      - $ref: "#/components/parameters/Owner"
+      - $ref: "#/components/parameters/Repo"
+    post:
+      operationId: reanalyzeRepository
+      summary: Trigger repository re-analysis
+      description: |
+        Queues a new analysis job for the repository.
+        Returns job status that can be polled via /api/analyze/{owner}/{repo}/status
+      security:
+        - cookieAuth: []
+      responses:
+        "202":
+          description: Re-analysis queued successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/QueuedResponse"
+                  - $ref: "#/components/schemas/AnalyzingResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/user/github/repositories:
+    get:
+      operationId: getUserGitHubRepositories
+      summary: Get user's GitHub repositories
+      description: Returns all repositories accessible by the authenticated user from GitHub
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: refresh
+          in: query
+          required: false
+          description: Force refresh from GitHub API, bypassing cache
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: GitHub repositories retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GitHubRepositoriesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/user/github/organizations:
+    get:
+      operationId: getUserGitHubOrganizations
+      summary: Get user's GitHub organizations
+      description: Returns all organizations the authenticated user belongs to
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: refresh
+          in: query
+          required: false
+          description: Force refresh from GitHub API, bypassing cache
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: GitHub organizations retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GitHubOrganizationsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/user/github/organizations/{org}/repositories:
+    parameters:
+      - name: org
+        in: path
+        required: true
+        description: GitHub organization login name
+        schema:
+          type: string
+          pattern: "^[a-zA-Z0-9._-]+$"
+        example: facebook
+    get:
+      operationId: getOrganizationRepositories
+      summary: Get organization's repositories
+      description: Returns all repositories in the specified organization
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: refresh
+          in: query
+          required: false
+          description: Force refresh from GitHub API, bypassing cache
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Organization repositories retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GitHubRepositoriesResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/user/github-app/installations:
+    get:
+      operationId: getUserGitHubAppInstallations
+      summary: Get user's GitHub App installations
+      description: Returns list of GitHub App installations accessible to the authenticated user
+      tags:
+        - GitHub App
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: GitHub App installations retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GitHubAppInstallationsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/user/github-app/install-url:
+    get:
+      operationId: getGitHubAppInstallUrl
+      summary: Get GitHub App installation URL
+      description: Returns the URL to install the GitHub App on a GitHub account
+      tags:
+        - GitHub App
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Installation URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GitHubAppInstallUrlResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/webhooks/github-app:
+    post:
+      operationId: handleGitHubAppWebhook
+      summary: Handle GitHub App webhook events
+      description: |
+        Receives and processes webhook events from GitHub App.
+        Handles installation, installation_repositories, and other GitHub App events.
+        Webhook signature is verified using HMAC-SHA256.
+      tags:
+        - Webhooks
+      parameters:
+        - name: X-GitHub-Event
+          in: header
+          required: true
+          description: GitHub event type (e.g., installation, installation_repositories)
+          schema:
+            type: string
+        - name: X-Hub-Signature-256
+          in: header
+          required: true
+          description: HMAC-SHA256 signature for payload verification
+          schema:
+            type: string
+        - name: X-GitHub-Delivery
+          in: header
+          required: true
+          description: Unique delivery ID for this webhook event
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GitHubWebhookPayload"
+      responses:
+        "200":
+          description: Webhook processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Invalid webhook signature
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # Spec View Level 2 - Domain-based Specification Document
+  /api/spec-view/{analysisId}:
+    parameters:
+      - name: analysisId
+        in: path
+        required: true
+        description: Analysis ID (UUID) to fetch spec document for
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    get:
+      operationId: getSpecDocument
+      summary: Get specification document for analysis
+      description: |
+        Retrieves the AI-generated specification document for a given analysis.
+        Returns full document hierarchy: domains → features → behaviors.
+        If document is being generated, returns status with progress.
+        Optionally filter by language and/or version parameter.
+      tags:
+        - Spec View
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: language
+          in: query
+          required: false
+          description: Filter by language. If not specified, returns the most recent document.
+          schema:
+            $ref: "#/components/schemas/SpecLanguage"
+        - name: version
+          in: query
+          required: false
+          description: Specific version number to retrieve. Requires language parameter. If not specified, returns the latest version.
+          schema:
+            type: integer
+            minimum: 1
+          example: 1
+      responses:
+        "200":
+          description: Spec document retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecDocumentResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/spec-view/{analysisId}/versions:
+    parameters:
+      - name: analysisId
+        in: path
+        required: true
+        description: Analysis ID (UUID) to fetch version history for
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    get:
+      operationId: getSpecVersions
+      summary: Get version history for a specific language
+      description: |
+        Returns all versions of the spec document for a given analysis and language.
+        Ordered by version number descending (latest first).
+      tags:
+        - Spec View
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: language
+          in: query
+          required: true
+          description: Language to get version history for
+          schema:
+            $ref: "#/components/schemas/SpecLanguage"
+      responses:
+        "200":
+          description: Version history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionHistoryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/spec-view/{analysisId}/cache-availability:
+    parameters:
+      - name: analysisId
+        in: path
+        required: true
+        description: Analysis ID (UUID) to check cache availability for
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    get:
+      operationId: getSpecCacheAvailability
+      summary: Get cache availability for all languages
+      description: |
+        Returns cache availability information for each supported language.
+        Used to determine if behavior cache reuse is possible when generating a new spec.
+        A previous spec exists when the same codebase has been analyzed before in that language.
+      tags:
+        - Spec View
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Cache availability retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CacheAvailabilityResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/spec-view/{analysisId}/cache-prediction:
+    parameters:
+      - name: analysisId
+        in: path
+        required: true
+        description: Analysis ID (UUID) to get cache prediction for
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    get:
+      operationId: getSpecCachePrediction
+      summary: Get cache prediction statistics for a language
+      description: |
+        Returns detailed cache prediction statistics for spec generation.
+        Compares current analysis tests with previous spec behaviors to predict cache hits.
+        Matching is done by test case name + file path.
+        Useful for showing users the expected cost reduction from behavior caching.
+      tags:
+        - Spec View
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: language
+          in: query
+          required: true
+          description: Language to get cache prediction for
+          schema:
+            $ref: "#/components/schemas/SpecLanguage"
+      responses:
+        "200":
+          description: Cache prediction retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CachePredictionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/spec-view/generate:
+    post:
+      operationId: requestSpecGeneration
+      summary: Request spec document generation
+      description: |
+        Requests generation of a specification document for an analysis.
+        Enqueues a River job for async AI processing.
+        Returns immediately with job status.
+      tags:
+        - Spec View
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestSpecGenerationRequest"
+      responses:
+        "202":
+          description: Generation request accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestSpecGenerationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Generation already in progress or completed
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/spec-view/status/{analysisId}:
+    parameters:
+      - name: analysisId
+        in: path
+        required: true
+        description: Analysis ID (UUID) to check generation status for
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440000
+    get:
+      operationId: getSpecGenerationStatus
+      summary: Get spec generation status
+      description: |
+        Returns the current status of spec document generation.
+        Useful for polling during generation.
+        If language is specified, returns status for that specific language.
+        Requires authentication.
+      tags:
+        - Spec View
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: language
+          in: query
+          required: false
+          description: Language to check status for (e.g., English, Korean)
+          schema:
+            type: string
+          example: English
+      responses:
+        "200":
+          description: Generation status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpecGenerationStatusResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # Repository-based Spec View APIs (cross-analysis version access)
+  /api/spec-view/repository/{owner}/{repo}:
+    parameters:
+      - name: owner
+        in: path
+        required: true
+        description: Repository owner (username or organization)
+        schema:
+          type: string
+        example: facebook
+      - name: repo
+        in: path
+        required: true
+        description: Repository name
+        schema:
+          type: string
+        example: react
+    get:
+      operationId: getSpecDocumentByRepository
+      summary: Get latest spec document for a repository
+      description: |
+        Retrieves the latest AI-generated specification document for a repository.
+        This endpoint provides cross-analysis access - returns spec from any analysis of this repository.
+        Useful for accessing spec history across multiple analyses/commits.
+      tags:
+        - Spec View
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: language
+          in: query
+          required: false
+          description: Filter by language. If not specified, returns the most recent document.
+          schema:
+            $ref: "#/components/schemas/SpecLanguage"
+        - name: version
+          in: query
+          required: false
+          description: Specific version number to retrieve. If not specified, returns the latest version.
+          schema:
+            type: integer
+            minimum: 1
+          example: 1
+        - name: documentId
+          in: query
+          required: false
+          description: Specific document ID (UUID) to retrieve. Takes precedence over version parameter.
+          schema:
+            type: string
+            format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        "200":
+          description: Spec document retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepoSpecDocumentResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/spec-view/repository/{owner}/{repo}/versions:
+    parameters:
+      - name: owner
+        in: path
+        required: true
+        description: Repository owner (username or organization)
+        schema:
+          type: string
+        example: facebook
+      - name: repo
+        in: path
+        required: true
+        description: Repository name
+        schema:
+          type: string
+        example: react
+    get:
+      operationId: getVersionHistoryByRepository
+      summary: Get version history for a repository across all analyses
+      description: |
+        Returns all spec versions for a repository across all analyses.
+        Each version includes the commit SHA at generation time.
+        Ordered by creation date descending (most recent first).
+      tags:
+        - Spec View
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: language
+          in: query
+          required: true
+          description: Language to get version history for
+          schema:
+            $ref: "#/components/schemas/SpecLanguage"
+      responses:
+        "200":
+          description: Version history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepoVersionHistoryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # User Active Tasks API
+  /api/user/active-tasks:
+    get:
+      operationId: getUserActiveTasks
+      summary: Get user's active background tasks
+      description: Returns list of currently active background tasks (queued or analyzing) for the authenticated user
+      tags:
+        - User
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Active tasks retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserActiveTasksResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # User Subscription APIs
+  /api/user/subscription:
+    get:
+      operationId: getUserSubscription
+      summary: Get user's subscription details
+      description: |
+        Returns the current user's subscription details including plan info and billing period.
+        Provides plan tier, limits, and period dates for display in account page.
+      tags:
+        - User
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Subscription details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSubscriptionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # Pricing API
+  /api/pricing:
+    get:
+      operationId: getPricing
+      summary: Get subscription plan pricing
+      description: Returns all subscription plans with pricing and limits.
+      tags:
+        - Pricing
+      responses:
+        "200":
+          description: Pricing plans retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricingResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # Usage Quota APIs
+  /api/usage/check-quota:
+    post:
+      operationId: checkQuota
+      summary: Check usage quota before operation
+      description: |
+        Validates if user has sufficient quota for the requested operation.
+        Returns current usage, limit, and whether the operation is allowed.
+      tags:
+        - Usage
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckQuotaRequest"
+      responses:
+        "200":
+          description: Quota check result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckQuotaResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/usage/current:
+    get:
+      operationId: getCurrentUsage
+      summary: Get current usage status
+      description: |
+        Returns current usage statistics for both SpecView and Analysis.
+        Includes used count, limit, and percentage for each metric type.
+      tags:
+        - Usage
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Current usage status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageStatusResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+      description: JWT token stored in HTTP-only cookie
+
+  parameters:
+    Owner:
+      name: owner
+      in: path
+      required: true
+      description: GitHub repository owner (user or organization)
+      schema:
+        type: string
+        pattern: "^[a-zA-Z0-9._-]+$"
+      example: facebook
+
+    Repo:
+      name: repo
+      in: path
+      required: true
+      description: GitHub repository name
+      schema:
+        type: string
+        pattern: "^[a-zA-Z0-9._-]+$"
+      example: react
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+
+    Forbidden:
+      description: Access forbidden
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+
+  schemas:
+    # Analysis Response - Discriminated Union
+    AnalysisResponse:
+      oneOf:
+        - $ref: "#/components/schemas/CompletedResponse"
+        - $ref: "#/components/schemas/AnalyzingResponse"
+        - $ref: "#/components/schemas/QueuedResponse"
+        - $ref: "#/components/schemas/FailedResponse"
+      discriminator:
+        propertyName: status
+        mapping:
+          completed: "#/components/schemas/CompletedResponse"
+          analyzing: "#/components/schemas/AnalyzingResponse"
+          queued: "#/components/schemas/QueuedResponse"
+          failed: "#/components/schemas/FailedResponse"
+
+    CompletedResponse:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          const: completed
+        data:
+          $ref: "#/components/schemas/AnalysisResult"
+
+    AnalyzingResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          const: analyzing
+        startedAt:
+          type: string
+          format: date-time
+          description: When the analysis job started running (ISO 8601)
+
+    QueuedResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          const: queued
+
+    FailedResponse:
+      type: object
+      required:
+        - status
+        - error
+      properties:
+        status:
+          type: string
+          const: failed
+        error:
+          type: string
+          description: Error message describing the failure
+
+    # Analysis Result
+    AnalysisResult:
+      type: object
+      required:
+        - id
+        - analyzedAt
+        - commitSha
+        - owner
+        - repo
+        - suites
+        - summary
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Analysis ID (UUID)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        analyzedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of analysis completion
+          example: "2024-01-15T10:30:00Z"
+        branchName:
+          type: string
+          description: Branch name that was analyzed
+          example: main
+        commitSha:
+          type: string
+          description: Git commit SHA that was analyzed
+          example: "abc123def456"
+        committedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the commit
+          example: "2024-01-14T09:00:00Z"
+        isInMyHistory:
+          type: boolean
+          description: Whether this analysis is in the current user's dashboard history
+        owner:
+          type: string
+          description: Repository owner
+          example: facebook
+        parserVersion:
+          type: string
+          description: Parser version used for this analysis (e.g., "v1.5.1 (deacdda)")
+          example: "v1.5.1 (deacdda)"
+        repo:
+          type: string
+          description: Repository name
+          example: react
+        suites:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestSuite"
+        summary:
+          $ref: "#/components/schemas/Summary"
+
+    # Test Suite
+    TestSuite:
+      type: object
+      required:
+        - filePath
+        - framework
+        - suiteName
+        - tests
+      properties:
+        filePath:
+          type: string
+          description: Path to the test file relative to repository root
+          example: src/__tests__/App.test.tsx
+        framework:
+          $ref: "#/components/schemas/Framework"
+        suiteName:
+          type: string
+          description: Name of the test suite (describe block name)
+          example: UserService
+        tests:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestCase"
+
+    # Test Case
+    TestCase:
+      type: object
+      required:
+        - filePath
+        - framework
+        - line
+        - name
+        - status
+      properties:
+        filePath:
+          type: string
+          description: Path to the test file
+        framework:
+          $ref: "#/components/schemas/Framework"
+        line:
+          type: integer
+          minimum: 1
+          description: Line number where the test is defined
+        modifier:
+          type: string
+          description: Test modifier (e.g., only, skip)
+        name:
+          type: string
+          description: Test case name
+        status:
+          $ref: "#/components/schemas/TestStatus"
+
+    # Test Status Enum
+    TestStatus:
+      type: string
+      enum:
+        - active
+        - focused
+        - skipped
+        - todo
+        - xfail
+      description: |
+        Test status indicator:
+        - active: Normal test that will run
+        - focused: Test marked to run exclusively (e.g., it.only)
+        - skipped: Test marked to be skipped (e.g., it.skip)
+        - todo: Placeholder test to be implemented
+        - xfail: Expected to fail (pytest xfail)
+
+    # Framework
+    Framework:
+      type: string
+      description: Testing framework identifier
+      example: vitest
+
+    # Summary
+    Summary:
+      type: object
+      required:
+        - active
+        - focused
+        - frameworks
+        - skipped
+        - todo
+        - total
+        - xfail
+      properties:
+        active:
+          type: integer
+          minimum: 0
+          description: Number of active tests
+        focused:
+          type: integer
+          minimum: 0
+          description: Number of focused tests
+        frameworks:
+          type: array
+          items:
+            $ref: "#/components/schemas/FrameworkSummary"
+        skipped:
+          type: integer
+          minimum: 0
+          description: Number of skipped tests
+        todo:
+          type: integer
+          minimum: 0
+          description: Number of todo tests
+        total:
+          type: integer
+          minimum: 0
+          description: Total number of tests
+        xfail:
+          type: integer
+          minimum: 0
+          description: Number of xfail tests
+
+    # Framework Summary
+    FrameworkSummary:
+      type: object
+      required:
+        - active
+        - focused
+        - framework
+        - skipped
+        - todo
+        - total
+        - xfail
+      properties:
+        active:
+          type: integer
+          minimum: 0
+        focused:
+          type: integer
+          minimum: 0
+        framework:
+          $ref: "#/components/schemas/Framework"
+        skipped:
+          type: integer
+          minimum: 0
+        todo:
+          type: integer
+          minimum: 0
+        total:
+          type: integer
+          minimum: 0
+        xfail:
+          type: integer
+          minimum: 0
+
+    # RFC 7807 Problem Detail
+    ProblemDetail:
+      type: object
+      required:
+        - status
+        - title
+        - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          default: about:blank
+          description: URI identifying the problem type
+        title:
+          type: string
+          description: Human-readable summary
+        status:
+          type: integer
+          description: HTTP status code
+        detail:
+          type: string
+          description: Human-readable explanation specific to this occurrence
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence
+        rateLimit:
+          $ref: "#/components/schemas/RateLimitInfo"
+
+    # Rate Limit Info
+    RateLimitInfo:
+      type: object
+      required:
+        - limit
+        - remaining
+        - resetAt
+      properties:
+        limit:
+          type: integer
+          description: Maximum requests allowed per time window
+        remaining:
+          type: integer
+          description: Remaining requests in current window
+        resetAt:
+          type: integer
+          format: int64
+          description: Unix timestamp when the rate limit resets
+
+    # Auth Schemas
+    LoginResponse:
+      type: object
+      required:
+        - authUrl
+      properties:
+        authUrl:
+          type: string
+          format: uri
+          description: GitHub OAuth authorization URL to redirect user
+
+    UserInfo:
+      type: object
+      required:
+        - id
+        - login
+        - avatarUrl
+      properties:
+        id:
+          type: string
+          description: Internal user ID
+        login:
+          type: string
+          description: GitHub username
+        avatarUrl:
+          type: string
+          format: uri
+          description: GitHub avatar URL
+        name:
+          type: string
+          description: GitHub display name (optional)
+
+    LogoutResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Logout operation result
+
+    RefreshResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Token refresh operation result
+
+    DevLoginRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: Optional user ID to login as (uses default test user if not provided)
+        username:
+          type: string
+          description: Optional username for test user (default is "test-user")
+
+    DevLoginResponse:
+      type: object
+      required:
+        - success
+        - user
+      properties:
+        success:
+          type: boolean
+        user:
+          $ref: "#/components/schemas/UserInfo"
+
+    # Repository List Responses
+    BookmarkedRepositoriesResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepositoryCard"
+          description: Bookmarked repositories
+
+    PaginatedRepositoriesResponse:
+      type: object
+      required:
+        - data
+        - hasNext
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepositoryCard"
+          description: Repositories in the current page
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor for fetching the next page (null if no more pages)
+        hasNext:
+          type: boolean
+          description: Whether more pages are available
+
+    SortByParam:
+      type: string
+      enum:
+        - name
+        - recent
+        - tests
+      default: recent
+      description: |
+        Field to sort repositories by:
+        - name: Repository name (alphabetical)
+        - recent: Analysis timestamp (most recent first)
+        - tests: Test count (highest first)
+
+    SortOrderParam:
+      type: string
+      enum:
+        - asc
+        - desc
+      description: |
+        Sort direction:
+        - asc: Ascending order
+        - desc: Descending order
+        Defaults depend on sortBy (desc for recent/tests, asc for name)
+
+    ViewFilterParam:
+      type: string
+      enum:
+        - all
+        - my
+        - community
+      default: all
+      description: |
+        Filter repositories by analyzer (who analyzed):
+        - all: All analyzed repositories
+        - my: Only repositories analyzed by the current user
+        - community: Only repositories analyzed by other users
+
+    OwnershipFilterParam:
+      type: string
+      enum:
+        - all
+        - mine
+        - organization
+        - others
+      default: all
+      description: |
+        Filter repositories by ownership type:
+        - all: All analyzed repositories (personal and organization)
+        - mine: Only repositories owned by the current user
+        - organization: Only repositories owned by organizations the user is a member of
+        - others: Only repositories owned by other users (not mine, not organization)
+
+    RepositoryStatsResponse:
+      type: object
+      required:
+        - totalRepositories
+        - totalTests
+      properties:
+        totalRepositories:
+          type: integer
+          minimum: 0
+          description: Total number of analyzed repositories for the user
+          example: 12
+        totalTests:
+          type: integer
+          minimum: 0
+          description: Total number of tests across all repositories
+          example: 1543
+
+    UserAnalyzedRepositoriesResponse:
+      type: object
+      required:
+        - data
+        - hasNext
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepositoryCard"
+          description: Analyzed repositories in the current page
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor for fetching the next page (null if no more pages)
+        hasNext:
+          type: boolean
+          description: Whether more pages are available
+
+    AddAnalyzedRepositoryRequest:
+      type: object
+      required:
+        - owner
+        - repo
+      properties:
+        owner:
+          type: string
+          description: GitHub repository owner
+          example: facebook
+        repo:
+          type: string
+          description: GitHub repository name
+          example: react
+
+    AddAnalyzedRepositoryResponse:
+      type: object
+      required:
+        - analysisId
+        - updatedAt
+      properties:
+        analysisId:
+          type: string
+          description: Analysis ID added to user's history
+        updatedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the history was updated
+
+    RepositoryCard:
+      type: object
+      required:
+        - id
+        - owner
+        - name
+        - fullName
+        - isBookmarked
+        - isAnalyzedByMe
+        - updateStatus
+      properties:
+        id:
+          type: string
+          description: Repository ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        owner:
+          type: string
+          description: Repository owner (user or organization)
+          example: facebook
+        name:
+          type: string
+          description: Repository name
+          example: react
+        fullName:
+          type: string
+          description: Full repository name in owner/name format
+          example: facebook/react
+        isBookmarked:
+          type: boolean
+          description: Whether the repository is bookmarked by the user
+        isAnalyzedByMe:
+          type: boolean
+          description: Whether the repository was analyzed by the current user
+        latestAnalysis:
+          $ref: "#/components/schemas/AnalysisSummary"
+        updateStatus:
+          $ref: "#/components/schemas/UpdateStatus"
+        aiSpecSummary:
+          $ref: "#/components/schemas/AiSpecSummary"
+
+    AnalysisSummary:
+      type: object
+      required:
+        - testCount
+        - change
+        - analyzedAt
+        - commitSha
+      properties:
+        testCount:
+          type: integer
+          minimum: 0
+          description: Total number of tests in the latest analysis
+          example: 312
+        change:
+          type: integer
+          description: Change in test count compared to previous analysis
+          example: 5
+        analyzedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when analysis was completed
+          example: "2024-01-15T10:30:00Z"
+        commitSha:
+          type: string
+          description: Git commit SHA that was analyzed
+          example: abc123def456
+        testSummary:
+          $ref: "#/components/schemas/TestStatusSummary"
+
+    TestStatusSummary:
+      type: object
+      required:
+        - active
+        - focused
+        - skipped
+        - todo
+        - xfail
+      properties:
+        active:
+          type: integer
+          minimum: 0
+          description: Number of active tests
+          example: 280
+        focused:
+          type: integer
+          minimum: 0
+          description: Number of focused tests (.only())
+          example: 2
+        skipped:
+          type: integer
+          minimum: 0
+          description: Number of skipped tests (.skip())
+          example: 15
+        todo:
+          type: integer
+          minimum: 0
+          description: Number of todo tests
+          example: 10
+        xfail:
+          type: integer
+          minimum: 0
+          description: Number of expected-to-fail tests
+          example: 5
+
+    UpdateStatus:
+      type: string
+      enum:
+        - up-to-date
+        - new-commits
+        - unknown
+      description: |
+        Repository update status:
+        - up-to-date: Latest analysis is current with HEAD
+        - new-commits: New commits available since last analysis
+        - unknown: Unable to determine status
+
+    UpdateStatusResponse:
+      type: object
+      required:
+        - status
+        - parserOutdated
+      properties:
+        status:
+          $ref: "#/components/schemas/UpdateStatus"
+        latestCommitSha:
+          type: string
+          description: Latest commit SHA from remote
+          example: def789abc123
+        analyzedCommitSha:
+          type: string
+          description: Commit SHA from last analysis
+          example: abc123def456
+        parserOutdated:
+          type: boolean
+          description: Whether the parser version has been updated since last analysis
+          example: false
+
+    BookmarkResponse:
+      type: object
+      required:
+        - success
+        - isBookmarked
+      properties:
+        success:
+          type: boolean
+          description: Operation success status
+        isBookmarked:
+          type: boolean
+          description: Current bookmark status after the operation
+
+    # Analysis History
+    AnalysisHistoryResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnalysisHistoryItem"
+          description: List of completed analyses for the repository
+
+    AnalysisHistoryItem:
+      type: object
+      required:
+        - id
+        - commitSha
+        - completedAt
+        - totalTests
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Analysis ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        commitSha:
+          type: string
+          description: Git commit SHA that was analyzed
+          example: "abc123def456"
+        branchName:
+          type: string
+          description: Branch name at the time of analysis
+          example: main
+        committedAt:
+          type: string
+          format: date-time
+          description: Timestamp of the commit (ISO 8601)
+          example: "2024-01-14T09:00:00Z"
+        completedAt:
+          type: string
+          format: date-time
+          description: Timestamp when analysis was completed (ISO 8601)
+          example: "2024-01-15T10:30:00Z"
+        totalTests:
+          type: integer
+          minimum: 0
+          description: Total number of tests found in this analysis
+          example: 312
+        isHead:
+          type: boolean
+          description: Whether this is the HEAD commit analysis
+          example: true
+
+    # GitHub API Responses
+    GitHubRepositoriesResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/GitHubRepository"
+          description: List of GitHub repositories
+
+    GitHubOrganizationsResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/GitHubOrganization"
+          description: List of GitHub organizations
+
+    GitHubRepository:
+      type: object
+      required:
+        - id
+        - name
+        - fullName
+        - owner
+        - defaultBranch
+        - isPrivate
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub repository ID
+          example: 10270250
+        name:
+          type: string
+          description: Repository name
+          example: react
+        fullName:
+          type: string
+          description: Full repository name in owner/name format
+          example: facebook/react
+        owner:
+          type: string
+          description: Repository owner login
+          example: facebook
+        description:
+          type: string
+          description: Repository description
+        defaultBranch:
+          type: string
+          description: Default branch name
+          example: main
+        isPrivate:
+          type: boolean
+          description: Whether the repository is private
+        pushedAt:
+          type: string
+          format: date-time
+          description: Last push timestamp
+
+    GitHubOrganization:
+      type: object
+      required:
+        - id
+        - login
+        - accessStatus
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub organization ID
+          example: 69631
+        login:
+          type: string
+          description: Organization login name
+          example: facebook
+        avatarUrl:
+          type: string
+          format: uri
+          description: Organization avatar URL
+        description:
+          type: string
+          description: Organization description
+        accessStatus:
+          $ref: "#/components/schemas/OrganizationAccessStatus"
+
+    OrganizationAccessStatus:
+      type: string
+      enum:
+        - accessible
+        - restricted
+        - pending
+      description: |
+        Organization repository access status.
+        - accessible: GitHub App installed, can access organization repositories
+        - restricted: No GitHub App installation, cannot access organization repositories
+        - pending: GitHub App installation is suspended
+
+    # GitHub App API Schemas
+    GitHubAppInstallationsResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/GitHubAppInstallation"
+          description: List of GitHub App installations
+
+    GitHubAppInstallation:
+      type: object
+      required:
+        - id
+        - installationId
+        - accountType
+        - accountId
+        - accountLogin
+        - createdAt
+        - isSuspended
+      properties:
+        id:
+          type: string
+          description: Internal installation record ID
+        installationId:
+          type: integer
+          format: int64
+          description: GitHub installation ID
+        accountType:
+          type: string
+          enum: [organization, user]
+          description: Type of GitHub account
+        accountId:
+          type: integer
+          format: int64
+          description: GitHub account ID
+        accountLogin:
+          type: string
+          description: GitHub account login name
+        accountAvatarUrl:
+          type: string
+          format: uri
+          description: GitHub account avatar URL
+        createdAt:
+          type: string
+          format: date-time
+          description: When the installation was created
+        isSuspended:
+          type: boolean
+          description: Whether the installation is suspended
+
+    GitHubAppInstallUrlResponse:
+      type: object
+      required:
+        - installUrl
+      properties:
+        installUrl:
+          type: string
+          format: uri
+          description: URL to install the GitHub App
+
+    # GitHub App Webhook Schemas
+    GitHubWebhookPayload:
+      type: object
+      description: |
+        GitHub webhook payload. The structure varies by event type.
+        This schema represents the common fields; specific event handling uses raw JSON.
+      properties:
+        action:
+          type: string
+          description: The action that was performed (e.g., created, deleted, added, removed)
+        installation:
+          $ref: "#/components/schemas/WebhookInstallation"
+        sender:
+          $ref: "#/components/schemas/WebhookSender"
+        repositories:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookRepository"
+          description: Repositories affected by the event (for installation_repositories events)
+        repositories_added:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookRepository"
+          description: Repositories added (for installation_repositories.added events)
+        repositories_removed:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookRepository"
+          description: Repositories removed (for installation_repositories.removed events)
+
+    WebhookInstallation:
+      type: object
+      required:
+        - id
+        - account
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub App installation ID
+        account:
+          $ref: "#/components/schemas/WebhookAccount"
+        suspended_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the installation was suspended
+
+    WebhookAccount:
+      type: object
+      required:
+        - id
+        - login
+        - type
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub account ID
+        login:
+          type: string
+          description: Account login name
+        type:
+          type: string
+          enum: [User, Organization]
+          description: Account type
+        avatar_url:
+          type: string
+          format: uri
+          description: Account avatar URL
+
+    WebhookSender:
+      type: object
+      required:
+        - id
+        - login
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub user ID of the sender
+        login:
+          type: string
+          description: GitHub username of the sender
+
+    WebhookRepository:
+      type: object
+      required:
+        - id
+        - name
+        - full_name
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: GitHub repository ID
+        name:
+          type: string
+          description: Repository name
+        full_name:
+          type: string
+          description: Full repository name (owner/repo)
+        private:
+          type: boolean
+          description: Whether the repository is private
+
+    WebhookResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Whether the webhook was processed successfully
+        message:
+          type: string
+          description: Optional message about the processing result
+
+    # Spec View Level 2 - Domain-based Specification Document Schemas
+    SpecDocumentResponse:
+      oneOf:
+        - $ref: "#/components/schemas/SpecDocumentCompleted"
+        - $ref: "#/components/schemas/SpecDocumentGenerating"
+      discriminator:
+        propertyName: status
+        mapping:
+          completed: "#/components/schemas/SpecDocumentCompleted"
+          generating: "#/components/schemas/SpecDocumentGenerating"
+
+    SpecDocumentCompleted:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          const: completed
+        data:
+          $ref: "#/components/schemas/SpecDocument"
+
+    SpecDocumentGenerating:
+      type: object
+      required:
+        - status
+        - generationStatus
+      properties:
+        status:
+          type: string
+          const: generating
+        generationStatus:
+          $ref: "#/components/schemas/SpecGenerationStatus"
+
+    SpecDocument:
+      type: object
+      required:
+        - id
+        - analysisId
+        - language
+        - version
+        - domains
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Spec document ID
+        analysisId:
+          type: string
+          format: uuid
+          description: Associated analysis ID
+        language:
+          $ref: "#/components/schemas/SpecLanguage"
+        version:
+          type: integer
+          minimum: 1
+          description: Document version number (increments on regeneration)
+          example: 1
+        executiveSummary:
+          type: string
+          description: AI-generated executive summary of the test suite
+          example: "This repository contains a comprehensive authentication system with 45 test behaviors covering user login, session management, and password recovery."
+        modelId:
+          type: string
+          description: AI model ID used for generation
+          example: "gemini-2.0-flash"
+        availableLanguages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AvailableLanguageInfo"
+          description: List of all available languages for this analysis
+        domains:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecDomain"
+          description: Domain classifications
+        behaviorCacheStats:
+          $ref: "#/components/schemas/BehaviorCacheStats"
+        createdAt:
+          type: string
+          format: date-time
+          description: Document creation timestamp
+
+    BehaviorCacheStats:
+      type: object
+      required:
+        - totalBehaviors
+        - cachedBehaviors
+        - generatedBehaviors
+        - hitRate
+      properties:
+        totalBehaviors:
+          type: integer
+          minimum: 0
+          description: Total number of behaviors in the spec document
+          example: 100
+        cachedBehaviors:
+          type: integer
+          minimum: 0
+          description: Number of behaviors retrieved from cache
+          example: 95
+        generatedBehaviors:
+          type: integer
+          minimum: 0
+          description: Number of behaviors generated by AI
+          example: 5
+        hitRate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Cache hit rate (0.0 to 1.0)
+          example: 0.95
+
+    CacheAvailabilityResponse:
+      type: object
+      required:
+        - languages
+      properties:
+        languages:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: Map of language to cache availability (hasPreviousSpec)
+          example:
+            Korean: true
+            English: false
+            Japanese: true
+
+    CachePredictionResponse:
+      type: object
+      required:
+        - totalBehaviors
+        - cacheableBehaviors
+        - newBehaviors
+        - estimatedCost
+      properties:
+        totalBehaviors:
+          type: integer
+          minimum: 0
+          description: Total number of behaviors from the previous spec document
+          example: 150
+        cacheableBehaviors:
+          type: integer
+          minimum: 0
+          description: Number of behaviors that can be reused from cache (matching test name + file path)
+          example: 120
+        newBehaviors:
+          type: integer
+          minimum: 0
+          description: Number of new behaviors that need AI generation (current tests - cacheable behaviors)
+          example: 30
+        estimatedCost:
+          type: integer
+          minimum: 0
+          description: Estimated quota usage for generating the spec document (equals newBehaviors)
+          example: 30
+
+    AvailableLanguageInfo:
+      type: object
+      required:
+        - language
+        - latestVersion
+        - createdAt
+        - hasPreviousSpec
+      properties:
+        language:
+          $ref: "#/components/schemas/SpecLanguage"
+        latestVersion:
+          type: integer
+          minimum: 1
+          description: Latest version number for this language
+          example: 3
+        createdAt:
+          type: string
+          format: date-time
+          description: When this language was last generated
+        hasPreviousSpec:
+          type: boolean
+          description: Whether a previous spec exists for the same codebase in this language (enables behavior cache usage)
+
+    VersionInfo:
+      type: object
+      required:
+        - version
+        - createdAt
+      properties:
+        version:
+          type: integer
+          minimum: 1
+          description: Version number
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          description: When this version was created
+        modelId:
+          type: string
+          description: AI model ID used for this version
+          example: "gemini-2.0-flash"
+
+    VersionHistoryResponse:
+      type: object
+      required:
+        - data
+        - language
+        - latestVersion
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/VersionInfo"
+          description: List of versions ordered by version number descending
+        language:
+          $ref: "#/components/schemas/SpecLanguage"
+        latestVersion:
+          type: integer
+          minimum: 1
+          description: The latest version number for this language
+          example: 3
+
+    # Repository-based Spec View Response Schemas
+    RepoSpecDocumentResponse:
+      type: object
+      description: Response for repository-based spec document query
+      oneOf:
+        - $ref: "#/components/schemas/RepoSpecDocumentCompleted"
+        - $ref: "#/components/schemas/RepoSpecDocumentEmpty"
+      discriminator:
+        propertyName: status
+        mapping:
+          completed: "#/components/schemas/RepoSpecDocumentCompleted"
+          empty: "#/components/schemas/RepoSpecDocumentEmpty"
+
+    RepoSpecDocumentCompleted:
+      type: object
+      required:
+        - status
+        - data
+      properties:
+        status:
+          type: string
+          enum: [completed]
+        data:
+          $ref: "#/components/schemas/RepoSpecDocument"
+
+    RepoSpecDocumentEmpty:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [empty]
+        message:
+          type: string
+          description: Message explaining why no spec document exists
+          example: "No spec document found for this repository"
+
+    RepoSpecDocument:
+      type: object
+      description: Spec document with repository context (includes commit SHA)
+      required:
+        - id
+        - analysisId
+        - language
+        - version
+        - createdAt
+        - commitSha
+        - domains
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Spec document ID
+        analysisId:
+          type: string
+          format: uuid
+          description: Analysis ID this document belongs to
+        language:
+          $ref: "#/components/schemas/SpecLanguage"
+        version:
+          type: integer
+          minimum: 1
+          description: Version number within same language
+          example: 1
+        executiveSummary:
+          type: string
+          description: AI-generated executive summary
+        modelId:
+          type: string
+          description: AI model ID used for generation
+          example: "gemini-2.0-flash"
+        createdAt:
+          type: string
+          format: date-time
+          description: When this document was created
+        commitSha:
+          type: string
+          description: Git commit SHA at the time of analysis
+          example: "a1b2c3d4e5f6"
+        behaviorCacheStats:
+          $ref: "#/components/schemas/BehaviorCacheStats"
+        availableLanguages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AvailableLanguageInfo"
+          description: Available languages for this repository
+        domains:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecDomain"
+          description: Specification domains (top-level hierarchy)
+
+    RepoVersionHistoryResponse:
+      type: object
+      required:
+        - data
+        - language
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepoVersionInfo"
+          description: List of versions across all analyses, ordered by creation date descending
+        language:
+          $ref: "#/components/schemas/SpecLanguage"
+
+    RepoVersionInfo:
+      type: object
+      description: Version info with commit SHA for repository-based queries
+      required:
+        - id
+        - analysisId
+        - version
+        - createdAt
+        - commitSha
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Spec document ID
+        analysisId:
+          type: string
+          format: uuid
+          description: Analysis ID this version belongs to
+        version:
+          type: integer
+          minimum: 1
+          description: Version number
+        language:
+          $ref: "#/components/schemas/SpecLanguage"
+        modelId:
+          type: string
+          description: AI model ID used for this version
+          example: "gemini-2.0-flash"
+        createdAt:
+          type: string
+          format: date-time
+          description: When this version was created
+        commitSha:
+          type: string
+          description: Git commit SHA at the time of analysis
+          example: "a1b2c3d4e5f6"
+
+    SpecDomain:
+      type: object
+      required:
+        - id
+        - name
+        - sortOrder
+        - features
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Domain ID
+        name:
+          type: string
+          description: Domain name
+          example: "Authentication"
+        description:
+          type: string
+          description: Domain description
+          example: "User authentication and session management"
+        classificationConfidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: AI classification confidence score (0-1)
+          example: 0.92
+        sortOrder:
+          type: integer
+          minimum: 0
+          description: Display order within document
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecFeature"
+          description: Features within this domain
+
+    SpecFeature:
+      type: object
+      required:
+        - id
+        - name
+        - sortOrder
+        - behaviors
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Feature ID
+        name:
+          type: string
+          description: Feature name
+          example: "Login"
+        description:
+          type: string
+          description: Feature description
+          example: "User login with various authentication methods"
+        sortOrder:
+          type: integer
+          minimum: 0
+          description: Display order within domain
+        behaviors:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecBehavior"
+          description: Behaviors (converted test cases) within this feature
+
+    SpecBehavior:
+      type: object
+      required:
+        - id
+        - originalName
+        - convertedDescription
+        - sortOrder
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Behavior ID
+        originalName:
+          type: string
+          description: Original test case name
+          example: "should create session when credentials are valid"
+        convertedDescription:
+          type: string
+          description: AI-converted natural language description
+          example: "Creates a new session when valid credentials are provided"
+        sortOrder:
+          type: integer
+          minimum: 0
+          description: Display order within feature
+        sourceTestCaseId:
+          type: string
+          format: uuid
+          description: Reference to original test case
+        sourceInfo:
+          $ref: "#/components/schemas/SpecBehaviorSourceInfo"
+
+    SpecBehaviorSourceInfo:
+      type: object
+      required:
+        - filePath
+        - lineNumber
+        - status
+        - framework
+      properties:
+        filePath:
+          type: string
+          description: Test file path
+          example: "src/__tests__/auth.test.ts"
+        lineNumber:
+          type: integer
+          minimum: 1
+          description: Line number in the test file
+        status:
+          $ref: "#/components/schemas/TestStatus"
+        framework:
+          $ref: "#/components/schemas/Framework"
+
+    SpecLanguage:
+      type: string
+      enum:
+        - Arabic
+        - Chinese
+        - Czech
+        - Danish
+        - Dutch
+        - English
+        - Finnish
+        - French
+        - German
+        - Greek
+        - Hindi
+        - Indonesian
+        - Italian
+        - Japanese
+        - Korean
+        - Polish
+        - Portuguese
+        - Russian
+        - Spanish
+        - Swedish
+        - Thai
+        - Turkish
+        - Ukrainian
+        - Vietnamese
+      default: English
+      description: Target language for spec document generation (24 languages supported)
+
+    SpecGenerationMode:
+      type: string
+      enum:
+        - initial
+        - regenerate_cached
+        - regenerate_fresh
+      default: initial
+      description: |
+        Controls generation behavior:
+        - initial: First-time generation. Rejects if document already exists.
+        - regenerate_cached: Regeneration reusing cached classifications for speed.
+        - regenerate_fresh: Full regeneration from scratch, discarding all caches.
+
+    RequestSpecGenerationRequest:
+      type: object
+      required:
+        - analysisId
+      properties:
+        analysisId:
+          type: string
+          format: uuid
+          description: Analysis ID to generate spec document for
+        language:
+          $ref: "#/components/schemas/SpecLanguage"
+        generationMode:
+          $ref: "#/components/schemas/SpecGenerationMode"
+
+    RequestSpecGenerationResponse:
+      type: object
+      required:
+        - status
+        - analysisId
+      properties:
+        status:
+          $ref: "#/components/schemas/SpecGenerationStatusEnum"
+        analysisId:
+          type: string
+          format: uuid
+          description: Analysis ID for tracking
+        message:
+          type: string
+          description: Optional status message
+
+    SpecGenerationStatusResponse:
+      type: object
+      required:
+        - status
+        - analysisId
+      properties:
+        status:
+          $ref: "#/components/schemas/SpecGenerationStatusEnum"
+        analysisId:
+          type: string
+          format: uuid
+        startedAt:
+          type: string
+          format: date-time
+          description: When generation started
+        completedAt:
+          type: string
+          format: date-time
+          description: When generation completed (if completed)
+        errorMessage:
+          type: string
+          description: Error message if generation failed
+
+    SpecGenerationStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: "#/components/schemas/SpecGenerationStatusEnum"
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        errorMessage:
+          type: string
+
+    SpecGenerationStatusEnum:
+      type: string
+      enum:
+        - pending
+        - running
+        - completed
+        - failed
+        - not_found
+      description: |
+        Generation status:
+        - pending: Job queued but not started
+        - running: AI generation in progress
+        - completed: Document successfully generated
+        - failed: Generation failed
+        - not_found: No generation request exists
+
+    # Usage Quota Schemas
+    UsageEventType:
+      type: string
+      enum:
+        - specview
+        - analysis
+      description: |
+        Type of usage event:
+        - specview: SpecView generation
+        - analysis: Repository analysis
+
+    CheckQuotaRequest:
+      type: object
+      required:
+        - eventType
+      properties:
+        eventType:
+          $ref: "#/components/schemas/UsageEventType"
+        amount:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Number of operations to check quota for
+
+    CheckQuotaResponse:
+      type: object
+      required:
+        - isAllowed
+        - used
+        - reserved
+        - resetAt
+      properties:
+        isAllowed:
+          type: boolean
+          description: Whether the requested operation is allowed
+        used:
+          type: integer
+          minimum: 0
+          description: Current usage count for the event type
+        reserved:
+          type: integer
+          minimum: 0
+          description: Currently reserved amount (pending jobs)
+        limit:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Usage limit (null for unlimited/enterprise)
+        resetAt:
+          type: string
+          format: date-time
+          description: When the usage period resets
+
+    UsageMetric:
+      type: object
+      required:
+        - used
+        - reserved
+      properties:
+        used:
+          type: integer
+          minimum: 0
+          description: Current usage count
+        reserved:
+          type: integer
+          minimum: 0
+          description: Currently reserved amount (pending jobs)
+        limit:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Usage limit (null for unlimited/enterprise)
+        percentage:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          nullable: true
+          description: Usage percentage (null for unlimited/enterprise)
+
+    PlanInfo:
+      type: object
+      required:
+        - tier
+      properties:
+        tier:
+          $ref: "#/components/schemas/PlanTier"
+        specviewMonthlyLimit:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Monthly SpecView limit (null for unlimited)
+        analysisMonthlyLimit:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Monthly analysis limit (null for unlimited)
+        retentionDays:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Data retention in days (null for unlimited)
+
+    PlanTier:
+      type: string
+      enum:
+        - free
+        - pro
+        - pro_plus
+        - enterprise
+      description: |
+        Subscription plan tier:
+        - free: Free tier with limited quotas
+        - pro: Pro tier with expanded limits
+        - pro_plus: Pro Plus tier with higher limits
+        - enterprise: Enterprise tier with unlimited usage
+
+    # User Active Tasks Schemas
+    UserActiveTasksResponse:
+      type: object
+      required:
+        - tasks
+      properties:
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActiveTask"
+          description: List of active background tasks
+
+    ActiveTask:
+      type: object
+      required:
+        - id
+        - type
+        - status
+        - owner
+        - repo
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Task ID (job ID)
+        type:
+          type: string
+          enum:
+            - analysis
+          description: Type of background task
+        status:
+          type: string
+          enum:
+            - queued
+            - analyzing
+          description: Current task status
+        owner:
+          type: string
+          description: Repository owner
+        repo:
+          type: string
+          description: Repository name
+        createdAt:
+          type: string
+          format: date-time
+          description: When the task was created (ISO 8601)
+        startedAt:
+          type: string
+          format: date-time
+          description: When the task started processing (ISO 8601)
+
+    UserSubscriptionResponse:
+      type: object
+      required:
+        - plan
+        - currentPeriodStart
+        - currentPeriodEnd
+      properties:
+        plan:
+          $ref: "#/components/schemas/PlanInfo"
+        currentPeriodStart:
+          type: string
+          format: date-time
+          description: Start of the current billing period
+        currentPeriodEnd:
+          type: string
+          format: date-time
+          description: End of the current billing period (when usage resets)
+
+    PricingResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PricingPlan"
+
+    PricingPlan:
+      type: object
+      required:
+        - tier
+      properties:
+        tier:
+          $ref: "#/components/schemas/PlanTier"
+        monthlyPrice:
+          type: integer
+          nullable: true
+          description: Monthly price in dollars (null for enterprise/custom)
+        specviewMonthlyLimit:
+          type: integer
+          nullable: true
+          description: Monthly SpecView limit (null for unlimited)
+        analysisMonthlyLimit:
+          type: integer
+          nullable: true
+          description: Monthly analysis limit (null for unlimited)
+        retentionDays:
+          type: integer
+          nullable: true
+          description: Data retention in days (null for unlimited)
+
+    UsageStatusResponse:
+      type: object
+      required:
+        - specview
+        - analysis
+        - resetAt
+        - plan
+      properties:
+        specview:
+          $ref: "#/components/schemas/UsageMetric"
+        analysis:
+          $ref: "#/components/schemas/UsageMetric"
+        resetAt:
+          type: string
+          format: date-time
+          description: When the current usage period resets
+        plan:
+          $ref: "#/components/schemas/PlanInfo"
+
+    # AI Spec Summary for Dashboard
+    AiSpecSummary:
+      type: object
+      required:
+        - hasSpec
+      properties:
+        hasSpec:
+          type: boolean
+          description: Whether completed AI Spec exists for this repository
+        languageCount:
+          type: integer
+          minimum: 0
+          description: Number of languages with completed specs
+        latestGeneratedAt:
+          type: string
+          format: date-time
+          description: Most recent spec generation timestamp

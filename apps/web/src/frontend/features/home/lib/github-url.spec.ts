@@ -1,0 +1,322 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  getInputFeedback,
+  isValidGitHubUrl,
+  normalizeGitHubInput,
+  parseGitHubUrl,
+} from "./github-url";
+
+describe("parseGitHubUrl", () => {
+  describe("valid URLs", () => {
+    it("parses HTTPS URL", () => {
+      const result = parseGitHubUrl("https://github.com/facebook/react");
+      expect(result).toEqual({
+        data: { owner: "facebook", repo: "react" },
+        success: true,
+      });
+    });
+
+    it("parses HTTP URL", () => {
+      const result = parseGitHubUrl("http://github.com/owner/repo");
+      expect(result.success).toBe(true);
+    });
+
+    it("handles trailing slash", () => {
+      const result = parseGitHubUrl("https://github.com/owner/repo/");
+      expect(result).toEqual({
+        data: { owner: "owner", repo: "repo" },
+        success: true,
+      });
+    });
+
+    it("handles repo with dots", () => {
+      const result = parseGitHubUrl("https://github.com/owner/repo.js");
+      expect(result.success).toBe(true);
+    });
+
+    it("handles repo with underscores", () => {
+      const result = parseGitHubUrl("https://github.com/owner/my_repo");
+      expect(result.success).toBe(true);
+    });
+
+    it("handles owner with hyphens", () => {
+      const result = parseGitHubUrl("https://github.com/my-org/repo");
+      expect(result.success).toBe(true);
+    });
+
+    it("handles single char owner", () => {
+      const result = parseGitHubUrl("https://github.com/a/repo");
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("shorthand format (owner/repo)", () => {
+    it("parses owner/repo shorthand", () => {
+      const result = parseGitHubUrl("facebook/react");
+      expect(result).toEqual({
+        data: { owner: "facebook", repo: "react" },
+        success: true,
+      });
+    });
+
+    it("parses shorthand with hyphens", () => {
+      const result = parseGitHubUrl("my-org/my-repo");
+      expect(result).toEqual({
+        data: { owner: "my-org", repo: "my-repo" },
+        success: true,
+      });
+    });
+
+    it("parses shorthand with dots in repo", () => {
+      const result = parseGitHubUrl("owner/repo.js");
+      expect(result.success).toBe(true);
+    });
+
+    it("parses shorthand with underscores", () => {
+      const result = parseGitHubUrl("owner/my_repo");
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("github.com/ format (without protocol)", () => {
+    it("parses github.com/owner/repo", () => {
+      const result = parseGitHubUrl("github.com/facebook/react");
+      expect(result).toEqual({
+        data: { owner: "facebook", repo: "react" },
+        success: true,
+      });
+    });
+
+    it("parses github.com/owner/repo/tree/main", () => {
+      const result = parseGitHubUrl("github.com/vercel/next.js/tree/main");
+      expect(result).toEqual({
+        data: { owner: "vercel", repo: "next.js" },
+        success: true,
+      });
+    });
+  });
+
+  describe("URLs with extra path segments", () => {
+    it("parses URL with /tree/branch", () => {
+      const result = parseGitHubUrl("https://github.com/vercel/next.js/tree/main");
+      expect(result).toEqual({
+        data: { owner: "vercel", repo: "next.js" },
+        success: true,
+      });
+    });
+
+    it("parses URL with /blob/branch/file", () => {
+      const result = parseGitHubUrl("https://github.com/facebook/react/blob/main/README.md");
+      expect(result).toEqual({
+        data: { owner: "facebook", repo: "react" },
+        success: true,
+      });
+    });
+
+    it("parses URL with /issues", () => {
+      const result = parseGitHubUrl("https://github.com/owner/repo/issues");
+      expect(result).toEqual({
+        data: { owner: "owner", repo: "repo" },
+        success: true,
+      });
+    });
+
+    it("parses URL with /pull/123", () => {
+      const result = parseGitHubUrl("https://github.com/owner/repo/pull/123");
+      expect(result).toEqual({
+        data: { owner: "owner", repo: "repo" },
+        success: true,
+      });
+    });
+  });
+
+  describe(".git suffix handling", () => {
+    it("parses URL with .git suffix", () => {
+      const result = parseGitHubUrl("https://github.com/owner/repo.git");
+      expect(result).toEqual({
+        data: { owner: "owner", repo: "repo" },
+        success: true,
+      });
+    });
+
+    it("parses github.com URL with .git suffix", () => {
+      const result = parseGitHubUrl("github.com/owner/repo.git");
+      expect(result).toEqual({
+        data: { owner: "owner", repo: "repo" },
+        success: true,
+      });
+    });
+  });
+
+  describe("invalid inputs", () => {
+    it("rejects empty input", () => {
+      const result = parseGitHubUrl("");
+      expect(result).toEqual({
+        error: "URL is required",
+        success: false,
+      });
+    });
+
+    it("rejects whitespace only", () => {
+      const result = parseGitHubUrl("   ");
+      expect(result).toEqual({
+        error: "URL is required",
+        success: false,
+      });
+    });
+
+    it("rejects non-GitHub URL", () => {
+      const result = parseGitHubUrl("https://gitlab.com/owner/repo");
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects URL without repo", () => {
+      const result = parseGitHubUrl("https://github.com/owner");
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects owner starting with hyphen", () => {
+      const result = parseGitHubUrl("https://github.com/-owner/repo");
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe("Invalid GitHub username format");
+      }
+    });
+
+    it("rejects owner ending with hyphen", () => {
+      const result = parseGitHubUrl("https://github.com/owner-/repo");
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects shorthand with invalid owner", () => {
+      const result = parseGitHubUrl("-owner/repo");
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects double dots in path (path traversal)", () => {
+      const result = parseGitHubUrl("https://github.com/../etc/passwd");
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects repo named ".."', () => {
+      const result = parseGitHubUrl("https://github.com/owner/..");
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects single word without slash", () => {
+      const result = parseGitHubUrl("react");
+      expect(result.success).toBe(false);
+    });
+  });
+});
+
+describe("normalizeGitHubInput", () => {
+  it("returns owner/repo from full URL", () => {
+    expect(normalizeGitHubInput("https://github.com/facebook/react")).toBe("facebook/react");
+  });
+
+  it("returns owner/repo from URL with path", () => {
+    expect(normalizeGitHubInput("https://github.com/vercel/next.js/tree/main")).toBe(
+      "vercel/next.js"
+    );
+  });
+
+  it("returns owner/repo from github.com format", () => {
+    expect(normalizeGitHubInput("github.com/facebook/react")).toBe("facebook/react");
+  });
+
+  it("returns owner/repo from shorthand", () => {
+    expect(normalizeGitHubInput("facebook/react")).toBe("facebook/react");
+  });
+
+  it("strips .git suffix", () => {
+    expect(normalizeGitHubInput("https://github.com/owner/repo.git")).toBe("owner/repo");
+  });
+
+  it("returns null for invalid input", () => {
+    expect(normalizeGitHubInput("invalid")).toBeNull();
+  });
+
+  it("returns null for empty input", () => {
+    expect(normalizeGitHubInput("")).toBeNull();
+  });
+});
+
+describe("isValidGitHubUrl", () => {
+  it("returns true for valid URL", () => {
+    expect(isValidGitHubUrl("https://github.com/facebook/react")).toBe(true);
+  });
+
+  it("returns true for shorthand", () => {
+    expect(isValidGitHubUrl("facebook/react")).toBe(true);
+  });
+
+  it("returns true for github.com format", () => {
+    expect(isValidGitHubUrl("github.com/owner/repo")).toBe(true);
+  });
+
+  it("returns false for invalid input", () => {
+    expect(isValidGitHubUrl("invalid")).toBe(false);
+  });
+});
+
+describe("getInputFeedback", () => {
+  it("returns empty for empty input", () => {
+    expect(getInputFeedback("")).toEqual({ type: "empty" });
+    expect(getInputFeedback("   ")).toEqual({ type: "empty" });
+  });
+
+  it("returns url for full URL", () => {
+    expect(getInputFeedback("https://github.com/facebook/react")).toEqual({ type: "url" });
+    expect(getInputFeedback("http://github.com/owner/repo")).toEqual({ type: "url" });
+  });
+
+  it("returns url for github.com format without extra path", () => {
+    expect(getInputFeedback("github.com/facebook/react")).toEqual({ type: "url" });
+  });
+
+  it("returns deeplink for URLs with extra path", () => {
+    expect(getInputFeedback("https://github.com/facebook/react/tree/main")).toEqual({
+      normalized: "facebook/react",
+      type: "deeplink",
+    });
+    expect(getInputFeedback("github.com/owner/repo/tree/main")).toEqual({
+      normalized: "owner/repo",
+      type: "deeplink",
+    });
+    expect(getInputFeedback("https://github.com/vercel/next.js/blob/main/README.md")).toEqual({
+      normalized: "vercel/next.js",
+      type: "deeplink",
+    });
+    expect(getInputFeedback("https://github.com/owner/repo/issues/123")).toEqual({
+      normalized: "owner/repo",
+      type: "deeplink",
+    });
+    expect(getInputFeedback("https://github.com/owner/repo/pull/456")).toEqual({
+      normalized: "owner/repo",
+      type: "deeplink",
+    });
+  });
+
+  it("returns shorthand with normalized URL", () => {
+    expect(getInputFeedback("facebook/react")).toEqual({
+      normalized: "github.com/facebook/react",
+      type: "shorthand",
+    });
+    expect(getInputFeedback("vercel/next.js")).toEqual({
+      normalized: "github.com/vercel/next.js",
+      type: "shorthand",
+    });
+  });
+
+  it("returns invalid for invalid shorthand", () => {
+    expect(getInputFeedback("-owner/repo")).toEqual({ type: "invalid" });
+    expect(getInputFeedback("owner-/repo")).toEqual({ type: "invalid" });
+  });
+
+  it("returns invalid for non-matching input", () => {
+    expect(getInputFeedback("react")).toEqual({ type: "invalid" });
+    expect(getInputFeedback("not a url")).toEqual({ type: "invalid" });
+  });
+});

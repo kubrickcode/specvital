@@ -1,0 +1,309 @@
+{
+  "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
+  "editor.renderWhitespace": "boundary",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "files.insertFinalNewline": true,
+  "files.autoSave": "onFocusChange",
+  "quickCommandButtons.buttons": [
+    {
+      "color": "green",
+      "name": "$(git-branch) Git",
+      "shortcut": "g",
+      "group": [
+        {
+          "command": "git add . && git commit --amend --no-edit && git push -f",
+          "name": "Push",
+          "shortcut": "p",
+          "terminalName": "Forced Push"
+        },
+        {
+          "color": "",
+          "command": "git pull",
+          "name": "pull",
+          "shortcut": "l",
+          "terminalName": "pull",
+          "useVsCodeApi": false
+        },
+        {
+          "command": "git add . && git commit --amend --no-edit",
+          "name": "Commit",
+          "shortcut": "c",
+          "terminalName": "Add and Commit Amend"
+        },
+        {
+          "command": "git reset --soft HEAD~1",
+          "name": "Reset Soft",
+          "shortcut": "r",
+          "terminalName": "Reset Soft"
+        },
+        {
+          "command": "git rebase -i HEAD~5",
+          "name": "Rebase 5",
+          "shortcut": "b",
+          "terminalName": "Rebase Interactive 5"
+        },
+        {
+          "command": "git checkout main",
+          "name": "Checkout main",
+          "shortcut": "m",
+          "terminalName": "Checkout main"
+        }
+      ]
+    },
+    {
+      "color": "orange",
+      "command": "just release",
+      "name": "$(rocket) Release",
+      "shortcut": "r",
+      "terminalName": "Release"
+    },
+    {
+      "color": "teal",
+      "executeAll": false,
+      "name": "$(wrench) Utils",
+      "shortcut": "u",
+      "group": [
+        {
+          "color": "",
+          "command": "just deps",
+          "name": "deps",
+          "shortcut": "d",
+          "terminalName": "deps",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just lint",
+          "name": "lint",
+          "shortcut": "l",
+          "terminalName": "lint",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just dump-schema",
+          "name": "dump-schema",
+          "shortcut": "s",
+          "terminalName": "dump-schema",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just gen-sqlc",
+          "name": "gen-sqlc",
+          "shortcut": "g",
+          "terminalName": "gen-sqlc",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just gen-api",
+          "name": "gen-api",
+          "shortcut": "a",
+          "terminalName": "gen-api",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just bootstrap",
+          "name": "bootstrap",
+          "shortcut": "b",
+          "terminalName": "bootstrap",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just update-core",
+          "name": "update-core",
+          "shortcut": "u",
+          "terminalName": "update-core",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just sync-docs",
+          "name": "sync-docs",
+          "shortcut": "y",
+          "terminalName": "sync-docs",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just migrate-local",
+          "name": "migrate-local",
+          "shortcut": "m",
+          "terminalName": "migrate-local",
+          "useVsCodeApi": false
+        }
+      ]
+    },
+    {
+      "color": "tomato",
+      "name": "$(beaker) Test",
+      "shortcut": "t",
+      "group": [
+        {
+          "color": "",
+          "command": "just test",
+          "name": "all",
+          "shortcut": "a",
+          "terminalName": "all test",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just test frontend",
+          "name": "frontend",
+          "shortcut": "f",
+          "terminalName": "frontend test",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just test backend",
+          "name": "backend",
+          "shortcut": "b",
+          "terminalName": "backend test",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just test-e2e",
+          "name": "e2e",
+          "shortcut": "e",
+          "terminalName": "test e2e",
+          "useVsCodeApi": false
+        }
+      ]
+    },
+    {
+      "color": "#2196F3",
+      "executeAll": false,
+      "name": "$(browser) Web",
+      "shortcut": "w",
+      "group": [
+        {
+          "color": "",
+          "executeAll": true,
+          "name": "All",
+          "shortcut": "a",
+          "group": [
+            {
+              "color": "",
+              "command": "just run backend",
+              "name": "backend",
+              "shortcut": "b",
+              "terminalName": "backend",
+              "useVsCodeApi": false
+            },
+            {
+              "color": "",
+              "command": "just run frontend",
+              "name": "frontend",
+              "shortcut": "f",
+              "terminalName": "frontend",
+              "useVsCodeApi": false
+            }
+          ]
+        },
+        {
+          "color": "",
+          "command": "just run backend",
+          "name": "backend",
+          "shortcut": "b",
+          "terminalName": "backend",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just run frontend",
+          "name": "frontend",
+          "shortcut": "f",
+          "terminalName": "frontend",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just run-analyzer",
+          "name": "run-analyzer",
+          "shortcut": "w",
+          "terminalName": "run-analyzer",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just run-spec-generator",
+          "name": "run-spec-generator",
+          "shortcut": "g",
+          "terminalName": "run-spec-generator",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just run-mock-spec-generator",
+          "name": "mock-spec-generator",
+          "shortcut": "m",
+          "terminalName": "mock-spec-generator",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "executeAll": true,
+          "name": "All Integration",
+          "shortcut": "i",
+          "group": [
+            {
+              "color": "",
+              "command": "just run backend --integration",
+              "name": "backend",
+              "shortcut": "b",
+              "terminalName": "backend-integration",
+              "useVsCodeApi": false
+            },
+            {
+              "color": "",
+              "command": "just run frontend",
+              "name": "frontend",
+              "shortcut": "f",
+              "terminalName": "frontend",
+              "useVsCodeApi": false
+            }
+          ]
+        },
+        {
+          "color": "",
+          "command": "just run backend --integration",
+          "name": "Backend Integration",
+          "shortcut": "n",
+          "terminalName": "backend-integration",
+          "useVsCodeApi": false
+        },
+        {
+          "color": "",
+          "command": "just smee",
+          "name": "smee",
+          "shortcut": "s",
+          "terminalName": "smee",
+          "useVsCodeApi": false
+        }
+      ]
+    },
+    {
+      "color": "blue",
+      "command": "export IS_SANDBOX=1 && claude --dangerously-skip-permissions",
+      "name": "$(hubot) Claude",
+      "newTerminal": true,
+      "shortcut": "c",
+      "terminalName": "Claude Yolo",
+      "useVsCodeApi": false
+    }
+  ],
+  "quickCommandButtons.refreshButton": {
+    "icon": "$(refresh)",
+    "color": "gray",
+    "enabled": true
+  }
+}
