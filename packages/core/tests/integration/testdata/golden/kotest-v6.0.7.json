@@ -1,0 +1,137 @@
+{
+  "repository": "kotest",
+  "ref": "v6.0.7",
+  "expectedFrameworks": ["junit5", "kotest"],
+  "fileCount": 982,
+  "testCount": 5296,
+  "frameworkCounts": {
+    "junit5": 12,
+    "kotest": 970
+  },
+  "sampleFiles": [
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonTest/kotlin/io/kotest/assertions/arrow/fx/coroutines/ExitCaseTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonTest/kotlin/io/kotest/assertions/arrow/fx/coroutines/ResourceExtensionLeafTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonTest/kotlin/io/kotest/assertions/arrow/fx/coroutines/ResourceExtensionRootTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-arrow-fx-coroutines/src/commonTest/kotlin/io/kotest/assertions/arrow/fx/coroutines/ResourceExtensionSpecTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-compiler/src/jvmTest/kotlin/io/kotest/matchers/compilation/CompilationsMatcherTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/commonMain/kotlin/io/kotest/inspectors/runTests.kt",
+      "framework": "kotest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/commonTest/kotlin/com/sksamuel/kotest/matchers/concurrent/suspension/ConcurrentTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/commonTest/kotlin/com/sksamuel/kotest/matchers/concurrent/suspension/TimeoutTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/ExtractTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/FailuresTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/InspectorAliasTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 60
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/InspectorsTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 23
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/NullTests.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AnyTests.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AssertSoftlyTests.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AssertionCounterFreeSpecTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AssertionCounterFunSpecTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/AssertionCounterMultithreadingTests.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/ClueTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 23
+    },
+    {
+      "path": "kotest-assertions/kotest-assertions-core/src/jvmTest/kotlin/com/sksamuel/kotest/assertions/IntelliErrorDiffTest.kt",
+      "framework": "kotest",
+      "suiteCount": 1,
+      "testCount": 2
+    }
+  ],
+  "stats": {
+    "filesMatched": 982,
+    "filesScanned": 1006
+  }
+}

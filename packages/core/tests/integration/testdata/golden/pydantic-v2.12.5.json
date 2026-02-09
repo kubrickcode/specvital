@@ -1,0 +1,136 @@
+{
+  "repository": "pydantic",
+  "ref": "v2.12.5",
+  "expectedFrameworks": ["pytest"],
+  "fileCount": 156,
+  "testCount": 2563,
+  "frameworkCounts": {
+    "pytest": 156
+  },
+  "sampleFiles": [
+    {
+      "path": "tests/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/benchmarks/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/benchmarks/basemodel_eq_performance.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/benchmarks/generate_north_star_data.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/benchmarks/shared.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/benchmarks/test_attribute_access.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "tests/benchmarks/test_discriminated_unions.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "tests/benchmarks/test_fastapi_startup_generics.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "tests/benchmarks/test_fastapi_startup_simple.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "tests/benchmarks/test_imports.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "tests/benchmarks/test_isinstance.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "tests/benchmarks/test_model_schema_generation.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 14
+    },
+    {
+      "path": "tests/benchmarks/test_model_schema_generation_recursive.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 6
+    },
+    {
+      "path": "tests/benchmarks/test_model_serialization.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 5
+    },
+    {
+      "path": "tests/benchmarks/test_model_validation.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 4
+    },
+    {
+      "path": "tests/benchmarks/test_north_star.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 8
+    },
+    {
+      "path": "tests/mypy/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/mypy/modules/config_conditional_extra.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/mypy/modules/covariant_typevar.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/mypy/modules/custom_constructor.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    }
+  ],
+  "stats": {
+    "filesMatched": 156,
+    "filesScanned": 156
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "repository": "ripgrep",
+  "ref": "14.1.1",
+  "expectedFrameworks": ["cargo-test"],
+  "fileCount": 53,
+  "testCount": 1053,
+  "frameworkCounts": {
+    "cargo-test": 53
+  },
+  "sampleFiles": [
+    {
+      "path": "crates/cli/src/escape.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "crates/cli/src/hostname.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "crates/cli/src/human.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "crates/cli/src/pattern.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "crates/core/flags/config.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "crates/core/flags/defs.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 112
+    },
+    {
+      "path": "crates/core/flags/lowargs.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/core/flags/parse.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/globset/src/glob.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 202
+    },
+    {
+      "path": "crates/globset/src/lib.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "crates/globset/src/pathutil.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "crates/globset/src/serde_impl.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "crates/ignore/src/default_types.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "crates/ignore/src/dir.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 20
+    },
+    {
+      "path": "crates/ignore/src/gitignore.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 74
+    },
+    {
+      "path": "crates/ignore/src/lib.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/ignore/src/overrides.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "crates/ignore/src/types.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 20
+    },
+    {
+      "path": "crates/ignore/src/walk.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 15
+    },
+    {
+      "path": "crates/ignore/tests/gitignore_matched_path_or_any_parents_tests.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 5
+    }
+  ],
+  "stats": {
+    "filesMatched": 53,
+    "filesScanned": 97
+  }
+}

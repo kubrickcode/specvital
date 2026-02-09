@@ -1,0 +1,137 @@
+{
+  "repository": "alamofire",
+  "ref": "master",
+  "expectedFrameworks": ["swift-testing", "xctest"],
+  "fileCount": 33,
+  "testCount": 750,
+  "frameworkCounts": {
+    "swift-testing": 4,
+    "xctest": 29
+  },
+  "sampleFiles": [
+    {
+      "path": "Tests/AuthenticationInterceptorTests.swift",
+      "framework": "xctest",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "Tests/AuthenticationTests.swift",
+      "framework": "xctest",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "Tests/BaseTestCase.swift",
+      "framework": "xctest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "Tests/CacheTests.swift",
+      "framework": "xctest",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "Tests/CachedResponseHandlerTests.swift",
+      "framework": "xctest",
+      "suiteCount": 2,
+      "testCount": 10
+    },
+    {
+      "path": "Tests/CombineTests.swift",
+      "framework": "xctest",
+      "suiteCount": 3,
+      "testCount": 51
+    },
+    {
+      "path": "Tests/ConcurrencyTests.swift",
+      "framework": "xctest",
+      "suiteCount": 6,
+      "testCount": 40
+    },
+    {
+      "path": "Tests/DataStreamTests.swift",
+      "framework": "xctest",
+      "suiteCount": 4,
+      "testCount": 28
+    },
+    {
+      "path": "Tests/DownloadTests.swift",
+      "framework": "xctest",
+      "suiteCount": 8,
+      "testCount": 30
+    },
+    {
+      "path": "Tests/HTTPHeadersTests.swift",
+      "framework": "xctest",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "Tests/InternalRequestTests.swift",
+      "framework": "xctest",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "Tests/LeaksTests.swift",
+      "framework": "swift-testing",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "Tests/MultipartFormDataTests.swift",
+      "framework": "xctest",
+      "suiteCount": 4,
+      "testCount": 24
+    },
+    {
+      "path": "Tests/NetworkReachabilityManagerTests.swift",
+      "framework": "xctest",
+      "suiteCount": 1,
+      "testCount": 19
+    },
+    {
+      "path": "Tests/OfflineRetrierTests.swift",
+      "framework": "swift-testing",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "Tests/ParameterEncoderTests.swift",
+      "framework": "xctest",
+      "suiteCount": 5,
+      "testCount": 86
+    },
+    {
+      "path": "Tests/ParameterEncodingTests.swift",
+      "framework": "xctest",
+      "suiteCount": 2,
+      "testCount": 44
+    },
+    {
+      "path": "Tests/ProtectedTests.swift",
+      "framework": "xctest",
+      "suiteCount": 3,
+      "testCount": 4
+    },
+    {
+      "path": "Tests/RedirectHandlerTests.swift",
+      "framework": "xctest",
+      "suiteCount": 2,
+      "testCount": 10
+    },
+    {
+      "path": "Tests/RequestInterceptorTests.swift",
+      "framework": "swift-testing",
+      "suiteCount": 6,
+      "testCount": 32
+    }
+  ],
+  "stats": {
+    "filesMatched": 33,
+    "filesScanned": 43
+  }
+}

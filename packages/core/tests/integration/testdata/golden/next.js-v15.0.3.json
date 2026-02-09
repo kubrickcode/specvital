@@ -1,0 +1,141 @@
+{
+  "repository": "next.js",
+  "ref": "v15.0.3",
+  "expectedFrameworks": ["cargo-test", "cypress", "jest", "mocha", "playwright", "vitest"],
+  "fileCount": 1329,
+  "testCount": 7803,
+  "frameworkCounts": {
+    "cargo-test": 54,
+    "cypress": 3,
+    "jest": 1252,
+    "mocha": 8,
+    "playwright": 7,
+    "vitest": 5
+  },
+  "sampleFiles": [
+    {
+      "path": "crates/napi/src/transform.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "crates/next-core/src/bootstrap.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "crates/next-core/src/next_app/metadata/mod.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "crates/next-core/src/next_config.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 4
+    },
+    {
+      "path": "crates/next-core/src/next_font/google/font_fallback.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "crates/next-core/src/next_font/google/options.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "crates/next-core/src/next_font/google/util.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 13
+    },
+    {
+      "path": "crates/next-core/src/next_font/local/font_fallback.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "crates/next-core/src/next_font/local/options.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "crates/next-core/src/next_font/local/request.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "crates/next-core/src/next_manifests/mod.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "crates/next-core/src/url_node.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 24
+    },
+    {
+      "path": "crates/next-custom-transforms/src/transforms/page_static_info/mod.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "crates/next-custom-transforms/tests/telemetry.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "examples/with-cypress/components/about-component.cy.tsx",
+      "framework": "cypress",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "examples/with-cypress/cypress/e2e/app.cy.ts",
+      "framework": "cypress",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "examples/with-cypress/cypress/e2e/pages.cy.ts",
+      "framework": "cypress",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "examples/with-jest-babel/__tests__/index.test.tsx",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "examples/with-jest-babel/__tests__/snapshot.tsx",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "examples/with-jest/__tests__/index.test.tsx",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
+    }
+  ],
+  "stats": {
+    "filesMatched": 1329,
+    "filesScanned": 10289
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "repository": "turborepo",
+  "ref": "v2.3.3",
+  "expectedFrameworks": ["cargo-test", "jest", "playwright", "vitest"],
+  "fileCount": 223,
+  "testCount": 778,
+  "frameworkCounts": {
+    "cargo-test": 164,
+    "jest": 52,
+    "playwright": 3,
+    "vitest": 4
+  },
+  "sampleFiles": [
+    {
+      "path": "crates/turborepo-analytics/src/lib.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-api-client/src/lib.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-api-client/src/retry.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-api-client/src/spaces.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-auth/src/auth/login.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-auth/src/auth/logout.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-auth/src/auth/mod.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-auth/src/auth/sso.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-auth/src/lib.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "crates/turborepo-auth/src/login_server.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "crates/turborepo-cache/src/async_cache.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-cache/src/cache_archive/create.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "crates/turborepo-cache/src/cache_archive/restore.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "crates/turborepo-cache/src/config.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-cache/src/fs.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-cache/src/http.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "crates/turborepo-cache/src/lib.rs",
+      "framework": "cargo-test",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "crates/turborepo-cache/src/signature_authentication.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "crates/turborepo-ci/src/lib.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "crates/turborepo-env/src/lib.rs",
+      "framework": "cargo-test",
+      "suiteCount": 1,
+      "testCount": 1
+    }
+  ],
+  "stats": {
+    "filesMatched": 223,
+    "filesScanned": 390
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "repository": "testfx",
+  "ref": "v4.0.2",
+  "expectedFrameworks": ["mstest"],
+  "fileCount": 320,
+  "testCount": 1813,
+  "frameworkCounts": {
+    "mstest": 320
+  },
+  "sampleFiles": [
+    {
+      "path": "samples/Playground/Tests.cs",
+      "framework": "mstest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "samples/public/BlankUwpNet9App/UnitTests.cs",
+      "framework": "mstest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "samples/public/BlankWinUINet9App/UnitTests.cs",
+      "framework": "mstest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "samples/public/TestingPlatformExamples/TestingPlatformExplorer/UnitTests.cs",
+      "framework": "mstest",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "samples/public/mstest-runner/MSTestProjectWithExplicitMain/MSTestProjectWithExplicitMain/Test1.cs",
+      "framework": "mstest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "samples/public/mstest-runner/MSTestRunnerWinUI/UnitTest/TestClass.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "samples/public/mstest-runner/RunInDocker/MyServer.Tests/UnitTest1.cs",
+      "framework": "mstest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Data/TestDataConnection.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Data/TestDataConnectionFactory.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Data/TestDataConnectionSql.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Deployment/TestRunDirectories.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Discovery/TestMethodValidator.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestAssemblyInfo.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestAssemblySettingsProvider.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestClassInfo.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestExecutionManager.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestMethodInfo.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Execution/TestMethodRunner.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Extensions/TestCaseExtensions.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Adapter/MSTestAdapter.PlatformServices/Extensions/TestResultExtensions.cs",
+      "framework": "mstest",
+      "suiteCount": 0,
+      "testCount": 0
+    }
+  ],
+  "stats": {
+    "filesMatched": 320,
+    "filesScanned": 675
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "repository": "vue",
+  "ref": "v3.5.27",
+  "expectedFrameworks": ["vitest"],
+  "fileCount": 200,
+  "testCount": 3329,
+  "frameworkCounts": {
+    "vitest": 200
+  },
+  "sampleFiles": [
+    {
+      "path": "packages/compiler-core/__tests__/codegen.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 34
+    },
+    {
+      "path": "packages/compiler-core/__tests__/compile.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "packages/compiler-core/__tests__/parse.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 99
+    },
+    {
+      "path": "packages/compiler-core/__tests__/scopeId.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "packages/compiler-core/__tests__/testUtils.ts",
+      "framework": "vitest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transform.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 21
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/cacheStatic.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 34
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/noopDirectiveTransform.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/transformElement.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 71
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/transformExpressions.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 47
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/transformSlotOutlet.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/transformText.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/vBind.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 19
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/vFor.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 53
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/vIf.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 31
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/vMemo.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/vModel.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 21
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/vOn.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 33
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/vOnce.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "packages/compiler-core/__tests__/transforms/vSlot.spec.ts",
+      "framework": "vitest",
+      "suiteCount": 1,
+      "testCount": 31
+    }
+  ],
+  "stats": {
+    "filesMatched": 200,
+    "filesScanned": 204
+  }
+}

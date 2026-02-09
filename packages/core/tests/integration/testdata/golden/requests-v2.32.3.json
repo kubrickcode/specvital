@@ -1,0 +1,100 @@
+{
+  "repository": "requests",
+  "ref": "v2.32.3",
+  "expectedFrameworks": ["pytest"],
+  "fileCount": 14,
+  "testCount": 333,
+  "frameworkCounts": {
+    "pytest": 14
+  },
+  "sampleFiles": [
+    {
+      "path": "tests/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/compat.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_adapters.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "tests/test_help.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "tests/test_hooks.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "tests/test_lowlevel.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 13
+    },
+    {
+      "path": "tests/test_packages.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "tests/test_requests.py",
+      "framework": "pytest",
+      "suiteCount": 6,
+      "testCount": 230
+    },
+    {
+      "path": "tests/test_structures.py",
+      "framework": "pytest",
+      "suiteCount": 2,
+      "testCount": 10
+    },
+    {
+      "path": "tests/test_testserver.py",
+      "framework": "pytest",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "tests/test_utils.py",
+      "framework": "pytest",
+      "suiteCount": 11,
+      "testCount": 60
+    },
+    {
+      "path": "tests/testserver/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/testserver/server.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/utils.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    }
+  ],
+  "stats": {
+    "filesMatched": 14,
+    "filesScanned": 14
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "repository": "nunit",
+  "ref": "4.3.2",
+  "expectedFrameworks": ["nunit"],
+  "fileCount": 313,
+  "testCount": 4330,
+  "frameworkCounts": {
+    "nunit": 313
+  },
+  "sampleFiles": [
+    {
+      "path": "CakeScripts.Tests/Usings.cs",
+      "framework": "nunit",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "CakeScripts.Tests/VersionParsersTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "src/NUnitFramework/framework/Attributes/TestAttribute.cs",
+      "framework": "nunit",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/Assert.Types.Tests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/AssertEqualsTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 45
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/CollectionAssertTest.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 80
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/ConditionAssertTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 43
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/DirectoryAssertTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 22
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/FileAssertTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 39
+    },
+    {
+      "path": "src/NUnitFramework/nunit.framework.legacy.tests/StringAssertTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 23
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/CommandLineTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 115
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/CreateTestFilterTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/DefaultOptionsProviderTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/ExtendedTextWrapperTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/MakeRunSettingsTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/NUnit2XmlOutputWriterTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 37
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/NUnit3XmlOutputWriterTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 37
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/OutputSpecificationTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/SchemaTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "src/NUnitFramework/nunitlite.tests/TeamCityEventListenerTests.cs",
+      "framework": "nunit",
+      "suiteCount": 1,
+      "testCount": 7
+    }
+  ],
+  "stats": {
+    "filesMatched": 313,
+    "filesScanned": 418
+  }
+}

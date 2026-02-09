@@ -1,0 +1,136 @@
+{
+  "repository": "chi",
+  "ref": "v5.2.4",
+  "expectedFrameworks": ["go-testing"],
+  "fileCount": 20,
+  "testCount": 94,
+  "frameworkCounts": {
+    "go-testing": 20
+  },
+  "sampleFiles": [
+    {
+      "path": "context_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "middleware/compress_test.go",
+      "framework": "go-testing",
+      "suiteCount": 2,
+      "testCount": 2
+    },
+    {
+      "path": "middleware/content_charset_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "middleware/content_encoding_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "middleware/content_type_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "middleware/get_head_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "middleware/logger_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "middleware/middleware_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "middleware/realip_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 4
+    },
+    {
+      "path": "middleware/recoverer_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "middleware/request_id_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "middleware/strip_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "middleware/sunset_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "middleware/throttle_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 7
+    },
+    {
+      "path": "middleware/url_format_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "middleware/wrap_writer_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "mux_test.go",
+      "framework": "go-testing",
+      "suiteCount": 3,
+      "testCount": 42
+    },
+    {
+      "path": "path_value_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "pattern_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "tree_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 8
+    }
+  ],
+  "stats": {
+    "filesMatched": 20,
+    "filesScanned": 20
+  }
+}

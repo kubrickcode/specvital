@@ -1,0 +1,106 @@
+{
+  "repository": "testing-library-react",
+  "ref": "v16.1.0",
+  "expectedFrameworks": ["jest"],
+  "fileCount": 15,
+  "testCount": 60,
+  "frameworkCounts": {
+    "jest": 15
+  },
+  "sampleFiles": [
+    {
+      "path": "src/__tests__/act.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 6
+    },
+    {
+      "path": "src/__tests__/auto-cleanup-skip.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "src/__tests__/auto-cleanup.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "src/__tests__/cleanup.js",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "src/__tests__/config.js",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "src/__tests__/debug.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "src/__tests__/end-to-end.js",
+      "framework": "jest",
+      "suiteCount": 3,
+      "testCount": 9
+    },
+    {
+      "path": "src/__tests__/events.js",
+      "framework": "jest",
+      "suiteCount": 2,
+      "testCount": 5
+    },
+    {
+      "path": "src/__tests__/multi-base.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "src/__tests__/new-act.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "src/__tests__/render.js",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "src/__tests__/renderHook.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "src/__tests__/rerender.js",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "src/__tests__/stopwatch.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "tests/failOnUnexpectedConsoleCalls.js",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 0
+    }
+  ],
+  "stats": {
+    "filesMatched": 15,
+    "filesScanned": 18
+  }
+}

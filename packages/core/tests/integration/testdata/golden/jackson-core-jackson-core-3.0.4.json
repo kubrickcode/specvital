@@ -1,0 +1,136 @@
+{
+  "repository": "jackson-core",
+  "ref": "jackson-core-3.0.4",
+  "expectedFrameworks": ["junit5"],
+  "fileCount": 196,
+  "testCount": 1056,
+  "frameworkCounts": {
+    "junit5": 196
+  },
+  "sampleFiles": [
+    {
+      "path": "src/test/java/tools/jackson/core/testutil/failure/JacksonTestFailureExpected.java",
+      "framework": "junit5",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/testutil/failure/JacksonTestFailureExpectedInterceptor.java",
+      "framework": "junit5",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/Base64VariantTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/ComponentVersionsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/ErrorReportConfigurationTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/ExceptionsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/JDKSerializabilityTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/JsonpCharacterEscapesTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/TokenStreamLocationTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/VersionClassTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/base64/Base64BinaryParsingTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/base64/Base64CodecTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/base64/Base64GenerationTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/base64/Base64Padding912Test.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/constraints/LargeDocReadTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/constraints/LargeNameReadTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/constraints/LargeNumberReadTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/constraints/LargeNumberWriteTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/constraints/StreamReadConstraintsDefaultsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "src/test/java/tools/jackson/core/unittest/constraints/StreamWriteConstraintsDefaultsTest.java",
+      "framework": "junit5",
+      "suiteCount": 1,
+      "testCount": 1
+    }
+  ],
+  "stats": {
+    "filesMatched": 196,
+    "filesScanned": 243
+  }
+}

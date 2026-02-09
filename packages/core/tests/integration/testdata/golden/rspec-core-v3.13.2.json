@@ -1,0 +1,136 @@
+{
+  "repository": "rspec-core",
+  "ref": "v3.13.2",
+  "expectedFrameworks": ["rspec"],
+  "fileCount": 80,
+  "testCount": 1836,
+  "frameworkCounts": {
+    "rspec": 80
+  },
+  "sampleFiles": [
+    {
+      "path": "spec/integration/bisect_runners_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 2,
+      "testCount": 4
+    },
+    {
+      "path": "spec/integration/bisect_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "spec/integration/fail_if_no_examples_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "spec/integration/failed_line_detection_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "spec/integration/filtering_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 11
+    },
+    {
+      "path": "spec/integration/order_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "spec/integration/output_stream_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "spec/integration/persistence_failures_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "spec/integration/spec_file_load_errors_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "spec/integration/suite_hooks_errors_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "spec/rspec/core/aggregate_failures_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "spec/rspec/core/backtrace_formatter_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 36
+    },
+    {
+      "path": "spec/rspec/core/bisect/coordinator_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "spec/rspec/core/bisect/example_minimizer_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "spec/rspec/core/bisect/server_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "spec/rspec/core/bisect/shell_command_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 30
+    },
+    {
+      "path": "spec/rspec/core/bisect/shell_runner_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "spec/rspec/core/bisect/utilities_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 2,
+      "testCount": 5
+    },
+    {
+      "path": "spec/rspec/core/configuration/only_failures_support_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 17
+    },
+    {
+      "path": "spec/rspec/core/configuration_options_spec.rb",
+      "framework": "rspec",
+      "suiteCount": 1,
+      "testCount": 78
+    }
+  ],
+  "stats": {
+    "filesMatched": 80,
+    "filesScanned": 88
+  }
+}

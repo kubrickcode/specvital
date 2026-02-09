@@ -1,0 +1,76 @@
+{
+  "repository": "mux",
+  "ref": "v1.8.1",
+  "expectedFrameworks": ["go-testing"],
+  "fileCount": 10,
+  "testCount": 98,
+  "frameworkCounts": {
+    "go-testing": 10
+  },
+  "sampleFiles": [
+    {
+      "path": "bench_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 3
+    },
+    {
+      "path": "example_authentication_middleware_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "example_cors_method_middleware_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "example_route_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "example_route_vars_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 1
+    },
+    {
+      "path": "middleware_test.go",
+      "framework": "go-testing",
+      "suiteCount": 9,
+      "testCount": 27
+    },
+    {
+      "path": "mux_httpserver_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "mux_test.go",
+      "framework": "go-testing",
+      "suiteCount": 22,
+      "testCount": 45
+    },
+    {
+      "path": "old_test.go",
+      "framework": "go-testing",
+      "suiteCount": 0,
+      "testCount": 12
+    },
+    {
+      "path": "regexp_test.go",
+      "framework": "go-testing",
+      "suiteCount": 1,
+      "testCount": 4
+    }
+  ],
+  "stats": {
+    "filesMatched": 10,
+    "filesScanned": 10
+  }
+}

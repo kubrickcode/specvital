@@ -1,0 +1,137 @@
+{
+  "repository": "testng",
+  "ref": "7.10.2",
+  "expectedFrameworks": ["junit5", "testng"],
+  "fileCount": 1720,
+  "testCount": 3239,
+  "frameworkCounts": {
+    "junit5": 10,
+    "testng": 1710
+  },
+  "sampleFiles": [
+    {
+      "path": "testng-asserts/src/test/java/org/testng/AssertTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 64
+    },
+    {
+      "path": "testng-asserts/src/test/java/test/assertion/AssertionListContainsTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "testng-asserts/src/test/java/test/assertion/AssertionTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "testng-asserts/src/test/java/test/assertion/MyRawAssertion.java",
+      "framework": "testng",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "testng-asserts/src/test/java/test/assertion/SoftAssertTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "testng-asserts/src/test/java/test/asserttests/ArrayEqualityAssertTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 29
+    },
+    {
+      "path": "testng-asserts/src/test/java/test/asserttests/AssertTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 57
+    },
+    {
+      "path": "testng-core/src/test/groovy/test/groovy/Issue2360Sample.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "testng-core/src/test/java/NoPackageTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/ReporterConfigTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/DryRunSample.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/DryRunTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/JarFileUtilsTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/TestRunnerTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/internal/ConsoleReporter.java",
+      "framework": "testng",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/internal/DynamicGraphHelperTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 7
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/internal/DynamicGraphTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 13
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/internal/GroupsHelperTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/internal/KeyAwareAutoCloseableLockTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "testng-core/src/test/java/org/testng/internal/MethodHelperTest.java",
+      "framework": "testng",
+      "suiteCount": 1,
+      "testCount": 1
+    }
+  ],
+  "stats": {
+    "filesMatched": 1720,
+    "filesScanned": 1829
+  }
+}

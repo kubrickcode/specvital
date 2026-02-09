@@ -1,0 +1,64 @@
+{
+  "repository": "minitest",
+  "ref": "v5.25.4",
+  "expectedFrameworks": ["minitest"],
+  "fileCount": 8,
+  "testCount": 448,
+  "frameworkCounts": {
+    "minitest": 8
+  },
+  "sampleFiles": [
+    {
+      "path": "test/minitest/metametameta.rb",
+      "framework": "minitest",
+      "suiteCount": 2,
+      "testCount": 0
+    },
+    {
+      "path": "test/minitest/test_minitest_assertions.rb",
+      "framework": "minitest",
+      "suiteCount": 2,
+      "testCount": 172
+    },
+    {
+      "path": "test/minitest/test_minitest_benchmark.rb",
+      "framework": "minitest",
+      "suiteCount": 2,
+      "testCount": 15
+    },
+    {
+      "path": "test/minitest/test_minitest_mock.rb",
+      "framework": "minitest",
+      "suiteCount": 2,
+      "testCount": 94
+    },
+    {
+      "path": "test/minitest/test_minitest_reporter.rb",
+      "framework": "minitest",
+      "suiteCount": 1,
+      "testCount": 22
+    },
+    {
+      "path": "test/minitest/test_minitest_spec.rb",
+      "framework": "minitest",
+      "suiteCount": 8,
+      "testCount": 76
+    },
+    {
+      "path": "test/minitest/test_minitest_test.rb",
+      "framework": "minitest",
+      "suiteCount": 4,
+      "testCount": 67
+    },
+    {
+      "path": "test/minitest/test_minitest_test_task.rb",
+      "framework": "minitest",
+      "suiteCount": 1,
+      "testCount": 2
+    }
+  ],
+  "stats": {
+    "filesMatched": 8,
+    "filesScanned": 8
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "repository": "remix",
+  "ref": "remix@2.14.0",
+  "expectedFrameworks": ["jest"],
+  "fileCount": 37,
+  "testCount": 361,
+  "frameworkCounts": {
+    "jest": 37
+  },
+  "sampleFiles": [
+    {
+      "path": "packages/create-remix/__tests__/create-remix-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 49
+    },
+    {
+      "path": "packages/create-remix/__tests__/setupAfterEnv.ts",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "packages/remix-architect/__tests__/binaryTypes-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "packages/remix-architect/__tests__/server-test.ts",
+      "framework": "jest",
+      "suiteCount": 4,
+      "testCount": 16
+    },
+    {
+      "path": "packages/remix-dev/__tests__/cli-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "packages/remix-dev/__tests__/cssSideEffectImports-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 22
+    },
+    {
+      "path": "packages/remix-dev/__tests__/defineRoutes-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "packages/remix-dev/__tests__/flat-routes-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 13
+    },
+    {
+      "path": "packages/remix-dev/__tests__/init-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "packages/remix-dev/__tests__/readConfig-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "packages/remix-dev/__tests__/reveal-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "packages/remix-dev/__tests__/routeManifestToRouteConfig-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "packages/remix-dev/__tests__/setupAfterEnv.ts",
+      "framework": "jest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "packages/remix-dev/__tests__/styles-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "packages/remix-dev/__tests__/validateRouteConfig-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "packages/remix-express/__tests__/server-test.ts",
+      "framework": "jest",
+      "suiteCount": 3,
+      "testCount": 13
+    },
+    {
+      "path": "packages/remix-node/__tests__/fileUploadHandler-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 16
+    },
+    {
+      "path": "packages/remix-node/__tests__/sessions-test.ts",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "packages/remix-react/__tests__/components-test.tsx",
+      "framework": "jest",
+      "suiteCount": 6,
+      "testCount": 10
+    },
+    {
+      "path": "packages/remix-react/__tests__/deferred-scripts-test.tsx",
+      "framework": "jest",
+      "suiteCount": 1,
+      "testCount": 1
+    }
+  ],
+  "stats": {
+    "filesMatched": 37,
+    "filesScanned": 88
+  }
+}

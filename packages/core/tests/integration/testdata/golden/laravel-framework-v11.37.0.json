@@ -1,0 +1,136 @@
+{
+  "repository": "laravel-framework",
+  "ref": "v11.37.0",
+  "expectedFrameworks": ["phpunit"],
+  "fileCount": 797,
+  "testCount": 9236,
+  "frameworkCounts": {
+    "phpunit": 797
+  },
+  "sampleFiles": [
+    {
+      "path": "src/Illuminate/Foundation/Testing/TestCase.php",
+      "framework": "phpunit",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Illuminate/Testing/TestResponse.php",
+      "framework": "phpunit",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "src/Illuminate/Testing/TestView.php",
+      "framework": "phpunit",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/Auth/AuthAccessGateTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 92
+    },
+    {
+      "path": "tests/Auth/AuthAccessResponseTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "tests/Auth/AuthDatabaseTokenRepositoryTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "tests/Auth/AuthDatabaseUserProviderTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "tests/Auth/AuthEloquentUserProviderTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 15
+    },
+    {
+      "path": "tests/Auth/AuthGuardTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 43
+    },
+    {
+      "path": "tests/Auth/AuthHandlesAuthorizationTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "tests/Auth/AuthListenersSendEmailVerificationNotificationHandleFunctionTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "tests/Auth/AuthPasswordBrokerTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "tests/Auth/AuthTokenGuardTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "tests/Auth/AuthenticatableTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "tests/Auth/AuthenticateMiddlewareTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 9
+    },
+    {
+      "path": "tests/Auth/AuthorizeMiddlewareTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "tests/Auth/AuthorizesResourcesTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "tests/Auth/EnsureEmailIsVerifiedTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "tests/Broadcasting/AblyBroadcasterTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "tests/Broadcasting/BroadcastEventTest.php",
+      "framework": "phpunit",
+      "suiteCount": 1,
+      "testCount": 3
+    }
+  ],
+  "stats": {
+    "filesMatched": 797,
+    "filesScanned": 1008
+  }
+}

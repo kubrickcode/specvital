@@ -1,0 +1,137 @@
+{
+  "repository": "gson",
+  "ref": "gson-parent-2.13.2",
+  "expectedFrameworks": ["junit4", "junit5"],
+  "fileCount": 131,
+  "testCount": 1474,
+  "frameworkCounts": {
+    "junit4": 129,
+    "junit5": 2
+  },
+  "sampleFiles": [
+    {
+      "path": "extras/src/test/java/com/google/gson/graph/GraphAdapterBuilderTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 10
+    },
+    {
+      "path": "extras/src/test/java/com/google/gson/interceptors/InterceptorTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 8
+    },
+    {
+      "path": "extras/src/test/java/com/google/gson/typeadapters/PostConstructAdapterFactoryTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "extras/src/test/java/com/google/gson/typeadapters/RuntimeTypeAdapterFactoryTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "extras/src/test/java/com/google/gson/typeadapters/UtcDateTypeAdapterTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/CommentsTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/DefaultInetAddressTypeAdapterTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 1
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/DefaultMapJsonSerializerTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/ExposeAnnotationExclusionStrategyTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 6
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/FieldAttributesTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/FieldNamingPolicyTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/GenericArrayTypeTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 2
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/GsonBuilderTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 22
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/GsonTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 14
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/GsonTypeAdapterTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 5
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/InnerClassExclusionStrategyTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 4
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/JavaSerializationTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 3
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/JsonArrayAsListTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 16
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/JsonArrayTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 18
+    },
+    {
+      "path": "gson/src/test/java/com/google/gson/JsonNullTest.java",
+      "framework": "junit4",
+      "suiteCount": 1,
+      "testCount": 3
+    }
+  ],
+  "stats": {
+    "filesMatched": 131,
+    "filesScanned": 139
+  }
+}

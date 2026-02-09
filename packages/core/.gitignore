@@ -1,0 +1,22 @@
+.env
+.pnpm-store
+node_modules
+docs/work
+.claude/settings.local.json
+.claude-sessions/
+.claude-session-config.json
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+bin/
+dist/
+
+# Integration test cache
+tests/integration/testdata/cache/

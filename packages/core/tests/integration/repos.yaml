@@ -1,0 +1,374 @@
+repositories:
+  - name: requests
+    url: https://github.com/psf/requests
+    ref: v2.32.3
+    frameworks:
+      - pytest
+
+  - name: urllib3
+    url: https://github.com/urllib3/urllib3
+    ref: 2.2.3
+    frameworks:
+      - pytest
+
+  - name: boto3
+    url: https://github.com/boto/boto3
+    ref: 1.35.0
+    frameworks:
+      - pytest
+      - unittest
+    nondeterministic: true
+
+  - name: flask
+    url: https://github.com/pallets/flask
+    ref: 3.1.2
+    frameworks:
+      - pytest
+
+  - name: pydantic
+    url: https://github.com/pydantic/pydantic
+    ref: v2.12.5
+    frameworks:
+      - pytest
+
+  - name: faker
+    url: https://github.com/joke2k/faker
+    ref: v40.1.2
+    frameworks:
+      - pytest
+      - unittest
+
+  - name: httpx
+    url: https://github.com/encode/httpx
+    ref: 0.28.1
+    frameworks:
+      - pytest
+
+  - name: python-unittest-tutorial
+    url: https://github.com/cgoldberg/python-unittest-tutorial
+    ref: master
+    frameworks:
+      - unittest
+
+  - name: testing-library-react
+    url: https://github.com/testing-library/react-testing-library
+    ref: v16.1.0
+    frameworks:
+      - jest
+
+  - name: vite
+    url: https://github.com/vitejs/vite
+    ref: v7.3.0
+    frameworks:
+      - vitest
+
+  - name: zod
+    url: https://github.com/colinhacks/zod
+    ref: main
+    frameworks:
+      - vitest
+    nondeterministic: true
+
+  - name: baedal
+    url: https://github.com/KubrickCode/baedal
+    ref: v1.3.1
+    frameworks:
+      - vitest
+
+  - name: vue
+    url: https://github.com/vuejs/core
+    ref: v3.5.27
+    frameworks:
+      - vitest
+    complex: true
+
+  - name: playwright
+    url: https://github.com/microsoft/playwright
+    ref: v1.49.0
+    frameworks:
+      - junit4
+      - playwright
+
+  - name: gin
+    url: https://github.com/gin-gonic/gin
+    ref: v1.10.0
+    frameworks:
+      - go-testing
+
+  - name: chi
+    url: https://github.com/go-chi/chi
+    ref: v5.2.4
+    frameworks:
+      - go-testing
+
+  - name: mux
+    url: https://github.com/gorilla/mux
+    ref: v1.8.1
+    frameworks:
+      - go-testing
+
+  - name: echo
+    url: https://github.com/labstack/echo
+    ref: v5.0.0
+    frameworks:
+      - go-testing
+
+  - name: specvital-worker
+    url: https://github.com/specvital/worker
+    ref: v1.0.6
+    subdir: src
+    frameworks:
+      - go-testing
+
+  - name: specvital-core
+    url: https://github.com/specvital/core
+    ref: v1.4.0
+    frameworks:
+      - go-testing
+
+  # Complex cases: monorepos, mixed frameworks
+  - name: next.js
+    url: https://github.com/vercel/next.js
+    ref: v15.0.3
+    frameworks:
+      - cargo-test
+      - cypress
+      - jest
+      - mocha
+      - playwright
+      - vitest
+    complex: true
+
+  - name: storybook
+    url: https://github.com/storybookjs/storybook
+    ref: v8.4.5
+    frameworks:
+      - cypress
+      - jest
+      - playwright
+      - vitest
+    complex: true
+
+  - name: turborepo
+    url: https://github.com/vercel/turborepo
+    ref: v2.3.3
+    frameworks:
+      - cargo-test
+      - jest
+      - playwright
+      - vitest
+    complex: true
+
+  - name: grafana
+    url: https://github.com/grafana/grafana
+    ref: v11.3.1
+    frameworks:
+      - cypress
+      - go-testing
+      - jest
+      - mocha
+      - playwright
+    complex: true
+    nondeterministic: true
+
+  - name: trpc
+    url: https://github.com/trpc/trpc
+    ref: v10.45.2
+    frameworks:
+      - playwright
+      - vitest
+    complex: true
+    nondeterministic: true
+
+  - name: prisma
+    url: https://github.com/prisma/prisma
+    ref: 6.9.0
+    frameworks:
+      - jest
+      - mocha
+      - vitest
+    complex: true
+    nondeterministic: true
+
+  - name: remix
+    url: https://github.com/remix-run/remix
+    ref: remix@2.14.0
+    frameworks:
+      - jest
+    complex: true
+
+  - name: etcd
+    url: https://github.com/etcd-io/etcd
+    ref: v3.5.17
+    frameworks:
+      - go-testing
+    complex: true
+
+  - name: junit5-samples
+    url: https://github.com/junit-team/junit5-samples
+    ref: main
+    frameworks:
+      - junit4
+      - junit5
+      - kotest
+      - testng
+
+  - name: testcontainers-java
+    url: https://github.com/testcontainers/testcontainers-java
+    ref: 1.20.4
+    frameworks:
+      - junit4
+      - junit5
+      - testng
+    complex: true
+
+  - name: commons-lang
+    url: https://github.com/apache/commons-lang
+    ref: rel/commons-lang-3.17.0
+    frameworks:
+      - junit5
+
+  - name: gson
+    url: https://github.com/google/gson
+    ref: gson-parent-2.13.2
+    frameworks:
+      - junit4
+      - junit5
+
+  - name: jackson-core
+    url: https://github.com/FasterXML/jackson-core
+    ref: jackson-core-3.0.4
+    frameworks:
+      - junit5
+
+  - name: fluentassertions
+    url: https://github.com/fluentassertions/fluentassertions
+    ref: 8.3.0
+    frameworks:
+      - mstest
+      - nunit
+      - xunit
+
+  - name: nunit
+    url: https://github.com/nunit/nunit
+    ref: 4.3.2
+    frameworks:
+      - nunit
+
+  - name: rspec-core
+    url: https://github.com/rspec/rspec-core
+    ref: v3.13.2
+    frameworks:
+      - rspec
+
+  - name: minitest
+    url: https://github.com/minitest/minitest
+    ref: v5.25.4
+    frameworks:
+      - minitest
+
+  - name: ripgrep
+    url: https://github.com/BurntSushi/ripgrep
+    ref: 14.1.1
+    frameworks:
+      - cargo-test
+
+  - name: googletest
+    url: https://github.com/google/googletest
+    ref: v1.15.2
+    frameworks:
+      - gtest
+      - unittest
+
+  - name: laravel-framework
+    url: https://github.com/laravel/framework
+    ref: v11.37.0
+    frameworks:
+      - phpunit
+    complex: true
+
+  - name: cypress
+    url: https://github.com/cypress-io/cypress
+    ref: v15.8.1
+    frameworks:
+      - cypress
+      - jest
+      - mocha
+      - vitest
+    complex: true
+
+  - name: mocha
+    url: https://github.com/mochajs/mocha
+    ref: v11.7.5
+    frameworks:
+      - mocha
+    complex: true
+
+  - name: axios
+    url: https://github.com/axios/axios
+    ref: v1.9.0
+    frameworks:
+      - mocha
+
+  - name: kotest
+    url: https://github.com/kotest/kotest
+    ref: v6.0.7
+    frameworks:
+      - junit5
+      - kotest
+    complex: true
+
+  - name: testng
+    url: https://github.com/testng-team/testng
+    ref: 7.10.2
+    frameworks:
+      - junit5
+      - testng
+    complex: true
+
+  - name: testfx
+    url: https://github.com/microsoft/testfx
+    ref: v4.0.2
+    frameworks:
+      - mstest
+    complex: true
+
+  - name: alamofire
+    url: https://github.com/Alamofire/Alamofire
+    ref: master
+    frameworks:
+      - swift-testing
+      - xctest
+
+  - name: quick-command-buttons
+    url: https://github.com/KubrickCode/Quick-Command-Buttons
+    ref: main
+    frameworks:
+      - playwright
+      - vitest
+    complex: true
+
+  - name: github-project-status-viewer
+    url: https://github.com/KubrickCode/github-project-status-viewer
+    ref: main
+    frameworks:
+      - go-testing
+      - vitest
+    complex: true
+
+  - name: loa-work
+    url: https://github.com/KubrickCode/loa-work
+    ref: main
+    frameworks:
+      - go-testing
+      - playwright
+      - vitest
+    complex: true
+
+  - name: specvital-web
+    url: https://github.com/specvital/web
+    ref: v1.1.2
+    frameworks:
+      - go-testing
+      - vitest
+    complex: true

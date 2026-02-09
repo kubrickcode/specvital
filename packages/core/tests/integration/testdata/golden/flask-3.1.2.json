@@ -1,0 +1,136 @@
+{
+  "repository": "flask",
+  "ref": "3.1.2",
+  "expectedFrameworks": ["pytest"],
+  "fileCount": 45,
+  "testCount": 389,
+  "frameworkCounts": {
+    "pytest": 45
+  },
+  "sampleFiles": [
+    {
+      "path": "examples/javascript/tests/test_js_example.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "examples/tutorial/tests/test_auth.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 5
+    },
+    {
+      "path": "examples/tutorial/tests/test_blog.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 8
+    },
+    {
+      "path": "examples/tutorial/tests/test_db.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "examples/tutorial/tests/test_factory.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 2
+    },
+    {
+      "path": "tests/test_appctx.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 14
+    },
+    {
+      "path": "tests/test_apps/blueprintapp/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/blueprintapp/apps/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/blueprintapp/apps/admin/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/cliapp/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/cliapp/app.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/cliapp/factory.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/cliapp/importerrorapp.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/cliapp/inner1/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/cliapp/inner1/inner2/__init__.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/cliapp/inner1/inner2/flask.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/cliapp/multiapp.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/helloworld/hello.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    },
+    {
+      "path": "tests/test_apps/helloworld/wsgi.py",
+      "framework": "pytest",
+      "suiteCount": 0,
+      "testCount": 0
+    }
+  ],
+  "stats": {
+    "filesMatched": 45,
+    "filesScanned": 45
+  }
+}
