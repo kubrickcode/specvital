@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.3](https://github.com/specvital/web/compare/v1.6.2...v1.6.3) (2026-02-09)
+
+### 🔧 Maintenance
+
+#### 🔧 Internal Fixes
+
+- **infra:** set Railway deploy region to US East ([db548d2](https://github.com/specvital/web/commit/db548d204eb6f32bc7f316c019e6dc8bf38bcdf6))
+
 ## [1.6.2](https://github.com/specvital/web/compare/v1.6.1...v1.6.2) (2026-02-05)
 
 ### 🎯 Highlights
