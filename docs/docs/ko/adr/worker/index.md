@@ -1,0 +1,32 @@
+---
+title: Worker ADR
+description: 워커 서비스(백그라운드 분석 워커) 아키텍처 의사결정 기록
+---
+
+# Worker 리포지토리 ADR
+
+> 🇺🇸 [English Version](/en/adr/worker/)
+
+[specvital/worker](https://github.com/specvital/worker) 리포지토리 (워커 서비스)의 아키텍처 의사결정 기록.
+
+## ADR 목록
+
+| #   | 제목                                                                         | 날짜       |
+| --- | ---------------------------------------------------------------------------- | ---------- |
+| 01  | [스케줄 기반 재분석 아키텍처](./01-scheduled-recollection.md)                | 2024-12-18 |
+| 02  | [Clean Architecture 레이어 도입](./02-clean-architecture-layers.md)          | 2024-12-18 |
+| 03  | [Graceful Shutdown 및 Context 기반 생명주기 관리](./03-graceful-shutdown.md) | 2024-12-18 |
+| 04  | [OAuth 토큰 Graceful Degradation](./04-oauth-token-graceful-degradation.md)  | 2024-12-18 |
+| 05  | [Analyzer-Scheduler 프로세스 분리](./05-worker-scheduler-separation.md)      | 2024-12-18 |
+| 06  | [Semaphore 기반 Clone 동시성 제어](./06-semaphore-clone-concurrency.md)      | 2024-12-18 |
+| 07  | [Repository 패턴 데이터 접근 추상화](./07-repository-pattern.md)             | 2024-12-18 |
+| 08  | [SpecView Worker 바이너리 분리](./08-specview-worker-separation.md)          | 2026-01-13 |
+| 09  | [Phase 1 V1 품질 개선 아키텍처](./09-phase1-v1-quality-enhancement.md)       | 2026-02-04 |
+| 10  | [사용자별 공정성 미들웨어](./10-per-user-fairness-middleware.md)             | 2026-02-02 |
+| 11  | [보존 기간 기반 데이터 정리 서비스](./11-data-retention-cleanup.md)          | 2026-02-02 |
+| 12  | [Phase 2 행동 캐시](./12-phase2-behavior-cache.md)                           | 2026-01-24 |
+
+## 관련 문서
+
+- [전체 ADR](/ko/adr/)
+- [Worker PRD](/ko/prd/04-worker-service.md)

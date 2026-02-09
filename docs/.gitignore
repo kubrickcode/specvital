@@ -1,0 +1,12 @@
+.env
+.pnpm-store
+node_modules
+.claude/settings.local.json
+.claude-sessions/
+.claude-session-config.json
+docs/work/
+.local
+
+# VitePress
+docs/.vitepress/dist
+docs/.vitepress/cache

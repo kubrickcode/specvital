@@ -1,0 +1,85 @@
+# public.github_organizations
+
+## Description
+
+## Columns
+
+| Name          | Type                     | Default           | Nullable | Children                                                                                                                                          | Parents | Comment |
+| ------------- | ------------------------ | ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------- |
+| id            | uuid                     | gen_random_uuid() | false    | [public.user_github_org_memberships](public.user_github_org_memberships.md) [public.user_github_repositories](public.user_github_repositories.md) |         |         |
+| github_org_id | bigint                   |                   | false    |                                                                                                                                                   |         |         |
+| login         | varchar(255)             |                   | false    |                                                                                                                                                   |         |         |
+| avatar_url    | text                     |                   | true     |                                                                                                                                                   |         |         |
+| html_url      | text                     |                   | true     |                                                                                                                                                   |         |         |
+| description   | text                     |                   | true     |                                                                                                                                                   |         |         |
+| created_at    | timestamp with time zone | now()             | false    |                                                                                                                                                   |         |         |
+| updated_at    | timestamp with time zone | now()             | false    |                                                                                                                                                   |         |         |
+
+## Constraints
+
+| Name                                  | Type        | Definition             |
+| ------------------------------------- | ----------- | ---------------------- |
+| github_organizations_pkey             | PRIMARY KEY | PRIMARY KEY (id)       |
+| uq_github_organizations_github_org_id | UNIQUE      | UNIQUE (github_org_id) |
+
+## Indexes
+
+| Name                                  | Definition                                                                                                           |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| github_organizations_pkey             | CREATE UNIQUE INDEX github_organizations_pkey ON public.github_organizations USING btree (id)                        |
+| uq_github_organizations_github_org_id | CREATE UNIQUE INDEX uq_github_organizations_github_org_id ON public.github_organizations USING btree (github_org_id) |
+| idx_github_organizations_login        | CREATE INDEX idx_github_organizations_login ON public.github_organizations USING btree (login)                       |
+
+## Relations
+
+```mermaid
+erDiagram
+
+"public.user_github_org_memberships" }o--|| "public.github_organizations" : "FOREIGN KEY (org_id) REFERENCES github_organizations(id) ON DELETE CASCADE"
+"public.user_github_repositories" }o--o| "public.github_organizations" : "FOREIGN KEY (org_id) REFERENCES github_organizations(id) ON DELETE CASCADE"
+
+"public.github_organizations" {
+  uuid id
+  bigint github_org_id
+  varchar_255_ login
+  text avatar_url
+  text html_url
+  text description
+  timestamp_with_time_zone created_at
+  timestamp_with_time_zone updated_at
+}
+"public.user_github_org_memberships" {
+  uuid id
+  uuid user_id FK
+  uuid org_id FK
+  varchar_50_ role
+  timestamp_with_time_zone created_at
+  timestamp_with_time_zone updated_at
+}
+"public.user_github_repositories" {
+  uuid id
+  uuid user_id FK
+  bigint github_repo_id
+  varchar_255_ name
+  varchar_500_ full_name
+  text html_url
+  text description
+  varchar_100_ default_branch
+  varchar_50_ language
+  varchar_20_ visibility
+  boolean is_private
+  boolean archived
+  boolean disabled
+  boolean fork
+  integer stargazers_count
+  timestamp_with_time_zone pushed_at
+  varchar_20_ source_type
+  uuid org_id FK
+  timestamp_with_time_zone created_at
+  timestamp_with_time_zone updated_at
+}
+```
+
+---
+
+> Generated by [tbls](https://github.com/k1LoW/tbls)
