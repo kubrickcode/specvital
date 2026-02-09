@@ -43,11 +43,11 @@ User → Enter GitHub URL
 
 ## Communication Patterns
 
-| Path               | Method        |
-| ------------------ | ------------- |
+| Path                | Method        |
+| ------------------- | ------------- |
 | Frontend ↔ Backend | REST/HTTP     |
-| Backend → Worker   | Message queue |
-| Worker → Core      | Library call  |
+| Backend → Worker    | Message queue |
+| Worker → Core       | Library call  |
 
 ## Scaling Strategy
 

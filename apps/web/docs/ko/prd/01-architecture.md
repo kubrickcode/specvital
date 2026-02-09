@@ -43,11 +43,11 @@ description: Specvital 시스템 아키텍처 및 서비스 구성
 
 ## 통신 패턴
 
-| 구간               | 방식            |
-| ------------------ | --------------- |
+| 구간                | 방식            |
+| ------------------- | --------------- |
 | Frontend ↔ Backend | REST/HTTP       |
-| Backend → Worker   | 메시지 큐       |
-| Worker → Core      | 라이브러리 호출 |
+| Backend → Worker    | 메시지 큐       |
+| Worker → Core       | 라이브러리 호출 |
 
 ## 확장 전략
 
