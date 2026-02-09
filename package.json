@@ -1,6 +1,6 @@
 {
   "name": "specvital-worker",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Background job processing service for SpecVital",
   "repository": {
     "type": "git",
