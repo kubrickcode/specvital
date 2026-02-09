@@ -1,0 +1,9 @@
+.env
+.pnpm-store
+node_modules
+docs/work
+.claude/settings.local.json
+.claude-sessions/
+.claude-session-config.json
+tmp
+coverage.out

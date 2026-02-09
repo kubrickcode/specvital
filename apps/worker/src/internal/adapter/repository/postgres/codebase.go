@@ -1,0 +1,225 @@
+package postgres
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/specvital/worker/internal/domain/analysis"
+	"github.com/specvital/worker/internal/infra/db"
+)
+
+var _ analysis.CodebaseRepository = (*CodebaseRepository)(nil)
+
+type CodebaseRepository struct {
+	pool *pgxpool.Pool
+}
+
+func NewCodebaseRepository(pool *pgxpool.Pool) *CodebaseRepository {
+	return &CodebaseRepository{pool: pool}
+}
+
+func (r *CodebaseRepository) FindByExternalID(ctx context.Context, host, externalRepoID string) (*analysis.Codebase, error) {
+	queries := db.New(r.pool)
+
+	row, err := queries.FindCodebaseByExternalID(ctx, db.FindCodebaseByExternalIDParams{
+		Host:           host,
+		ExternalRepoID: externalRepoID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, analysis.ErrCodebaseNotFound
+		}
+		return nil, fmt.Errorf("find codebase by external ID: %w", err)
+	}
+
+	return mapCodebase(row), nil
+}
+
+func (r *CodebaseRepository) FindByOwnerName(ctx context.Context, host, owner, name string) (*analysis.Codebase, error) {
+	queries := db.New(r.pool)
+
+	row, err := queries.FindCodebaseByOwnerName(ctx, db.FindCodebaseByOwnerNameParams{
+		Host:  host,
+		Owner: owner,
+		Name:  name,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, analysis.ErrCodebaseNotFound
+		}
+		return nil, fmt.Errorf("find codebase by owner/name: %w", err)
+	}
+
+	return mapCodebase(row), nil
+}
+
+func (r *CodebaseRepository) MarkStale(ctx context.Context, id analysis.UUID) error {
+	queries := db.New(r.pool)
+
+	err := queries.MarkCodebaseStale(ctx, toPgUUID(id))
+	if err != nil {
+		return fmt.Errorf("mark codebase stale: %w", err)
+	}
+
+	return nil
+}
+
+func (r *CodebaseRepository) MarkStaleAndUpsert(ctx context.Context, staleID analysis.UUID, params analysis.UpsertCodebaseParams) (*analysis.Codebase, error) {
+	if err := params.Validate(); err != nil {
+		return nil, err
+	}
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("begin transaction: %w", err)
+	}
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+			slog.ErrorContext(ctx, "failed to rollback transaction",
+				"operation", "MarkStaleAndUpsert",
+				"error", rbErr,
+				"stale_id", staleID,
+				"owner", params.Owner,
+				"name", params.Name,
+			)
+		}
+	}()
+
+	queries := db.New(tx)
+
+	if err := queries.MarkCodebaseStale(ctx, toPgUUID(staleID)); err != nil {
+		return nil, fmt.Errorf("mark codebase stale: %w", err)
+	}
+
+	row, err := queries.UpsertCodebase(ctx, db.UpsertCodebaseParams{
+		Host:           params.Host,
+		Owner:          params.Owner,
+		Name:           params.Name,
+		DefaultBranch:  pgtype.Text{String: params.DefaultBranch, Valid: params.DefaultBranch != ""},
+		ExternalRepoID: params.ExternalRepoID,
+		IsPrivate:      params.IsPrivate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("upsert codebase: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return mapCodebase(row), nil
+}
+
+func (r *CodebaseRepository) UnmarkStale(ctx context.Context, id analysis.UUID, owner, name string) (*analysis.Codebase, error) {
+	queries := db.New(r.pool)
+
+	row, err := queries.UnmarkCodebaseStale(ctx, db.UnmarkCodebaseStaleParams{
+		ID:    toPgUUID(id),
+		Owner: owner,
+		Name:  name,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, analysis.ErrCodebaseNotFound
+		}
+		return nil, fmt.Errorf("unmark codebase stale: %w", err)
+	}
+
+	return mapCodebase(row), nil
+}
+
+func (r *CodebaseRepository) UpdateOwnerName(ctx context.Context, id analysis.UUID, owner, name string) (*analysis.Codebase, error) {
+	queries := db.New(r.pool)
+
+	row, err := queries.UpdateCodebaseOwnerName(ctx, db.UpdateCodebaseOwnerNameParams{
+		ID:    toPgUUID(id),
+		Owner: owner,
+		Name:  name,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, analysis.ErrCodebaseNotFound
+		}
+		return nil, fmt.Errorf("update codebase owner/name: %w", err)
+	}
+
+	return mapCodebase(row), nil
+}
+
+func (r *CodebaseRepository) UpdateVisibility(ctx context.Context, id analysis.UUID, isPrivate bool) error {
+	queries := db.New(r.pool)
+
+	err := queries.UpdateCodebaseVisibility(ctx, db.UpdateCodebaseVisibilityParams{
+		ID:        toPgUUID(id),
+		IsPrivate: isPrivate,
+	})
+	if err != nil {
+		return fmt.Errorf("update codebase visibility: %w", err)
+	}
+
+	return nil
+}
+
+func (r *CodebaseRepository) FindWithLastCommit(ctx context.Context, host, owner, name string) (*analysis.Codebase, error) {
+	queries := db.New(r.pool)
+
+	row, err := queries.FindCodebaseWithLastCommitByOwnerName(ctx, db.FindCodebaseWithLastCommitByOwnerNameParams{
+		Host:  host,
+		Owner: owner,
+		Name:  name,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, analysis.ErrCodebaseNotFound
+		}
+		return nil, fmt.Errorf("find codebase with last commit: %w", err)
+	}
+
+	return &analysis.Codebase{
+		ExternalRepoID: row.ExternalRepoID,
+		Host:           row.Host,
+		ID:             fromPgUUID(row.ID),
+		IsStale:        row.IsStale,
+		LastCommitSHA:  row.LastCommitSha,
+		Name:           row.Name,
+		Owner:          row.Owner,
+	}, nil
+}
+
+func (r *CodebaseRepository) Upsert(ctx context.Context, params analysis.UpsertCodebaseParams) (*analysis.Codebase, error) {
+	if err := params.Validate(); err != nil {
+		return nil, err
+	}
+
+	queries := db.New(r.pool)
+
+	row, err := queries.UpsertCodebase(ctx, db.UpsertCodebaseParams{
+		Host:           params.Host,
+		Owner:          params.Owner,
+		Name:           params.Name,
+		DefaultBranch:  pgtype.Text{String: params.DefaultBranch, Valid: params.DefaultBranch != ""},
+		ExternalRepoID: params.ExternalRepoID,
+		IsPrivate:      params.IsPrivate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("upsert codebase: %w", err)
+	}
+
+	return mapCodebase(row), nil
+}
+
+func mapCodebase(row db.Codebasis) *analysis.Codebase {
+	return &analysis.Codebase{
+		ExternalRepoID: row.ExternalRepoID,
+		Host:           row.Host,
+		ID:             fromPgUUID(row.ID),
+		IsStale:        row.IsStale,
+		Name:           row.Name,
+		Owner:          row.Owner,
+	}
+}
