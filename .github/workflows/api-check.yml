@@ -1,0 +1,57 @@
+name: API Type Check
+
+on:
+  pull_request:
+    types: [synchronize, opened, reopened, unlocked]
+    paths:
+      - "apps/web/src/backend/api/**"
+      - "apps/web/src/backend/internal/api/**"
+      - "apps/web/src/frontend/lib/api/generated-types.ts"
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/src/backend/api/**"
+      - "apps/web/src/backend/internal/api/**"
+      - "apps/web/src/frontend/lib/api/generated-types.ts"
+  workflow_dispatch:
+
+jobs:
+  api-type-check:
+    name: Verify API Types Are in Sync
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.24"
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.18.0"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: extractions/setup-just@v3
+
+      - name: Install oapi-codegen
+        run: go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.5.1
+
+      - name: Install frontend dependencies
+        run: just deps-frontend
+
+      - name: Regenerate API types
+        run: just gen-api
+
+      - name: Check for uncommitted changes
+        run: |
+          if ! git diff --exit-code; then
+            echo "API types are out of sync!"
+            echo "Run 'just gen-api' locally and commit the changes."
+            exit 1
+          fi

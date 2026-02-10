@@ -1,0 +1,33 @@
+name: Core Tests
+
+on:
+  pull_request:
+    types: [synchronize, opened, reopened, unlocked]
+    paths:
+      - "packages/core/src/**"
+      - "packages/core/pkg/**"
+  push:
+    branches: [main]
+    paths:
+      - "packages/core/src/**"
+      - "packages/core/pkg/**"
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/core
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.24"
+
+      - uses: extractions/setup-just@v3
+
+      - name: Run tests
+        run: just test unit

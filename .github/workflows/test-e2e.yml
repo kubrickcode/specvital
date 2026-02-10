@@ -2,28 +2,23 @@ name: E2E Tests
 
 on:
   pull_request:
-    types:
-      - synchronize
-      - opened
-      - reopened
-      - unlocked
+    types: [synchronize, opened, reopened, unlocked]
     paths:
-      - "src/frontend/**"
-      - "src/backend/**"
-      - "e2e/**"
-      - "playwright.config.ts"
-      - ".github/workflows/e2e-tests.yml"
-      - "justfile"
+      - "apps/web/src/frontend/**"
+      - "apps/web/src/backend/**"
+      - "apps/web/e2e/**"
+      - "apps/web/playwright.config.ts"
+      - ".github/workflows/test-e2e.yml"
+      - "apps/web/justfile"
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - "src/frontend/**"
-      - "src/backend/**"
-      - "e2e/**"
-      - "playwright.config.ts"
-      - ".github/workflows/e2e-tests.yml"
-      - "justfile"
+      - "apps/web/src/frontend/**"
+      - "apps/web/src/backend/**"
+      - "apps/web/e2e/**"
+      - "apps/web/playwright.config.ts"
+      - ".github/workflows/test-e2e.yml"
+      - "apps/web/justfile"
   workflow_dispatch:
 
 jobs:
@@ -35,6 +30,9 @@ jobs:
       matrix:
         shardIndex: [1, 2, 3, 4]
         shardTotal: [4]
+    defaults:
+      run:
+        working-directory: apps/web
 
     services:
       postgres:
@@ -52,26 +50,21 @@ jobs:
           - 5432:5432
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.24"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "22.18.0"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 9.15.0
 
-      - name: Setup Just
-        uses: extractions/setup-just@v2
+      - uses: extractions/setup-just@v3
 
       - name: Install PostgreSQL client
         run: just install-psql
@@ -115,23 +108,18 @@ jobs:
         run: just test-e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
         env:
           CI: true
-          # Database
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/specvital_test?sslmode=disable
           LOCAL_DATABASE_URL: postgres://postgres:postgres@localhost:5432/specvital_test?sslmode=disable
-          # Server
           PORT: 8000
           ENV: test
           ALLOWED_ORIGINS: http://localhost:5173
           FRONTEND_URL: http://localhost:5173
-          # Auth (test values)
           JWT_SECRET: test-jwt-secret-key-for-e2e-tests-min-32-chars
           ENCRYPTION_KEY: dGVzdC1lbmNyeXB0aW9uLWtleS1lMmUtdGVzdHMhISE=
           SECURE_COOKIE: false
-          # GitHub OAuth (dummy values for test - not used in mocked tests)
           GITHUB_OAUTH_CLIENT_ID: test-client-id
           GITHUB_OAUTH_CLIENT_SECRET: test-client-secret
           GITHUB_OAUTH_REDIRECT_URL: http://localhost:8000/api/auth/callback
-          # GitHub App (dummy values for test - required for server startup)
           GITHUB_APP_ID: 123456
           GITHUB_APP_SLUG: specvital-test
           GITHUB_APP_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDKke2JurUde398\nXp0TuXXCHZ61HIa8W2TUoTdFkk+TxaOtQFeJTZu+t62WbTrbIwUjLlOMgtvBEYEI\nqOpG1rBWaX7P6qhz2QIbksFKyuOZbT6d7mMeUJkk06gSdTOZtVHK/0JL/oK9dVNi\ni/DD0zy/wFq22G5C7pmBHlgg4A3ToiKdWDPKYTl+7PlGYvshxAeI7BZGeOIQCi5H\no/jCnW6kHae7Mdx3GhRXH9Z7xkHHOyOcJKuUsa8KkBCuSpT0XLlrw88PjOta9kU7\nwEPZTxZijAW0BqVlaOzbNZdNGpww8wfT5zUoV/oZYlCHZn6T1aPITqFuir15H8WP\n+lDP7tJrAgMBAAECggEACn/35Qy1eJq/J+4rjCsvzGkGofKhlT/TgSX+HHASCeHT\nsxZDs00/hmo06DgvNc6h5InxMLZTt7U1kAJZamSUbVY4iYRrSN31uwInXL4ZgAlm\nln8Vyit5VKxX6OUEULJSVAhZImFF25YqRVBloXDglDvfN90OEhAWCthMzx9t+As2\nx4YckBwOIzJ/HeGcF2Z4lC2vcvfWsoeULtlEZHa6Xi88Kx9oA1q/f7XqXzDulkro\nbRFrZFl863w5OmffxwQaIMKDhwym/f2SG1mgUdt5QDu7n4DN6xU7Timr4Bw9fhBf\nqB1XNvyQJLCrD5psDgnXT+lzNMIXKU+W9qLqlg1xmQKBgQDu9xAyHuqRY5tTUYLY\nzVKvJLa1O13+ZtTHg++NtJor25Fi3uRyU4HrlncmisOSx4xkRH8GBpJJ8keWmbR9\nVuKmDOExOCBC2Rmj2HMWebTa5dlNm/NN/4FQdEcmySnRGvf6TRvUIKW3BpiOH+F6\nXCLAZV6jrPcMKcpcWhEW52d8rwKBgQDZAq59i8P1QcfKQHua5/TZ4yvWGsIjw92N\nd7UUCJPj/IBV3XcA4NfGTAt6k/4acjGE8JC8tVG3KiH9PF52WgnHCm7XTJi9teTD\nFH6QNcr7hyyp1UYaSgKPj6C9ZlCuk53tnLl+ZWLlwgQIKvf3mP9HCCVWcJ4F6Nyp\noHrhqdONBQKBgQDG1KeTLIo8QsbAwre+sMi1ljS4AxeoT+OHxs2R+M225FDKFW+7\neKRHY8DsPtWP0Z2M6DlQyDL8eCz8sBOvnpWjWGAfVfXx6TYeUEEiWE4VPN5cZwBA\ny/HLAZUaPpMeu/PNPk+DZ067RS+2QeyYpQT9VNs0EPzWEAeiZAaIKi6/XQKBgGSw\nYdXOq7V4OAMXuEI/rdQLG6PT9pAxqPKiwFnzQOtflQxCHZ1CtdtEHW9ai2Qp5+AO\n3pkwaCHcYrjk8c9oJ3E63gL3f0dGxkXdlHvE+dGK/qYuVsCL5nRF6Ab5GiZmR7ig\nJ1EGKcUBKG3BwhwX2RpUJT7eMfP7/6aU128tJQMhAoGBAMFYmsi89PJIfl6tP188\nwKp/YVOTrRw7/9cV+Z7xlMUliNtL6Rl/KJBr1hBE3xYRTSYen2tQm+nfv/3stPPY\n74kEOJbO92DO95JJeoun6BhwckXHfKEIiLA3oGaX/BKpkJnivR65B5h4igfypU/p\nesigFWjXEXEC+fKxjm/oadqG\n-----END PRIVATE KEY-----"
@@ -142,7 +130,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: blob-report-${{ matrix.shardIndex }}
-          path: blob-report/
+          path: apps/web/blob-report/
           retention-days: 1
 
   e2e-report-merge:
@@ -151,18 +139,15 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "22.18.0"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 9.15.0
 
       - name: Install dependencies
         run: pnpm install
@@ -171,15 +156,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: blob-report-*
-          path: all-blob-reports
+          path: apps/web/all-blob-reports
           merge-multiple: true
 
       - name: Merge reports
-        run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
+        working-directory: apps/web
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
 
       - name: Upload merged report
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report/
+          path: apps/web/playwright-report/
           retention-days: 7

@@ -1,0 +1,31 @@
+name: Web Backend Tests
+
+on:
+  pull_request:
+    types: [synchronize, opened, reopened, unlocked]
+    paths:
+      - "apps/web/src/backend/**"
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/src/backend/**"
+  workflow_dispatch:
+
+jobs:
+  backend-tests:
+    name: Run Backend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.24"
+
+      - uses: extractions/setup-just@v3
+
+      - name: Run tests
+        run: just test backend

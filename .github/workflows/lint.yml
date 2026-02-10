@@ -1,21 +1,26 @@
-name: Lint Code
+name: Lint
 
 on:
   pull_request:
-    types:
-      - synchronize
-      - opened
-      - reopened
-      - unlocked
+    types: [synchronize, opened, reopened, unlocked]
     paths:
+      - "**/*.go"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "**/*.ts"
+      - "**/*.tsx"
       - "**/*.json"
       - "**/*.yml"
       - "**/*.yaml"
       - "**/*.md"
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
+      - "**/*.go"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "**/*.ts"
+      - "**/*.tsx"
       - "**/*.json"
       - "**/*.yml"
       - "**/*.yaml"
@@ -24,19 +29,16 @@ on:
 
 jobs:
   lint-config:
-    name: Lint Config Files
+    name: Config Files
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
+      - uses: actions/checkout@v4
 
-      - name: Setup Node 22
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: "22.18.0"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9.15.0
 
@@ -45,5 +47,46 @@ jobs:
       - name: Install dependencies
         run: just deps-root
 
-      - name: Lint Config Files
+      - name: Lint
         run: just lint config
+
+  lint-go:
+    name: Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.24"
+
+      - uses: extractions/setup-just@v3
+
+      - name: Lint
+        run: just lint go
+
+  lint-web-frontend:
+    name: Web Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.18.0"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: extractions/setup-just@v3
+
+      - name: Install root dependencies
+        run: just deps-root
+
+      - name: Install frontend dependencies
+        working-directory: apps/web
+        run: just deps-frontend
+
+      - name: Lint
+        run: just lint web-frontend
