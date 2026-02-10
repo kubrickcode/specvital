@@ -6,11 +6,11 @@ WORKDIR /app
 
 RUN apk add --no-cache git gcc musl-dev
 
-COPY src/go.mod src/go.sum ./
+COPY apps/worker/src/go.mod apps/worker/src/go.sum ./
 
 RUN go mod download
 
-COPY src/ ./
+COPY apps/worker/src/ ./
 
 RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w" -o /service ./cmd/retention-cleanup
 

@@ -125,6 +125,45 @@ networks:
    - Creates GitHub release
 4. Release branch syncs back to main
 
+## Railway Deployment
+
+All Railway deployment configs are centralized under `infra/railway/`.
+
+### Directory Structure
+
+```
+infra/railway/
+├── web-backend/        # Go API server
+├── analyzer/           # Test file analysis worker
+├── spec-generator/     # AI spec document generation worker
+└── retention-cleanup/  # Scheduled data cleanup (cron)
+```
+
+### Per-Service Files
+
+| File           | Purpose                                              |
+| -------------- | ---------------------------------------------------- |
+| `railway.json` | Railway build/deploy config (dockerfilePath, region) |
+| `Dockerfile`   | Multi-stage Go build (build context = repo root)     |
+
+### Deployment Mechanism
+
+CI copies `railway.json` to repo root before `railway up`:
+
+```bash
+cp infra/railway/<service>/railway.json railway.json
+railway up --service <service> --detach
+rm railway.json
+```
+
+`dockerfilePath` in `railway.json` points to `infra/railway/<service>/Dockerfile` (repo root relative).
+Dockerfile `COPY` paths use `apps/web/...` or `apps/worker/...` prefixes (repo root as build context).
+
+### Workflows
+
+- `.github/workflows/release/deploy-web.yml` - web-backend deployment
+- `.github/workflows/release/deploy-workers.yml` - worker services (matrix: analyzer, spec-generator, retention-cleanup)
+
 ## Project-Specific Rules
 
 ### River Queue Integration
