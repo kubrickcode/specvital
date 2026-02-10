@@ -95,9 +95,6 @@ run-spec-generator:
 run-retention-cleanup:
     cd src && go run ./cmd/retention-cleanup
 
-sync-docs:
-    baedal specvital/specvital.github.io/docs docs --exclude ".vitepress/**"
-
 test target="all":
     #!/usr/bin/env bash
     set -euo pipefail

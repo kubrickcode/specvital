@@ -306,12 +306,6 @@
           "terminalName": "bootstrap"
         },
         {
-          "command": "cd apps/web && just sync-docs",
-          "name": "Sync Docs",
-          "shortcut": "y",
-          "terminalName": "sync-docs"
-        },
-        {
           "command": "cd packages/core && just snapshot-update",
           "name": "Snapshot Update",
           "shortcut": "n",

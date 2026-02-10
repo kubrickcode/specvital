@@ -70,7 +70,7 @@ The `infra` repository contains only shared database schemas and infrastructure 
 
 **Step 2: Update Sidebar Navigation**
 
-- Update `docs/.vitepress/config.mts` - add to sidebar configuration
+- Update `.vitepress/config.mts` - add to sidebar configuration
 
 **Step 3: Update Index Files (COMPLETE CHECKLIST)**
 

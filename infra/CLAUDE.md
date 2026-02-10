@@ -43,9 +43,6 @@ just river-install       # Install River CLI
 just river-dump          # Export River migration SQL
 just river-migrate name  # Create River migration files
 
-# Documentation
-just sync-docs           # Sync docs to specvital.github.io via baedal
-
 # Schema Visualization
 just erd                 # Interactive ERD in browser (Atlas)
 just install-tbls        # Install tbls (required for schema-doc)

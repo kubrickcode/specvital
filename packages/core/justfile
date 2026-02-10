@@ -16,9 +16,6 @@ snapshot-update repo="all":
     fi
     npx prettier --write --cache "**/*.{json,yml,yaml,md}"
 
-sync-docs:
-    baedal specvital/specvital.github.io/docs docs --exclude ".vitepress/**"
-
 test target="all":
     #!/usr/bin/env bash
     set -euox pipefail

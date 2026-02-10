@@ -35,9 +35,6 @@ reset:
     psql "$DATABASE_URL" -c "DROP SCHEMA IF EXISTS atlas_schema_revisions CASCADE; DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
     cd db && atlas migrate apply --env local --allow-dirty
 
-sync-docs:
-    baedal specvital/specvital.github.io/docs docs --exclude ".vitepress/**"
-
 erd:
     cd db && atlas schema inspect --env local --web
 
