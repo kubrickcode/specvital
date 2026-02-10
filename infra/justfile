@@ -2,45 +2,7 @@ set dotenv-load := true
 
 root_dir := justfile_directory()
 
-deps: deps-root install-tbls
-
-deps-root:
-    pnpm install
-
-lint target="all":
-    #!/usr/bin/env bash
-    set -euox pipefail
-    case "{{ target }}" in
-      all)
-        just lint justfile
-        just lint config
-        ;;
-      justfile)
-        just --fmt --unstable
-        ;;
-      config)
-        npx prettier --cache --write "**/*.{json,yml,yaml,md}"
-        ;;
-      *)
-        echo "Unknown target: {{ target }}"
-        exit 1
-        ;;
-    esac
-
-lint-file file:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    case "{{ file }}" in
-      */justfile|justfile)
-        just --fmt --unstable
-        ;;
-      *.json|*.yml|*.yaml|*.md)
-        npx prettier --cache --write "{{ file }}"
-        ;;
-      *)
-        echo "No lint rule for: {{ file }}"
-        ;;
-    esac
+deps: install-tbls
 
 makemigration name="changes":
     #!/usr/bin/env bash

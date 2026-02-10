@@ -7,11 +7,6 @@ bootstrap: install-docker install-psql install-sqlc
 clean-containers:
     docker ps -a --filter "label=org.testcontainers=true" -q | xargs -r docker rm -f
 
-deps: deps-root
-
-deps-root:
-    pnpm install
-
 dump-schema:
     PGPASSWORD=postgres pg_dump -h specvital-postgres -U postgres -d specvital --schema-only --no-owner --no-privileges -n public | grep -v '^\\\|^SET \|^SELECT ' > src/internal/infra/db/schema.sql
     cp src/internal/infra/db/schema.sql src/internal/testutil/postgres/schema.sql
@@ -60,49 +55,6 @@ install-railway:
 
 install-sqlc:
     go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.28.0
-
-lint target="all":
-    #!/usr/bin/env bash
-    set -euox pipefail
-    case "{{ target }}" in
-      all)
-        just lint justfile
-        just lint config
-        just lint go
-        ;;
-      justfile)
-        just --fmt --unstable
-        ;;
-      config)
-        npx prettier --write --cache "**/*.{json,yml,yaml,md}"
-        ;;
-      go)
-        gofmt -w src
-        ;;
-      *)
-        echo "Unknown target: {{ target }}"
-        exit 1
-        ;;
-    esac
-
-lint-file file:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    case "{{ file }}" in
-      */justfile|*Justfile)
-        just --fmt --unstable
-        ;;
-      *.json|*.yml|*.yaml|*.md)
-        npx prettier --write --cache "{{ file }}"
-        ;;
-      *.go)
-        gofmt -w "{{ file }}"
-        go vet "{{ file }}" 2>/dev/null || true
-        ;;
-      *)
-        echo "No lint rule for: {{ file }}"
-        ;;
-    esac
 
 # Local db migration always initializes the database
 migrate-local:

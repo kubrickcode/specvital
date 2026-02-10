@@ -4,10 +4,7 @@ root_dir := justfile_directory()
 
 bootstrap: install-psql install-sqlc install-playwright install-oapi-codegen
 
-deps: deps-root deps-frontend
-
-deps-root:
-    pnpm install
+deps: deps-frontend
 
 deps-frontend:
     cd src/frontend && pnpm install
@@ -43,66 +40,9 @@ install-sqlc:
 install-oapi-codegen:
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.5.1
 
-kill-port port:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    pid=$(ss -tlnp | grep ":{{ port }} " | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -1)
-    if [ -n "$pid" ]; then
-        echo "Killing process $pid on port {{ port }}"
-        kill -9 $pid
-    else
-        echo "No process found on port {{ port }}"
-    fi
-
-lint target="all":
-    #!/usr/bin/env bash
-    set -euox pipefail
-    case "{{ target }}" in
-      all)
-        just lint justfile
-        just lint config
-        just lint backend
-        just lint frontend
-        ;;
-      justfile)
-        just --fmt --unstable
-        ;;
-      config)
-        npx prettier --write --cache "**/*.{json,yml,yaml,md}"
-        ;;
-      backend)
-        gofmt -w src/backend
-        ;;
-      frontend)
-        npx prettier --write --cache "src/frontend/**/*.{ts,tsx}"
-        cd src/frontend && pnpm eslint --fix --max-warnings=0 .
-        ;;
-      *)
-        echo "Unknown target: {{ target }}"
-        exit 1
-        ;;
-    esac
-
-lint-file file:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    case "{{ file }}" in
-      */justfile|*Justfile)
-        just --fmt --unstable
-        ;;
-      *.json|*.yml|*.yaml|*.md)
-        npx prettier --write --cache "{{ file }}"
-        ;;
-      *.ts|*.tsx)
-        npx prettier --write --cache "{{ file }}"
-        cd src/frontend && pnpm eslint --fix "{{ justfile_directory() }}/{{ file }}" 2>/dev/null || true
-        ;;
-      *.go)
-        gofmt -w "{{ file }}"
-        ;;
-      *)
-        ;;
-    esac
+lint-frontend:
+    npx prettier --write --cache "src/frontend/**/*.{ts,tsx}"
+    cd src/frontend && pnpm eslint --fix --max-warnings=0 .
 
 typecheck-file file:
     #!/usr/bin/env bash

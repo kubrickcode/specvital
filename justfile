@@ -33,6 +33,7 @@ lint-file file:
         ;;
       *.go)
         gofmt -w "{{ file }}"
+        go vet "$(dirname '{{ file }}')/..."
         ;;
       *)
         ;;
@@ -45,12 +46,20 @@ lint target="all":
       all)
         just lint justfile
         just lint config
+        just lint go
+        just lint web-frontend
         ;;
       justfile)
         just --fmt --unstable
         ;;
       config)
-        npx prettier --write "**/*.{json,yml,yaml,md}"
+        npx prettier --write --cache "**/*.{json,yml,yaml,md}"
+        ;;
+      go)
+        gofmt -w .
+        ;;
+      web-frontend)
+        cd apps/web && just lint-frontend
         ;;
       *)
         echo "Unknown target: {{ target }}"
