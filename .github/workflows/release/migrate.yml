@@ -1,16 +1,10 @@
 name: Database Migration
 
 on:
-  push:
-    branches:
-      - release
-    paths:
-      - "db/schema/migrations/**"
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   migrate:
-    name: Apply Database Migrations
     runs-on: ubuntu-latest
     environment: production
 
@@ -20,13 +14,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
 
       - name: Validate Configuration
-        working-directory: db
+        working-directory: infra/db
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
@@ -34,7 +28,7 @@ jobs:
           atlas migrate validate --env production
 
       - name: Check Migration Status (Pre-Apply)
-        working-directory: db
+        working-directory: infra/db
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
@@ -42,14 +36,14 @@ jobs:
           atlas migrate status --env production || echo "No migrations applied yet or status check failed"
 
       - name: Apply Migrations
-        working-directory: db
+        working-directory: infra/db
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: atlas migrate apply --env production --allow-dirty
 
       - name: Verify Migration Status
         if: success()
-        working-directory: db
+        working-directory: infra/db
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |

@@ -1,0 +1,36 @@
+name: Deploy Workers
+
+on:
+  workflow_call:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        service: [analyzer, spec-generator, retention-cleanup]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Set service environment variables
+        if: matrix.service == 'spec-generator'
+        run: |
+          railway variables --set "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" --service spec-generator
+          railway variables --set "GEMINI_PHASE1_MODEL=${{ secrets.GEMINI_PHASE1_MODEL }}" --service spec-generator
+          railway variables --set "GEMINI_PHASE2_MODEL=${{ secrets.GEMINI_PHASE2_MODEL }}" --service spec-generator
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Deploy ${{ matrix.service }}
+        run: |
+          cp apps/worker/infra/${{ matrix.service }}/railway.json railway.json
+          railway up --service ${{ matrix.service }} --detach
+          rm railway.json
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

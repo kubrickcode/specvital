@@ -39,6 +39,22 @@ lint-file file:
         ;;
     esac
 
+release:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "This will trigger a production release!"
+    echo "GitHub Actions: https://github.com/kubrickcode/specvital/actions"
+    read -p "Type 'yes' to continue: " confirm
+    if [ "$confirm" != "yes" ]; then
+        echo "Aborted."
+        exit 1
+    fi
+    git checkout release
+    git merge main
+    git push origin release
+    git checkout main
+    echo "Release triggered! Check GitHub Actions for progress."
+
 lint target="all":
     #!/usr/bin/env bash
     set -euox pipefail

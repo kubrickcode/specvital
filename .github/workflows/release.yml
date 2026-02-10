@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  push:
+    branches: [release]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    name: Database Migration
+    uses: ./.github/workflows/release/migrate.yml
+    secrets: inherit
+
+  deploy-web:
+    name: Deploy Web
+    needs: migrate
+    uses: ./.github/workflows/release/deploy-web.yml
+    secrets: inherit
+
+  deploy-workers:
+    name: Deploy Workers
+    needs: migrate
+    uses: ./.github/workflows/release/deploy-workers.yml
+    secrets: inherit
+
+  release:
+    name: Release
+    needs: [deploy-web, deploy-workers]
+    uses: ./.github/workflows/release/release-tag.yml
+    secrets: inherit
