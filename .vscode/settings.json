@@ -52,9 +52,296 @@
       ]
     },
     {
+      "color": "#2196F3",
+      "executeAll": false,
+      "name": "$(play-circle) Run",
+      "shortcut": "r",
+      "group": [
+        {
+          "executeAll": true,
+          "name": "All",
+          "shortcut": "a",
+          "group": [
+            {
+              "command": "just run web-backend",
+              "name": "backend",
+              "shortcut": "b",
+              "terminalName": "backend"
+            },
+            {
+              "command": "just run web-frontend",
+              "name": "frontend",
+              "shortcut": "f",
+              "terminalName": "frontend"
+            }
+          ]
+        },
+        {
+          "command": "just run web-backend",
+          "name": "Backend",
+          "shortcut": "b",
+          "terminalName": "backend"
+        },
+        {
+          "command": "just run web-frontend",
+          "name": "Frontend",
+          "shortcut": "f",
+          "terminalName": "frontend"
+        },
+        {
+          "command": "just run analyzer",
+          "name": "Analyzer",
+          "shortcut": "w",
+          "terminalName": "analyzer"
+        },
+        {
+          "command": "just run spec-generator",
+          "name": "Spec Generator",
+          "shortcut": "g",
+          "terminalName": "spec-generator"
+        },
+        {
+          "command": "cd apps/web && just smee",
+          "name": "Smee",
+          "shortcut": "s",
+          "terminalName": "smee"
+        }
+      ]
+    },
+    {
+      "color": "tomato",
+      "executeAll": false,
+      "name": "$(beaker) Test",
+      "shortcut": "t",
+      "group": [
+        {
+          "name": "Web ▼",
+          "shortcut": "w",
+          "group": [
+            {
+              "command": "just test web",
+              "name": "All",
+              "shortcut": "a",
+              "terminalName": "test web all"
+            },
+            {
+              "command": "just test web backend",
+              "name": "Backend",
+              "shortcut": "b",
+              "terminalName": "test web backend"
+            },
+            {
+              "command": "just test web frontend",
+              "name": "Frontend",
+              "shortcut": "f",
+              "terminalName": "test web frontend"
+            },
+            {
+              "command": "cd apps/web && just test-e2e",
+              "name": "E2E",
+              "shortcut": "e",
+              "terminalName": "test web e2e"
+            }
+          ]
+        },
+        {
+          "name": "Worker ▼",
+          "shortcut": "k",
+          "group": [
+            {
+              "command": "just test worker",
+              "name": "All",
+              "shortcut": "a",
+              "terminalName": "test worker all"
+            },
+            {
+              "command": "just test worker unit",
+              "name": "Unit",
+              "shortcut": "u",
+              "terminalName": "test worker unit"
+            },
+            {
+              "command": "just test worker integration",
+              "name": "Integration",
+              "shortcut": "i",
+              "terminalName": "test worker integration"
+            }
+          ]
+        },
+        {
+          "name": "Core ▼",
+          "shortcut": "c",
+          "group": [
+            {
+              "command": "just test core",
+              "name": "All",
+              "shortcut": "a",
+              "terminalName": "test core all"
+            },
+            {
+              "command": "just test core unit",
+              "name": "Unit",
+              "shortcut": "u",
+              "terminalName": "test core unit"
+            },
+            {
+              "command": "just test core integration",
+              "name": "Integration",
+              "shortcut": "i",
+              "terminalName": "test core integration"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "color": "#9C27B0",
+      "executeAll": false,
+      "name": "$(database) DB",
+      "shortcut": "d",
+      "group": [
+        {
+          "command": "cd infra && just migrate",
+          "name": "Migrate",
+          "shortcut": "m",
+          "terminalName": "migrate"
+        },
+        {
+          "command": "cd infra && just makemigration ",
+          "insertOnly": true,
+          "name": "Makemigration",
+          "shortcut": "a",
+          "terminalName": "makemigration"
+        },
+        {
+          "command": "cd infra && just reset",
+          "name": "Reset",
+          "shortcut": "r",
+          "terminalName": "reset db"
+        },
+        {
+          "command": "cd infra && just erd",
+          "name": "ERD",
+          "shortcut": "e",
+          "terminalName": "erd"
+        },
+        {
+          "command": "cd apps/web && just migrate-local",
+          "name": "Migrate Local Web",
+          "shortcut": "w",
+          "terminalName": "migrate-local web"
+        },
+        {
+          "command": "cd apps/worker && just migrate-local",
+          "name": "Migrate Local Worker",
+          "shortcut": "k",
+          "terminalName": "migrate-local worker"
+        },
+        {
+          "command": "cd apps/web && just dump-schema",
+          "name": "Dump Schema Web",
+          "shortcut": "s",
+          "terminalName": "dump-schema web"
+        },
+        {
+          "command": "cd apps/worker && just dump-schema",
+          "name": "Dump Schema Worker",
+          "shortcut": "d",
+          "terminalName": "dump-schema worker"
+        }
+      ]
+    },
+    {
+      "color": "teal",
+      "executeAll": false,
+      "name": "$(wrench) Utils",
+      "shortcut": "u",
+      "group": [
+        {
+          "command": "just deps",
+          "name": "Deps",
+          "shortcut": "d",
+          "terminalName": "deps"
+        },
+        {
+          "command": "just lint",
+          "name": "Lint",
+          "shortcut": "l",
+          "terminalName": "lint"
+        },
+        {
+          "command": "cd apps/web && just gen-api",
+          "name": "Gen API",
+          "shortcut": "a",
+          "terminalName": "gen-api"
+        },
+        {
+          "command": "cd apps/web && just gen-sqlc",
+          "name": "Gen SQLC Web",
+          "shortcut": "s",
+          "terminalName": "gen-sqlc web"
+        },
+        {
+          "command": "cd apps/worker && just gen-sqlc",
+          "name": "Gen SQLC Worker",
+          "shortcut": "q",
+          "terminalName": "gen-sqlc worker"
+        },
+        {
+          "command": "cd apps/web && just update-core",
+          "name": "Update Core Web",
+          "shortcut": "w",
+          "terminalName": "update-core web"
+        },
+        {
+          "command": "cd apps/worker && just update-core",
+          "name": "Update Core Worker",
+          "shortcut": "k",
+          "terminalName": "update-core worker"
+        },
+        {
+          "command": "cd apps/web && just bootstrap",
+          "name": "Bootstrap",
+          "shortcut": "b",
+          "terminalName": "bootstrap"
+        },
+        {
+          "command": "cd apps/web && just sync-docs",
+          "name": "Sync Docs",
+          "shortcut": "y",
+          "terminalName": "sync-docs"
+        },
+        {
+          "command": "cd packages/core && just snapshot-update",
+          "name": "Snapshot Update",
+          "shortcut": "n",
+          "terminalName": "snapshot-update"
+        },
+        {
+          "command": "cd infra && just gen-schema-docs",
+          "name": "Schema Docs",
+          "shortcut": "g",
+          "terminalName": "schema-docs"
+        },
+        {
+          "command": "cd apps/worker && just clean-containers",
+          "name": "Clean Containers",
+          "shortcut": "c",
+          "terminalName": "clean-containers"
+        }
+      ]
+    },
+    {
+      "color": "orange",
+      "command": "just release",
+      "name": "$(rocket) Release",
+      "terminalName": "Release"
+    },
+    {
       "color": "blue",
       "command": "export IS_SANDBOX=1 && claude --dangerously-skip-permissions",
       "name": "$(hubot) Claude",
+      "newTerminal": true,
       "shortcut": "c",
       "terminalName": "Claude Yolo",
       "useVsCodeApi": false

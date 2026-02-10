@@ -55,6 +55,52 @@ release:
     git checkout main
     echo "Release triggered! Check GitHub Actions for progress."
 
+run target *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ target }}" in
+      web-backend)
+        cd {{ root_dir }}/apps/web && just run backend {{ args }}
+        ;;
+      web-frontend)
+        cd {{ root_dir }}/apps/web && just run frontend {{ args }}
+        ;;
+      analyzer)
+        cd {{ root_dir }}/apps/worker && just run-analyzer {{ args }}
+        ;;
+      spec-generator)
+        cd {{ root_dir }}/apps/worker && just run-spec-generator {{ args }}
+        ;;
+      *)
+        echo "Unknown: {{ target }}. Use: web-backend, web-frontend, analyzer, spec-generator"
+        exit 1
+        ;;
+    esac
+
+test project="all" target="all":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ project }}" in
+      web)
+        cd {{ root_dir }}/apps/web && just test {{ target }}
+        ;;
+      worker)
+        cd {{ root_dir }}/apps/worker && just test {{ target }}
+        ;;
+      core)
+        cd {{ root_dir }}/packages/core && just test {{ target }}
+        ;;
+      all)
+        cd {{ root_dir }}/apps/web && just test all
+        cd {{ root_dir }}/apps/worker && just test all
+        cd {{ root_dir }}/packages/core && just test all
+        ;;
+      *)
+        echo "Unknown: {{ project }}. Use: web, worker, core, all"
+        exit 1
+        ;;
+    esac
+
 lint target="all":
     #!/usr/bin/env bash
     set -euox pipefail
