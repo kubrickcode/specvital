@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/core/pkg/parser/framework"
-	"github.com/specvital/core/pkg/parser/framework/matchers"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework/matchers"
 )
 
 func TestConfigMatcher_Match(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/specvital/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
 )
 
 type MockHandler struct{}

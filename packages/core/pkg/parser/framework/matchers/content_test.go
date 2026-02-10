@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/specvital/core/pkg/parser/framework"
-	"github.com/specvital/core/pkg/parser/framework/matchers"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework/matchers"
 )
 
 func TestContentMatcher_Match(t *testing.T) {

@@ -8,10 +8,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/specvital/web/src/backend/internal/db"
-	"github.com/specvital/web/src/backend/modules/auth/domain"
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
-	"github.com/specvital/web/src/backend/modules/auth/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/db"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/port"
 )
 
 type PostgresRepository struct {

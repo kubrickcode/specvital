@@ -15,9 +15,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/specvital/worker/internal/domain/analysis"
-	"github.com/specvital/worker/internal/domain/specview"
-	"github.com/specvital/worker/internal/infra/db"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/analysis"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
 )
 
 var _ specview.Repository = (*SpecDocumentRepository)(nil)

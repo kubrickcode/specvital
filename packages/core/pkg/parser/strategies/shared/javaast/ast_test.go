@@ -6,8 +6,8 @@ import (
 
 	sitter "github.com/smacker/go-tree-sitter"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser/tspool"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/tspool"
 )
 
 func TestGetAnnotations(t *testing.T) {

@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/web/src/backend/internal/db"
-	subscriptionentity "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
-	usageentity "github.com/specvital/web/src/backend/modules/usage/domain/entity"
-	"github.com/specvital/web/src/backend/modules/usage/usecase"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/db"
+	subscriptionentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
+	usageentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/usecase"
 )
 
 type mockSubscriptionRepo struct {

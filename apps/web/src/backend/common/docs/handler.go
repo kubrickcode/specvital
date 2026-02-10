@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/specvital/web/src/backend/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/api"
 )
 
 //go:embed index.html

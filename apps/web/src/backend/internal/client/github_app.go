@@ -9,8 +9,8 @@ import (
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	gh "github.com/google/go-github/v75/github"
 
-	"github.com/specvital/web/src/backend/modules/github-app/domain"
-	"github.com/specvital/web/src/backend/modules/github-app/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain/port"
 )
 
 var _ port.GitHubAppClient = (*GitHubAppClient)(nil)

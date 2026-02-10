@@ -3,8 +3,8 @@ package usecase
 import (
 	"context"
 
-	"github.com/specvital/web/src/backend/modules/subscription/domain/entity"
-	"github.com/specvital/web/src/backend/modules/subscription/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/port"
 )
 
 type GetPricingPlansUseCase struct {

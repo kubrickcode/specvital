@@ -6,9 +6,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/specvital/web/src/backend/internal/db"
-	"github.com/specvital/web/src/backend/modules/usage/domain/entity"
-	"github.com/specvital/web/src/backend/modules/usage/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/db"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/port"
 )
 
 type QuotaReservationPostgresRepository struct {

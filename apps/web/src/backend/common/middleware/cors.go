@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/cors"
-	"github.com/specvital/web/src/backend/common/config"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/config"
 )
 
 const (

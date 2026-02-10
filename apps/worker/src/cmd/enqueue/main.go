@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/specvital/worker/internal/adapter/vcs"
-	"github.com/specvital/worker/internal/infra/db"
-	"github.com/specvital/worker/internal/infra/queue"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/vcs"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/queue"
 )
 
 func main() {

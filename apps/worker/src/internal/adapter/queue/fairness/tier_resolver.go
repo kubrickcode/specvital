@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/specvital/worker/internal/infra/db"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
 )
 
 // TierResolver resolves a user's subscription tier.

@@ -7,8 +7,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/specvital/web/src/backend/modules/auth/domain"
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
 )
 
 type mockRefreshTokenRepository struct {

@@ -8,9 +8,9 @@ import (
 
 	"github.com/riverqueue/river"
 
-	"github.com/specvital/worker/internal/domain/quota"
-	"github.com/specvital/worker/internal/domain/specview"
-	uc "github.com/specvital/worker/internal/usecase/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/quota"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
+	uc "github.com/kubrickcode/specvital/apps/worker/src/internal/usecase/specview"
 )
 
 const (

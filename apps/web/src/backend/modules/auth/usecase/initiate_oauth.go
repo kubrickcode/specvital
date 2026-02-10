@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/specvital/web/src/backend/modules/auth/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/port"
 )
 
 type InitiateOAuthInput struct{}

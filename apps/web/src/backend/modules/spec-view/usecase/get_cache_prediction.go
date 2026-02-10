@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 
-	"github.com/specvital/web/src/backend/modules/spec-view/domain"
-	"github.com/specvital/web/src/backend/modules/spec-view/domain/entity"
-	"github.com/specvital/web/src/backend/modules/spec-view/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/domain/port"
 )
 
 type GetCachePredictionInput struct {

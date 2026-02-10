@@ -3,7 +3,7 @@ package queue
 import (
 	"testing"
 
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 func TestSelectQueue(t *testing.T) {

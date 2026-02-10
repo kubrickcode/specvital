@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-const coreModulePath = "github.com/specvital/core"
+const coreModulePath = "github.com/kubrickcode/specvital/packages/core"
 
 // ExtractCoreVersion extracts the version of specvital/core from build info.
 // Returns the module version string (e.g., "v1.5.1-0.20260112121406-deacdda09e17")

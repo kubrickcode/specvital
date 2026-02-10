@@ -5,7 +5,7 @@ package framework
 import (
 	"context"
 
-	"github.com/specvital/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
 )
 
 // Definition represents a unified test framework specification that combines:

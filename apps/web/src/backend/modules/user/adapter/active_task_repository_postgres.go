@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/specvital/web/src/backend/internal/db"
-	"github.com/specvital/web/src/backend/modules/user/domain/entity"
-	"github.com/specvital/web/src/backend/modules/user/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/db"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain/port"
 )
 
 const (

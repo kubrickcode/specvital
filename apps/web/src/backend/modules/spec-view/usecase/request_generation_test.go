@@ -9,12 +9,12 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/specvital/web/src/backend/internal/db"
-	"github.com/specvital/web/src/backend/modules/spec-view/domain"
-	"github.com/specvital/web/src/backend/modules/spec-view/domain/entity"
-	subscriptionentity "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
-	usageentity "github.com/specvital/web/src/backend/modules/usage/domain/entity"
-	usageusecase "github.com/specvital/web/src/backend/modules/usage/usecase"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/db"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/domain/entity"
+	subscriptionentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
+	usageentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/entity"
+	usageusecase "github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/usecase"
 )
 
 type mockSpecViewRepository struct {

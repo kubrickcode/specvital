@@ -9,13 +9,13 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/specvital/web/src/backend/internal/db"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
-	usageentity "github.com/specvital/web/src/backend/modules/usage/domain/entity"
-	usageport "github.com/specvital/web/src/backend/modules/usage/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/db"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
+	usageentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/entity"
+	usageport "github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/port"
 )
 
 type AnalyzeRepositoryInput struct {

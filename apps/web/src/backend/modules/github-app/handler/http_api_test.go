@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	"github.com/specvital/web/src/backend/modules/github-app/domain/port"
-	"github.com/specvital/web/src/backend/modules/github-app/usecase"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/usecase"
 )
 
 func TestNewAPIHandler_ValidConfig(t *testing.T) {

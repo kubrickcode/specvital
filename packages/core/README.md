@@ -14,7 +14,7 @@ Shared Go library for the specvital ecosystem.
 ## Installation
 
 ```bash
-go get github.com/specvital/core
+go get github.com/kubrickcode/specvital/packages/core
 ```
 
 ## Parser
@@ -28,10 +28,10 @@ import (
     "context"
     "fmt"
 
-    "github.com/specvital/core/pkg/parser"
+    "github.com/kubrickcode/specvital/packages/core/pkg/parser"
 
     // Import frameworks to register them
-    _ "github.com/specvital/core/pkg/parser/strategies/all" // All frameworks
+    _ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/all" // All frameworks
 )
 
 func main() {
@@ -82,9 +82,9 @@ Import only needed frameworks for smaller binaries:
 
 ```go
 import (
-    _ "github.com/specvital/core/pkg/parser/strategies/jest"
-    _ "github.com/specvital/core/pkg/parser/strategies/vitest"
-    _ "github.com/specvital/core/pkg/parser/strategies/playwright"
+    _ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/jest"
+    _ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/vitest"
+    _ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/playwright"
 )
 ```
 
@@ -159,7 +159,7 @@ NaCl SecretBox encryption for sensitive data (OAuth tokens, etc.).
 ### Quick Start
 
 ```go
-import "github.com/specvital/core/pkg/crypto"
+import "github.com/kubrickcode/specvital/packages/core/pkg/crypto"
 
 // Create encryptor from Base64-encoded key
 enc, err := crypto.NewEncryptorFromBase64(os.Getenv("ENCRYPTION_KEY"))
@@ -193,7 +193,7 @@ openssl rand -base64 32
 Abstraction layer for reading files from different sources.
 
 ```go
-import "github.com/specvital/core/pkg/source"
+import "github.com/kubrickcode/specvital/packages/core/pkg/source"
 
 // Local filesystem
 src, err := source.NewLocalSource("./my-project")

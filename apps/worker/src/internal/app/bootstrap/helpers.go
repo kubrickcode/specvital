@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/specvital/worker/internal/adapter/repository/postgres"
-	"github.com/specvital/worker/internal/infra/buildinfo"
-	infraqueue "github.com/specvital/worker/internal/infra/queue"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/repository/postgres"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/buildinfo"
+	infraqueue "github.com/kubrickcode/specvital/apps/worker/src/internal/infra/queue"
 )
 
 // maskURL returns a sanitized URL for logging (hides credentials).

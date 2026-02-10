@@ -6,10 +6,10 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/specvital/web/src/backend/internal/client"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
-	"github.com/specvital/web/src/backend/modules/analyzer/usecase"
-	authdomain "github.com/specvital/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/client"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/usecase"
+	authdomain "github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
 )
 
 func TestAnalyzeRepositoryUseCaseWithAuth(t *testing.T) {

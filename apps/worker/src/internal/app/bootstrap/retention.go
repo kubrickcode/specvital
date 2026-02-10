@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/specvital/worker/internal/adapter/repository/postgres"
-	"github.com/specvital/worker/internal/infra/db"
-	retentionuc "github.com/specvital/worker/internal/usecase/retention"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/repository/postgres"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
+	retentionuc "github.com/kubrickcode/specvital/apps/worker/src/internal/usecase/retention"
 )
 
 // DefaultRetentionTimeout allows sufficient time for batch processing

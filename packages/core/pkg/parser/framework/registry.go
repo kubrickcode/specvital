@@ -4,7 +4,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/specvital/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
 )
 
 var defaultRegistry = NewRegistry()

@@ -3,8 +3,8 @@ package adapter
 import (
 	"context"
 
-	"github.com/specvital/web/src/backend/internal/client"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/client"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
 )
 
 var _ port.GitClient = (*GitClientAdapter)(nil)

@@ -1,6 +1,6 @@
 package prompt
 
-import "github.com/specvital/worker/internal/domain/specview"
+import "github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 
 // Phase2Example represents a single conversion example for few-shot learning.
 type Phase2Example struct {

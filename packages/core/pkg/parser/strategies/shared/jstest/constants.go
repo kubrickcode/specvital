@@ -3,7 +3,7 @@ package jstest
 import (
 	"regexp"
 
-	"github.com/specvital/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
 )
 
 const (

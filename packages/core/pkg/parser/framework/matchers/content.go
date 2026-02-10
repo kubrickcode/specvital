@@ -4,7 +4,7 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/specvital/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
 )
 
 // ContentMatcher matches framework-specific content patterns in test files.

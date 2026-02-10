@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/specvital/web/src/backend/modules/user/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain/port"
 )
 
 type AddAnalyzedRepoInput struct {

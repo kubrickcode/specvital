@@ -3,7 +3,7 @@ package gemini
 import (
 	"testing"
 
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 func TestEstimateTokens(t *testing.T) {

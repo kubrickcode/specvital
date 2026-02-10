@@ -7,15 +7,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser"
-	"github.com/specvital/core/pkg/source"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser"
+	"github.com/kubrickcode/specvital/packages/core/pkg/source"
 
 	// DomainHints extraction uses tree-sitter parsing which works independently of framework detection.
 	// Only gotesting and jest are imported here as they are the primary Go/JS/TS test frameworks in grafana.
 	// Other frameworks (cypress, playwright) share the same JS/TS extraction logic.
-	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
-	_ "github.com/specvital/core/pkg/parser/strategies/jest"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/gotesting"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/jest"
 )
 
 // TestDomainHints_Grafana verifies DomainHints extraction from grafana repository.

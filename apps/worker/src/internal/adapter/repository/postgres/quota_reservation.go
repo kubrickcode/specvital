@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/specvital/worker/internal/domain/quota"
-	"github.com/specvital/worker/internal/infra/db"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/quota"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
 )
 
 var _ quota.ReservationRepository = (*QuotaReservationRepository)(nil)

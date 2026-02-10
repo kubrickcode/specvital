@@ -6,10 +6,10 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	authdomain "github.com/specvital/web/src/backend/modules/auth/domain"
-	"github.com/specvital/web/src/backend/modules/github/domain"
-	"github.com/specvital/web/src/backend/modules/github/domain/entity"
-	"github.com/specvital/web/src/backend/modules/github/domain/port"
+	authdomain "github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github/domain/port"
 )
 
 const maxReposPerFetch = 1000

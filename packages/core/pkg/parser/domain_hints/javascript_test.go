@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
 )
 
 func TestJavaScriptExtractor_Extract_ES6Imports(t *testing.T) {

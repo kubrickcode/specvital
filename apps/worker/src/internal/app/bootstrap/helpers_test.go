@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/worker/internal/adapter/repository/postgres"
-	testdb "github.com/specvital/worker/internal/testutil/postgres"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/repository/postgres"
+	testdb "github.com/kubrickcode/specvital/apps/worker/src/internal/testutil/postgres"
 )
 
 func TestRegisterParserVersion(t *testing.T) {

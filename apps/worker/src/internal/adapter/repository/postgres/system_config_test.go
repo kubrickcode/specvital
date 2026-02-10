@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	testdb "github.com/specvital/worker/internal/testutil/postgres"
+	testdb "github.com/kubrickcode/specvital/apps/worker/src/internal/testutil/postgres"
 )
 
 func TestSystemConfigRepository_Upsert(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/specvital/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
 )
 
 func TestHandleHealth(t *testing.T) {

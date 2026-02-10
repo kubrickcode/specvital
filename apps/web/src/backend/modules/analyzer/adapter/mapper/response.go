@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/entity"
 )
 
 type CompletedResponseOptions struct {

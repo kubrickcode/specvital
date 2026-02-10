@@ -11,7 +11,7 @@ import (
 	pkgerrors "github.com/cockroachdb/errors"
 	"golang.org/x/oauth2"
 
-	"github.com/specvital/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
 )
 
 type testUserInfo struct {

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/specvital/worker/internal/domain/analysis"
-	testdb "github.com/specvital/worker/internal/testutil/postgres"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/analysis"
+	testdb "github.com/kubrickcode/specvital/apps/worker/src/internal/testutil/postgres"
 )
 
 const codebaseTestParserVersion = "v1.0.0-test"

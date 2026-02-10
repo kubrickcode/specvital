@@ -9,8 +9,8 @@ import (
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 
-	"github.com/specvital/worker/internal/domain/specview"
-	uc "github.com/specvital/worker/internal/usecase/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
+	uc "github.com/kubrickcode/specvital/apps/worker/src/internal/usecase/specview"
 )
 
 type mockAIProvider struct {

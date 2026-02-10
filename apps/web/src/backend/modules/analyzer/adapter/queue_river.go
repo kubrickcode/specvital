@@ -8,9 +8,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
-	"github.com/specvital/web/src/backend/common/queue"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/queue"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 var _ port.QueueService = (*RiverQueueService)(nil)

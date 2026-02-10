@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	subscriptionentity "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
-	usageentity "github.com/specvital/web/src/backend/modules/usage/domain/entity"
-	"github.com/specvital/web/src/backend/modules/usage/usecase"
+	subscriptionentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
+	usageentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/usecase"
 )
 
 func TestGetCurrentUsageUseCase_Execute(t *testing.T) {

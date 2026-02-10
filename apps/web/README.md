@@ -23,7 +23,7 @@ GitHub URL → AST Parsing (Tree-sitter) → Test Inventory
 ```
 
 1. Enter a public GitHub repository URL
-2. SpecVital clones and parses test files using [specvital/core](https://github.com/specvital/core)
+2. SpecVital clones and parses test files using [specvital/core](https://github.com/kubrickcode/specvital/packages/core)
 3. View test suites, cases, and structure in a visual dashboard
 
 **Note**: This is static analysis—we parse test definitions, not execution results. You'll see what tests exist and their structure, not pass/fail status.
@@ -46,7 +46,7 @@ GitHub URL → AST Parsing (Tree-sitter) → Test Inventory
 | C++                   | Google Test                              |
 | Swift                 | XCTest                                   |
 
-See [specvital/core](https://github.com/specvital/core) for details.
+See [specvital/core](https://github.com/kubrickcode/specvital/packages/core) for details.
 
 ## Current Status
 
@@ -66,8 +66,8 @@ This repository contains the web application (Frontend + Backend API). The full 
 | Repository                                              | Role                                |
 | ------------------------------------------------------- | ----------------------------------- |
 | [specvital/web](https://github.com/specvital/web)       | Web dashboard + REST API            |
-| [specvital/core](https://github.com/specvital/core)     | Parser library (Tree-sitter based)  |
-| [specvital/worker](https://github.com/specvital/worker) | Background worker for analysis jobs |
+| [specvital/core](https://github.com/kubrickcode/specvital/packages/core)     | Parser library (Tree-sitter based)  |
+| [specvital/worker](https://github.com/kubrickcode/specvital/apps/worker/src) | Background worker for analysis jobs |
 | [specvital/infra](https://github.com/specvital/infra)   | Database schema and infrastructure  |
 
 ## Use Cases

@@ -42,7 +42,7 @@ Each framework MUST:
 
 1. Define `framework.Definition` in `strategies/{name}/definition.go`
 2. Register via `framework.Register()` in `init()`
-3. Require blank import: `_ "github.com/specvital/core/pkg/parser/strategies/{name}"`
+3. Require blank import: `_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/{name}"`
 
 **Why**: Go's init() only runs if package is imported. Missing blank import = framework silently not detected.
 

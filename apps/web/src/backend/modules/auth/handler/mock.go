@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 
-	"github.com/specvital/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
 )
 
 // MockHandler is a test double for auth endpoints.

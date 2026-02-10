@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/github-app/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain/entity"
 )
 
 func ToAPIInstallation(e entity.Installation) api.GitHubAppInstallation {

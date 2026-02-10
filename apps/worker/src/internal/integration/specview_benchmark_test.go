@@ -7,12 +7,12 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser"
-	"github.com/specvital/worker/internal/adapter/repository/postgres"
-	"github.com/specvital/worker/internal/domain/specview"
-	specviewuc "github.com/specvital/worker/internal/usecase/specview"
-	testdb "github.com/specvital/worker/internal/testutil/postgres"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/repository/postgres"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
+	specviewuc "github.com/kubrickcode/specvital/apps/worker/src/internal/usecase/specview"
+	testdb "github.com/kubrickcode/specvital/apps/worker/src/internal/testutil/postgres"
 )
 
 // BenchmarkSpecView_500Behaviors benchmarks document generation with 500 behaviors.

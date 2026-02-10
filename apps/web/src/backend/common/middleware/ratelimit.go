@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/time/rate"
 
-	"github.com/specvital/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
 )
 
 const (

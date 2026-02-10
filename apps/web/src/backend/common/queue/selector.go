@@ -1,7 +1,7 @@
 package queue
 
 import (
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 // Queue Suffix constants

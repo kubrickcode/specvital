@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 // ChunkProgress represents cached progress for resumable chunk processing.

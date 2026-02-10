@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
 )
 
 func TestPHPExtractor_Extract_UseStatements(t *testing.T) {

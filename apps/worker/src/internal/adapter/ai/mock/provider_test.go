@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 func TestProvider_ClassifyDomains(t *testing.T) {

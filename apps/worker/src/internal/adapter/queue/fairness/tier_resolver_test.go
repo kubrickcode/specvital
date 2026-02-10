@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/worker/internal/infra/db"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
 )
 
 func TestConvertDBTier(t *testing.T) {

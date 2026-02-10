@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser/framework"
-	"github.com/specvital/core/pkg/parser/framework/matchers"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework/matchers"
 )
 
 // TestDetector_EarlyReturn_ImportWins tests that import detection returns immediately.

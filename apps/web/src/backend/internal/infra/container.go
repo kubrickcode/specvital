@@ -10,11 +10,11 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/specvital/core/pkg/crypto"
-	"github.com/specvital/web/src/backend/internal/client"
-	authadapter "github.com/specvital/web/src/backend/modules/auth/adapter"
-	authport "github.com/specvital/web/src/backend/modules/auth/domain/port"
-	ghappport "github.com/specvital/web/src/backend/modules/github-app/domain/port"
+	"github.com/kubrickcode/specvital/packages/core/pkg/crypto"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/client"
+	authadapter "github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/adapter"
+	authport "github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/port"
+	ghappport "github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain/port"
 )
 
 type Container struct {

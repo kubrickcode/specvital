@@ -6,15 +6,15 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	"github.com/specvital/web/src/backend/common/middleware"
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/user/adapter/mapper"
-	"github.com/specvital/web/src/backend/modules/user/domain"
-	"github.com/specvital/web/src/backend/modules/user/domain/entity"
-	activetaskuc "github.com/specvital/web/src/backend/modules/user/usecase/activetask"
-	bookmarkuc "github.com/specvital/web/src/backend/modules/user/usecase/bookmark"
-	historyuc "github.com/specvital/web/src/backend/modules/user/usecase/history"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/middleware"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/adapter/mapper"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain/entity"
+	activetaskuc "github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/usecase/activetask"
+	bookmarkuc "github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/usecase/bookmark"
+	historyuc "github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/usecase/history"
 )
 
 var validNamePattern = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)

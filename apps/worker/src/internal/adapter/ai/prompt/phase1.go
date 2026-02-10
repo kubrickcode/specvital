@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 //go:embed templates/phase1_system.md

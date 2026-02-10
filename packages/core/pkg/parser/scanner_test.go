@@ -11,17 +11,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/core/pkg/parser"
-	"github.com/specvital/core/pkg/source"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser"
+	"github.com/kubrickcode/specvital/packages/core/pkg/source"
 
 	// Import frameworks to register them via init()
-	_ "github.com/specvital/core/pkg/parser/strategies/cargotest"
-	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
-	_ "github.com/specvital/core/pkg/parser/strategies/gtest"
-	_ "github.com/specvital/core/pkg/parser/strategies/jest"
-	_ "github.com/specvital/core/pkg/parser/strategies/mocha"
-	_ "github.com/specvital/core/pkg/parser/strategies/mstest"
-	_ "github.com/specvital/core/pkg/parser/strategies/phpunit"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/cargotest"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/gotesting"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/gtest"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/jest"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/mocha"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/mstest"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/phpunit"
 )
 
 func TestScan(t *testing.T) {

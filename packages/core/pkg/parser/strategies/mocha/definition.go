@@ -4,11 +4,11 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser/framework"
-	"github.com/specvital/core/pkg/parser/framework/matchers"
-	"github.com/specvital/core/pkg/parser/strategies/shared/configutil"
-	"github.com/specvital/core/pkg/parser/strategies/shared/jstest"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework/matchers"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/shared/configutil"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/shared/jstest"
 )
 
 const frameworkName = "mocha"

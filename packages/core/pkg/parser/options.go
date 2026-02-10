@@ -3,7 +3,7 @@ package parser
 import (
 	"time"
 
-	"github.com/specvital/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
 )
 
 // ScanOptions configures scanner behavior.

@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser/detection/extraction"
-	"github.com/specvital/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/detection/extraction"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
 )
 
 // Detector performs framework detection using early-return approach.

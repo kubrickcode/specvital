@@ -1,6 +1,6 @@
 package port
 
-import "github.com/specvital/web/src/backend/modules/auth/domain/entity"
+import "github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
 
 // RefreshTokenResult contains the generated refresh token and its hash.
 // The raw Token is sent to the client, while TokenHash is stored in the database.

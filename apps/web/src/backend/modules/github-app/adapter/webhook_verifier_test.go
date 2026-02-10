@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/specvital/web/src/backend/modules/github-app/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain"
 )
 
 func TestWebhookVerifier_NewWebhookVerifier(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/specvital/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
 )
 
 // ImportMatcher matches framework-specific import statements.

@@ -10,9 +10,9 @@ import (
 	"golang.org/x/oauth2"
 	oauthGithub "golang.org/x/oauth2/github"
 
-	"github.com/specvital/web/src/backend/modules/auth/domain"
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
-	"github.com/specvital/web/src/backend/modules/auth/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/port"
 )
 
 const (

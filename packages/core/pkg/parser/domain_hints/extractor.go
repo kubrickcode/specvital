@@ -3,7 +3,7 @@ package domain_hints
 import (
 	"context"
 
-	"github.com/specvital/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
 )
 
 // Extractor extracts domain classification hints from source code.

@@ -6,15 +6,15 @@ import (
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
-	"github.com/specvital/core/pkg/crypto"
-	"github.com/specvital/worker/internal/adapter/parser"
-	"github.com/specvital/worker/internal/adapter/queue/analyze"
-	"github.com/specvital/worker/internal/adapter/queue/fairness"
-	"github.com/specvital/worker/internal/adapter/repository/postgres"
-	"github.com/specvital/worker/internal/adapter/vcs"
-	"github.com/specvital/worker/internal/infra/db"
-	infraqueue "github.com/specvital/worker/internal/infra/queue"
-	analysisuc "github.com/specvital/worker/internal/usecase/analysis"
+	"github.com/kubrickcode/specvital/packages/core/pkg/crypto"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/parser"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/queue/analyze"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/queue/fairness"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/repository/postgres"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/vcs"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
+	infraqueue "github.com/kubrickcode/specvital/apps/worker/src/internal/infra/queue"
+	analysisuc "github.com/kubrickcode/specvital/apps/worker/src/internal/usecase/analysis"
 )
 
 // AnalyzerContainer holds dependencies for the analyzer worker service.

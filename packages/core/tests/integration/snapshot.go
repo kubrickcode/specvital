@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/specvital/core/pkg/parser"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser"
 )
 
 // Snapshot represents a golden snapshot for a repository scan result.

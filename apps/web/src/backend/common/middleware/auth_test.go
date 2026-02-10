@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	authadapter "github.com/specvital/web/src/backend/modules/auth/adapter"
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
+	authadapter "github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/adapter"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
 )
 
 const testSecret = "test-secret-that-is-at-least-32-characters-long"

@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/specvital/worker/internal/domain/analysis"
-	testdb "github.com/specvital/worker/internal/testutil/postgres"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/analysis"
+	testdb "github.com/kubrickcode/specvital/apps/worker/src/internal/testutil/postgres"
 )
 
 func TestRetentionRepository_DeleteExpiredUserAnalysisHistory(t *testing.T) {

@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	analyzerport "github.com/specvital/web/src/backend/modules/analyzer/domain/port"
-	specviewport "github.com/specvital/web/src/backend/modules/spec-view/domain/port"
-	"github.com/specvital/web/src/backend/modules/subscription/domain"
-	"github.com/specvital/web/src/backend/modules/subscription/domain/port"
+	analyzerport "github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
+	specviewport "github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/port"
 )
 
 var _ analyzerport.TierLookup = (*TierLookupAdapter)(nil)

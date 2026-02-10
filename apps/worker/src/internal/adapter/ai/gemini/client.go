@@ -8,8 +8,8 @@ import (
 
 	"google.golang.org/genai"
 
-	"github.com/specvital/worker/internal/adapter/ai/reliability"
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/ai/reliability"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 const (

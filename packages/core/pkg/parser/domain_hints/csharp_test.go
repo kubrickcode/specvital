@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/specvital/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
 )
 
 func TestCSharpExtractor_Extract_Usings(t *testing.T) {

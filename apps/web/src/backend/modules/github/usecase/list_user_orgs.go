@@ -7,8 +7,8 @@ import (
 
 	"golang.org/x/sync/singleflight"
 
-	"github.com/specvital/web/src/backend/modules/github/domain/entity"
-	"github.com/specvital/web/src/backend/modules/github/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github/domain/port"
 )
 
 type ListUserOrgsInput struct {

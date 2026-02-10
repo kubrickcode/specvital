@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	subscriptionentity "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
-	"github.com/specvital/web/src/backend/modules/subscription/domain/port"
-	usageentity "github.com/specvital/web/src/backend/modules/usage/domain/entity"
-	usageport "github.com/specvital/web/src/backend/modules/usage/domain/port"
+	subscriptionentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/port"
+	usageentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/entity"
+	usageport "github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/port"
 )
 
 type GetCurrentUsageInput struct {

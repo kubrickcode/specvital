@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/specvital/worker/internal/infra/db"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
 )
 
 // ErrConfigNotFound is returned when a config key does not exist.

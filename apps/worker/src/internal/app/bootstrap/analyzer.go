@@ -10,12 +10,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/specvital/worker/internal/adapter/queue/analyze"
-	"github.com/specvital/worker/internal/app"
-	"github.com/specvital/worker/internal/infra/buildinfo"
-	"github.com/specvital/worker/internal/infra/config"
-	"github.com/specvital/worker/internal/infra/db"
-	infraqueue "github.com/specvital/worker/internal/infra/queue"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/queue/analyze"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/app"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/buildinfo"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/config"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
+	infraqueue "github.com/kubrickcode/specvital/apps/worker/src/internal/infra/queue"
 )
 
 // AnalyzerConfig holds configuration for the analyzer service.

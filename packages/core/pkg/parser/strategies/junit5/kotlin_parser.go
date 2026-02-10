@@ -6,10 +6,10 @@ import (
 
 	sitter "github.com/smacker/go-tree-sitter"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser"
-	"github.com/specvital/core/pkg/parser/framework"
-	"github.com/specvital/core/pkg/parser/strategies/shared/kotlinast"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/shared/kotlinast"
 )
 
 // KotlinTestFileMatcher matches Kotlin JUnit5 test file naming patterns.

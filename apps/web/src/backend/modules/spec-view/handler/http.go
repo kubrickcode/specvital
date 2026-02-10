@@ -6,16 +6,16 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	"github.com/specvital/web/src/backend/common/middleware"
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/spec-view/adapter/mapper"
-	"github.com/specvital/web/src/backend/modules/spec-view/domain"
-	"github.com/specvital/web/src/backend/modules/spec-view/domain/entity"
-	"github.com/specvital/web/src/backend/modules/spec-view/domain/port"
-	"github.com/specvital/web/src/backend/modules/spec-view/usecase"
-	subscriptionDomain "github.com/specvital/web/src/backend/modules/subscription/domain"
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/middleware"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/adapter/mapper"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/usecase"
+	subscriptionDomain "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 type Handler struct {

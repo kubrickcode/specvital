@@ -12,7 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 // internalCacheStats tracks cache hit/miss statistics for Phase 2 behavior cache (internal use).

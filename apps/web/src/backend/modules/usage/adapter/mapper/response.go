@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/usage/usecase"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/usecase"
 )
 
 func ToCheckQuotaResponse(output *usecase.CheckQuotaOutput) api.CheckQuotaResponse {

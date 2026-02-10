@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
 )
 
 type OAuthClient interface {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 type QueueService interface {

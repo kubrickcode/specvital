@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/specvital/core/pkg/source"
-	"github.com/specvital/worker/internal/domain/analysis"
+	"github.com/kubrickcode/specvital/packages/core/pkg/source"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/analysis"
 )
 
 // GitVCS implements analysis.VCS using specvital/core's GitSource.

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser/framework"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/framework"
 )
 
 func TestMinitestParser_Parse(t *testing.T) {

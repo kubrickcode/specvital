@@ -7,7 +7,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/jackc/pgx/v5"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain"
 )
 
 type mockSystemConfigQueries struct {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/specvital/worker/internal/app/bootstrap"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/app/bootstrap"
 )
 
 func main() {

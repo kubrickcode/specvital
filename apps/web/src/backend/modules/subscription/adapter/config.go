@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 type Config struct {

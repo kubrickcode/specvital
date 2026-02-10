@@ -3,7 +3,7 @@ package adapter
 import (
 	"testing"
 
-	"github.com/specvital/web/src/backend/modules/usage/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/entity"
 )
 
 func TestEventType_IsValid(t *testing.T) {

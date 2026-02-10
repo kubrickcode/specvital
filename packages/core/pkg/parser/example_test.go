@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/specvital/core/pkg/parser"
-	"github.com/specvital/core/pkg/source"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser"
+	"github.com/kubrickcode/specvital/packages/core/pkg/source"
 
 	// Import strategies to register them with the default registry.
-	_ "github.com/specvital/core/pkg/parser/strategies/gotesting"
-	_ "github.com/specvital/core/pkg/parser/strategies/jest"
-	_ "github.com/specvital/core/pkg/parser/strategies/playwright"
-	_ "github.com/specvital/core/pkg/parser/strategies/vitest"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/gotesting"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/jest"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/playwright"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/vitest"
 )
 
 func Example() {

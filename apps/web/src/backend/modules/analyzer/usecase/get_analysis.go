@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/specvital/web/src/backend/modules/analyzer/domain"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
 )
 
 type GetAnalysisInput struct {

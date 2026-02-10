@@ -3,7 +3,7 @@ package specview
 import (
 	"sort"
 
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 // CalculateTestDiff computes the difference between cached test state and current files.

@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/specvital/web/src/backend/internal/db"
-	"github.com/specvital/web/src/backend/modules/usage/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/db"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/entity"
 )
 
 type UsageRepository interface {

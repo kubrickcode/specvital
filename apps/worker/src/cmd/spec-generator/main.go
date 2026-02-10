@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/specvital/worker/internal/app/bootstrap"
-	"github.com/specvital/worker/internal/infra/config"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/app/bootstrap"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/config"
 )
 
 func main() {

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 func TestBuildPhase3UserPrompt(t *testing.T) {

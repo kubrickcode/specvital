@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
 )
 
 func TestMemoryStateStore_CreateAndValidate(t *testing.T) {

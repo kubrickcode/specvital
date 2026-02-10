@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/web/src/backend/modules/auth/domain"
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
 )
 
 func TestDevLoginUseCase_Execute(t *testing.T) {

@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/specvital/web/src/backend/modules/github-app/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain/port"
 )
 
 type GetInstallURLUseCase struct {

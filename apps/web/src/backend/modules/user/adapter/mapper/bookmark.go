@@ -3,8 +3,8 @@ package mapper
 import (
 	"fmt"
 
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/user/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain/entity"
 )
 
 func ToBookmarkedRepositoriesResponse(repos []*entity.BookmarkedRepository) api.BookmarkedRepositoriesResponse {

@@ -1,7 +1,7 @@
 package specview
 
 import (
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 const (

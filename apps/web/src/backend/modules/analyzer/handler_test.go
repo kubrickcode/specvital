@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
 )
 
 func TestAnalyzeRepository(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/web/src/backend/common/middleware"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/middleware"
 )
 
 func TestSecurityHeadersIntegration(t *testing.T) {

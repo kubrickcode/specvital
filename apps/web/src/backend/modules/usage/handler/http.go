@@ -5,13 +5,13 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	"github.com/specvital/web/src/backend/common/middleware"
-	"github.com/specvital/web/src/backend/internal/api"
-	subscriptiondomain "github.com/specvital/web/src/backend/modules/subscription/domain"
-	"github.com/specvital/web/src/backend/modules/usage/adapter/mapper"
-	"github.com/specvital/web/src/backend/modules/usage/domain/entity"
-	"github.com/specvital/web/src/backend/modules/usage/usecase"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/middleware"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	subscriptiondomain "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/adapter/mapper"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/usage/usecase"
 )
 
 type Handler struct {

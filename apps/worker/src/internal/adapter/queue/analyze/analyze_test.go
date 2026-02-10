@@ -8,8 +8,8 @@ import (
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
-	"github.com/specvital/worker/internal/domain/analysis"
-	uc "github.com/specvital/worker/internal/usecase/analysis"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/analysis"
+	uc "github.com/kubrickcode/specvital/apps/worker/src/internal/usecase/analysis"
 )
 
 const testParserVersion = "v1.0.0-test"

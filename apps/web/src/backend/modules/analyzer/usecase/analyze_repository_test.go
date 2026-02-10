@@ -8,11 +8,11 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/specvital/web/src/backend/modules/analyzer/domain"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
-	"github.com/specvital/web/src/backend/modules/analyzer/usecase"
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/usecase"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 type analyzeRepoMocks struct {

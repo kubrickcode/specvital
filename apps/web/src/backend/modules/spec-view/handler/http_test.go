@@ -8,9 +8,9 @@ import (
 
 	pkgerrors "github.com/cockroachdb/errors"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	subscriptionDomain "github.com/specvital/web/src/backend/modules/subscription/domain"
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	subscriptionDomain "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 type mockTierLookup struct {

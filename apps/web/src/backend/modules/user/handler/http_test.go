@@ -9,17 +9,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	"github.com/specvital/web/src/backend/common/middleware"
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
-	authhandler "github.com/specvital/web/src/backend/modules/auth/handler"
-	specviewhandler "github.com/specvital/web/src/backend/modules/spec-view/handler"
-	domainentity "github.com/specvital/web/src/backend/modules/user/domain/entity"
-	"github.com/specvital/web/src/backend/modules/user/domain/port"
-	activetaskuc "github.com/specvital/web/src/backend/modules/user/usecase/activetask"
-	bookmarkuc "github.com/specvital/web/src/backend/modules/user/usecase/bookmark"
-	historyuc "github.com/specvital/web/src/backend/modules/user/usecase/history"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/middleware"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
+	authhandler "github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/handler"
+	specviewhandler "github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/handler"
+	domainentity "github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain/port"
+	activetaskuc "github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/usecase/activetask"
+	bookmarkuc "github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/usecase/bookmark"
+	historyuc "github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/usecase/history"
 )
 
 func withTestUserContext(ctx context.Context, userID string) context.Context {

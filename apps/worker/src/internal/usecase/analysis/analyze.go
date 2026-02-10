@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/sync/semaphore"
 
-	"github.com/specvital/worker/internal/domain/analysis"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/analysis"
 )
 
 const (

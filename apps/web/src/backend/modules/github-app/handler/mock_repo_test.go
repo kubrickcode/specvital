@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/specvital/web/src/backend/modules/github-app/domain"
-	"github.com/specvital/web/src/backend/modules/github-app/domain/entity"
-	"github.com/specvital/web/src/backend/modules/github-app/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain/port"
 )
 
 var _ port.InstallationRepository = (*mockRepo)(nil)

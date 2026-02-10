@@ -6,9 +6,9 @@ import (
 
 	sitter "github.com/smacker/go-tree-sitter"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser/strategies/shared/phpast"
-	"github.com/specvital/core/pkg/parser/tspool"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/shared/phpast"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser/tspool"
 )
 
 // PHPExtractor extracts domain hints from PHP source code.

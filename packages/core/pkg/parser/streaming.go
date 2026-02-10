@@ -1,6 +1,6 @@
 package parser
 
-import "github.com/specvital/core/pkg/domain"
+import "github.com/kubrickcode/specvital/packages/core/pkg/domain"
 
 // FileResult represents the result of parsing a single test file in streaming mode.
 // It is sent through a channel for each file processed by ScanStream.

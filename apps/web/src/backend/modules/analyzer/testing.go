@@ -6,17 +6,17 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
-	"github.com/specvital/web/src/backend/modules/analyzer/handler"
-	"github.com/specvital/web/src/backend/modules/analyzer/usecase"
-	authhandler "github.com/specvital/web/src/backend/modules/auth/handler"
-	specviewhandler "github.com/specvital/web/src/backend/modules/spec-view/handler"
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
-	"github.com/specvital/web/src/backend/modules/user"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/handler"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/usecase"
+	authhandler "github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/handler"
+	specviewhandler "github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/handler"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user"
 )
 
 // mockRepository is a test double for port.Repository.

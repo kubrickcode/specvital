@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser"
-	"github.com/specvital/core/pkg/source"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser"
+	"github.com/kubrickcode/specvital/packages/core/pkg/source"
 
-	_ "github.com/specvital/core/pkg/parser/strategies/jest"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/jest"
 )
 
 func TestFileResult(t *testing.T) {

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/specvital/core/pkg/domain"
-	coreparser "github.com/specvital/core/pkg/parser"
-	"github.com/specvital/worker/internal/domain/analysis"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	coreparser "github.com/kubrickcode/specvital/packages/core/pkg/parser"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/analysis"
 )
 
 func TestConvertCoreToDomainInventory_Nil(t *testing.T) {

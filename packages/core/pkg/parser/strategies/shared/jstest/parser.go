@@ -7,8 +7,8 @@ import (
 
 	sitter "github.com/smacker/go-tree-sitter"
 
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/core/pkg/parser"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser"
 )
 
 // DetectLanguage determines the programming language based on file extension.

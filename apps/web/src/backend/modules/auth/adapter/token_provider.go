@@ -3,7 +3,7 @@ package adapter
 import (
 	"context"
 
-	"github.com/specvital/web/src/backend/modules/auth/usecase"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/usecase"
 )
 
 type TokenProviderAdapter struct {

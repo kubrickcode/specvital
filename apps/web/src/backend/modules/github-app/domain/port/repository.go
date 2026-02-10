@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/specvital/web/src/backend/modules/github-app/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain/entity"
 )
 
 type InstallationRepository interface {

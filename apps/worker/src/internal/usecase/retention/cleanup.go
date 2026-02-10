@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/specvital/worker/internal/domain/retention"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/retention"
 )
 
 const (

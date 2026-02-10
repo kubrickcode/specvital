@@ -10,16 +10,16 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	"github.com/specvital/web/src/backend/common/middleware"
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/auth/domain"
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
-	"github.com/specvital/web/src/backend/modules/auth/domain/port"
-	"github.com/specvital/web/src/backend/modules/auth/usecase"
-	specviewhandler "github.com/specvital/web/src/backend/modules/spec-view/handler"
-	subscriptionport "github.com/specvital/web/src/backend/modules/subscription/domain/port"
-	"github.com/specvital/web/src/backend/modules/user"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/middleware"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/usecase"
+	specviewhandler "github.com/kubrickcode/specvital/apps/web/src/backend/modules/spec-view/handler"
+	subscriptionport "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user"
 )
 
 type mockRepository struct {

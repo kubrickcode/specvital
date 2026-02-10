@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/specvital/worker/internal/domain/retention"
-	"github.com/specvital/worker/internal/infra/db"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/retention"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
 )
 
 // RetentionRepository implements retention.CleanupRepository for PostgreSQL.

@@ -9,10 +9,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/specvital/core/pkg/parser"
-	"github.com/specvital/core/pkg/source"
+	"github.com/kubrickcode/specvital/packages/core/pkg/parser"
+	"github.com/kubrickcode/specvital/packages/core/pkg/source"
 
-	_ "github.com/specvital/core/pkg/parser/strategies/all"
+	_ "github.com/kubrickcode/specvital/packages/core/pkg/parser/strategies/all"
 )
 
 func main() {

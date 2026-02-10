@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
-	"github.com/specvital/web/src/backend/modules/analyzer/usecase"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/usecase"
 )
 
 func newTestLogger() *logger.Logger {

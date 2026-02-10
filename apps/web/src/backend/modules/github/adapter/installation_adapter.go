@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	ghappdomain "github.com/specvital/web/src/backend/modules/github-app/domain"
-	ghappport "github.com/specvital/web/src/backend/modules/github-app/domain/port"
-	ghappusecase "github.com/specvital/web/src/backend/modules/github-app/usecase"
-	"github.com/specvital/web/src/backend/modules/github/domain/port"
+	ghappdomain "github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain"
+	ghappport "github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/domain/port"
+	ghappusecase "github.com/kubrickcode/specvital/apps/web/src/backend/modules/github-app/usecase"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github/domain/port"
 )
 
 var (

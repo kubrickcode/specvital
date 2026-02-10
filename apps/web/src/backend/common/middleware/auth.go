@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/specvital/web/src/backend/common/httputil"
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
-	"github.com/specvital/web/src/backend/modules/auth/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/httputil"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/port"
 )
 
 type contextKey string

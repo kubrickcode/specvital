@@ -5,8 +5,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/specvital/web/src/backend/internal/client"
-	"github.com/specvital/web/src/backend/modules/github/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/client"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github/domain/port"
 )
 
 var _ port.GitHubClient = (*GitHubClientAdapter)(nil)

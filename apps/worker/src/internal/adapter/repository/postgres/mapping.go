@@ -2,9 +2,9 @@ package postgres
 
 import (
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/specvital/core/pkg/domain"
-	"github.com/specvital/worker/internal/adapter/mapping"
-	"github.com/specvital/worker/internal/domain/analysis"
+	"github.com/kubrickcode/specvital/packages/core/pkg/domain"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/mapping"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/analysis"
 )
 
 // toPgUUID converts domain UUID (google/uuid) to pgtype.UUID for database operations.

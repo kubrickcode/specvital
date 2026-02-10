@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/web/src/backend/modules/subscription/domain"
-	"github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 type mockSubscriptionRepository struct {

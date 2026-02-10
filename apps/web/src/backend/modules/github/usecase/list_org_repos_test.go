@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/specvital/web/src/backend/modules/github/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/github/domain/port"
 )
 
 type mockInstallationTokenProvider struct {

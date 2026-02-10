@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/web/src/backend/modules/user/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain"
 )
 
 func TestEncodeCursor(t *testing.T) {

@@ -1,14 +1,14 @@
-module github.com/specvital/worker
+module github.com/kubrickcode/specvital/apps/worker/src
 
-go 1.24.11
+go 1.24.0
 
 require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.6
+	github.com/kubrickcode/specvital/packages/core v0.0.0
 	github.com/riverqueue/river v0.26.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.26.0
 	github.com/riverqueue/river/rivertype v0.28.0
-	github.com/specvital/core v1.6.1-0.20260204153714-3680094ca501
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.35.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.35.0
@@ -17,6 +17,8 @@ require (
 	golang.org/x/time v0.14.0
 	google.golang.org/genai v1.41.0
 )
+
+replace github.com/kubrickcode/specvital/packages/core => ../../../packages/core
 
 require (
 	cloud.google.com/go v0.116.0 // indirect

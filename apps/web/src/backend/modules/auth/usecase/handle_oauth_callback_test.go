@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/specvital/web/src/backend/modules/auth/domain"
-	"github.com/specvital/web/src/backend/modules/auth/domain/entity"
-	"github.com/specvital/web/src/backend/modules/auth/domain/port"
-	subscriptionport "github.com/specvital/web/src/backend/modules/subscription/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/auth/domain/port"
+	subscriptionport "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/port"
 )
 
 type mockTokenManager struct {

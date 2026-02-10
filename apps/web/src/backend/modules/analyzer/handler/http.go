@@ -8,17 +8,17 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/specvital/web/src/backend/common/logger"
-	"github.com/specvital/web/src/backend/common/middleware"
-	"github.com/specvital/web/src/backend/common/ratelimit"
-	"github.com/specvital/web/src/backend/internal/api"
-	"github.com/specvital/web/src/backend/internal/client"
-	"github.com/specvital/web/src/backend/modules/analyzer/adapter/mapper"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/entity"
-	"github.com/specvital/web/src/backend/modules/analyzer/domain/port"
-	"github.com/specvital/web/src/backend/modules/analyzer/usecase"
-	subscription "github.com/specvital/web/src/backend/modules/subscription/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/logger"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/middleware"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/ratelimit"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/client"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/adapter/mapper"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/analyzer/usecase"
+	subscription "github.com/kubrickcode/specvital/apps/web/src/backend/modules/subscription/domain/entity"
 )
 
 var validNamePattern = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)

@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/specvital/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/domain/specview"
 )
 
 type mockRepository struct {

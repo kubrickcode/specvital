@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/specvital/worker/internal/adapter/queue/fairness"
-	"github.com/specvital/worker/internal/infra/config"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/queue/fairness"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/config"
 )
 
 // ContainerConfig holds common configuration for dependency injection containers.

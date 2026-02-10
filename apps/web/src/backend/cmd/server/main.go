@@ -14,10 +14,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
-	"github.com/specvital/web/src/backend/common/config"
-	"github.com/specvital/web/src/backend/common/middleware"
-	"github.com/specvital/web/src/backend/common/server"
-	"github.com/specvital/web/src/backend/internal/api"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/config"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/middleware"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/common/server"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/internal/api"
 )
 
 const (

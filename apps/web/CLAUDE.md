@@ -45,7 +45,7 @@ Always modify `openapi.yaml` first, then regenerate. Never edit generated files.
 
 ### External Dependency
 
-- Test file parsing: `github.com/specvital/core`
+- Test file parsing: `github.com/kubrickcode/specvital/packages/core`
 - For parser changes → open issue in core repo first, NOT here
 
 ### E2E Test Maintenance

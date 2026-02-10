@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/specvital/worker/internal/adapter/queue/specview"
-	"github.com/specvital/worker/internal/app"
-	"github.com/specvital/worker/internal/infra/config"
-	"github.com/specvital/worker/internal/infra/db"
-	infraqueue "github.com/specvital/worker/internal/infra/queue"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/adapter/queue/specview"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/app"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/config"
+	"github.com/kubrickcode/specvital/apps/worker/src/internal/infra/db"
+	infraqueue "github.com/kubrickcode/specvital/apps/worker/src/internal/infra/queue"
 )
 
 // SpecGeneratorConfig holds configuration for the spec-generator service.

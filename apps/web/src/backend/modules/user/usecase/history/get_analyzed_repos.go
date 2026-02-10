@@ -6,9 +6,9 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/specvital/web/src/backend/modules/user/domain"
-	"github.com/specvital/web/src/backend/modules/user/domain/entity"
-	"github.com/specvital/web/src/backend/modules/user/domain/port"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain/entity"
+	"github.com/kubrickcode/specvital/apps/web/src/backend/modules/user/domain/port"
 )
 
 type GetAnalyzedReposInput struct {
