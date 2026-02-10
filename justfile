@@ -18,6 +18,26 @@ kill-port port:
         echo "No process found on port {{ port }}"
     fi
 
+lint-file file:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ file }}" in
+      */justfile|*Justfile)
+        just --fmt --unstable
+        ;;
+      *.json|*.yml|*.yaml|*.md)
+        npx prettier --write --cache "{{ file }}"
+        ;;
+      *.ts|*.tsx)
+        npx prettier --write --cache "{{ file }}"
+        ;;
+      *.go)
+        gofmt -w "{{ file }}"
+        ;;
+      *)
+        ;;
+    esac
+
 lint target="all":
     #!/usr/bin/env bash
     set -euox pipefail
