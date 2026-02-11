@@ -2,7 +2,7 @@ set dotenv-load := true
 
 root_dir := justfile_directory()
 
-deps: deps-root
+deps: deps-root deps-web-frontend
 
 migrate:
     #!/usr/bin/env bash
@@ -14,6 +14,9 @@ migrate:
 
 deps-root:
     pnpm install
+
+deps-web-frontend:
+    cd {{ root_dir }}/apps/web && just deps-frontend
 
 kill-port port:
     #!/usr/bin/env bash
