@@ -236,18 +236,6 @@
           "name": "ERD",
           "shortcut": "e",
           "terminalName": "erd"
-        },
-        {
-          "command": "cd apps/web && just dump-schema",
-          "name": "Dump Schema Web",
-          "shortcut": "s",
-          "terminalName": "dump-schema web"
-        },
-        {
-          "command": "cd apps/worker && just dump-schema",
-          "name": "Dump Schema Worker",
-          "shortcut": "d",
-          "terminalName": "dump-schema worker"
         }
       ]
     },
