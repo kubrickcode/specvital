@@ -2,7 +2,7 @@ set dotenv-load := true
 
 root_dir := justfile_directory()
 
-bootstrap: install-psql install-sqlc install-docker install-playwright install-oapi-codegen install-tbls
+bootstrap: install-atlas install-psql install-sqlc install-docker install-playwright install-oapi-codegen install-tbls
 
 deps: deps-root deps-web-frontend
 
@@ -47,6 +47,9 @@ install-playwright:
 
 install-oapi-codegen:
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.5.1
+
+install-atlas:
+    curl -sSf https://atlasgo.sh | sh
 
 install-tbls:
     go install github.com/k1LoW/tbls@v1.92.3
