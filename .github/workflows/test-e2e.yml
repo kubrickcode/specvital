@@ -74,8 +74,12 @@ jobs:
           PGPASSWORD=postgres psql -h localhost -U postgres -d specvital_test -c "DROP SCHEMA IF EXISTS public CASCADE;"
           PGPASSWORD=postgres psql -h localhost -U postgres -d specvital_test -f src/backend/internal/db/schema.sql
 
-      - name: Install dependencies
-        run: just deps
+      - name: Install workspace dependencies
+        working-directory: .
+        run: just deps-root
+
+      - name: Install frontend dependencies
+        run: just deps-frontend
 
       - name: Install Playwright browsers
         run: just install-playwright
