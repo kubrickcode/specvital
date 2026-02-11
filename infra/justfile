@@ -2,8 +2,6 @@ set dotenv-load := true
 
 root_dir := justfile_directory()
 
-deps: install-tbls
-
 makemigration name="changes":
     #!/usr/bin/env bash
     set -euo pipefail
@@ -37,9 +35,6 @@ reset:
 
 erd:
     cd db && atlas schema inspect --env local --web
-
-install-tbls:
-    go install github.com/k1LoW/tbls@v1.92.3
 
 gen-schema-docs:
     cd db && tbls doc --force

@@ -2,6 +2,8 @@ set dotenv-load := true
 
 root_dir := justfile_directory()
 
+bootstrap: install-psql install-sqlc install-docker install-playwright install-oapi-codegen install-tbls
+
 deps: deps-root deps-web-frontend
 
 migrate:
@@ -17,6 +19,37 @@ deps-root:
 
 deps-web-frontend:
     cd {{ root_dir }}/apps/web && just deps-frontend
+
+install-psql:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! command -v psql &> /dev/null; then
+      DEBIAN_FRONTEND=noninteractive apt-get update && \
+        apt-get -y install lsb-release wget && \
+        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+        echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list && \
+        apt-get update && \
+        apt-get -y install postgresql-client-16
+    fi
+
+install-sqlc:
+    go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.28.0
+
+install-docker:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! command -v docker &> /dev/null; then
+      curl -fsSL https://get.docker.com | sh
+    fi
+
+install-playwright:
+    npx playwright install --with-deps chromium
+
+install-oapi-codegen:
+    go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.5.1
+
+install-tbls:
+    go install github.com/k1LoW/tbls@v1.92.3
 
 kill-port port:
     #!/usr/bin/env bash
