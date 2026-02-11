@@ -4,6 +4,14 @@ root_dir := justfile_directory()
 
 deps: deps-root
 
+migrate:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd {{ root_dir }}/infra && just migrate
+    cd {{ root_dir }}/apps/web && just dump-schema
+    cd {{ root_dir }}/apps/worker && just dump-schema
+    echo "Migration complete! Schemas dumped to web and worker."
+
 deps-root:
     pnpm install
 

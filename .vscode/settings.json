@@ -213,7 +213,7 @@
       "shortcut": "d",
       "group": [
         {
-          "command": "cd infra && just migrate",
+          "command": "just migrate",
           "name": "Migrate",
           "shortcut": "m",
           "terminalName": "migrate"
@@ -236,18 +236,6 @@
           "name": "ERD",
           "shortcut": "e",
           "terminalName": "erd"
-        },
-        {
-          "command": "cd apps/web && just migrate-local",
-          "name": "Migrate Local Web",
-          "shortcut": "w",
-          "terminalName": "migrate-local web"
-        },
-        {
-          "command": "cd apps/worker && just migrate-local",
-          "name": "Migrate Local Worker",
-          "shortcut": "k",
-          "terminalName": "migrate-local worker"
         },
         {
           "command": "cd apps/web && just dump-schema",

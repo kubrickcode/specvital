@@ -42,16 +42,6 @@ install-railway:
 install-sqlc:
     go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.28.0
 
-# Reset database and apply schema from SQL dump
-migrate-local:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "Resetting database..."
-    PGPASSWORD=postgres psql -h postgres -U postgres -c "DROP DATABASE IF EXISTS specvital;"
-    PGPASSWORD=postgres psql -h postgres -U postgres -c "CREATE DATABASE specvital;"
-    echo "Applying schema..."
-    PGPASSWORD=postgres psql -h postgres -U postgres -d specvital -f src/internal/infra/db/schema.sql
-    echo "Migration complete!"
 
 build target="all":
     #!/usr/bin/env bash

@@ -59,18 +59,6 @@ typecheck-file file:
       npx tsc --noEmit --incremental
     fi
 
-# Reset database and apply schema from SQL dump
-migrate-local:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "Resetting database..."
-    PGPASSWORD=postgres psql -h postgres -U postgres -c "DROP DATABASE IF EXISTS specvital;"
-    PGPASSWORD=postgres psql -h postgres -U postgres -c "CREATE DATABASE specvital;"
-    echo "Applying schema..."
-    PGPASSWORD=postgres psql -h postgres -U postgres -d specvital -f src/backend/internal/db/schema.sql
-    echo "Inserting seed data..."
-    PGPASSWORD=postgres psql -h postgres -U postgres -d specvital -f src/backend/internal/db/seed.sql
-    echo "Migration complete!"
 
 run target *args:
     #!/usr/bin/env bash
