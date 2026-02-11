@@ -71,8 +71,11 @@ run target *args:
       spec-generator)
         cd {{ root_dir }}/apps/worker && just run-spec-generator {{ args }}
         ;;
+      spec-generator-mock)
+        cd {{ root_dir }}/apps/worker && just run-spec-generator-mock {{ args }}
+        ;;
       *)
-        echo "Unknown: {{ target }}. Use: web-backend, web-frontend, analyzer, spec-generator"
+        echo "Unknown: {{ target }}. Use: web-backend, web-frontend, analyzer, spec-generator, spec-generator-mock"
         exit 1
         ;;
     esac

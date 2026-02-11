@@ -77,7 +77,6 @@ User → GitHub URL → /analyze/{owner}/{repo}
 | `GITHUB_APP_SLUG`           | GitHub App slug name                   |
 | `GITHUB_APP_PRIVATE_KEY`    | GitHub App private key (PEM format)    |
 | `GITHUB_APP_WEBHOOK_SECRET` | Webhook signature verification         |
-| `SMEE_URL`                  | Webhook proxy URL (dev only)           |
 
 For stack-specific variables, see:
 

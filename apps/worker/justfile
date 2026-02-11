@@ -92,6 +92,9 @@ run-analyzer:
 run-spec-generator:
     cd src && air -c .air.spec-generator.toml
 
+run-spec-generator-mock:
+    cd src && MOCK_MODE=true air -c .air.spec-generator.toml
+
 run-retention-cleanup:
     cd src && go run ./cmd/retention-cleanup
 

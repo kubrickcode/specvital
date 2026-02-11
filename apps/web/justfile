@@ -88,9 +88,6 @@ run target *args:
         ;;
     esac
 
-smee:
-    npx smee-client -u "$SMEE_URL" -t http://localhost:8000/api/webhooks/github-app
-
 build target="all":
     #!/usr/bin/env bash
     set -euox pipefail

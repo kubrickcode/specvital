@@ -73,6 +73,18 @@
               "name": "frontend",
               "shortcut": "f",
               "terminalName": "frontend"
+            },
+            {
+              "command": "just run analyzer",
+              "name": "analyzer",
+              "shortcut": "w",
+              "terminalName": "analyzer"
+            },
+            {
+              "command": "just run spec-generator-mock",
+              "name": "spec-generator-mock",
+              "shortcut": "g",
+              "terminalName": "spec-generator-mock"
             }
           ]
         },
@@ -101,10 +113,10 @@
           "terminalName": "spec-generator"
         },
         {
-          "command": "cd apps/web && just smee",
-          "name": "Smee",
-          "shortcut": "s",
-          "terminalName": "smee"
+          "command": "just run spec-generator-mock",
+          "name": "Spec Generator Mock",
+          "shortcut": "m",
+          "terminalName": "spec-generator-mock"
         }
       ]
     },
