@@ -43,7 +43,7 @@ install-docker:
     fi
 
 install-playwright:
-    npx playwright install --with-deps chromium
+    cd {{ root_dir }}/apps/web && npx playwright install --with-deps chromium
 
 install-oapi-codegen:
     go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.5.1
