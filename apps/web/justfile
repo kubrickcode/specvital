@@ -42,7 +42,7 @@ install-oapi-codegen:
 
 lint-frontend:
     npx prettier --write --cache "src/frontend/**/*.{ts,tsx}"
-    cd src/frontend && pnpm eslint --fix --max-warnings=0 .
+    cd src/frontend && pnpm exec eslint --fix --max-warnings=0 .
 
 typecheck-file file:
     #!/usr/bin/env bash
