@@ -9,12 +9,12 @@ type PricingResponse = components["schemas"]["PricingResponse"];
 
 export const usePricing = () => {
   return useQuery({
+    gcTime: 30 * 60 * 1000,
     queryFn: async () => {
       const response = await apiFetch("/api/pricing");
       const data = await parseJsonResponse<PricingResponse>(response);
       return data.data;
     },
-    gcTime: 30 * 60 * 1000,
     queryKey: ["pricing"],
     staleTime: 30 * 60 * 1000,
   });

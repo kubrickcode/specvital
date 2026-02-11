@@ -7,7 +7,7 @@ bootstrap: install-psql install-sqlc install-playwright install-oapi-codegen
 deps: deps-frontend
 
 deps-frontend:
-    cd src/frontend && pnpm install
+    cd src/frontend && pnpm --ignore-workspace install
 
 dump-schema:
     PGPASSWORD=postgres pg_dump -h postgres -U postgres -d specvital --schema-only --no-owner --no-privileges -n public | grep -v '^\\\|^SET \|^SELECT ' > src/backend/internal/db/schema.sql
@@ -42,7 +42,7 @@ install-oapi-codegen:
 
 lint-frontend:
     npx prettier --write --cache "src/frontend/**/*.{ts,tsx}"
-    cd src/frontend && pnpm exec eslint --fix --max-warnings=0 .
+    cd src/frontend && npx eslint --fix --max-warnings=0 .
 
 typecheck-file file:
     #!/usr/bin/env bash
