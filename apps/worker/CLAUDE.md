@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 SpecVital Worker - Background job processing service for analyzing test files in GitHub repositories
 
 - Queue-based async worker (River on PostgreSQL)
-- External parser: `github.com/kubrickcode/specvital/lib`
+- Parser: `lib/` (monorepo 공유 라이브러리)
 
 ### Workers
 
@@ -50,10 +50,10 @@ Before running commands, read `justfile` or check available commands via `just -
 - `internal/infra/db/{queries.sql.go,models.go,db.go}`
 - Workflow: `just dump-schema` → `just gen-sqlc`
 
-### External Dependency
+### Monorepo Shared Library
 
-- Parsing logic lives in `github.com/kubrickcode/specvital/lib`, NOT here
-- For parser changes → open issue in core repo first
+- Parsing 로직: `lib/` (monorepo root, Go `replace` directive로 참조)
+- Parser 변경 시 `lib/` 디렉토리에서 직접 수정
 
 ### Build Artifacts Cleanup
 

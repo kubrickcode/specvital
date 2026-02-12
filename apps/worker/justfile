@@ -84,8 +84,5 @@ test target="all":
 tidy:
     go mod tidy
 
-update-core:
-    GOPROXY=direct go get -u github.com/specvital/core@main && go mod tidy
-
 docker-build service="analyzer":
     docker build -f infra/{{ service }}/Dockerfile -t specvital-{{ service }}:local .

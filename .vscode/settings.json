@@ -276,18 +276,6 @@
           "terminalName": "gen-sqlc worker"
         },
         {
-          "command": "cd apps/web && just update-core",
-          "name": "Update Core Web",
-          "shortcut": "w",
-          "terminalName": "update-core web"
-        },
-        {
-          "command": "cd apps/worker && just update-core",
-          "name": "Update Core Worker",
-          "shortcut": "k",
-          "terminalName": "update-core worker"
-        },
-        {
           "command": "cd apps/web && just bootstrap",
           "name": "Bootstrap",
           "shortcut": "b",

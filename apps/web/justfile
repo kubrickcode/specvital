@@ -93,9 +93,6 @@ test target="all":
         ;;
     esac
 
-update-core:
-    cd backend && GOPROXY=direct go get -u github.com/specvital/core@main && go mod tidy
-
 test-e2e *args:
     pnpm test:e2e {{ args }}
 

@@ -43,10 +43,10 @@ openapi.yaml → just gen-api → { server.gen.go, generated-types.ts }
 
 Always modify `openapi.yaml` first, then regenerate. Never edit generated files.
 
-### External Dependency
+### Monorepo Shared Library
 
-- Test file parsing: `github.com/kubrickcode/specvital/lib`
-- For parser changes → open issue in core repo first, NOT here
+- Test file parsing: `lib/` (monorepo root, Go `replace` directive로 참조)
+- Parser 변경 시 `lib/` 디렉토리에서 직접 수정
 
 ### E2E Test Maintenance
 
@@ -61,7 +61,7 @@ When implementing changes that affect user-facing behavior:
 
 ```
 User → GitHub URL → /analyze/{owner}/{repo}
-     → Backend → GitHub API → specvital/core parser → Response
+     → Backend → GitHub API → lib/parser → Response
 ```
 
 ## Environment Variables
