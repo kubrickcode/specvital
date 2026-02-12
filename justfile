@@ -65,25 +65,81 @@ kill-port port:
         echo "No process found on port {{ port }}"
     fi
 
+_lint-justfile mode *target:
+    just --fmt --unstable
+
+_lint-config mode *target:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ "{{ mode }}" = "batch" ]; then
+        npx prettier --write --cache "**/*.{json,yml,yaml,md}"
+    else
+        npx prettier --write --cache "{{ target }}"
+    fi
+
+_lint-ts mode *target:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ "{{ mode }}" = "batch" ]; then
+        npx prettier --write --cache "**/*.{ts,tsx}"
+        cd apps/web/frontend && npx eslint --fix --max-warnings=0 .
+    else
+        npx prettier --write --cache "{{ target }}"
+        if [[ "{{ target }}" == apps/web/frontend/* ]]; then
+            cd apps/web/frontend && npx eslint --fix --max-warnings=0 "{{ root_dir }}/{{ target }}"
+        fi
+    fi
+
+_lint-go mode *target:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ "{{ mode }}" = "batch" ]; then
+        gofmt -w .
+        for mod in apps/web/backend apps/worker lib; do
+            (cd "$mod" && go vet ./...)
+        done
+    else
+        gofmt -w "{{ target }}"
+        abs_dir="$(cd "$(dirname '{{ target }}')" && pwd)"
+        output=$( (cd "$abs_dir" && go vet .) 2>&1) || {
+            if echo "$output" | grep -q "build constraints exclude all Go files"; then
+                true
+            else
+                echo "$output" >&2
+                exit 1
+            fi
+        }
+    fi
+
+lint target="all":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ target }}" in
+      all)
+        just _lint-justfile batch
+        just _lint-config batch
+        just _lint-go batch
+        just _lint-ts batch
+        ;;
+      justfile)  just _lint-justfile batch ;;
+      config)    just _lint-config batch ;;
+      go)              just _lint-go batch ;;
+      ts|web-frontend) just _lint-ts batch ;;
+      *)
+        echo "Unknown target: {{ target }}"
+        exit 1
+        ;;
+    esac
+
 lint-file file:
     #!/usr/bin/env bash
     set -euo pipefail
     case "{{ file }}" in
-      */justfile|*Justfile)
-        just --fmt --unstable
-        ;;
-      *.json|*.yml|*.yaml|*.md)
-        npx prettier --write --cache "{{ file }}"
-        ;;
-      *.ts|*.tsx)
-        npx prettier --write --cache "{{ file }}"
-        ;;
-      *.go)
-        gofmt -w "{{ file }}"
-        go vet "$(dirname '{{ file }}')/..."
-        ;;
-      *)
-        ;;
+      */justfile|*Justfile)      just _lint-justfile file "{{ file }}" ;;
+      *.json|*.yml|*.yaml|*.md)  just _lint-config file "{{ file }}" ;;
+      *.ts|*.tsx)                just _lint-ts file "{{ file }}" ;;
+      *.go)                      just _lint-go file "{{ file }}" ;;
+      *) ;;
     esac
 
 release:
@@ -147,34 +203,6 @@ test project="all" target="all":
         ;;
       *)
         echo "Unknown: {{ project }}. Use: web, worker, core, all"
-        exit 1
-        ;;
-    esac
-
-lint target="all":
-    #!/usr/bin/env bash
-    set -euox pipefail
-    case "{{ target }}" in
-      all)
-        just lint justfile
-        just lint config
-        just lint go
-        just lint web-frontend
-        ;;
-      justfile)
-        just --fmt --unstable
-        ;;
-      config)
-        npx prettier --write --cache "**/*.{json,yml,yaml,md}"
-        ;;
-      go)
-        gofmt -w .
-        ;;
-      web-frontend)
-        cd apps/web && just lint-frontend
-        ;;
-      *)
-        echo "Unknown target: {{ target }}"
         exit 1
         ;;
     esac

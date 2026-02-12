@@ -18,8 +18,7 @@ gen-api:
     cd frontend && npx openapi-typescript ../backend/api/openapi.yaml -o lib/api/generated-types.ts
 
 lint-frontend:
-    npx prettier --write --cache "frontend/**/*.{ts,tsx}"
-    cd frontend && npx eslint --fix --max-warnings=0 .
+    cd {{ root_dir }} && just _lint-ts batch
 
 typecheck-file file:
     #!/usr/bin/env bash
