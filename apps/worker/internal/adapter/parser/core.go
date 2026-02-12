@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	coreparser "github.com/kubrickcode/specvital/lib/parser"
-	"github.com/kubrickcode/specvital/lib/source"
 	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/mapping"
 	"github.com/kubrickcode/specvital/apps/worker/internal/domain/analysis"
+	coreparser "github.com/kubrickcode/specvital/lib/parser"
+	"github.com/kubrickcode/specvital/lib/source"
 )
 
 // CoreParser implements analysis.Parser using specvital/core's parser package.

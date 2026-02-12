@@ -15,10 +15,10 @@ const (
 	defaultMinConns = 5
 
 	// Connection lifecycle settings for long-running analysis jobs
-	defaultConnectTimeout   = 10 * time.Second
+	defaultConnectTimeout    = 10 * time.Second
 	defaultHealthCheckPeriod = 30 * time.Second
-	defaultMaxConnIdleTime  = 5 * time.Minute
-	defaultMaxConnLifetime  = 30 * time.Minute
+	defaultMaxConnIdleTime   = 5 * time.Minute
+	defaultMaxConnLifetime   = 30 * time.Minute
 )
 
 func NewPool(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {

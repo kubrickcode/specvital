@@ -9,13 +9,13 @@ import (
 // ClassificationCache represents a cached Phase 1 classification result.
 // Used for incremental caching: when tests change, only new tests are classified.
 type ClassificationCache struct {
-	ClassificationResult *Phase1Output          // Phase 1 output (domain/feature structure)
-	CreatedAt            time.Time              // cache creation timestamp
-	ExpiresAt            time.Time              // cache expiration timestamp
-	FileSignature        []byte                 // deterministic hash of file paths
-	ID                   string                 // unique identifier
-	Language             Language               // language for classification
-	ModelID              string                 // AI model used for classification
+	ClassificationResult *Phase1Output           // Phase 1 output (domain/feature structure)
+	CreatedAt            time.Time               // cache creation timestamp
+	ExpiresAt            time.Time               // cache expiration timestamp
+	FileSignature        []byte                  // deterministic hash of file paths
+	ID                   string                  // unique identifier
+	Language             Language                // language for classification
+	ModelID              string                  // AI model used for classification
 	TestIndexMap         map[string]TestIdentity // test key -> test identity mapping
 }
 

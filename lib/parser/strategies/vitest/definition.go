@@ -4,8 +4,8 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/parser/detection/extraction"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/parser/framework"
 	"github.com/kubrickcode/specvital/lib/parser/framework/matchers"
 	"github.com/kubrickcode/specvital/lib/parser/strategies/shared/jstest"

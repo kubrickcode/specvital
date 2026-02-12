@@ -665,4 +665,3 @@ func TestRetentionRepository_DefaultBatchSize(t *testing.T) {
 		}
 	})
 }
-

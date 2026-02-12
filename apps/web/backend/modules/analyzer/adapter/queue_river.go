@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/rivertype"
 	"github.com/kubrickcode/specvital/apps/web/backend/common/queue"
 	"github.com/kubrickcode/specvital/apps/web/backend/modules/analyzer/domain/port"
 	subscription "github.com/kubrickcode/specvital/apps/web/backend/modules/subscription/domain/entity"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 )
 
 var _ port.QueueService = (*RiverQueueService)(nil)

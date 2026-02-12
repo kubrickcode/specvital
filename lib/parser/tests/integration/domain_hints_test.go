@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/parser"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/source"
 
 	// DomainHints extraction uses tree-sitter parsing which works independently of framework detection.

@@ -123,4 +123,3 @@ func BuildPhase1UserPromptWithAnchors(input specview.Phase1Input, language specv
 
 	return sb.String()
 }
-

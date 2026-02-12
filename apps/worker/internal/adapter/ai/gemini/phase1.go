@@ -318,4 +318,3 @@ func truncateForLog(s string, maxLen int) string {
 	}
 	return s[:maxLen] + "..."
 }
-

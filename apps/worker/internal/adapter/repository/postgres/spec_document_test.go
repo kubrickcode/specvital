@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/kubrickcode/specvital/lib/parser/domain"
-	"github.com/kubrickcode/specvital/lib/parser"
 	"github.com/kubrickcode/specvital/apps/worker/internal/domain/specview"
 	testdb "github.com/kubrickcode/specvital/apps/worker/internal/testutil/postgres"
+	"github.com/kubrickcode/specvital/lib/parser"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 )
 
 func TestSpecDocumentRepository_GetTestDataByAnalysisID(t *testing.T) {

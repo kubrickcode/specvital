@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/kubrickcode/specvital/lib/crypto"
 	"github.com/kubrickcode/specvital/apps/worker/internal/domain/analysis"
 	testdb "github.com/kubrickcode/specvital/apps/worker/internal/testutil/postgres"
+	"github.com/kubrickcode/specvital/lib/crypto"
 )
 
 // passthroughEncryptor returns input as-is for testing without real encryption.

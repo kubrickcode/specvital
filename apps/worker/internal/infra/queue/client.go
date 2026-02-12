@@ -5,9 +5,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/queue/analyze"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
-	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/queue/analyze"
 )
 
 // Client is insert-only (no worker).

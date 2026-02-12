@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/rivertype"
 	"github.com/kubrickcode/specvital/apps/worker/internal/domain/analysis"
 	uc "github.com/kubrickcode/specvital/apps/worker/internal/usecase/analysis"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 )
 
 const testParserVersion = "v1.0.0-test"

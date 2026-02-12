@@ -15,9 +15,9 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/kubrickcode/specvital/lib/parser"
 	"github.com/kubrickcode/specvital/apps/worker/internal/domain/analysis"
 	"github.com/kubrickcode/specvital/apps/worker/internal/infra/db"
+	"github.com/kubrickcode/specvital/lib/parser"
 )
 
 const defaultHost = "github.com"

@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/rivertype"
-	"github.com/kubrickcode/specvital/lib/crypto"
 	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/parser"
 	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/queue/analyze"
 	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/queue/fairness"
@@ -15,6 +12,9 @@ import (
 	"github.com/kubrickcode/specvital/apps/worker/internal/infra/db"
 	infraqueue "github.com/kubrickcode/specvital/apps/worker/internal/infra/queue"
 	analysisuc "github.com/kubrickcode/specvital/apps/worker/internal/usecase/analysis"
+	"github.com/kubrickcode/specvital/lib/crypto"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 )
 
 // AnalyzerContainer holds dependencies for the analyzer worker service.

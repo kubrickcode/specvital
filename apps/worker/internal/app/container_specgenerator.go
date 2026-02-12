@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/rivertype"
 	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/ai/gemini"
 	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/ai/mock"
 	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/queue/fairness"
@@ -16,6 +14,8 @@ import (
 	"github.com/kubrickcode/specvital/apps/worker/internal/infra/db"
 	infraqueue "github.com/kubrickcode/specvital/apps/worker/internal/infra/queue"
 	specviewuc "github.com/kubrickcode/specvital/apps/worker/internal/usecase/specview"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 )
 
 // SpecGeneratorContainer holds dependencies for the spec-generator worker service.

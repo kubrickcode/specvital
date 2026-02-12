@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
-	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/parser/detection"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 	domain_hints "github.com/kubrickcode/specvital/lib/parser/domain_hints"
 	"github.com/kubrickcode/specvital/lib/parser/framework"
 	"github.com/kubrickcode/specvital/lib/parser/strategies/shared/dotnetast"

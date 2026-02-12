@@ -1,9 +1,9 @@
 package mapping
 
 import (
-	"github.com/kubrickcode/specvital/lib/parser/domain"
-	coreparser "github.com/kubrickcode/specvital/lib/parser"
 	"github.com/kubrickcode/specvital/apps/worker/internal/domain/analysis"
+	coreparser "github.com/kubrickcode/specvital/lib/parser"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 )
 
 // ConvertCoreToDomainInventory converts inventory from specvital/core types to domain types.

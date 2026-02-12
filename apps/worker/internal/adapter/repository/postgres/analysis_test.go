@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/kubrickcode/specvital/lib/parser/domain"
-	"github.com/kubrickcode/specvital/lib/parser"
 	"github.com/kubrickcode/specvital/apps/worker/internal/domain/analysis"
 	testdb "github.com/kubrickcode/specvital/apps/worker/internal/testutil/postgres"
+	"github.com/kubrickcode/specvital/lib/parser"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 )
 
 const testParserVersion = "v1.0.0-test"

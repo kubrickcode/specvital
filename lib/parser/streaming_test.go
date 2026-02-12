@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/parser"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/source"
 
 	_ "github.com/kubrickcode/specvital/lib/parser/strategies/jest"
@@ -204,6 +204,7 @@ func TestScanStream(t *testing.T) {
 		defer src.Close()
 
 		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 
 		scanner := parser.NewScanner()
 		results, err := scanner.ScanStream(ctx, src)
@@ -315,6 +316,7 @@ func TestScanStream(t *testing.T) {
 		goroutinesBefore := runtime.NumGoroutine()
 
 		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 
 		scanner := parser.NewScanner()
 		results, err := scanner.ScanStream(ctx, src)

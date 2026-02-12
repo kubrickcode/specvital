@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/kubrickcode/specvital/lib/parser/domain"
-	"github.com/kubrickcode/specvital/lib/parser"
 	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/repository/postgres"
 	"github.com/kubrickcode/specvital/apps/worker/internal/domain/specview"
-	specviewuc "github.com/kubrickcode/specvital/apps/worker/internal/usecase/specview"
 	testdb "github.com/kubrickcode/specvital/apps/worker/internal/testutil/postgres"
+	specviewuc "github.com/kubrickcode/specvital/apps/worker/internal/usecase/specview"
+	"github.com/kubrickcode/specvital/lib/parser"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 )
 
 // mockAIProvider implements specview.AIProvider for integration testing.

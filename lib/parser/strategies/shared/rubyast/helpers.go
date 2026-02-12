@@ -3,8 +3,8 @@ package rubyast
 import (
 	sitter "github.com/smacker/go-tree-sitter"
 
-	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/parser"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 )
 
 // ExtractStringContent removes surrounding quotes from string nodes.

@@ -8,10 +8,10 @@ import (
 
 func TestEstimateTokens(t *testing.T) {
 	tests := []struct {
-		name     string
-		files    []specview.FileInfo
-		wantMin  int
-		wantMax  int
+		name    string
+		files   []specview.FileInfo
+		wantMin int
+		wantMax int
 	}{
 		{
 			name:    "empty files",
@@ -55,9 +55,9 @@ func TestNeedsChunking(t *testing.T) {
 	}
 
 	tests := []struct {
-		name   string
-		files  []specview.FileInfo
-		want   bool
+		name  string
+		files []specview.FileInfo
+		want  bool
 	}{
 		{
 			name:  "empty files",

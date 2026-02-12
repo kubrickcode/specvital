@@ -15,9 +15,9 @@ const (
 
 // CleanupUseCase orchestrates retention-based data cleanup.
 type CleanupUseCase struct {
-	batchSize      int
-	batchSleep     time.Duration
-	cleanupRepo    retention.CleanupRepository
+	batchSize   int
+	batchSleep  time.Duration
+	cleanupRepo retention.CleanupRepository
 }
 
 // Option configures CleanupUseCase.

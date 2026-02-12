@@ -45,14 +45,14 @@ const (
 	DefaultPhase1Timeout        = 60 * time.Minute
 	DefaultPhase2Timeout        = 25 * time.Minute
 	DefaultPhase2Concurrency    = int64(5)
-	DefaultFailureThreshold     = 0.5 // 50% feature failure threshold
-	DefaultPhase2FeatureTimeout = 90 * time.Second  // 1m30s for single feature conversion
+	DefaultFailureThreshold     = 0.5              // 50% feature failure threshold
+	DefaultPhase2FeatureTimeout = 90 * time.Second // 1m30s for single feature conversion
 
 	// Progress logging thresholds for Phase 2
-	progressLogBatchSize     = 10               // Log every N completions
-	progressLogTimeInterval  = 30 * time.Second // Log at least every 30 seconds
-	progressLogMinFeatures   = 10               // Only log progress when total >= this
-	salvageCacheTimeout      = 10 * time.Second
+	progressLogBatchSize    = 10               // Log every N completions
+	progressLogTimeInterval = 30 * time.Second // Log at least every 30 seconds
+	progressLogMinFeatures  = 10               // Only log progress when total >= this
+	salvageCacheTimeout     = 10 * time.Second
 )
 
 // Config holds configuration for GenerateSpecViewUseCase.
@@ -821,12 +821,12 @@ type featureTask struct {
 
 // progressTracker tracks Phase 2 progress and handles batch logging.
 type progressTracker struct {
-	analysisID string
-	completed  atomic.Int32
-	failed     atomic.Int32
+	analysisID  string
+	completed   atomic.Int32
+	failed      atomic.Int32
 	lastLogTime atomic.Int64 // unix nano
-	startTime  time.Time
-	total      int32
+	startTime   time.Time
+	total       int32
 }
 
 func newProgressTracker(total int, analysisID string) *progressTracker {

@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/parser/detection/extraction"
+	"github.com/kubrickcode/specvital/lib/parser/domain"
 	"github.com/kubrickcode/specvital/lib/parser/framework"
 )
 

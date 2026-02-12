@@ -12,10 +12,10 @@ type Language string
 // SpecViewRequest represents a request to generate a spec-view document.
 type SpecViewRequest struct {
 	AnalysisID      string
-	ForceRegenerate bool     // skip cache and create new version
+	ForceRegenerate bool // skip cache and create new version
 	Language        Language
-	ModelID         string   // optional: AI model override
-	UserID          string   // required: document owner
+	ModelID         string // optional: AI model override
+	UserID          string // required: document owner
 }
 
 func (r SpecViewRequest) Validate() error {
@@ -41,11 +41,11 @@ func (l Language) IsValid() bool {
 
 // SpecViewResult represents the result of spec-view generation.
 type SpecViewResult struct {
-	AnalysisContext     *AnalysisContext    // repository context for logging
-	BehaviorCacheStats  *BehaviorCacheStats // Phase 2 behavior cache statistics (nil on document cache hit)
-	CacheHit            bool
-	ContentHash         []byte
-	DocumentID          string
+	AnalysisContext    *AnalysisContext    // repository context for logging
+	BehaviorCacheStats *BehaviorCacheStats // Phase 2 behavior cache statistics (nil on document cache hit)
+	CacheHit           bool
+	ContentHash        []byte
+	DocumentID         string
 }
 
 // BehaviorCacheStats represents cache hit/miss statistics for Phase 2 behavior cache.
@@ -79,7 +79,7 @@ type DomainHints struct {
 
 // TestInfo represents a single test within a file.
 type TestInfo struct {
-	Index      int    // unique identifier for cross-referencing in Phase1Output.FeatureGroup.TestIndices
+	Index      int // unique identifier for cross-referencing in Phase1Output.FeatureGroup.TestIndices
 	Name       string
 	SuitePath  string // nested suite path (e.g., "SuiteA > SuiteB")
 	TestCaseID string // FK to test_cases table

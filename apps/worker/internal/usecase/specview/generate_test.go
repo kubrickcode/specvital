@@ -15,16 +15,16 @@ import (
 )
 
 type mockRepository struct {
-	findCachedBehaviorsFn         func(ctx context.Context, cacheKeyHashes [][]byte) (map[string]string, error)
-	findClassificationCacheFn     func(ctx context.Context, fileSignature []byte, language specview.Language, modelID string) (*specview.ClassificationCache, error)
-	findDocumentByContentHashFn   func(ctx context.Context, userID string, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error)
-	getAnalysisContextFn          func(ctx context.Context, analysisID string) (*specview.AnalysisContext, error)
-	getTestDataByAnalysisIDFn     func(ctx context.Context, analysisID string) ([]specview.FileInfo, error)
-	recordUsageEventFn            func(ctx context.Context, userID string, documentID string, quotaAmount int) error
-	recordUserHistoryFn           func(ctx context.Context, userID string, documentID string) error
-	saveBehaviorCacheFn           func(ctx context.Context, entries []specview.BehaviorCacheEntry) error
-	saveClassificationCacheFn     func(ctx context.Context, cache *specview.ClassificationCache) error
-	saveDocumentFn                func(ctx context.Context, doc *specview.SpecDocument) error
+	findCachedBehaviorsFn       func(ctx context.Context, cacheKeyHashes [][]byte) (map[string]string, error)
+	findClassificationCacheFn   func(ctx context.Context, fileSignature []byte, language specview.Language, modelID string) (*specview.ClassificationCache, error)
+	findDocumentByContentHashFn func(ctx context.Context, userID string, contentHash []byte, language specview.Language, modelID string) (*specview.SpecDocument, error)
+	getAnalysisContextFn        func(ctx context.Context, analysisID string) (*specview.AnalysisContext, error)
+	getTestDataByAnalysisIDFn   func(ctx context.Context, analysisID string) ([]specview.FileInfo, error)
+	recordUsageEventFn          func(ctx context.Context, userID string, documentID string, quotaAmount int) error
+	recordUserHistoryFn         func(ctx context.Context, userID string, documentID string) error
+	saveBehaviorCacheFn         func(ctx context.Context, entries []specview.BehaviorCacheEntry) error
+	saveClassificationCacheFn   func(ctx context.Context, cache *specview.ClassificationCache) error
+	saveDocumentFn              func(ctx context.Context, doc *specview.SpecDocument) error
 }
 
 func (m *mockRepository) FindCachedBehaviors(ctx context.Context, cacheKeyHashes [][]byte) (map[string]string, error) {
@@ -1193,7 +1193,6 @@ func TestGenerateSpecViewUseCase_RecordUsageEvent(t *testing.T) {
 			t.Error("expected usage event NOT to be recorded on cache hit")
 		}
 	})
-
 
 	t.Run("usage event recording failure is non-blocking", func(t *testing.T) {
 		files := newTestFiles()

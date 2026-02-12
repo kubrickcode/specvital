@@ -247,4 +247,3 @@ func TestClassifyDomains_EmptyFiles_ReturnsError(t *testing.T) {
 		t.Error("expected error for empty files")
 	}
 }
-
