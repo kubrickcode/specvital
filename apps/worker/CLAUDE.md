@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 SpecVital Worker - Background job processing service for analyzing test files in GitHub repositories
 
 - Queue-based async worker (River on PostgreSQL)
-- Parser: `lib/` (monorepo 공유 라이브러리)
+- Parser: `lib/` (monorepo shared library, referenced via Go `replace` directive)
 
 ### Workers
 
@@ -33,11 +33,11 @@ Required env vars:
 
 ## Documentation Map
 
-| Context                         | Reference        |
-| ------------------------------- | ---------------- |
-| Architecture / Data flow        | `docs/en/`       |
-| Design decisions (why this way) | `docs/en/adr/`   |
-| Coding rules / Test patterns    | `.claude/rules/` |
+| Context                         | Reference             |
+| ------------------------------- | --------------------- |
+| Architecture / Data flow        | `docs/en/`            |
+| Design decisions (why this way) | `docs/en/adr/worker/` |
+| Coding rules / Test patterns    | Root `.claude/rules/` |
 
 ## Commands
 
@@ -52,8 +52,8 @@ Before running commands, read `justfile` or check available commands via `just -
 
 ### Monorepo Shared Library
 
-- Parsing 로직: `lib/` (monorepo root, Go `replace` directive로 참조)
-- Parser 변경 시 `lib/` 디렉토리에서 직접 수정
+- Parsing logic lives in `lib/` (monorepo root, referenced via Go `replace` directive)
+- For parser changes, modify `lib/` directly
 
 ### Build Artifacts Cleanup
 
@@ -65,9 +65,10 @@ Before running commands, read `justfile` or check available commands via `just -
 
 ### DB Schema Changes
 
-1. Modify schema in specvital-infra repo
-2. `just dump-schema` → `just gen-sqlc`
-3. Update `adapter/repository/` implementation
+1. Edit `infra/db/schema/schema.hcl` (monorepo root)
+2. `cd infra && just makemigration <name>` → `just migrate`
+3. `just dump-schema` → `just gen-sqlc`
+4. Update `adapter/repository/` implementation
 
 ### Adding New Worker
 

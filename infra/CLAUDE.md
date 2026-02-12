@@ -4,19 +4,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SpecVital Infra - Shared infrastructure for the SpecVital platform (test file analysis for GitHub repositories)
+SpecVital Infra - Database schema management and deployment configuration for the SpecVital monorepo
 
-- **Purpose**: Database schema management + documentation hub
-- **No application code**: Only infrastructure and docs
-- **Polyrepo foundation**: Must be started before collector/web repos
+- **Purpose**: Database schema (Atlas HCL) + Railway deployment configs
+- **No application code**: Only infrastructure definitions
+- **Monorepo path**: `infra/` within the root monorepo
 
-## Repository Map
+## Directory Structure
 
 ```
-specvital/
-├── infra      # This repo - DB schema + docs (start first!)
-├── collector  # Go Worker (consumes queue, uses core parser)
-└── web        # NestJS + Next.js (API + Dashboard)
+infra/
+├── db/
+│   ├── schema/
+│   │   ├── schema.hcl          # Source of truth (declarative)
+│   │   ├── migrations/         # Timestamped SQL diffs
+│   │   └── rollbacks/
+│   ├── atlas.hcl               # Environment configs (local/ci/prod)
+│   └── docs/                   # Generated schema docs (tbls)
+├── railway/                    # Centralized deployment configs
+│   ├── web-backend/
+│   ├── analyzer/
+│   ├── spec-generator/
+│   └── retention-cleanup/
+└── justfile
 ```
 
 ## Commands
@@ -24,42 +34,26 @@ specvital/
 ```bash
 just --list              # View all available commands
 
-# Development
-just deps                # Install dependencies (pnpm install)
+# Migrations
+just makemigration name  # Create new migration (Atlas diff → SQL)
 just migrate             # Apply pending migrations
 just reset               # Wipe DB + reapply all migrations
-just makemigration name  # Create new migration
-
-# Linting
-just lint all            # Format justfile + config files
-just lint config         # Prettier for JSON/YAML/MD
-just lint justfile       # Format justfile
-
-# Release
-just release             # Trigger production release (main → release branch)
-
-# River Queue (for collector integration)
-just river-install       # Install River CLI
-just river-dump          # Export River migration SQL
-just river-migrate name  # Create River migration files
 
 # Schema Visualization
 just erd                 # Interactive ERD in browser (Atlas)
-just install-tbls        # Install tbls (required for schema-doc)
-just gen-schema-docs     # Generate schema docs with tbls (indexes, constraints, ERD)
+just gen-schema-docs     # Generate schema docs with tbls
+
+# River Queue
+just river-install       # Install River CLI
+just river-dump          # Export River migration SQL
+just river-migrate name  # Create River migration files (split for Atlas)
 ```
+
+Note: Root `just migrate` orchestrates infra migration + schema dump for web/worker.
 
 ## Database Schema
 
 **Tool**: [Atlas](https://atlasgo.io/) (HCL-based declarative schema)
-
-### Key Files
-
-| Path                    | Description                               |
-| ----------------------- | ----------------------------------------- |
-| `db/schema/schema.hcl`  | Source of truth (declarative)             |
-| `db/schema/migrations/` | Timestamped SQL migrations                |
-| `db/atlas.hcl`          | Environment configs (local/ci/production) |
 
 ### Schema Change Workflow
 
@@ -83,61 +77,9 @@ just gen-schema-docs     # Generate schema docs with tbls (indexes, constraints,
 - `test_status`: active, skipped, todo, focused, xfail
 - `oauth_provider`: github
 
-## Multi-Repo Development
-
-### Network Setup
-
-This repo creates `specvital-network`. Other repos connect to it:
-
-```yaml
-# In other repo's .devcontainer/docker-compose.yml
-networks:
-  specvital-network:
-    name: specvital-network
-    external: true
-```
-
-### Service Hostnames (from other devcontainers)
-
-- PostgreSQL: `specvital-postgres:5432`
-- Redis: `specvital-redis:6379`
-
-## Documentation
-
-| Path           | Content                       |
-| -------------- | ----------------------------- |
-| `docs/en/`     | English documentation         |
-| `docs/ko/`     | Korean documentation          |
-| `docs/en/adr/` | Architecture Decision Records |
-| `docs/en/prd/` | Product Requirements          |
-
-**Bilingual requirement**: Keep en/ko folders in sync when updating docs.
-
-## Release Process
-
-1. Merge to main via PR
-2. `just release` merges main → release branch
-3. GitHub Actions:
-   - Analyzes commits (Conventional Commits)
-   - Determines version bump (major/minor/patch)
-   - Updates CHANGELOG.md
-   - Applies migrations to production
-   - Creates GitHub release
-4. Release branch syncs back to main
-
 ## Railway Deployment
 
-All Railway deployment configs are centralized under `infra/railway/`.
-
-### Directory Structure
-
-```
-infra/railway/
-├── web-backend/        # Go API server
-├── analyzer/           # Test file analysis worker
-├── spec-generator/     # AI spec document generation worker
-└── retention-cleanup/  # Scheduled data cleanup (cron)
-```
+All Railway deployment configs are centralized under `railway/`.
 
 ### Per-Service Files
 
@@ -159,11 +101,6 @@ rm railway.json
 `dockerfilePath` in `railway.json` points to `infra/railway/<service>/Dockerfile` (repo root relative).
 Dockerfile `COPY` paths use `apps/web/...` or `apps/worker/...` prefixes (repo root as build context).
 
-### Workflows
-
-- `.github/workflows/release/deploy-web.yml` - web-backend deployment
-- `.github/workflows/release/deploy-workers.yml` - worker services (matrix: analyzer, spec-generator, retention-cleanup)
-
 ## Project-Specific Rules
 
 ### River Queue Integration
@@ -175,10 +112,9 @@ Dockerfile `COPY` paths use `apps/web/...` or `apps/worker/...` prefixes (repo r
 ### Environment Variables
 
 - `DATABASE_URL` - PostgreSQL connection (auto-configured in devcontainer)
-- `REDIS_URL` - Redis connection
 
 ### CI/CD
 
-- `lint.yml` - Prettier check on PR/push
 - `release.yml` - Semantic release on release branch
-- `migrate.yml` - Production migration on release branch
+- `release-migrate.yml` - Production migration on release branch
+- `release-deploy-web.yml` / `release-deploy-workers.yml` - Railway deployment

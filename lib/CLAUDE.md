@@ -4,32 +4,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SpecVital Core - Shared Go library for specvital ecosystem
+SpecVital Lib - Shared Go library for the SpecVital monorepo
 
 - Test file parsing (20+ frameworks, tree-sitter AST)
-- Cryptography utilities (encryption shared by web & collector)
+- Cryptography utilities (encryption shared by web backend & worker)
 - Source abstraction (local filesystem, git repos)
 - Domain models
+- **Monorepo path**: `lib/` — referenced by `apps/web/backend` and `apps/worker` via Go `replace` directive
 
 ## Documentation Map
 
-| Context                 | Reference        |
-| ----------------------- | ---------------- |
-| API usage / Quick start | `README.md`      |
-| Available commands      | `just --list`    |
-| Coding rules            | `.claude/rules/` |
-| Architecture details    | `README.md`      |
+| Context                 | Reference             |
+| ----------------------- | --------------------- |
+| API usage / Quick start | `README.md`           |
+| Available commands      | `just --list`         |
+| Coding rules            | Root `.claude/rules/` |
+| Architecture details    | `README.md`           |
+| Architecture decisions  | `docs/en/adr/core/`   |
 
 ## Commands
 
-Before running commands, check available commands via `just --list`
-
 ```bash
-# Common commands
-just test              # Run all tests
-just test unit         # Unit tests only
-just test integration  # Integration tests (clones real repos, ~10min)
-just snapshot-update   # Update golden snapshots after intentional changes
+just --list                # View all available commands
+just test                  # Run all tests
+just test unit             # Unit tests only
+just test integration      # Integration tests (clones real repos, ~10min)
+just snapshot-update       # Update golden snapshots after intentional changes
 ```
 
 ## Project-Specific Rules

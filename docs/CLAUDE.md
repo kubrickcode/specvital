@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Central documentation repository for the Specvital platform (https://specvital.github.io)
+SpecVital Docs - VitePress documentation site for the SpecVital platform
 
-- VitePress-based static documentation site
+- **Monorepo path**: `docs/` within the root monorepo
+- VitePress-based static site, deployed to GitHub Pages
 - Multi-language support (English `/en/`, Korean `/ko/`)
-- Auto-deployed to GitHub Pages on push to main branch
 
 ## Commands
 
@@ -21,12 +21,6 @@ pnpm docs:build
 
 # Preview build
 pnpm docs:preview
-
-# Install dependencies
-just deps
-
-# Format all files
-just lint all
 ```
 
 ## Architecture
@@ -38,30 +32,31 @@ docs/
 │   ├── prd/                 # Product Requirements Document
 │   └── adr/                 # Architecture Decision Records
 │       ├── XX-*.md          # Cross-cutting ADR (root level)
-│       ├── core/            # Core microservice ADR
-│       ├── worker/          # Worker microservice ADR
-│       └── web/             # Web microservice ADR
-└── ko/                      # Korean docs (mirrors en/ structure)
+│       ├── core/            # Core (lib) ADR
+│       ├── worker/          # Worker ADR
+│       └── web/             # Web ADR
+├── ko/                      # Korean docs (mirrors en/ structure)
+└── schema/                  # OpenAPI schema definitions
 ```
 
 ## Documentation Rules
 
 ### CRITICAL: Infra ADR Placement
 
-> **Infra repository has NO standalone ADR folder.**
+> **Infra has NO standalone ADR folder.**
 
-The `infra` repository contains only shared database schemas and infrastructure configurations. It has no independent business logic, so:
+`infra/` contains only shared database schemas and deployment configs. It has no independent business logic, so:
 
 - **Database schema ADR** → Place in **Cross-cutting ADR** (root level `adr/XX-*.md`)
 - **NEVER create** `adr/infra/` folder
 
-**Rationale**: Infra serves all services (core, worker, web). Schema decisions are cross-cutting by nature.
+**Rationale**: Infra serves all services (lib, worker, web). Schema decisions are cross-cutting by nature.
 
 ### CRITICAL: Adding New Documents
 
 > **VIOLATION WARNING: Skipping ANY file is a critical failure.**
 >
-> **⚠️ `docs/en/index.md` and `docs/ko/index.md` are ALWAYS required but MOST MISSED (10+ occurrences).**
+> **`docs/en/index.md` and `docs/ko/index.md` are ALWAYS required but MOST MISSED (10+ occurrences).**
 
 **Step 1: Create Document Files**
 
@@ -116,9 +111,9 @@ The `infra` repository contains only shared database schemas and infrastructure 
 
 > **RED FLAG CHECK:**
 >
-> ❌ Updated only 4 files for category ADR → **MISSED 2 FILES** (homepage)
-> ❌ Didn't touch `docs/en/index.md` → **CRITICAL MISS**
-> ❌ Didn't touch `docs/ko/index.md` → **CRITICAL MISS**
+> - Updated only 4 files for category ADR → **MISSED 2 FILES** (homepage)
+> - Didn't touch `docs/en/index.md` → **CRITICAL MISS**
+> - Didn't touch `docs/ko/index.md` → **CRITICAL MISS**
 >
 > **If unsure, ALWAYS update `docs/en/index.md` and `docs/ko/index.md` FIRST.**
 
@@ -135,9 +130,6 @@ The `infra` repository contains only shared database schemas and infrastructure 
 - Use noun-ending style (명사형 종결): "~생성", "~필요", "~제공", "~처리", "~확인"
 - **NEVER use verb-ending style** (동사 종결어미): "~한다", "~이다", "~합니다", "~됩니다"
 - Example:
-  - ✅ "정적 분석을 통한 테스트 카운트"
-  - ✅ "데이터 무결성 검증"
-  - ✅ "API 호출 최소화"
-  - ❌ "정적 분석을 통해 테스트를 카운트한다"
-  - ❌ "데이터 무결성을 검증합니다"
-  - ❌ "API 호출이 최소화됩니다"
+  - "정적 분석을 통한 테스트 카운트"
+  - "데이터 무결성 검증"
+  - "API 호출 최소화"

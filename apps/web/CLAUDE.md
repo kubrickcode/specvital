@@ -45,8 +45,8 @@ Always modify `openapi.yaml` first, then regenerate. Never edit generated files.
 
 ### Monorepo Shared Library
 
-- Test file parsing: `lib/` (monorepo root, Go `replace` directive로 참조)
-- Parser 변경 시 `lib/` 디렉토리에서 직접 수정
+- Test file parsing: `lib/` (monorepo root, referenced via Go `replace` directive)
+- For parser changes, modify `lib/` directly
 
 ### E2E Test Maintenance
 
