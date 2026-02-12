@@ -1,0 +1,42 @@
+name: Web Frontend Tests
+
+on:
+  pull_request:
+    types: [synchronize, opened, reopened, unlocked]
+    paths:
+      - "apps/web/frontend/**"
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/frontend/**"
+  workflow_dispatch:
+
+jobs:
+  frontend-tests:
+    name: Run Frontend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.18.0"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: extractions/setup-just@v3
+
+      - name: Install root dependencies
+        working-directory: .
+        run: just deps-root
+
+      - name: Install frontend dependencies
+        run: just deps-frontend
+
+      - name: Run tests
+        run: just test frontend

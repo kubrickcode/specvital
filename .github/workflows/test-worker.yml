@@ -1,0 +1,31 @@
+name: Worker Tests
+
+on:
+  pull_request:
+    types: [synchronize, opened, reopened, unlocked]
+    paths:
+      - "apps/worker/**"
+  push:
+    branches: [main]
+    paths:
+      - "apps/worker/**"
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.24"
+
+      - uses: extractions/setup-just@v3
+
+      - name: Run tests
+        run: just test unit
