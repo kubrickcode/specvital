@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -16,6 +16,12 @@ vi.mock("@/features/auth/hooks/use-login-modal", () => ({
   useLoginModal: () => ({
     open: vi.fn(),
   }),
+}));
+
+vi.mock("@/i18n/navigation", () => ({
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 Object.defineProperty(window, "matchMedia", {
@@ -45,10 +51,17 @@ const messages = {
       tests: "tests",
       update: "Update",
     },
+    delta: {
+      decreased: "Tests decreased by {count}",
+      increased: "Tests increased by {count}",
+      unchanged: "Tests unchanged",
+    },
     status: {
+      analyzing: "Analyzing...",
       focused: "Focused",
       newCommits: "New commits",
       skippedHigh: "High skip",
+      unknown: "Status unknown",
       upToDate: "Up to date",
     },
   },
@@ -109,8 +122,10 @@ describe("RepositoryCard", () => {
         variant: "dashboard",
       });
 
-      expect(screen.getByRole("button", { name: /remove bookmark/i })).toBeInTheDocument();
-      expect(screen.getByLabelText("Bookmarked")).toBeInTheDocument();
+      const button = screen.getByRole("button", { name: /remove bookmark/i });
+
+      expect(button).toBeInTheDocument();
+      expect(button).toHaveAttribute("aria-pressed", "true");
     });
   });
 
@@ -143,6 +158,106 @@ describe("RepositoryCard", () => {
       renderRepositoryCard({ variant: "dashboard" });
 
       expect(screen.getByRole("button", { name: /sign in to bookmark/i })).toBeInTheDocument();
+    });
+  });
+
+  describe("summary stats section", () => {
+    it("renders test count and status badge when analysis exists", () => {
+      renderRepositoryCard({
+        repo: createMockRepo({
+          latestAnalysis: {
+            analyzedAt: "2024-06-01T12:00:00Z",
+            change: 5,
+            commitSha: "abc123",
+            testCount: 42,
+          },
+          updateStatus: "up-to-date",
+        }),
+      });
+
+      expect(screen.getByText("42")).toBeInTheDocument();
+      expect(screen.getByText("tests")).toBeInTheDocument();
+      expect(screen.getByText("Up to date")).toBeInTheDocument();
+    });
+
+    it("shows no analysis message when latestAnalysis is absent", () => {
+      renderRepositoryCard({
+        repo: createMockRepo({ latestAnalysis: undefined }),
+      });
+
+      expect(screen.getByText("No analysis yet")).toBeInTheDocument();
+    });
+  });
+
+  describe("reanalysis", () => {
+    it("shows reanalyze button for repos with new-commits status", () => {
+      renderRepositoryCard({
+        repo: createMockRepo({
+          latestAnalysis: {
+            analyzedAt: "2024-06-01T12:00:00Z",
+            change: 0,
+            commitSha: "abc123",
+            testCount: 10,
+          },
+          updateStatus: "new-commits",
+        }),
+      });
+
+      expect(screen.getByRole("button", { name: /reanalyze/i })).toBeInTheDocument();
+      expect(screen.getByText("Update")).toBeInTheDocument();
+    });
+
+    it("calls onReanalyze when reanalyze button is clicked", () => {
+      const onReanalyze = vi.fn();
+      renderRepositoryCard({
+        onReanalyze,
+        repo: createMockRepo({
+          latestAnalysis: {
+            analyzedAt: "2024-06-01T12:00:00Z",
+            change: 0,
+            commitSha: "abc123",
+            testCount: 10,
+          },
+          updateStatus: "new-commits",
+        }),
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: /reanalyze/i }));
+
+      expect(onReanalyze).toHaveBeenCalledWith("facebook", "react");
+    });
+
+    it("does not show reanalyze button for up-to-date repos", () => {
+      renderRepositoryCard({
+        repo: createMockRepo({
+          latestAnalysis: {
+            analyzedAt: "2024-06-01T12:00:00Z",
+            change: 0,
+            commitSha: "abc123",
+            testCount: 10,
+          },
+          updateStatus: "up-to-date",
+        }),
+      });
+
+      expect(screen.queryByRole("button", { name: /reanalyze/i })).not.toBeInTheDocument();
+    });
+
+    it("hides reanalyze button and shows analyzing badge when status becomes analyzing", () => {
+      renderRepositoryCard({
+        repo: createMockRepo({
+          latestAnalysis: {
+            analyzedAt: "2024-06-01T12:00:00Z",
+            change: 0,
+            commitSha: "abc123",
+            testCount: 10,
+          },
+          updateStatus: "analyzing" as "up-to-date",
+        }),
+      });
+
+      expect(screen.queryByRole("button", { name: /reanalyze/i })).not.toBeInTheDocument();
+      expect(screen.getByText("Analyzing...")).toBeInTheDocument();
     });
   });
 });

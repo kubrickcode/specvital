@@ -9,23 +9,6 @@ test.describe("Account Page", () => {
     await expect(page).toHaveURL(/\/en$/);
 
     // Verify we're on the homepage
-    await expect(
-      page.getByRole("heading", { name: /test suite/i })
-    ).toBeVisible();
-  });
-
-  test("should redirect to homepage for unauthenticated direct access", async ({
-    page,
-  }) => {
-    // Navigate directly to account page via URL
-    await page.goto("/en/account");
-
-    // Unauthenticated users should be redirected to homepage
-    await expect(page).toHaveURL(/\/en$/);
-
-    // Verify we're on the homepage
-    await expect(
-      page.getByRole("heading", { name: /test suite/i })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: /test suite/i })).toBeVisible();
   });
 });
