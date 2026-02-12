@@ -9,9 +9,6 @@ coverage
 .next
 out
 
-# Generated files
-**/generated-types.ts
-
 # Other
 .git
 .cache
