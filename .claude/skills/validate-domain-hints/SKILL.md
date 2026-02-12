@@ -8,17 +8,17 @@ allowed-tools: Bash(*), Read, Write, Grep, Glob
 
 ## Working Context
 
-This skill operates exclusively within `packages/core` (SpecVital Core parser).
-All commands, file lookups, and report outputs are scoped to `packages/core/`.
+This skill operates exclusively within `lib` (SpecVital Core parser).
+All commands, file lookups, and report outputs are scoped to `lib/`.
 
-- **Source code**: `packages/core/pkg/`
-- **Integration tests**: `packages/core/tests/integration/`
-- **repos.yaml**: `packages/core/tests/integration/repos.yaml`
-- **ADR documents**: `packages/core/docs/en/adr/core/`
-- **justfile**: `packages/core/justfile` (use `just` commands from this directory)
-- **Report output**: `packages/core/domain-hints-quality-report.md`
+- **Source code**: `lib/parser/`, `lib/crypto/`, `lib/source/`
+- **Integration tests**: `lib/parser/tests/integration/`
+- **repos.yaml**: `lib/parser/tests/integration/repos.yaml`
+- **ADR documents**: `lib/docs/en/adr/core/`
+- **justfile**: `lib/justfile` (use `just` commands from this directory)
+- **Report output**: `lib/domain-hints-quality-report.md`
 
-Always `cd /workspaces/specvital/packages/core` before running `just` or `go test` commands.
+Always `cd /workspaces/specvital/lib` before running `just` or `go test` commands.
 
 ## Purpose
 
@@ -112,7 +112,7 @@ Expected values by framework (from production data):
 
 ```bash
 # Check what repos are available
-cat packages/core/tests/integration/repos.yaml | grep "name:"
+cat lib/parser/tests/integration/repos.yaml | grep "name:"
 ```
 
 **1.2 Select target(s)**:
@@ -124,7 +124,7 @@ cat packages/core/tests/integration/repos.yaml | grep "name:"
 ### Phase 2: Run Parser with DomainHints
 
 ```bash
-cd /workspaces/specvital/packages/core
+cd /workspaces/specvital/lib
 
 # For integration test repos (already cached)
 just scan /path/to/cached/repo --json 2>/dev/null | jq '.'
@@ -199,7 +199,7 @@ Status: {PASS|WARN|FAIL}
 
 ### Phase 6: Generate Report
 
-**Report Location**: `/workspaces/specvital/packages/core/domain-hints-quality-report.md`
+**Report Location**: `/workspaces/specvital/lib/domain-hints-quality-report.md`
 
 **Language**: Korean - MANDATORY
 

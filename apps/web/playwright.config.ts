@@ -55,7 +55,7 @@ export default defineConfig({
   webServer: [
     {
       command: isCI ? "go run ./cmd/server" : "air",
-      cwd: path.join(__dirname, "src/backend"),
+      cwd: path.join(__dirname, "backend"),
       env: isCI ? {} : { DATABASE_URL: process.env.LOCAL_DATABASE_URL ?? "" },
       url: `${BACKEND_URL}/health`,
       reuseExistingServer: !isCI,
@@ -64,7 +64,7 @@ export default defineConfig({
     },
     {
       command: "pnpm dev",
-      cwd: path.join(__dirname, "src/frontend"),
+      cwd: path.join(__dirname, "frontend"),
       env: { PLAYWRIGHT: "1" },
       url: FRONTEND_URL,
       reuseExistingServer: !isCI,

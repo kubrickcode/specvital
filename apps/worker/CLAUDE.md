@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 SpecVital Worker - Background job processing service for analyzing test files in GitHub repositories
 
 - Queue-based async worker (River on PostgreSQL)
-- External parser: `github.com/kubrickcode/specvital/packages/core`
+- External parser: `github.com/kubrickcode/specvital/lib`
 
 ### Workers
 
@@ -47,12 +47,12 @@ Before running commands, read `justfile` or check available commands via `just -
 
 ### Auto-Generated Files (NEVER modify)
 
-- `src/internal/infra/db/{queries.sql.go,models.go,db.go}`
+- `internal/infra/db/{queries.sql.go,models.go,db.go}`
 - Workflow: `just dump-schema` → `just gen-sqlc`
 
 ### External Dependency
 
-- Parsing logic lives in `github.com/kubrickcode/specvital/packages/core`, NOT here
+- Parsing logic lives in `github.com/kubrickcode/specvital/lib`, NOT here
 - For parser changes → open issue in core repo first
 
 ### Build Artifacts Cleanup

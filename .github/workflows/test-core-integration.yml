@@ -4,8 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "packages/core/pkg/**"
-      - "packages/core/tests/integration/**"
+      - "lib/**"
   workflow_dispatch:
 
 jobs:
@@ -15,7 +14,7 @@ jobs:
     timeout-minutes: 30
     defaults:
       run:
-        working-directory: packages/core
+        working-directory: lib
     steps:
       - uses: actions/checkout@v4
 
@@ -28,8 +27,8 @@ jobs:
       - name: Cache cloned repositories
         uses: actions/cache@v5
         with:
-          path: packages/core/tests/integration/testdata/cache
-          key: integration-repos-${{ hashFiles('packages/core/tests/integration/repos.yaml') }}
+          path: lib/parser/tests/integration/testdata/cache
+          key: integration-repos-${{ hashFiles('lib/parser/tests/integration/repos.yaml') }}
           restore-keys: |
             integration-repos-
 

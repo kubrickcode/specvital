@@ -12,13 +12,13 @@ SpecVital Web - Full-stack application for analyzing and visualizing test files 
 
 ## Documentation Map
 
-| Context                 | Reference                      |
-| ----------------------- | ------------------------------ |
-| **Backend specifics**   | `src/backend/CLAUDE.md`        |
-| **Frontend specifics**  | `src/frontend/CLAUDE.md`       |
-| Coding rules / Patterns | `.claude/rules/`               |
-| API specification       | `src/backend/api/openapi.yaml` |
-| Available commands      | `just --list`                  |
+| Context                 | Reference                  |
+| ----------------------- | -------------------------- |
+| **Backend specifics**   | `backend/CLAUDE.md`        |
+| **Frontend specifics**  | `frontend/CLAUDE.md`       |
+| Coding rules / Patterns | `.claude/rules/`           |
+| API specification       | `backend/api/openapi.yaml` |
+| Available commands      | `just --list`              |
 
 ## Commands
 
@@ -45,7 +45,7 @@ Always modify `openapi.yaml` first, then regenerate. Never edit generated files.
 
 ### External Dependency
 
-- Test file parsing: `github.com/kubrickcode/specvital/packages/core`
+- Test file parsing: `github.com/kubrickcode/specvital/lib`
 - For parser changes → open issue in core repo first, NOT here
 
 ### E2E Test Maintenance
@@ -80,13 +80,13 @@ User → GitHub URL → /analyze/{owner}/{repo}
 
 For stack-specific variables, see:
 
-- Backend: `src/backend/CLAUDE.md`
-- Frontend: `src/frontend/CLAUDE.md`
+- Backend: `backend/CLAUDE.md`
+- Frontend: `frontend/CLAUDE.md`
 
 ## GitHub App Integration
 
 OAuth Apps require organization admin approval. GitHub App is used for organization repository access.
 
 - **Architecture**: OAuth (login/personal repos) + GitHub App (organization repos)
-- **Setup**: See `src/backend/.env.example` for configuration
+- **Setup**: See `backend/.env.example` for configuration
 - **Module**: `modules/github-app/` (backend)

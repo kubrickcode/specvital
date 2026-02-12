@@ -23,7 +23,7 @@ GitHub URL → AST 파싱 (Tree-sitter) → 테스트 인벤토리
 ```
 
 1. 공개 GitHub 저장소 URL 입력
-2. SpecVital이 [specvital/core](https://github.com/kubrickcode/specvital/packages/core)를 사용해 테스트 파일 파싱
+2. SpecVital이 [specvital/core](https://github.com/kubrickcode/specvital/tree/main/lib)를 사용해 테스트 파일 파싱
 3. 대시보드에서 테스트 스위트, 케이스, 구조 확인
 
 **참고**: 정적 분석 방식으로 테스트 정의를 파싱하며, 실행 결과는 제공하지 않습니다. 어떤 테스트가 존재하는지와 구조를 확인할 수 있으며, 통과/실패 여부는 알 수 없습니다.
@@ -46,7 +46,7 @@ GitHub URL → AST 파싱 (Tree-sitter) → 테스트 인벤토리
 | C++                   | Google Test                              |
 | Swift                 | XCTest                                   |
 
-자세한 내용은 [specvital/core](https://github.com/kubrickcode/specvital/packages/core)를 참조하세요.
+자세한 내용은 [specvital/core](https://github.com/kubrickcode/specvital/tree/main/lib)를 참조하세요.
 
 ## 현재 상태
 
@@ -63,12 +63,12 @@ SpecVital은 활발히 개발 중입니다. 현재 제공 기능:
 
 이 저장소는 웹 애플리케이션(프론트엔드 + 백엔드 API)을 포함합니다. 전체 시스템 구성:
 
-| 저장소                                                  | 역할                               |
-| ------------------------------------------------------- | ---------------------------------- |
-| [specvital/web](https://github.com/specvital/web)       | 웹 대시보드 + REST API             |
-| [specvital/core](https://github.com/kubrickcode/specvital/packages/core)     | 파서 라이브러리 (Tree-sitter 기반) |
-| [specvital/worker](https://github.com/kubrickcode/specvital/apps/worker/src) | 분석 작업 백그라운드 워커          |
-| [specvital/infra](https://github.com/specvital/infra)   | 데이터베이스 스키마 및 인프라      |
+| 저장소                                                                             | 역할                               |
+| ---------------------------------------------------------------------------------- | ---------------------------------- |
+| [specvital/web](https://github.com/specvital/web)                                  | 웹 대시보드 + REST API             |
+| [specvital/core](https://github.com/kubrickcode/specvital/tree/main/lib)           | 파서 라이브러리 (Tree-sitter 기반) |
+| [specvital/worker](https://github.com/kubrickcode/specvital/tree/main/apps/worker) | 분석 작업 백그라운드 워커          |
+| [specvital/infra](https://github.com/specvital/infra)                              | 데이터베이스 스키마 및 인프라      |
 
 ## 사용 사례
 

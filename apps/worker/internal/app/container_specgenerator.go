@@ -1,0 +1,116 @@
+package app
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
+	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/ai/gemini"
+	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/ai/mock"
+	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/queue/fairness"
+	specviewqueue "github.com/kubrickcode/specvital/apps/worker/internal/adapter/queue/specview"
+	"github.com/kubrickcode/specvital/apps/worker/internal/adapter/repository/postgres"
+	"github.com/kubrickcode/specvital/apps/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/internal/infra/db"
+	infraqueue "github.com/kubrickcode/specvital/apps/worker/internal/infra/queue"
+	specviewuc "github.com/kubrickcode/specvital/apps/worker/internal/usecase/specview"
+)
+
+// SpecGeneratorContainer holds dependencies for the spec-generator worker service.
+type SpecGeneratorContainer struct {
+	AIProvider     specview.AIProvider
+	Middleware     []rivertype.WorkerMiddleware
+	QueueClient    *infraqueue.Client
+	SpecViewWorker *specviewqueue.Worker
+	Workers        *river.Workers
+}
+
+// NewSpecGeneratorContainer creates and initializes a new spec-generator container with all required dependencies.
+func NewSpecGeneratorContainer(ctx context.Context, cfg ContainerConfig) (*SpecGeneratorContainer, error) {
+	if err := cfg.ValidateSpecGenerator(); err != nil {
+		return nil, fmt.Errorf("invalid container config: %w", err)
+	}
+
+	var aiProvider specview.AIProvider
+	var defaultModelID string
+
+	if cfg.MockMode {
+		slog.Info("mock mode enabled, using mock AI provider")
+		aiProvider = mock.NewProvider()
+		defaultModelID = "mock-model"
+	} else {
+		geminiProvider, err := gemini.NewProvider(ctx, gemini.Config{
+			APIKey:      cfg.GeminiAPIKey,
+			Phase1Model: cfg.GeminiPhase1Model,
+			Phase2Model: cfg.GeminiPhase2Model,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("create gemini provider: %w", err)
+		}
+		aiProvider = geminiProvider
+		defaultModelID = cfg.GeminiPhase1Model
+		if defaultModelID == "" {
+			defaultModelID = "gemini-2.5-flash"
+		}
+	}
+
+	specDocRepo := postgres.NewSpecDocumentRepository(cfg.Pool)
+	quotaRepo := postgres.NewQuotaReservationRepository(cfg.Pool)
+	specViewUC := specviewuc.NewGenerateSpecViewUseCase(
+		specDocRepo,
+		aiProvider,
+		defaultModelID,
+	)
+	specViewWorker := specviewqueue.NewWorker(specViewUC, quotaRepo)
+
+	workers := river.NewWorkers()
+	river.AddWorker(workers, specViewWorker)
+
+	queueClient, err := infraqueue.NewClient(ctx, cfg.Pool)
+	if err != nil {
+		return nil, fmt.Errorf("create queue client: %w", err)
+	}
+
+	var middleware []rivertype.WorkerMiddleware
+	queries := db.New(cfg.Pool)
+	tierResolver := fairness.NewDBTierResolver(queries)
+	fm, err := NewFairnessMiddleware(cfg.Fairness, tierResolver)
+	if err != nil {
+		return nil, fmt.Errorf("create fairness middleware: %w", err)
+	}
+	if fm != nil {
+		middleware = append(middleware, fm)
+	}
+
+	return &SpecGeneratorContainer{
+		AIProvider:     aiProvider,
+		Middleware:     middleware,
+		QueueClient:    queueClient,
+		SpecViewWorker: specViewWorker,
+		Workers:        workers,
+	}, nil
+}
+
+// Close releases container resources.
+func (c *SpecGeneratorContainer) Close() error {
+	var errs []error
+
+	if c.QueueClient != nil {
+		if err := c.QueueClient.Close(); err != nil {
+			errs = append(errs, fmt.Errorf("close queue client: %w", err))
+		}
+	}
+
+	if c.AIProvider != nil {
+		if err := c.AIProvider.Close(); err != nil {
+			errs = append(errs, fmt.Errorf("close AI provider: %w", err))
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("close spec-generator container: %v", errs)
+	}
+	return nil
+}

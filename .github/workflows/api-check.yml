@@ -4,15 +4,15 @@ on:
   pull_request:
     types: [synchronize, opened, reopened, unlocked]
     paths:
-      - "apps/web/src/backend/api/**"
-      - "apps/web/src/backend/internal/api/**"
-      - "apps/web/src/frontend/lib/api/generated-types.ts"
+      - "apps/web/backend/api/**"
+      - "apps/web/backend/internal/api/**"
+      - "apps/web/frontend/lib/api/generated-types.ts"
   push:
     branches: [main]
     paths:
-      - "apps/web/src/backend/api/**"
-      - "apps/web/src/backend/internal/api/**"
-      - "apps/web/src/frontend/lib/api/generated-types.ts"
+      - "apps/web/backend/api/**"
+      - "apps/web/backend/internal/api/**"
+      - "apps/web/frontend/lib/api/generated-types.ts"
   workflow_dispatch:
 
 jobs:

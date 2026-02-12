@@ -138,12 +138,12 @@ test project="all" target="all":
         cd {{ root_dir }}/apps/worker && just test {{ target }}
         ;;
       core)
-        cd {{ root_dir }}/packages/core && just test {{ target }}
+        cd {{ root_dir }}/lib && just test {{ target }}
         ;;
       all)
         cd {{ root_dir }}/apps/web && just test all
         cd {{ root_dir }}/apps/worker && just test all
-        cd {{ root_dir }}/packages/core && just test all
+        cd {{ root_dir }}/lib && just test all
         ;;
       *)
         echo "Unknown: {{ project }}. Use: web, worker, core, all"

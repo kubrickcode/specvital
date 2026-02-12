@@ -8,7 +8,7 @@ docs/e2e-ui
 .claude/settings.local.json
 .claude-sessions/
 .claude-session-config.json
-src/backend/tmp
+backend/tmp
 *.tsbuildinfo
 
 # E2E Test

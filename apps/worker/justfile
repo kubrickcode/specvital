@@ -6,14 +6,14 @@ clean-containers:
     docker ps -a --filter "label=org.testcontainers=true" -q | xargs -r docker rm -f
 
 dump-schema:
-    PGPASSWORD=postgres pg_dump -h postgres -U postgres -d specvital --schema-only --no-owner --no-privileges -n public | grep -v '^\\\|^SET \|^SELECT ' > src/internal/infra/db/schema.sql
-    cp src/internal/infra/db/schema.sql src/internal/testutil/postgres/schema.sql
+    PGPASSWORD=postgres pg_dump -h postgres -U postgres -d specvital --schema-only --no-owner --no-privileges -n public | grep -v '^\\\|^SET \|^SELECT ' > internal/infra/db/schema.sql
+    cp internal/infra/db/schema.sql internal/testutil/postgres/schema.sql
 
 enqueue *args:
-    cd src && go run ./cmd/enqueue {{ args }}
+    go run ./cmd/enqueue {{ args }}
 
 gen-sqlc:
-    cd src && sqlc generate
+    sqlc generate
 
 install-railway:
     npm install -g @railway/cli
@@ -21,26 +21,25 @@ install-railway:
 build target="all":
     #!/usr/bin/env bash
     set -euo pipefail
-    cd src
     case "{{ target }}" in
       all)
-        go build -o ../bin/analyzer ./cmd/analyzer
-        go build -o ../bin/spec-generator ./cmd/spec-generator
-        go build -o ../bin/retention-cleanup ./cmd/retention-cleanup
-        go build -o ../bin/enqueue ./cmd/enqueue
+        go build -o bin/analyzer ./cmd/analyzer
+        go build -o bin/spec-generator ./cmd/spec-generator
+        go build -o bin/retention-cleanup ./cmd/retention-cleanup
+        go build -o bin/enqueue ./cmd/enqueue
         echo "Built: bin/analyzer, bin/spec-generator, bin/retention-cleanup, bin/enqueue"
         ;;
       analyzer)
-        go build -o ../bin/analyzer ./cmd/analyzer
+        go build -o bin/analyzer ./cmd/analyzer
         ;;
       spec-generator)
-        go build -o ../bin/spec-generator ./cmd/spec-generator
+        go build -o bin/spec-generator ./cmd/spec-generator
         ;;
       retention-cleanup)
-        go build -o ../bin/retention-cleanup ./cmd/retention-cleanup
+        go build -o bin/retention-cleanup ./cmd/retention-cleanup
         ;;
       enqueue)
-        go build -o ../bin/enqueue ./cmd/enqueue
+        go build -o bin/enqueue ./cmd/enqueue
         ;;
       check)
         go build ./...
@@ -52,21 +51,20 @@ build target="all":
     esac
 
 run-analyzer:
-    cd src && air
+    air
 
 run-spec-generator:
-    cd src && air -c .air.spec-generator.toml
+    air -c .air.spec-generator.toml
 
 run-spec-generator-mock:
-    cd src && MOCK_MODE=true air -c .air.spec-generator.toml
+    MOCK_MODE=true air -c .air.spec-generator.toml
 
 run-retention-cleanup:
-    cd src && go run ./cmd/retention-cleanup
+    go run ./cmd/retention-cleanup
 
 test target="all":
     #!/usr/bin/env bash
     set -euo pipefail
-    cd src
     case "{{ target }}" in
       all)
         TESTCONTAINERS_RYUK_DISABLED=true go test -v ./...
@@ -84,10 +82,10 @@ test target="all":
     esac
 
 tidy:
-    cd src && go mod tidy
+    go mod tidy
 
 update-core:
-    cd src && GOPROXY=direct go get -u github.com/specvital/core@main && go mod tidy
+    GOPROXY=direct go get -u github.com/specvital/core@main && go mod tidy
 
 docker-build service="analyzer":
     docker build -f infra/{{ service }}/Dockerfile -t specvital-{{ service }}:local .

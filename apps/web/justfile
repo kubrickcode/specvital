@@ -5,21 +5,21 @@ root_dir := justfile_directory()
 deps: deps-frontend
 
 deps-frontend:
-    cd src/frontend && pnpm --ignore-workspace install
+    cd frontend && pnpm --ignore-workspace install
 
 dump-schema:
-    PGPASSWORD=postgres pg_dump -h postgres -U postgres -d specvital --schema-only --no-owner --no-privileges -n public | grep -v '^\\\|^SET \|^SELECT ' > src/backend/internal/db/schema.sql
+    PGPASSWORD=postgres pg_dump -h postgres -U postgres -d specvital --schema-only --no-owner --no-privileges -n public | grep -v '^\\\|^SET \|^SELECT ' > backend/internal/db/schema.sql
 
 gen-sqlc:
-    cd src/backend && sqlc generate
+    cd backend && sqlc generate
 
 gen-api:
-    cd src/backend && oapi-codegen -config api/oapi-codegen.yaml api/openapi.yaml
-    cd src/frontend && npx openapi-typescript ../backend/api/openapi.yaml -o lib/api/generated-types.ts
+    cd backend && oapi-codegen -config api/oapi-codegen.yaml api/openapi.yaml
+    cd frontend && npx openapi-typescript ../backend/api/openapi.yaml -o lib/api/generated-types.ts
 
 lint-frontend:
-    npx prettier --write --cache "src/frontend/**/*.{ts,tsx}"
-    cd src/frontend && npx eslint --fix --max-warnings=0 .
+    npx prettier --write --cache "frontend/**/*.{ts,tsx}"
+    cd frontend && npx eslint --fix --max-warnings=0 .
 
 typecheck-file file:
     #!/usr/bin/env bash
@@ -42,10 +42,10 @@ run target *args:
     set -euox pipefail
     case "{{ target }}" in
       backend)
-        cd src/backend && air
+        cd backend && air
         ;;
       frontend)
-        cd src/frontend && pnpm dev
+        cd frontend && pnpm dev
         ;;
       *)
         echo "Unknown target: {{ target }}"
@@ -62,10 +62,10 @@ build target="all":
         just build frontend
         ;;
       backend)
-        cd src/backend && go build ./...
+        cd backend && go build ./...
         ;;
       frontend)
-        cd src/frontend && pnpm build
+        cd frontend && pnpm build
         ;;
       *)
         echo "Unknown target: {{ target }}"
@@ -83,10 +83,10 @@ test target="all":
         just test frontend
         ;;
       backend)
-        cd src/backend && go test -v ./...
+        cd backend && go test -v ./...
         ;;
       frontend)
-        cd src/frontend && pnpm test
+        cd frontend && pnpm test
         ;;
       *)
         echo "Unknown target: {{ target }}"
@@ -95,7 +95,7 @@ test target="all":
     esac
 
 update-core:
-    cd src/backend && GOPROXY=direct go get -u github.com/specvital/core@main && go mod tidy
+    cd backend && GOPROXY=direct go get -u github.com/specvital/core@main && go mod tidy
 
 test-e2e *args:
     pnpm test:e2e {{ args }}

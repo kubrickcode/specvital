@@ -7,7 +7,7 @@ Background job processing service for SpecVital platform.
 Clean Architecture with separate entry points for Railway deployment:
 
 ```
-src/cmd/
+cmd/
 ├── analyzer/       # Analysis worker - parse test files (Railway service)
 ├── spec-generator/ # SpecView worker - AI-powered spec generation
 ├── enqueue/        # CLI tool for manual task enqueue

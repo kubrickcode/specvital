@@ -4,8 +4,8 @@ on:
   pull_request:
     types: [synchronize, opened, reopened, unlocked]
     paths:
-      - "apps/web/src/frontend/**"
-      - "apps/web/src/backend/**"
+      - "apps/web/frontend/**"
+      - "apps/web/backend/**"
       - "apps/web/e2e/**"
       - "apps/web/playwright.config.ts"
       - ".github/workflows/test-e2e.yml"
@@ -13,8 +13,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/web/src/frontend/**"
-      - "apps/web/src/backend/**"
+      - "apps/web/frontend/**"
+      - "apps/web/backend/**"
       - "apps/web/e2e/**"
       - "apps/web/playwright.config.ts"
       - ".github/workflows/test-e2e.yml"
@@ -72,7 +72,7 @@ jobs:
       - name: Setup database
         run: |
           PGPASSWORD=postgres psql -h localhost -U postgres -d specvital_test -c "DROP SCHEMA IF EXISTS public CASCADE;"
-          PGPASSWORD=postgres psql -h localhost -U postgres -d specvital_test -f src/backend/internal/db/schema.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d specvital_test -f backend/internal/db/schema.sql
 
       - name: Install workspace dependencies
         working-directory: .
@@ -86,7 +86,7 @@ jobs:
 
       - name: Debug - Test server startup
         run: |
-          cd src/backend
+          cd backend
           echo "=== Testing go build ==="
           go build -v ./cmd/server 2>&1 || true
           echo "=== Testing go run ==="

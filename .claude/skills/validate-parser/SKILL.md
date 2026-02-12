@@ -8,17 +8,17 @@ allowed-tools: Bash(*), Read, Write, Grep, Glob
 
 ## Working Context
 
-This skill operates exclusively within `packages/core` (SpecVital Core parser).
-All commands, file lookups, and report outputs are scoped to `packages/core/`.
+This skill operates exclusively within `lib` (SpecVital Core parser).
+All commands, file lookups, and report outputs are scoped to `lib/`.
 
-- **Source code**: `packages/core/pkg/`
-- **Integration tests**: `packages/core/tests/integration/`
-- **repos.yaml**: `packages/core/tests/integration/repos.yaml`
-- **ADR documents**: `packages/core/docs/en/adr/core/`
-- **justfile**: `packages/core/justfile` (use `just` commands from this directory)
-- **Report output**: `packages/core/realworld-test-report.md`
+- **Source code**: `lib/parser/`, `lib/crypto/`, `lib/source/`
+- **Integration tests**: `lib/parser/tests/integration/`
+- **repos.yaml**: `lib/parser/tests/integration/repos.yaml`
+- **ADR documents**: `lib/docs/en/adr/core/`
+- **justfile**: `lib/justfile` (use `just` commands from this directory)
+- **Report output**: `lib/realworld-test-report.md`
 
-Always `cd /workspaces/specvital/packages/core` before running `just` or `go test` commands.
+Always `cd /workspaces/specvital/lib` before running `just` or `go test` commands.
 
 ## Purpose
 
@@ -69,7 +69,7 @@ $ARGUMENTS
 
 ```bash
 # List and read all core ADR documents
-ls /workspaces/specvital/packages/core/docs/en/adr/core/
+ls /workspaces/specvital/lib/docs/en/adr/core/
 # Read each .md file (excluding index.md)
 ```
 
@@ -86,7 +86,7 @@ ls /workspaces/specvital/packages/core/docs/en/adr/core/
 
 ```bash
 # Skip this step for explicit requests
-grep "url:" packages/core/tests/integration/repos.yaml
+grep "url:" lib/parser/tests/integration/repos.yaml
 ```
 
 **1.3 Select repository**:
@@ -188,7 +188,7 @@ npm install / pip install -e . / go mod download
 ### Phase 4: Run SpecVital Parser
 
 ```bash
-cd /workspaces/specvital/packages/core
+cd /workspaces/specvital/lib
 just scan /tmp/specvital-validate-{repo-name}
 ```
 
@@ -231,7 +231,7 @@ Create comprehensive validation report:
 - **Language**: **Korean - MANDATORY**
   - Section headers, analysis, conclusions - ALL in Korean
   - Only code snippets, file paths, and technical terms may remain in English
-- **Location**: `/workspaces/specvital/packages/core/realworld-test-report.md` (single file, overwrite)
+- **Location**: `/workspaces/specvital/lib/realworld-test-report.md` (single file, overwrite)
 - **Format**: Use the report template below
 
 ### Phase 8: Cleanup

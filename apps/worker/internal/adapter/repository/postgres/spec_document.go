@@ -1,0 +1,682 @@
+package postgres
+
+import (
+	"cmp"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log/slog"
+	"math"
+	"math/big"
+	"slices"
+	"strings"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kubrickcode/specvital/apps/worker/internal/domain/analysis"
+	"github.com/kubrickcode/specvital/apps/worker/internal/domain/specview"
+	"github.com/kubrickcode/specvital/apps/worker/internal/infra/db"
+)
+
+var _ specview.Repository = (*SpecDocumentRepository)(nil)
+
+type SpecDocumentRepository struct {
+	pool *pgxpool.Pool
+}
+
+type suiteInfo struct {
+	depth    int32
+	name     string
+	parentID pgtype.UUID
+}
+
+func NewSpecDocumentRepository(pool *pgxpool.Pool) *SpecDocumentRepository {
+	return &SpecDocumentRepository{pool: pool}
+}
+
+func (r *SpecDocumentRepository) FindDocumentByContentHash(
+	ctx context.Context,
+	userID string,
+	contentHash []byte,
+	language specview.Language,
+	modelID string,
+) (*specview.SpecDocument, error) {
+	parsedUserID, err := analysis.ParseUUID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: invalid user ID format", specview.ErrInvalidInput)
+	}
+
+	queries := db.New(r.pool)
+
+	doc, err := queries.FindSpecDocumentByContentHash(ctx, db.FindSpecDocumentByContentHashParams{
+		UserID:      toPgUUID(parsedUserID),
+		ContentHash: contentHash,
+		Language:    string(language),
+		ModelID:     modelID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("find spec document: %w", err)
+	}
+
+	var executiveSummary string
+	if doc.ExecutiveSummary.Valid {
+		executiveSummary = doc.ExecutiveSummary.String
+	}
+
+	return &specview.SpecDocument{
+		AnalysisID:       fromPgUUID(doc.AnalysisID).String(),
+		ContentHash:      doc.ContentHash,
+		CreatedAt:        doc.CreatedAt.Time,
+		ExecutiveSummary: executiveSummary,
+		ID:               fromPgUUID(doc.ID).String(),
+		Language:         specview.Language(doc.Language),
+		ModelID:          doc.ModelID,
+		UserID:           fromPgUUID(doc.UserID).String(),
+		Version:          doc.Version,
+	}, nil
+}
+
+func (r *SpecDocumentRepository) GetAnalysisContext(
+	ctx context.Context,
+	analysisID string,
+) (*specview.AnalysisContext, error) {
+	parsedID, err := analysis.ParseUUID(analysisID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: invalid analysis ID format", specview.ErrInvalidInput)
+	}
+
+	queries := db.New(r.pool)
+
+	row, err := queries.GetAnalysisContext(ctx, toPgUUID(parsedID))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, specview.ErrAnalysisNotFound
+		}
+		return nil, fmt.Errorf("get analysis context: %w", err)
+	}
+
+	return &specview.AnalysisContext{
+		Host:  row.Host,
+		Owner: row.Owner,
+		Repo:  row.Repo,
+	}, nil
+}
+
+func (r *SpecDocumentRepository) GetTestDataByAnalysisID(
+	ctx context.Context,
+	analysisID string,
+) ([]specview.FileInfo, error) {
+	parsedID, err := analysis.ParseUUID(analysisID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: invalid analysis ID format", specview.ErrInvalidInput)
+	}
+
+	queries := db.New(r.pool)
+
+	exists, err := queries.CheckAnalysisExists(ctx, toPgUUID(parsedID))
+	if err != nil {
+		return nil, fmt.Errorf("check analysis exists: %w", err)
+	}
+	if !exists {
+		return nil, specview.ErrAnalysisNotFound
+	}
+
+	rows, err := queries.GetTestDataByAnalysisID(ctx, toPgUUID(parsedID))
+	if err != nil {
+		return nil, fmt.Errorf("get test data: %w", err)
+	}
+
+	return r.aggregateTestData(rows)
+}
+
+func (r *SpecDocumentRepository) aggregateTestData(
+	rows []db.GetTestDataByAnalysisIDRow,
+) ([]specview.FileInfo, error) {
+	fileMap := make(map[string]*specview.FileInfo)
+	suiteMap := make(map[string]suiteInfo)
+	testIndex := 0
+
+	for _, row := range rows {
+		file, exists := fileMap[row.FilePath]
+		if !exists {
+			file = &specview.FileInfo{
+				Framework: row.Framework.String,
+				Path:      row.FilePath,
+				Tests:     make([]specview.TestInfo, 0),
+			}
+
+			if row.DomainHints != nil {
+				var hints specview.DomainHints
+				if err := json.Unmarshal(row.DomainHints, &hints); err != nil {
+					return nil, fmt.Errorf("unmarshal domain hints for file %q: %w", row.FilePath, err)
+				}
+				file.DomainHints = &hints
+			}
+
+			fileMap[row.FilePath] = file
+		}
+
+		suiteIDStr := uuidBytesToString(row.SuiteID.Bytes)
+		if _, exists := suiteMap[suiteIDStr]; !exists {
+			suiteMap[suiteIDStr] = suiteInfo{
+				depth:    row.SuiteDepth,
+				name:     row.SuiteName,
+				parentID: row.SuiteParentID,
+			}
+		}
+
+		suitePath := r.buildSuitePath(row.SuiteID, suiteMap)
+
+		file.Tests = append(file.Tests, specview.TestInfo{
+			Index:      testIndex,
+			Name:       row.TestName,
+			SuitePath:  suitePath,
+			TestCaseID: fromPgUUID(row.TestCaseID).String(),
+		})
+		testIndex++
+	}
+
+	result := make([]specview.FileInfo, 0, len(fileMap))
+	for _, file := range fileMap {
+		result = append(result, *file)
+	}
+
+	slices.SortFunc(result, func(a, b specview.FileInfo) int {
+		return cmp.Compare(a.Path, b.Path)
+	})
+
+	return result, nil
+}
+
+func (r *SpecDocumentRepository) buildSuitePath(
+	suiteID pgtype.UUID,
+	suiteMap map[string]suiteInfo,
+) string {
+	var pathParts []string
+	currentID := suiteID
+
+	for currentID.Valid {
+		idStr := uuidBytesToString(currentID.Bytes)
+		info, exists := suiteMap[idStr]
+		if !exists {
+			break
+		}
+
+		pathParts = append(pathParts, info.name)
+		currentID = info.parentID
+	}
+
+	if len(pathParts) == 0 {
+		return ""
+	}
+
+	slices.Reverse(pathParts)
+	return strings.Join(pathParts, " > ")
+}
+
+func (r *SpecDocumentRepository) SaveDocument(
+	ctx context.Context,
+	doc *specview.SpecDocument,
+) error {
+	if doc == nil {
+		return fmt.Errorf("%w: document is nil", specview.ErrInvalidInput)
+	}
+	if doc.UserID == "" {
+		return fmt.Errorf("%w: user ID is required", specview.ErrInvalidInput)
+	}
+	if len(doc.ContentHash) == 0 {
+		return fmt.Errorf("%w: content hash is required", specview.ErrInvalidInput)
+	}
+	if doc.Language == "" {
+		return fmt.Errorf("%w: language is required", specview.ErrInvalidInput)
+	}
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && !errors.Is(rbErr, pgx.ErrTxClosed) {
+			slog.ErrorContext(ctx, "failed to rollback transaction",
+				"operation", "SaveDocument",
+				"analysis_id", doc.AnalysisID,
+				"error", rbErr,
+			)
+		}
+	}()
+
+	queries := db.New(tx)
+
+	userID, err := analysis.ParseUUID(doc.UserID)
+	if err != nil {
+		return fmt.Errorf("%w: invalid user ID", specview.ErrInvalidInput)
+	}
+
+	analysisID, err := analysis.ParseUUID(doc.AnalysisID)
+	if err != nil {
+		return fmt.Errorf("%w: invalid analysis ID", specview.ErrInvalidInput)
+	}
+
+	currentVersion, err := queries.GetMaxVersionByUserAnalysisAndLanguage(ctx, db.GetMaxVersionByUserAnalysisAndLanguageParams{
+		UserID:     toPgUUID(userID),
+		AnalysisID: toPgUUID(analysisID),
+		Language:   string(doc.Language),
+	})
+	if err != nil {
+		return fmt.Errorf("get max version: %w", err)
+	}
+
+	var executiveSummary pgtype.Text
+	if doc.ExecutiveSummary != "" {
+		executiveSummary = pgtype.Text{String: doc.ExecutiveSummary, Valid: true}
+	}
+
+	retentionDays, retErr := queries.GetUserRetentionDays(ctx, toPgUUID(userID))
+	if retErr != nil && !errors.Is(retErr, pgx.ErrNoRows) {
+		return fmt.Errorf("get user retention days: %w", retErr)
+	}
+
+	docID, err := queries.InsertSpecDocument(ctx, db.InsertSpecDocumentParams{
+		UserID:                  toPgUUID(userID),
+		AnalysisID:              toPgUUID(analysisID),
+		ContentHash:             doc.ContentHash,
+		Language:                string(doc.Language),
+		ExecutiveSummary:        executiveSummary,
+		ModelID:                 doc.ModelID,
+		Version:                 currentVersion + 1,
+		RetentionDaysAtCreation: retentionDays,
+	})
+	if err != nil {
+		return fmt.Errorf("insert spec document: %w", err)
+	}
+
+	doc.ID = fromPgUUID(docID).String()
+
+	if err := r.saveDomains(ctx, tx, docID, doc.Domains); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (r *SpecDocumentRepository) saveDomains(
+	ctx context.Context,
+	tx pgx.Tx,
+	documentID pgtype.UUID,
+	domains []specview.Domain,
+) error {
+	if len(domains) == 0 {
+		return nil
+	}
+
+	batch := &pgx.Batch{}
+
+	for i, domain := range domains {
+		batch.Queue(db.InsertSpecDomainBatch,
+			documentID,
+			domain.Name,
+			pgtype.Text{String: domain.Description, Valid: domain.Description != ""},
+			int32(i),
+			confidenceToNumeric(domain.Confidence),
+		)
+	}
+
+	results := tx.SendBatch(ctx, batch)
+	defer results.Close()
+
+	domainIDs := make([]pgtype.UUID, len(domains))
+	for i := range domains {
+		var id pgtype.UUID
+		if err := results.QueryRow().Scan(&id); err != nil {
+			return fmt.Errorf("scan domain ID for %q: %w", domains[i].Name, err)
+		}
+		domainIDs[i] = id
+		domains[i].ID = fromPgUUID(id).String()
+	}
+
+	if err := results.Close(); err != nil {
+		return fmt.Errorf("close domain batch: %w", err)
+	}
+
+	for i, domain := range domains {
+		if err := r.saveFeatures(ctx, tx, domainIDs[i], domain.Features); err != nil {
+			return fmt.Errorf("save features for domain %q: %w", domain.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func (r *SpecDocumentRepository) saveFeatures(
+	ctx context.Context,
+	tx pgx.Tx,
+	domainID pgtype.UUID,
+	features []specview.Feature,
+) error {
+	if len(features) == 0 {
+		return nil
+	}
+
+	batch := &pgx.Batch{}
+
+	for i, feature := range features {
+		batch.Queue(db.InsertSpecFeatureBatch,
+			domainID,
+			feature.Name,
+			pgtype.Text{String: feature.Description, Valid: feature.Description != ""},
+			int32(i),
+		)
+	}
+
+	results := tx.SendBatch(ctx, batch)
+	defer results.Close()
+
+	featureIDs := make([]pgtype.UUID, len(features))
+	for i := range features {
+		var id pgtype.UUID
+		if err := results.QueryRow().Scan(&id); err != nil {
+			return fmt.Errorf("scan feature ID for %q: %w", features[i].Name, err)
+		}
+		featureIDs[i] = id
+		features[i].ID = fromPgUUID(id).String()
+	}
+
+	if err := results.Close(); err != nil {
+		return fmt.Errorf("close feature batch: %w", err)
+	}
+
+	var allBehaviors []behaviorWithFeatureID
+	for i, feature := range features {
+		for j, behavior := range feature.Behaviors {
+			allBehaviors = append(allBehaviors, behaviorWithFeatureID{
+				behavior:  behavior,
+				featureID: featureIDs[i],
+				sortOrder: j,
+			})
+		}
+	}
+
+	if len(allBehaviors) > 0 {
+		if err := r.saveBehaviorsCopyFrom(ctx, tx, allBehaviors); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type behaviorWithFeatureID struct {
+	behavior  specview.Behavior
+	featureID pgtype.UUID
+	sortOrder int
+}
+
+func (r *SpecDocumentRepository) saveBehaviorsCopyFrom(
+	ctx context.Context,
+	tx pgx.Tx,
+	behaviors []behaviorWithFeatureID,
+) error {
+	rows := make([][]any, len(behaviors))
+
+	for i, b := range behaviors {
+		var testCaseID pgtype.UUID
+		if b.behavior.TestCaseID != "" {
+			parsedID, err := analysis.ParseUUID(b.behavior.TestCaseID)
+			if err != nil {
+				return fmt.Errorf("parse test case ID %q: %w", b.behavior.TestCaseID, err)
+			}
+			testCaseID = toPgUUID(parsedID)
+		}
+
+		rows[i] = []any{
+			b.featureID,
+			testCaseID,
+			b.behavior.OriginalName,
+			b.behavior.Description,
+			int32(b.sortOrder),
+		}
+	}
+
+	_, err := tx.Conn().CopyFrom(
+		ctx,
+		pgx.Identifier{"spec_behaviors"},
+		db.SpecBehaviorCopyColumns,
+		pgx.CopyFromRows(rows),
+	)
+	if err != nil {
+		return fmt.Errorf("copy spec behaviors: %w", err)
+	}
+
+	return nil
+}
+
+func uuidBytesToString(bytes [16]byte) string {
+	return fmt.Sprintf("%x-%x-%x-%x-%x",
+		bytes[0:4], bytes[4:6], bytes[6:8], bytes[8:10], bytes[10:16])
+}
+
+func confidenceToNumeric(confidence float64) pgtype.Numeric {
+	intVal := int64(confidence * 100)
+	return pgtype.Numeric{
+		Int:   big.NewInt(intVal),
+		Exp:   -2,
+		Valid: true,
+	}
+}
+
+func (r *SpecDocumentRepository) RecordUsageEvent(
+	ctx context.Context,
+	userID string,
+	documentID string,
+	quotaAmount int,
+) error {
+	parsedUserID, err := analysis.ParseUUID(userID)
+	if err != nil {
+		return fmt.Errorf("%w: invalid user ID format", specview.ErrInvalidInput)
+	}
+
+	parsedDocID, err := analysis.ParseUUID(documentID)
+	if err != nil {
+		return fmt.Errorf("%w: invalid document ID format", specview.ErrInvalidInput)
+	}
+
+	if quotaAmount < 0 || quotaAmount > math.MaxInt32 {
+		return fmt.Errorf("%w: quota amount out of valid range", specview.ErrInvalidInput)
+	}
+
+	queries := db.New(r.pool)
+
+	err = queries.RecordSpecViewUsageEvent(ctx, db.RecordSpecViewUsageEventParams{
+		UserID:      toPgUUID(parsedUserID),
+		DocumentID:  toPgUUID(parsedDocID),
+		QuotaAmount: int32(quotaAmount),
+	})
+	if err != nil {
+		return fmt.Errorf("record specview usage event: %w", err)
+	}
+
+	return nil
+}
+
+func (r *SpecDocumentRepository) RecordUserHistory(
+	ctx context.Context,
+	userID string,
+	documentID string,
+) error {
+	parsedUserID, err := analysis.ParseUUID(userID)
+	if err != nil {
+		return fmt.Errorf("%w: invalid user ID format", specview.ErrInvalidInput)
+	}
+
+	parsedDocID, err := analysis.ParseUUID(documentID)
+	if err != nil {
+		return fmt.Errorf("%w: invalid document ID format", specview.ErrInvalidInput)
+	}
+
+	queries := db.New(r.pool)
+
+	err = queries.RecordUserSpecviewHistory(ctx, db.RecordUserSpecviewHistoryParams{
+		UserID:     toPgUUID(parsedUserID),
+		DocumentID: toPgUUID(parsedDocID),
+	})
+	if err != nil {
+		return fmt.Errorf("record user specview history: %w", err)
+	}
+
+	return nil
+}
+
+// FindCachedBehaviors looks up cached behavior descriptions by cache key hashes.
+// Returns a map of cache_key_hash (hex-encoded) -> converted_description.
+// Only found entries are included in the result map.
+func (r *SpecDocumentRepository) FindCachedBehaviors(
+	ctx context.Context,
+	cacheKeyHashes [][]byte,
+) (map[string]string, error) {
+	if len(cacheKeyHashes) == 0 {
+		return make(map[string]string), nil
+	}
+
+	queries := db.New(r.pool)
+
+	rows, err := queries.FindBehaviorCachesByHashes(ctx, cacheKeyHashes)
+	if err != nil {
+		return nil, fmt.Errorf("find cached behaviors: %w", err)
+	}
+
+	result := make(map[string]string, len(rows))
+	for _, row := range rows {
+		hexKey := fmt.Sprintf("%x", row.CacheKeyHash)
+		result[hexKey] = row.ConvertedDescription
+	}
+
+	return result, nil
+}
+
+// SaveBehaviorCache saves behavior cache entries to the database.
+// Uses upsert semantics: existing entries are updated, new entries are inserted.
+func (r *SpecDocumentRepository) SaveBehaviorCache(
+	ctx context.Context,
+	entries []specview.BehaviorCacheEntry,
+) error {
+	if len(entries) == 0 {
+		return nil
+	}
+
+	batch := &pgx.Batch{}
+	for _, entry := range entries {
+		batch.Queue(db.UpsertBehaviorCacheBatch, entry.CacheKeyHash, entry.Description)
+	}
+
+	results := r.pool.SendBatch(ctx, batch)
+	defer results.Close()
+
+	for i := range entries {
+		if _, err := results.Exec(); err != nil {
+			return fmt.Errorf("upsert behavior cache (index=%d): %w", i, err)
+		}
+	}
+
+	return results.Close()
+}
+
+// FindClassificationCache looks up a cached Phase 1 classification result.
+// Cache key: file_signature + language + model_id.
+// Returns nil without error if no cache is found.
+func (r *SpecDocumentRepository) FindClassificationCache(
+	ctx context.Context,
+	fileSignature []byte,
+	language specview.Language,
+	modelID string,
+) (*specview.ClassificationCache, error) {
+	queries := db.New(r.pool)
+
+	row, err := queries.FindClassificationCacheByKey(ctx, db.FindClassificationCacheByKeyParams{
+		ContentHash: fileSignature,
+		Language:    string(language),
+		ModelID:     modelID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("find classification cache: %w", err)
+	}
+
+	var phase1Output specview.Phase1Output
+	if err := json.Unmarshal(row.Phase1Output, &phase1Output); err != nil {
+		return nil, fmt.Errorf("unmarshal phase1_output: %w", err)
+	}
+
+	var testIndexMap map[string]specview.TestIdentity
+	if err := json.Unmarshal(row.TestIndexMap, &testIndexMap); err != nil {
+		return nil, fmt.Errorf("unmarshal test_index_map: %w", err)
+	}
+
+	return &specview.ClassificationCache{
+		ClassificationResult: &phase1Output,
+		CreatedAt:            row.CreatedAt.Time,
+		FileSignature:        row.ContentHash,
+		ID:                   fromPgUUID(row.ID).String(),
+		Language:             language,
+		ModelID:              row.ModelID,
+		TestIndexMap:         testIndexMap,
+	}, nil
+}
+
+// SaveClassificationCache saves or updates a Phase 1 classification cache.
+// Uses upsert semantics: existing cache is replaced, new cache is inserted.
+func (r *SpecDocumentRepository) SaveClassificationCache(
+	ctx context.Context,
+	cache *specview.ClassificationCache,
+) error {
+	if cache == nil {
+		return fmt.Errorf("%w: cache is nil", specview.ErrInvalidInput)
+	}
+	if len(cache.FileSignature) == 0 {
+		return fmt.Errorf("%w: file signature is required", specview.ErrInvalidInput)
+	}
+	if cache.Language == "" {
+		return fmt.Errorf("%w: language is required", specview.ErrInvalidInput)
+	}
+	if cache.ModelID == "" {
+		return fmt.Errorf("%w: model ID is required", specview.ErrInvalidInput)
+	}
+	if cache.ClassificationResult == nil {
+		return fmt.Errorf("%w: classification result is required", specview.ErrInvalidInput)
+	}
+
+	phase1OutputJSON, err := json.Marshal(cache.ClassificationResult)
+	if err != nil {
+		return fmt.Errorf("marshal phase1_output: %w", err)
+	}
+
+	testIndexMapJSON, err := json.Marshal(cache.TestIndexMap)
+	if err != nil {
+		return fmt.Errorf("marshal test_index_map: %w", err)
+	}
+
+	queries := db.New(r.pool)
+
+	err = queries.UpsertClassificationCache(ctx, db.UpsertClassificationCacheParams{
+		ContentHash:  cache.FileSignature,
+		Language:     string(cache.Language),
+		ModelID:      cache.ModelID,
+		Phase1Output: phase1OutputJSON,
+		TestIndexMap: testIndexMapJSON,
+	})
+	if err != nil {
+		return fmt.Errorf("upsert classification cache: %w", err)
+	}
+
+	return nil
+}

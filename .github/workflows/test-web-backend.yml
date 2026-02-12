@@ -4,11 +4,11 @@ on:
   pull_request:
     types: [synchronize, opened, reopened, unlocked]
     paths:
-      - "apps/web/src/backend/**"
+      - "apps/web/backend/**"
   push:
     branches: [main]
     paths:
-      - "apps/web/src/backend/**"
+      - "apps/web/backend/**"
   workflow_dispatch:
 
 jobs:

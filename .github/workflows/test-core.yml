@@ -4,13 +4,11 @@ on:
   pull_request:
     types: [synchronize, opened, reopened, unlocked]
     paths:
-      - "packages/core/src/**"
-      - "packages/core/pkg/**"
+      - "lib/**"
   push:
     branches: [main]
     paths:
-      - "packages/core/src/**"
-      - "packages/core/pkg/**"
+      - "lib/**"
   workflow_dispatch:
 
 jobs:
@@ -19,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: packages/core
+        working-directory: lib
     steps:
       - uses: actions/checkout@v4
 

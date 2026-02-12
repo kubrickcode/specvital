@@ -294,7 +294,7 @@
           "terminalName": "bootstrap"
         },
         {
-          "command": "cd packages/core && just snapshot-update",
+          "command": "cd lib && just snapshot-update",
           "name": "Snapshot Update",
           "shortcut": "n",
           "terminalName": "snapshot-update"
