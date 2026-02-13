@@ -21,9 +21,11 @@ jobs:
       - name: Set service environment variables
         if: matrix.service == 'spec-generator'
         run: |
-          railway variables --set "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" --service spec-generator
-          railway variables --set "GEMINI_PHASE1_MODEL=${{ secrets.GEMINI_PHASE1_MODEL }}" --service spec-generator
-          railway variables --set "GEMINI_PHASE2_MODEL=${{ secrets.GEMINI_PHASE2_MODEL }}" --service spec-generator
+          railway variable set \
+            "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
+            "GEMINI_PHASE1_MODEL=${{ secrets.GEMINI_PHASE1_MODEL }}" \
+            "GEMINI_PHASE2_MODEL=${{ secrets.GEMINI_PHASE2_MODEL }}" \
+            --service spec-generator
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
