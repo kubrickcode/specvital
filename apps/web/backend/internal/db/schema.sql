@@ -3,8 +3,8 @@
 --
 
 
--- Dumped from database version 16.11 (Debian 16.11-1.pgdg13+1)
--- Dumped by pg_dump version 16.11 (Debian 16.11-1.pgdg12+1)
+-- Dumped from database version 16.12 (Debian 16.12-1.pgdg13+1)
+-- Dumped by pg_dump version 16.12 (Debian 16.12-1.pgdg12+1)
 
 
 --
@@ -12,6 +12,13 @@
 --
 
 CREATE SCHEMA public;
+
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
 
 
 --
