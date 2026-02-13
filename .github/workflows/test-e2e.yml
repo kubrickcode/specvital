@@ -157,7 +157,7 @@ jobs:
         run: pnpm install
 
       - name: Download blob reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: blob-report-*
           path: apps/web/all-blob-reports
