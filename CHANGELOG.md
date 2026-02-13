@@ -1,5 +1,65 @@
 # Changelog
 
+## [0.0.1](https://github.com/kubrickcode/specvital/compare/v0.0.0...v0.0.1) (2026-02-13)
+
+### 🔧 Maintenance
+
+#### 🔧 Internal Fixes
+
+- **ci:** fix CI dependency installation for monorepo workspace ([e0c67d1](https://github.com/kubrickcode/specvital/commit/e0c67d1c27ebdf682626bf0aa7f2dc6dbf95dbc1))
+- **ci:** fix eslint command for pnpm workspace context ([15192cc](https://github.com/kubrickcode/specvital/commit/15192cc886e43122b82589169d82d4999caeba4c))
+- **ci:** fix frontend independent install and lint in pnpm workspace ([16f21ea](https://github.com/kubrickcode/specvital/commit/16f21eaceb88e6fe7901985244e9e1c712a19bdb))
+- **ci:** move reusable workflows from subdirectory to flat structure ([cc1a547](https://github.com/kubrickcode/specvital/commit/cc1a5471701fbfb144cc09dd405fd7f91a9ebe77))
+- fix install-playwright failing to find package from root ([67c379a](https://github.com/kubrickcode/specvital/commit/67c379a012e617c10e49c781de913cfce7569866))
+- fixed the issue where generated-types.ts would change when running the just lint command. ([24c21c2](https://github.com/kubrickcode/specvital/commit/24c21c2c155773ef9be67dbd9c46ee3f20b46fe3))
+- pin pnpm and node versions in frontend deploy workflow ([47a2cfa](https://github.com/kubrickcode/specvital/commit/47a2cfa34c97954f902b63636cc1f280f03cd384))
+
+#### 📚 Documentation
+
+- consolidate README, LICENSE, NOTICE into monorepo root ([934c564](https://github.com/kubrickcode/specvital/commit/934c5645f08044af11dec0327ddac1442669230c))
+- rewrite CLAUDE.md files to reflect monorepo structure ([93ae8ad](https://github.com/kubrickcode/specvital/commit/93ae8ad70e1fa4d23b61234baa5a1b60b9093e23))
+
+#### 💄 Styles
+
+- format code ([d4a6edb](https://github.com/kubrickcode/specvital/commit/d4a6edb5219d3a61b9a83e45aca42f111b72ca88))
+
+#### ♻️ Refactoring
+
+- add spec-generator mock runner and remove unused smee ([5e21bc4](https://github.com/kubrickcode/specvital/commit/5e21bc4389f8e43ce86800d64e8a58d62824a178))
+- centralize Railway deploy configs into root infra/railway/ ([4be3fe9](https://github.com/kubrickcode/specvital/commit/4be3fe9776e3033fc2d874b3e044f80d088aa0c6))
+- consolidate .vscode settings and simplify justfile for single DB ([77e9903](https://github.com/kubrickcode/specvital/commit/77e99038d7bce5241dda8e37fe012b4518bd1179))
+- consolidate bootstrap/install recipes into root justfile ([cadd6a9](https://github.com/kubrickcode/specvital/commit/cadd6a96d3a68740ad92caa9b1f4ac3ac5ccc584))
+- consolidate dev tool configs from sub-projects into root ([f698527](https://github.com/kubrickcode/specvital/commit/f698527defbc959af8f83af950da45c02c92a3c6))
+- consolidate global justfile logic from sub-projects into root ([6c7a9b0](https://github.com/kubrickcode/specvital/commit/6c7a9b0b0a6a0fe52b6c98d95246adebdf1723b8))
+- consolidate migrate-local into single root migrate ([415c585](https://github.com/kubrickcode/specvital/commit/415c5859196fadad7606f86f2b274471c1646cd6))
+- consolidate sub-project CI workflows into root ([5067082](https://github.com/kubrickcode/specvital/commit/50670824413ef078f09e3be4b91b8d687fd03d4a))
+- consolidate sub-project release workflows into single orchestrator ([506f265](https://github.com/kubrickcode/specvital/commit/506f265ca35c81acb075615d80db98c478646f48))
+- deduplicate docs and flatten docs/docs nesting ([3c22afd](https://github.com/kubrickcode/specvital/commit/3c22afda8ae8348f4257d48ca29a2009d00fff2d))
+- rationalize monorepo package structure ([8640b73](https://github.com/kubrickcode/specvital/commit/8640b732b1587abf857d7d4daaef196973b41488))
+- set up Go workspace and migrate module paths to monorepo structure ([446cb42](https://github.com/kubrickcode/specvital/commit/446cb42703a41476f9bbca87d266a19ee6366fb4))
+- unify lint/lint-file rules into per-language helper recipes ([e087e3a](https://github.com/kubrickcode/specvital/commit/e087e3aeb0b5a8d1432fa5877ea474884be1f924))
+
+#### ✅ Tests
+
+- slim E2E suite to Tier 1 and migrate removed tests to Vitest components ([60d5c95](https://github.com/kubrickcode/specvital/commit/60d5c950a93d31379a72c289cfa458cd441178da))
+
+#### 🔧 CI/CD
+
+- add frontend Vitest and worker unit test workflows ([1f8918a](https://github.com/kubrickcode/specvital/commit/1f8918a7d0fa27f2b3a9a757b40ac30ef54c120d))
+- add Vercel CLI frontend deploy workflow and rename deploy-web to deploy-backend ([00d7316](https://github.com/kubrickcode/specvital/commit/00d731665185afa2f46eed5e4356cdae217fc5da))
+- unify workers deploy workflow to Railway CLI v4 syntax ([7754390](https://github.com/kubrickcode/specvital/commit/77543906d5814ea4719de84ac321055cce6a7147))
+
+#### 🔨 Chore
+
+- add install-atlas to bootstrap ([a1ad5f4](https://github.com/kubrickcode/specvital/commit/a1ad5f42d14b0b1cb3b8a9da11a5432dcc2bfdc0))
+- deps all ([b649c44](https://github.com/kubrickcode/specvital/commit/b649c4499deed9660f098fae8296bb4a0c33af18))
+- dump schema ([157a9f2](https://github.com/kubrickcode/specvital/commit/157a9f2230088b0ca9dcc569f9660d3909a2d5eb))
+- remove individual CHANGELOG ([bdbafba](https://github.com/kubrickcode/specvital/commit/bdbafba7570d97a01a8e9a58746fca86b481c96e))
+- remove obsolete update-core commands and update docs for monorepo ([7047502](https://github.com/kubrickcode/specvital/commit/70475026f8c1c4293590482b50baa77f21e67060))
+- remove unnecessary command ([ef1bad4](https://github.com/kubrickcode/specvital/commit/ef1bad41ccc1d21bf3acc7d715f2900e66a25552))
+- remove unnecessary file ([9bdfb5c](https://github.com/kubrickcode/specvital/commit/9bdfb5cf44491d0af720d2e9e319e4532d060e2f))
+- set up pnpm workspace and consolidate duplicate JS tooling ([d594c16](https://github.com/kubrickcode/specvital/commit/d594c16372807ef424afd4d50154685096350d52))
+
 > Unified changelog for all SpecVital packages. For pre-monorepo history, see individual package changelogs.
 
 ## [web/v1.6.3](https://github.com/specvital/web/compare/v1.6.2...v1.6.3) (2026-02-09)
