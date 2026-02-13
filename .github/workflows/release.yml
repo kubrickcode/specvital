@@ -14,10 +14,16 @@ jobs:
     uses: ./.github/workflows/release-migrate.yml
     secrets: inherit
 
-  deploy-web:
-    name: Deploy Web
+  deploy-frontend:
+    name: Deploy Frontend
     needs: migrate
-    uses: ./.github/workflows/release-deploy-web.yml
+    uses: ./.github/workflows/release-deploy-frontend.yml
+    secrets: inherit
+
+  deploy-backend:
+    name: Deploy Backend
+    needs: migrate
+    uses: ./.github/workflows/release-deploy-backend.yml
     secrets: inherit
 
   deploy-workers:
@@ -28,6 +34,6 @@ jobs:
 
   release:
     name: Release
-    needs: [deploy-web, deploy-workers]
+    needs: [deploy-frontend, deploy-backend, deploy-workers]
     uses: ./.github/workflows/release-tag.yml
     secrets: inherit

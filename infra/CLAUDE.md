@@ -117,4 +117,5 @@ Dockerfile `COPY` paths use `apps/web/...` or `apps/worker/...` prefixes (repo r
 
 - `release.yml` - Semantic release on release branch
 - `release-migrate.yml` - Production migration on release branch
-- `release-deploy-web.yml` / `release-deploy-workers.yml` - Railway deployment
+- `release-deploy-frontend.yml` - Vercel frontend deployment
+- `release-deploy-backend.yml` / `release-deploy-workers.yml` - Railway deployment
