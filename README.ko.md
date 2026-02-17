@@ -28,7 +28,7 @@ GitHub 레포지토리의 테스트 코드를 분석하고 시각화합니다.
 
 ## 문서
 
-[specvital.github.io](https://specvital.github.io)
+[docs.specvital.com](https://docs.specvital.com)
 
 ## 라이선스
 

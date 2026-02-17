@@ -28,7 +28,7 @@ Analyze and visualize test suites from any GitHub repository.
 
 ## Documentation
 
-[specvital.github.io](https://specvital.github.io)
+[docs.specvital.com](https://docs.specvital.com)
 
 ## License
 
