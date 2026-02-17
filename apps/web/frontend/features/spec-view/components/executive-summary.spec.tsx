@@ -1,9 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { AvailableLanguageInfo, RepoVersionInfo, SpecDocument } from "../types";
-
 import { ExecutiveSummary } from "./executive-summary";
 
 vi.mock("./cache-stats-indicator", () => ({

@@ -1,6 +1,5 @@
-import { fireEvent } from "@testing-library/react";
-import { renderHook } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { fireEvent, renderHook  } from "@testing-library/react";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { useKeyboardShortcut } from "./use-keyboard-shortcut";
 
@@ -25,7 +24,7 @@ describe("useKeyboardShortcut", () => {
 
     renderHook(() => useKeyboardShortcut());
 
-    fireEvent.keyDown(document, { key: "k", ctrlKey: true });
+    fireEvent.keyDown(document, { ctrlKey: true, key: "k" });
 
     expect(mockToggle).toHaveBeenCalledTimes(1);
   });
@@ -57,7 +56,7 @@ describe("useKeyboardShortcut", () => {
     const input = document.createElement("input");
     document.body.appendChild(input);
 
-    fireEvent.keyDown(input, { key: "k", ctrlKey: true });
+    fireEvent.keyDown(input, { ctrlKey: true, key: "k" });
 
     expect(mockToggle).not.toHaveBeenCalled();
 

@@ -5,11 +5,7 @@
  * - /api/usage/current
  */
 
-import type {
-  UserSubscriptionResponse,
-  UsageStatusResponse,
-  PlanInfo,
-} from "./types";
+import type { UserSubscriptionResponse, UsageStatusResponse, PlanInfo } from "./types";
 
 const now = new Date();
 const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);

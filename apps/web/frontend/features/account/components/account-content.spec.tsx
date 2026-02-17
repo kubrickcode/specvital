@@ -18,7 +18,7 @@ vi.mock("@/features/auth", () => ({
 
 vi.mock("./plan-section", () => ({
   PlanSection: (props: { error?: Error | null; isLoading: boolean }) => (
-    <div data-testid="plan-section" data-loading={props.isLoading} data-error={!!props.error}>
+    <div data-error={!!props.error} data-loading={props.isLoading} data-testid="plan-section">
       PlanSection
     </div>
   ),
@@ -26,7 +26,7 @@ vi.mock("./plan-section", () => ({
 
 vi.mock("./usage-section", () => ({
   UsageSection: (props: { error?: Error | null; isLoading: boolean }) => (
-    <div data-testid="usage-section" data-loading={props.isLoading} data-error={!!props.error}>
+    <div data-error={!!props.error} data-loading={props.isLoading} data-testid="usage-section">
       UsageSection
     </div>
   ),
@@ -59,7 +59,7 @@ describe("AccountContent", () => {
       isLoading: false,
     });
     mockUseUsage.mockReturnValue({
-      data: { analysis: {}, specview: {}, resetAt: "2026-03-01T00:00:00Z" },
+      data: { analysis: {}, resetAt: "2026-03-01T00:00:00Z", specview: {} },
       error: null,
       isLoading: false,
     });

@@ -12,7 +12,7 @@ vi.mock("@/features/auth", () => ({
 }));
 
 vi.mock("@/features/dashboard", () => ({
-  EmptyStateVariant: ({ variant, searchQuery }: { searchQuery?: string; variant: string }) => (
+  EmptyStateVariant: ({ searchQuery, variant }: { searchQuery?: string; variant: string }) => (
     <div data-testid={`empty-state-${variant}`}>{searchQuery && <span>{searchQuery}</span>}</div>
   ),
   InfiniteScrollLoader: () => <div data-testid="infinite-scroll-loader" />,

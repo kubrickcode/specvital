@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
-import React from "react";
+import { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ExploreContent } from "./explore-content";
@@ -27,7 +28,7 @@ vi.mock("@/features/dashboard", () => ({
 // Radix Tabs does not respond to pointer/click events in jsdom.
 // Mock the Tabs components with a simple implementation to test the auth gating behavior.
 vi.mock("@/components/ui/tabs", () => {
-  const TabsContext = React.createContext({
+  const TabsContext = createContext({
     activeTab: "",
     setActiveTab: (_v: string) => {},
   });
@@ -39,12 +40,12 @@ vi.mock("@/components/ui/tabs", () => {
       onValueChange,
       value,
     }: {
-      children: React.ReactNode;
+      children: ReactNode;
       defaultValue?: string;
       onValueChange?: (value: string) => void;
       value?: string;
     }) => {
-      const [internalValue, setInternalValue] = React.useState(defaultValue ?? "");
+      const [internalValue, setInternalValue] = useState(defaultValue ?? "");
       const activeTab = value ?? internalValue;
       const setActiveTab = (v: string) => {
         setInternalValue(v);
@@ -56,18 +57,18 @@ vi.mock("@/components/ui/tabs", () => {
         </TabsContext.Provider>
       );
     },
-    TabsContent: ({ children, value }: { children: React.ReactNode; value: string }) => {
-      const { activeTab } = React.useContext(TabsContext);
+    TabsContent: ({ children, value }: { children: ReactNode; value: string }) => {
+      const { activeTab } = useContext(TabsContext);
       if (activeTab !== value) return null;
       return <div data-testid={`tab-content-${value}`}>{children}</div>;
     },
-    TabsList: ({ children }: { children: React.ReactNode }) => (
+    TabsList: ({ children }: { children: ReactNode }) => (
       <div data-testid="tabs-list" role="tablist">
         {children}
       </div>
     ),
-    TabsTrigger: ({ children, value }: { children: React.ReactNode; value: string }) => {
-      const { activeTab, setActiveTab } = React.useContext(TabsContext);
+    TabsTrigger: ({ children, value }: { children: ReactNode; value: string }) => {
+      const { activeTab, setActiveTab } = useContext(TabsContext);
       return (
         <button
           aria-selected={activeTab === value}

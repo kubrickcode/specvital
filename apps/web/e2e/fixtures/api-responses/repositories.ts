@@ -3,10 +3,7 @@
  * Endpoint: /api/user/analyzed-repositories
  */
 
-import type {
-  UserAnalyzedRepositoriesResponse,
-  RepositoryCard,
-} from "./types";
+import type { UserAnalyzedRepositoriesResponse, RepositoryCard } from "./types";
 
 const createRepository = (
   index: number,
@@ -32,18 +29,20 @@ const createRepository = (
       xfail: 0,
     },
   },
-  aiSpecSummary: index <= 5 ? {
-    hasSpec: true,
-    languageCount: index % 3 + 1,
-    latestGeneratedAt: new Date(Date.now() - index * 3600000).toISOString(),
-  } : undefined,
+  aiSpecSummary:
+    index <= 5
+      ? {
+          hasSpec: true,
+          languageCount: (index % 3) + 1,
+          latestGeneratedAt: new Date(Date.now() - index * 3600000).toISOString(),
+        }
+      : undefined,
   ...overrides,
 });
 
 // 25 repositories for infinite scroll testing
-export const mockRepositoriesList: RepositoryCard[] = Array.from(
-  { length: 25 },
-  (_, i) => createRepository(i + 1)
+export const mockRepositoriesList: RepositoryCard[] = Array.from({ length: 25 }, (_, i) =>
+  createRepository(i + 1)
 );
 
 // First page response (20 items)

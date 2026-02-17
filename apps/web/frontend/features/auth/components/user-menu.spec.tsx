@@ -47,12 +47,12 @@ vi.mock("@/components/ui/dropdown-menu", () => {
   );
   const DropdownMenuSeparator = () => <hr />;
   const DropdownMenuItem = ({
+    _asChild,
     children,
-    onClick,
     disabled,
-    asChild,
+    onClick,
   }: React.PropsWithChildren<{
-    asChild?: boolean;
+    _asChild?: boolean;
     disabled?: boolean;
     onClick?: () => void;
   }>) => (

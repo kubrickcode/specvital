@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
@@ -17,10 +17,6 @@ let mockHasResults = false;
 let mockGroupedResults = { bookmarks: [], community: [], repositories: [] };
 
 vi.mock("../hooks", () => ({
-  useGlobalSearchStore: () => ({
-    close: mockClose,
-    isOpen: mockIsOpen,
-  }),
   useDebouncedSearch: () => ({
     groupedResults: mockGroupedResults,
     hasError: false,
@@ -29,6 +25,10 @@ vi.mock("../hooks", () => ({
     isLoading: false,
     navigateToRepository: mockNavigateToRepository,
     setQuery: mockSetQuery,
+  }),
+  useGlobalSearchStore: () => ({
+    close: mockClose,
+    isOpen: mockIsOpen,
   }),
   useRecentItems: () => ({
     addItem: mockAddItem,

@@ -85,7 +85,7 @@ describe("InlineStats", () => {
   });
 
   it("shows xfail count when value is greater than 0", () => {
-    const summary: Summary = { ...baseSummary, xfail: 5, total: 95 };
+    const summary: Summary = { ...baseSummary, total: 95, xfail: 5 };
 
     renderInlineStats(summary);
 

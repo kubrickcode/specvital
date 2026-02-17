@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { StatusMiniBar } from "./status-mini-bar";
 import type { StatusCounts } from "../utils/calculate-status-counts";
 
-import { StatusMiniBar } from "./status-mini-bar";
 
 const renderStatusMiniBar = (counts: StatusCounts) => {
   return render(<StatusMiniBar counts={counts} />);

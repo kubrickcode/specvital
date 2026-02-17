@@ -12,10 +12,10 @@ vi.mock("@/lib/motion", () => ({
 
 vi.mock("motion/react", () => ({
   motion: {
-    button: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    button: ({ children, ...props }: { [key: string]: unknown; children: React.ReactNode; }) => (
       <button {...props}>{children}</button>
     ),
-    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    div: ({ children, ...props }: { [key: string]: unknown; children: React.ReactNode; }) => (
       <div {...props}>{children}</div>
     ),
   },

@@ -3,7 +3,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 
 import type { SpecDocument } from "../types";
-
 import { TocSidebar } from "./toc-sidebar";
 
 const mockScrollToSection = vi.fn();

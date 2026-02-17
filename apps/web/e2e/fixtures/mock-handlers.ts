@@ -214,9 +214,7 @@ export async function setupMockHandlers(
       pattern: /\/api\/repositories\/([^/]+)\/([^/]+)\/bookmark/,
       handler: async (route) => {
         const url = new URL(route.request().url());
-        const match = url.pathname.match(
-          /\/api\/repositories\/([^/]+)\/([^/]+)\/bookmark/
-        );
+        const match = url.pathname.match(/\/api\/repositories\/([^/]+)\/([^/]+)\/bookmark/);
         const owner = match?.[1] ?? "";
         const repo = match?.[2] ?? "";
         const method = route.request().method();
@@ -246,9 +244,7 @@ export async function setupMockHandlers(
       pattern: /\/api\/repositories\/([^/]+)\/([^/]+)\/reanalyze/,
       handler: async (route) => {
         const url = new URL(route.request().url());
-        const match = url.pathname.match(
-          /\/api\/repositories\/([^/]+)\/([^/]+)\/reanalyze/
-        );
+        const match = url.pathname.match(/\/api\/repositories\/([^/]+)\/([^/]+)\/reanalyze/);
         const owner = match?.[1] ?? "";
         const repo = match?.[2] ?? "";
 
@@ -344,7 +340,10 @@ export async function setupMockHandlers(
 
         // Default response
         const response = options.specDocument;
-        if (response?.status === "generating" && response.generationStatus?.status === "not_found") {
+        if (
+          response?.status === "generating" &&
+          response.generationStatus?.status === "not_found"
+        ) {
           return route.fulfill({
             status: 404,
             contentType: "application/json",
@@ -432,7 +431,12 @@ export async function setupMockHandlers(
 
   // /api/spec-view/repository/{owner}/{repo} - Get spec document by repository (supports version query param)
   // Also handles backward compatibility: converts specDocument to repoSpecDocument format
-  if (options.repoSpecDocument || options.repoSpecDocumentByVersion || options.specDocument || options.specDocumentByVersion) {
+  if (
+    options.repoSpecDocument ||
+    options.repoSpecDocumentByVersion ||
+    options.specDocument ||
+    options.specDocumentByVersion
+  ) {
     handlers.push({
       pattern: /\/api\/spec-view\/repository\/([^/]+)\/([^/]+)(\?.*)?$/,
       handler: async (route) => {

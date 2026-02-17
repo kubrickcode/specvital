@@ -21,9 +21,8 @@ const createGitHubRepo = (
 });
 
 // User's GitHub repositories (15 repos)
-export const mockGitHubReposList: GitHubRepository[] = Array.from(
-  { length: 15 },
-  (_, i) => createGitHubRepo(i + 1)
+export const mockGitHubReposList: GitHubRepository[] = Array.from({ length: 15 }, (_, i) =>
+  createGitHubRepo(i + 1)
 );
 
 export const mockGitHubReposResponse: GitHubRepositoriesResponse = {
@@ -36,10 +35,7 @@ export const mockGitHubReposEmpty: GitHubRepositoriesResponse = {
 };
 
 // Organization repositories
-const createOrgRepo = (
-  orgLogin: string,
-  index: number
-): GitHubRepository => ({
+const createOrgRepo = (orgLogin: string, index: number): GitHubRepository => ({
   id: 200000 + index,
   name: `org-repo-${index}`,
   fullName: `${orgLogin}/org-repo-${index}`,

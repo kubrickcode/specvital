@@ -19,9 +19,9 @@ vi.mock("motion/react", () => ({
       className,
       ...rest
     }: {
+      [key: string]: unknown;
       children: React.ReactNode;
       className?: string;
-      [key: string]: unknown;
     }) => (
       <div className={className} data-testid="motion-div" {...filterDomProps(rest)}>
         {children}
@@ -32,9 +32,9 @@ vi.mock("motion/react", () => ({
       className,
       ...rest
     }: {
+      [key: string]: unknown;
       children: React.ReactNode;
       className?: string;
-      [key: string]: unknown;
     }) => (
       <span className={className} {...filterDomProps(rest)}>
         {children}

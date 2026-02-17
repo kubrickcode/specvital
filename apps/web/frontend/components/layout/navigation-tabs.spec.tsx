@@ -17,9 +17,9 @@ vi.mock("@/i18n/navigation", () => ({
     href,
     ...props
   }: {
+    [key: string]: unknown;
     children: React.ReactNode;
     href: string;
-    [key: string]: unknown;
   }) => (
     <a href={href} {...props}>
       {children}

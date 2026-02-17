@@ -38,8 +38,8 @@ vi.mock("@tanstack/react-virtual", () => ({
     mockGetTotalSize.mockReturnValue(count * 72);
 
     return {
-      getVirtualItems: () => items,
       getTotalSize: () => count * 72,
+      getVirtualItems: () => items,
       measureElement: mockMeasureElement,
     };
   },

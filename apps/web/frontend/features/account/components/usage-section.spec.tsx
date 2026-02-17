@@ -3,7 +3,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { UsageStatusResponse } from "../api";
-
 import { UsageSection } from "./usage-section";
 
 vi.mock("./usage-progress", () => ({

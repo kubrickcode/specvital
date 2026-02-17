@@ -261,7 +261,7 @@ const generateLargeSuites = (): TestSuite[] => {
       framework: "jest",
       line: (testIndex + 1) * 10,
       name: `test case ${testIndex + 1} in suite ${suiteIndex + 1}`,
-      status: testIndex % 5 === 0 ? "skipped" : "active" as const,
+      status: testIndex % 5 === 0 ? "skipped" : ("active" as const),
     })),
   }));
 };
@@ -558,7 +558,8 @@ export const mockSpecDocumentCompleted: SpecDocumentResponse = {
     language: "English",
     version: 2,
     createdAt: now,
-    executiveSummary: "Test Repository Specification - This document describes the test specifications for the test repository.",
+    executiveSummary:
+      "Test Repository Specification - This document describes the test specifications for the test repository.",
     modelId: "gemini-2.0-flash",
     availableLanguages: [
       {
@@ -775,7 +776,8 @@ export const mockRepoSpecDocumentCompleted: RepoSpecDocumentResponse = {
     version: 2,
     createdAt: now,
     commitSha: "abc123def",
-    executiveSummary: "Test Repository Specification - This document describes the test specifications for the test repository.",
+    executiveSummary:
+      "Test Repository Specification - This document describes the test specifications for the test repository.",
     modelId: "gemini-2.0-flash",
     availableLanguages: [
       {
