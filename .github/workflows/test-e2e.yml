@@ -83,6 +83,7 @@ jobs:
         run: just deps-frontend
 
       - name: Install Playwright browsers
+        working-directory: .
         run: just install-playwright
 
       - name: Debug - Test server startup
