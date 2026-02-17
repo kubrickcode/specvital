@@ -13,6 +13,14 @@ vi.mock("../hooks", () => ({
   }),
 }));
 
+vi.mock("./user-menu", () => ({
+  UserMenu: () => <button type="button">Open user menu</button>,
+}));
+
+vi.mock("./sign-in-trigger", () => ({
+  SignInTrigger: () => <button type="button">Sign in</button>,
+}));
+
 const messages = {
   auth: {
     login: "Sign in",
