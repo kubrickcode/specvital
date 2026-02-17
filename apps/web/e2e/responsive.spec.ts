@@ -15,7 +15,7 @@ test.describe("Responsive Layout", () => {
 
     // Verify mobile nav elements
     await expect(page.getByRole("link", { name: "Explore" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Toggle theme" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "More" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   });
 
@@ -33,7 +33,7 @@ test.describe("Responsive Layout", () => {
     await moreButton.click();
 
     // Verify menu appears with Docs and Pricing
-    const menu = page.getByRole("menu", { name: "More" });
+    const menu = page.getByRole("menu");
     await expect(menu).toBeVisible();
 
     // Verify Docs menuitem
