@@ -55,23 +55,6 @@ Analyze staged changes and suggest the most appropriate type:
 
 **BREAKING CHANGE**: MUST use both type! format (exclamation mark after type) AND BREAKING CHANGE: footer with migration guide for major version bump.
 
-### Type Selection Decision Tree
-
-Analyze git diff output and suggest type based on file patterns:
-
-```
-Changed Files → Suggested Type
-
-src/**/*.{ts,js,tsx,jsx} + new functions/classes → feat
-src/**/*.{ts,js,tsx,jsx} + bug fix → fix
-README.md, docs/**, *.md → docs
-package.json, pnpm-lock.yaml, .github/** → chore
-**/*.test.{ts,js}, **/*.spec.{ts,js} → test
-.github/workflows/** → ci
-```
-
-If multiple types apply, prioritize: `feat` > `fix` > other types.
-
 ### Confusing Cases: fix vs ifix vs chore
 
 **Key distinction**: Does it affect **users** or only **developers/infrastructure**?
@@ -89,42 +72,88 @@ If multiple types apply, prioritize: `feat` > `fix` > other types.
 | Dependency security patch (CVE fix)                   | `chore`    | Build/tooling update (not a bug fix)         |
 | Upgrading React version for new features              | `chore`    | Dependency update (not a bug fix)            |
 
-## Commit Message Format Guidelines
+## Commit Message Content Rules
 
-**Core Principle: Root Cause → Rationale → Implementation**
+**Commit messages are project history.** They answer "Why was this change worth making?" — never "What code was modified?"
 
-Commit messages document decision **history**, not just code changes. Every non-trivial commit body MUST answer:
+### Subject Line: Purpose, Not Technical Action
 
-1. **WHY-Problem**: Why did this problem exist? (root cause, not symptoms)
-2. **WHY-Solution**: Why this solution? (decision rationale, alternatives considered)
-3. **HOW**: How was it resolved? (implementation summary)
+The `<description>` MUST describe the **purpose or problem solved**, not what you technically did.
+
+| Anti-pattern (technical action)                     | Correct (purpose/problem)                          |
+| --------------------------------------------------- | -------------------------------------------------- |
+| `getUser 함수에서 null 체크 누락 수정`              | `로그인 직후 프로필 페이지 접근 시 화면 깨짐 수정` |
+| `상품 목록 API에 Redis 캐시 레이어 추가`            | `상품 목록 페이지 초기 로딩 속도 개선`             |
+| `UserService를 UserRepository와 UserUseCase로 분리` | `사용자 도메인 로직과 DB 접근 책임 분리`           |
+| `프로필 페이지에 비밀번호 변경 폼 컴포넌트 추가`    | `사용자가 직접 비밀번호를 변경할 수 있도록 지원`   |
+
+**Litmus test**: If the subject ends with "추가", "수정", "변경", "개선" preceded by a technical noun — it's likely describing WHAT, not WHY. Rewrite to state the purpose.
+
+### Body: Narrative Prose, Not Bullet Lists
+
+The body is a **short narrative** (1-4 sentences) answering:
+
+1. **왜 이 문제/필요가 존재했는가?** (맥락, 근본 원인)
+2. **어떤 접근으로 해결했고, 왜 그 방식인가?** (접근 방식과 선택 근거를 한 흐름으로)
+
+**FORBIDDEN**: Bullet-listed technical changes in body. That's what `git diff` provides.
+
+**Exception**: Large-scope commits (5+ files, multiple concerns) may append a brief summary list AFTER the narrative body, prefixed with "주요 변경:".
+
+### Korean Body Style Rules
+
+**Sentence ending**: Use nominal endings (`~함`, `~됨`, `~필요함`, `~없음`, `~있음`), NOT declarative endings (`~한다`, `~된다`, `~했다`).
+
+| Bad (declarative)                  | Good (nominal)                   |
+| ---------------------------------- | -------------------------------- |
+| 도메인 모델이 먼저 정의되어야 한다 | 도메인 모델이 먼저 정의되어야 함 |
+| exact version으로 고정했다         | exact version으로 고정함         |
+| 이 방식이 가장 적합하다고 판단했다 | 이 방식이 가장 적합하다고 판단함 |
+
+**Line breaks**: Break ONLY after a sentence ends (after nominal ending like `~함.`, `~됨.`). NEVER break mid-sentence — if a clause continues, keep it on the same line.
+
+| Bad (mid-sentence break)                                                     | Good (single line until sentence ends)                                  |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| 후속 커밋이 공유 타입 위에 빌드되려면<br>도메인 모델이 먼저 정의되어야 한다. | 후속 커밋이 공유 타입 위에 빌드되려면 도메인 모델이 먼저 정의되어야 함. |
 
 ### Complexity-Based Formats
 
-#### Very Simple Changes (No WHY needed)
+**Trivial** (typo, formatting, simple config):
 
 ```
 type: brief description
 ```
 
-#### Simple Changes (Minimal WHY)
+**Simple**:
 
 ```
-type: problem description
+type: purpose/problem
 
-Root cause in one sentence.
-Why this solution was chosen (if non-obvious).
+Root cause or context in one sentence.
+Approach taken and why (if non-obvious).
 ```
 
-#### Standard Changes
+**Standard**:
 
 ```
-type: problem description
+type: purpose/problem
 
-Description of the problem that occurred
-(Brief reproduction steps if applicable)
+Why this problem existed (context).
+How it was addressed and why this approach (rationale).
 
-Root cause explanation and why this solution approach was chosen
+fix #N
+```
+
+**Large-scope** (exception — only case where list is allowed):
+
+```
+type: high-level purpose
+
+Narrative context, approach, and rationale (2-4 sentences).
+
+주요 변경:
+- brief item 1
+- brief item 2
 
 fix #N
 ```
@@ -139,40 +168,46 @@ The command will provide:
 
 ## Important Notes
 
-- This command ONLY generates commit messages - it never performs actual commits
-- **commit_message.md file contains both versions** - choose the one you prefer
-- **Focus on root cause and rationale** - don't just list changes
+- This command ONLY generates commit messages — it never performs actual commits
+- **commit_message.md file contains both versions** — choose the one you prefer
+- **Write the purpose, not the changelog** — subject = why it matters, body = context
 - Branch issue numbers (e.g., develop/32) will automatically append "fix #N"
 - Copy message from generated file and manually execute `git commit`
-- **Spec compliance**: All messages MUST follow Conventional Commits format
 
 ## Execution Instructions
 
-### Phase 1: Discover WHY (before analyzing diff)
+### Phase 1: Synthesize Purpose (BEFORE analyzing diff)
 
-1. Check current conversation for problem/solution discussion
-2. Extract context from branch name, file names, test descriptions
-3. Read changed files to find comments, function names, or test descriptions that signal intent
+1. Scan conversation history for the problem being solved or goal being pursued
+2. Infer intent from branch name, changed file names, test descriptions
+3. **Formulate a one-sentence purpose**: "이 커밋은 \_\_\_을/를 위해 필요하다"
+   - This sentence becomes the seed for the subject line
 
-### Phase 2: Analyze WHAT (git analysis)
+### Phase 2: Analyze Changes
 
 4. Run git commands to see staged changes (or all if none staged)
-5. Analyze file patterns and suggest appropriate commit type
-6. Match changes to problem context from Phase 1
+5. Verify: does the purpose from Phase 1 match actual changes? Adjust if needed
 
-### Phase 3: Generate Message
+### Phase 3: Write Message
 
-7. Determine if scope is needed (e.g., `fix(api):`, `feat(ui):`)
-8. Draft commit message following format
-9. Choose format complexity based on change scope
+6. **Subject = purpose** from Phase 1, not a list of what was done
+7. **Body = narrative** answering "why this problem?" + "why this solution?"
+8. Choose template complexity based on change scope
+9. **Select type** from the purpose and body content (not from file patterns)
+10. Determine scope if needed (e.g., `fix(api):`, `feat(ui):`)
 
-### Phase 4: Self-Verification
+### Phase 4: Self-Verification (Hard Gate)
 
-10. Self-check: "Does this message tell me something git diff doesn't?"
-11. If not, revise to add root cause or decision rationale
+11. **Subject check**: Does it describe a technical action or a purpose?
+    - Ends with "추가/수정/변경/개선" after a technical noun → REWRITE
+12. **Body check**: Is it narrative prose or a bullet list of changes?
+    - Contains `- ` bullet items listing technical changes → REWRITE as narrative
+    - Exception: large-scope "주요 변경:" section after narrative
+13. **History check**: "6개월 후 이 메시지만 읽고 왜 이 변경이 필요했는지 이해할 수 있는가?"
+    - No → add context about the problem being solved
 
 ### Output
 
-12. Generate both Korean and English versions
-13. Write to `commit_message.md`
-14. Present suggested type with reasoning
+14. Generate both Korean and English versions
+15. Write to `commit_message.md`
+16. Present suggested type with reasoning
